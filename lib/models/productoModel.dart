@@ -30,6 +30,45 @@ class ProductoModel{
     required this.cajasAbiertas
   });
 
+  static List<ProductoModel> listaProvicional(){
+    List<ProductoModel> Productos = [];
+
+    Productos.add(
+        ProductoModel(
+          id: 1,
+          nombre: "Producto 1",
+          tipo: "Tipo 1",
+          individual: 12,
+          cajas: 10,
+          ultimaModificacion: "Lun 15/09 10:30pm",
+          cantidadPorCajas: 2,
+          area: "Area 1",
+          entradas: 0,
+          salidas: 0,
+          perdidas: 0,
+          cajasAbiertas: 0
+        )
+    );
+
+    Productos.add(
+        ProductoModel(
+          id: 2,
+          nombre: "Producto 2",
+          tipo: "Tipo 2",
+          individual: 21,
+          cajas: 1,
+          ultimaModificacion: "Dom 26/09 3:10am",
+          cantidadPorCajas: 20,
+          area: "Area 1",
+          entradas: 0,
+          salidas: 0,
+          perdidas: 0,
+          cajasAbiertas: 0
+        )
+    );
+
+    return Productos;
+  }
 
   static Future<List<ProductoModel>> getProductos(String url)async{
     late List<ProductoModel> productosFuture = [];

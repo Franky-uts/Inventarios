@@ -350,7 +350,8 @@ class _InventarioState extends State<Inventario> {
           if (busqueda.isNotEmpty) {
             return Center(child: Text("No hay coincidencias."));
           } else {
-            return Center(child: CircularProgressIndicator());
+            //return Center(child: CircularProgressIndicator());
+            return listaPrincipal(ProductoModel.listaProvicional());
           }
         }
       },
