@@ -17,10 +17,9 @@ class Producto extends StatefulWidget {
 }
 
 class _ProductoState extends State<Producto> {
-  late int cajasAbiertas = widget.productoInfo.cajasAbiertas,
-      cajasEntrantes = widget.productoInfo.entradas,
-      productosSalida = widget.productoInfo.salidas,
-      productosPerdido = widget.productoInfo.perdidas;
+  late int cajasEntrantes = widget.productoInfo.entrada,
+      productosSalida = widget.productoInfo.salida,
+      productosPerdido = widget.productoInfo.perdida;
 
   get textovalor => null;
 
@@ -49,37 +48,14 @@ class _ProductoState extends State<Producto> {
 
   Future enviarDatos(int valor) async {
     switch (valor) {
-      case 1:
-        if (cajasAbiertas > widget.productoInfo.cajasAbiertas) {
-          guardarDatos(
-            "Cajas",
-            (widget.productoInfo.cajas -
-                (cajasAbiertas - widget.productoInfo.cajasAbiertas)),
-          );
-
-          guardarDatos(
-            "Individual",
-            (((cajasAbiertas - widget.productoInfo.cajasAbiertas) *
-                    widget.productoInfo.cantidadPorCajas) +
-                widget.productoInfo.individual),
-          );
-          guardarDatos("CajasAbiertas", cajasAbiertas);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Inventario()),
-          );
-        } else {
-          toast("No hay cambios");
-        }
-        break;
       case 2:
-        if (cajasEntrantes > widget.productoInfo.entradas) {
+        if (cajasEntrantes > widget.productoInfo.entrads) {
           guardarDatos(
             "Cajas",
-            (cajasEntrantes - widget.productoInfo.entradas) +
-                widget.productoInfo.cajas,
+            (cajasEntrantes - widget.productoInfo.entrada) +
+                widget.productoInfo.unidad,
           );
-          guardarDatos("Entradas", (cajasEntrantes));
+          guardarDatos("Entrada", (cajasEntrantes));
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => Inventario()),
@@ -90,12 +66,12 @@ class _ProductoState extends State<Producto> {
         }
         break;
       case 3:
-        if (productosSalida > widget.productoInfo.salidas) {
+        if (productosSalida > widget.productoInfo.salida) {
           guardarDatos(
-            "Individual",
-            (widget.productoInfo.individual -
+            "Unidades",
+            (widget.productoInfo.unidades -
                 productosSalida -
-                widget.productoInfo.salidas),
+                widget.productoInfo.salida),
           );
           guardarDatos("Salidas", (productosSalida));
           Navigator.push(
@@ -108,12 +84,12 @@ class _ProductoState extends State<Producto> {
         }
         break;
       case 4:
-        if (productosPerdido > widget.productoInfo.perdidas) {
+        if (productosPerdido > widget.productoInfo.perdida) {
           guardarDatos(
-            "Individual",
-            (widget.productoInfo.individual -
+            "Unidades",
+            (widget.productoInfo.unidades -
                 productosPerdido -
-                widget.productoInfo.perdidas),
+                widget.productoInfo.perdida),
           );
           guardarDatos("Perdidas", (productosPerdido));
           Navigator.push(
@@ -139,25 +115,9 @@ class _ProductoState extends State<Producto> {
     );
   }
 
-  void cambioCajasAbiertas(int num) {
-    if ((cajasAbiertas + num - widget.productoInfo.cajasAbiertas) <=
-        widget.productoInfo.cajas) {
-      if ((cajasAbiertas + num) >= 0) {
-        if ((cajasAbiertas + num) >= widget.productoInfo.cajasAbiertas) {
-          cajasAbiertas += num;
-        } else {
-          toast("El valor ya esta registrado.");
-        }
-      } else {
-        toast("El valor no puede ser menor a 0.");
-      }
-    } else {
-      toast("Ya son todas las cajas");
-    }
-  }
-
+  
   void cambioCajasEntrantes(int num) {
-    if ((cajasEntrantes + num) >= widget.productoInfo.entradas) {
+    if ((cajasEntrantes + num) >= widget.productoInfo.entrada) {
       cajasEntrantes += num;
     } else {
       if (cajasEntrantes + num >= 0) {
@@ -171,11 +131,11 @@ class _ProductoState extends State<Producto> {
   void cambioProductoSalida(int num) {
     if ((productosSalida +
             num +
-            (productosPerdido - widget.productoInfo.perdidas) -
-            widget.productoInfo.salidas) <=
-        widget.productoInfo.individual) {
+            (productosPerdido - widget.productoInfo.perdida) -
+            widget.productoInfo.salida) <=
+        widget.productoInfo.unidades) {
       if ((productosSalida + num) >= 0) {
-        if ((productosSalida + num) >= widget.productoInfo.salidas) {
+        if ((productosSalida + num) >= widget.productoInfo.salida) {
           productosSalida += num;
         } else {
           toast("El valor ya esta registrado.");
@@ -191,11 +151,11 @@ class _ProductoState extends State<Producto> {
   void cambioProductoPerdido(int num) {
     if ((productosPerdido +
             num +
-            (productosSalida - widget.productoInfo.salidas) -
-            widget.productoInfo.perdidas) <=
-        widget.productoInfo.individual) {
+            (productosSalida - widget.productoInfo.salida) -
+            widget.productoInfo.perdida) <=
+        widget.productoInfo.unidades) {
       if ((productosPerdido + num) >= 0) {
-        if ((productosPerdido + num) >= widget.productoInfo.perdidas) {
+        if ((productosPerdido + num) >= widget.productoInfo.perdida) {
           productosPerdido += num;
         } else {
           toast("El valor ya esta registrado.");
@@ -241,24 +201,20 @@ class _ProductoState extends State<Producto> {
                 style: TextStyle(color: Colors.black, fontSize: 30),
               ),
               contenedorInfo(
-                "Producto individual:",
-                widget.productoInfo.individual.toString(),
-              ),
-              contenedorInfo(
-                "Cajas en almacen:",
-                widget.productoInfo.cajas.toString(),
+                "Unidades:",
+                widget.productoInfo.unidades.toString(),
               ),
               contenedorInfo(
                 "Cajas entrantes:",
-                widget.productoInfo.entradas.toString(),
+                widget.productoInfo.entrada.toString(),
               ),
               contenedorInfo(
                 "Salidas del producto:",
-                widget.productoInfo.salidas.toString(),
+                widget.productoInfo.salida.toString(),
               ),
               contenedorInfo(
                 "Productos perdidos:",
-                widget.productoInfo.perdidas.toString(),
+                widget.productoInfo.perdida.toString(),
               ),
               Container(
                 margin: EdgeInsets.symmetric(vertical: 15),
@@ -267,7 +223,6 @@ class _ProductoState extends State<Producto> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    botonesAccion("Cajas abiertas", cajasAbiertas, 1),
                     botonesAccion("Cajas entrantes", cajasEntrantes, 2),
                     botonesAccion("Salida de producto", productosSalida, 3),
                     botonesAccion("Producto perdido", productosPerdido, 4),
@@ -312,11 +267,6 @@ class _ProductoState extends State<Producto> {
             IconButton(
               onPressed: () {
                 switch (tipo) {
-                  case 1:
-                    setState(() {
-                      cambioCajasAbiertas(-1);
-                    });
-                    break;
                   case 2:
                     setState(() {
                       cambioCajasEntrantes(-1);
@@ -357,11 +307,6 @@ class _ProductoState extends State<Producto> {
             IconButton(
               onPressed: () {
                 switch (tipo) {
-                  case 1:
-                    setState(() {
-                      cambioCajasAbiertas(1);
-                    });
-                    break;
                   case 2:
                     setState(() {
                       cambioCajasEntrantes(1);

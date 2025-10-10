@@ -192,8 +192,6 @@ class _InventarioState extends State<Inventario> {
           _divider(),
           _barraSuperior(.06, "Indiv."),
           _divider(),
-          _barraSuperior(.06, "Cajas"),
-          _divider(),
           _barraSuperior(.06, "Total"),
           _divider(),
           _barraSuperior(.15, "Área"),
@@ -289,23 +287,7 @@ class _InventarioState extends State<Inventario> {
                 _divider(),
                 _barraDato(
                   .06,
-                  lista[index].individual.toString(),
-                  TextAlign.center,
-                  20,
-                ),
-                _divider(),
-                _barraDato(
-                  .06,
-                  lista[index].cajas.toString(),
-                  TextAlign.center,
-                  20,
-                ),
-                _divider(),
-                _barraDato(
-                  .06,
-                  ((lista[index].cantidadPorCajas * lista[index].cajas) +
-                          lista[index].individual)
-                      .toString(),
+                  lista[index].unidades.toString(),
                   TextAlign.center,
                   20,
                 ),
@@ -314,21 +296,21 @@ class _InventarioState extends State<Inventario> {
                 _divider(),
                 _barraDato(
                   .075,
-                  lista[index].entradas.toString(),
+                  lista[index].entrada.toString(),
                   TextAlign.center,
                   20,
                 ),
                 _divider(),
                 _barraDato(
                   .075,
-                  lista[index].salidas.toString(),
+                  lista[index].salida.toString(),
                   TextAlign.center,
                   20,
                 ),
                 _divider(),
                 _barraDato(
                   .075,
-                  lista[index].perdidas.toString(),
+                  lista[index].perdida.toString(),
                   TextAlign.center,
                   20,
                 ),
