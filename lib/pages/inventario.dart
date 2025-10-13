@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-import 'package:inventarios/models/productoModel.dart';
+import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/producto.dart';
 
 enum Filtros { id, nombre, tipo, area }
@@ -13,9 +13,9 @@ class Inventario extends StatefulWidget {
 }
 
 class _InventarioState extends State<Inventario> {
-  Filtros? seleccionFiltro;
-  String busqueda = "";
-  List<ProductoModel> productos = [];
+  static Filtros? seleccionFiltro;
+  static String busqueda = "";
+  static List<ProductoModel> productos = [];
   final busquedaTexto = TextEditingController();
   final focusBusqueda = FocusNode();
 
@@ -25,9 +25,9 @@ class _InventarioState extends State<Inventario> {
 
   String url() {
     if (busqueda.isEmpty) {
-      return "http://192.168.1.179:4000/productos/${filtroTexto()}";
+      return "http://192.168.1.179:4000/almacen/${filtroTexto()}";
     } else {
-      return "http://192.168.1.179:4000/productos/${filtroTexto()}/$busqueda";
+      return "http://192.168.1.179:4000/almacen/${filtroTexto()}/$busqueda";
     }
   }
 
@@ -55,38 +55,40 @@ class _InventarioState extends State<Inventario> {
 
   @override
   void initState() {
+    //_getProductos();
     super.initState();
-    seleccionFiltro = Filtros.id;
-    _getProductos();
   }
 
   @override
   void dispose() {
-    _getProductos();
+    //_getProductos();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: drawer(),
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       body: PopScope(
         canPop: false,
-        child: Column(
-          children: [
-            barraDeBusqueda(),
-            contenedorInfo(),
-            Column(
-              children: [
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height - 97,
-                  child: listaFutura(),
-                ),
-              ],
-            ),
-          ],
+        child: Builder(
+          builder: (context) => Column(
+            children: [
+              barraDeBusqueda(context),
+              contenedorInfo(),
+              Column(
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height - 97,
+                    child: listaFutura(),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -113,67 +115,123 @@ class _InventarioState extends State<Inventario> {
     );
   }
 
-  Container barraDeBusqueda() {
-    return Container(
-      margin: EdgeInsets.only(left: 25, right: 25, top: 10, bottom: 10),
-      child: (TextField(
-        controller: busquedaTexto,
-        focusNode: focusBusqueda,
-        onChanged: (event) {
-          busqueda = busquedaTexto.text;
-        },
-        onSubmitted: (event) {
-          setState(() {
-            busqueda = busquedaTexto.text;
-            _getProductos();
-          });
-        },
-        onTapOutside: (event) {
-          setState(() {
-            busqueda = busquedaTexto.text;
-            _getProductos();
-          });
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        decoration: InputDecoration(
-          filled: true,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Colors.grey, width: 1),
+  Widget barraDeBusqueda(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        IconButton.filled(
+          onPressed: () {
+            Scaffold.of(context).openDrawer();
+          },
+          icon: Icon(Icons.menu_rounded, size: 35),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.black,
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Colors.black, width: 2),
-          ),
-          fillColor: Colors.white,
-          suffixIcon: Container(
-            margin: EdgeInsets.only(right: 5),
-            child: botonBusqueda(),
-          ),
-          prefixIcon: PopupMenuButton<Filtros>(
-            icon: Icon(Icons.filter_list_rounded),
-            initialValue: seleccionFiltro,
-            onSelected: (Filtros filtro) {
-              setState(() {
-                seleccionFiltro = filtro;
-                _getProductos();
-              });
-            },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<Filtros>>[
-              PopupMenuItem<Filtros>(value: Filtros.id, child: Text("id")),
-              PopupMenuItem<Filtros>(
-                value: Filtros.nombre,
-                child: Text("Nombre"),
-              ),
-              PopupMenuItem<Filtros>(value: Filtros.tipo, child: Text("Tipo")),
-              PopupMenuItem<Filtros>(value: Filtros.area, child: Text("Área")),
-            ],
-          ),
-          hintText: "Buscar",
-          hintStyle: TextStyle(color: Colors.grey),
         ),
-      )),
+        Container(
+          width: MediaQuery.of(context).size.width * .875,
+          margin: EdgeInsets.symmetric(vertical: 10),
+          child: TextField(
+            controller: busquedaTexto,
+            focusNode: focusBusqueda,
+            onChanged: (event) {
+              busqueda = busquedaTexto.text;
+            },
+            onSubmitted: (event) {
+              busqueda = busquedaTexto.text;
+              _getProductos();
+            },
+            onTapOutside: (event) {
+              busqueda = busquedaTexto.text;
+              _getProductos();
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            decoration: InputDecoration(
+              filled: true,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide(color: Colors.grey, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide(color: Colors.black, width: 2),
+              ),
+              fillColor: Colors.white,
+              suffixIcon: Container(
+                margin: EdgeInsets.only(right: 5),
+                child: botonBusqueda(),
+              ),
+              prefixIcon: PopupMenuButton<Filtros>(
+                icon: Icon(Icons.filter_list_rounded),
+                initialValue: seleccionFiltro,
+                onSelected: (Filtros filtro) {
+                  setState(() {
+                    seleccionFiltro = filtro;
+                    _getProductos();
+                  });
+                },
+                itemBuilder: (BuildContext context) =>
+                    <PopupMenuEntry<Filtros>>[
+                      PopupMenuItem<Filtros>(
+                        value: Filtros.id,
+                        child: Text("id"),
+                      ),
+                      PopupMenuItem<Filtros>(
+                        value: Filtros.nombre,
+                        child: Text("Nombre"),
+                      ),
+                      PopupMenuItem<Filtros>(
+                        value: Filtros.tipo,
+                        child: Text("Tipo"),
+                      ),
+                      PopupMenuItem<Filtros>(
+                        value: Filtros.area,
+                        child: Text("Área"),
+                      ),
+                    ],
+              ),
+              hintText: "Buscar",
+              hintStyle: TextStyle(color: Colors.grey),
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  IconButton botonBusqueda() {
+    if (busqueda.isEmpty) {
+      return IconButton(
+        onPressed: () {
+          if (busquedaTexto.text.isEmpty) {
+            focusBusqueda.requestFocus();
+          } else {
+            FocusManager.instance.primaryFocus?.unfocus();
+            setState(() {
+              busqueda = busquedaTexto.text;
+              _getProductos();
+            });
+          }
+        },
+        icon: Icon(Icons.search),
+      );
+    } else {
+      return IconButton(
+        onPressed: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          setState(() {
+            busquedaTexto.text = "";
+            busqueda = "";
+          });
+          _getProductos();
+        },
+        icon: Icon(Icons.close_rounded),
+      );
+    }
   }
 
   Container contenedorInfo() {
@@ -186,21 +244,19 @@ class _InventarioState extends State<Inventario> {
         children: [
           _barraSuperior(.05, "id"),
           _divider(),
-          _barraSuperior(0.225, "Nombre"),
+          _barraSuperior(0.25, "Nombre"),
           _divider(),
-          _barraSuperior(.15, "Tipo"),
+          _barraSuperior(.175, "Tipo"),
           _divider(),
-          _barraSuperior(.06, "Indiv."),
+          _barraSuperior(.08, "Unidades"),
           _divider(),
-          _barraSuperior(.06, "Total"),
+          _barraSuperior(.175, "Área"),
           _divider(),
-          _barraSuperior(.15, "Área"),
+          _barraSuperior(.075, "Entrada"),
           _divider(),
-          _barraSuperior(.075, "Entradas"),
+          _barraSuperior(.075, "Salida"),
           _divider(),
-          _barraSuperior(.075, "Salidas"),
-          _divider(),
-          _barraSuperior(.075, "Perdias"),
+          _barraSuperior(.075, "Perdida"),
         ],
       ),
     );
@@ -230,6 +286,7 @@ class _InventarioState extends State<Inventario> {
     child: Text(
       texto,
       textAlign: alineamiento,
+      maxLines: 1,
       style: TextStyle(color: Colors.black, fontSize: tamanoFuente),
     ),
   );
@@ -261,8 +318,7 @@ class _InventarioState extends State<Inventario> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                      Producto(productoInfo: lista[index], url: url()),
+                  builder: (context) => Producto(productoInfo: lista[index]),
                 ),
               ),
             },
@@ -281,18 +337,18 @@ class _InventarioState extends State<Inventario> {
                   20,
                 ),
                 _divider(),
-                _barraDato(.225, lista[index].nombre, TextAlign.center, 20),
+                _barraDato(.25, lista[index].nombre, TextAlign.center, 20),
                 _divider(),
-                _barraDato(.15, lista[index].tipo, TextAlign.center, 20),
+                _barraDato(.175, lista[index].tipo, TextAlign.center, 20),
                 _divider(),
                 _barraDato(
-                  .06,
+                  .08,
                   lista[index].unidades.toString(),
                   TextAlign.center,
                   20,
                 ),
                 _divider(),
-                _barraDato(.15, lista[index].area, TextAlign.center, 20),
+                _barraDato(.175, lista[index].area, TextAlign.center, 20),
                 _divider(),
                 _barraDato(
                   .075,
@@ -326,48 +382,87 @@ class _InventarioState extends State<Inventario> {
     return FutureBuilder(
       future: ProductoModel.getProductos(url()),
       builder: (context, snapshot) {
-        if (snapshot.hasData) {
-          return listaPrincipal(productos);
-        } else {
-          if (busqueda.isNotEmpty) {
-            return Center(child: Text("No hay coincidencias."));
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasData) {
+            productos = snapshot.data;
+            if (productos.isNotEmpty) {
+              return listaPrincipal(productos);
+            } else {
+              return Center(child: Text("No hay coincidencias."));
+            }
           } else {
-            //return Center(child: CircularProgressIndicator());
-            return listaPrincipal(ProductoModel.listaProvicional());
+            if (busqueda.isNotEmpty) {
+              return Center(child: Text("No hay coincidencias."));
+            }
           }
         }
+        return Center(child: CircularProgressIndicator());
       },
     );
   }
 
-  IconButton botonBusqueda() {
-    if (busquedaTexto.text.isEmpty) {
-      return IconButton(
-        onPressed: () {
-          if (busquedaTexto.text.isEmpty) {
-            focusBusqueda.requestFocus();
-          } else {
-            FocusManager.instance.primaryFocus?.unfocus();
-            setState(() {
-              busqueda = busquedaTexto.text;
-              _getProductos();
-            });
-          }
-        },
-        icon: Icon(Icons.search),
-      );
-    } else {
-      return IconButton(
-        onPressed: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          setState(() {
-            busquedaTexto.text = "";
-            busqueda = "";
-          });
-          _getProductos();
-        },
-        icon: Icon(Icons.close_rounded),
-      );
-    }
+  Drawer drawer() {
+    return Drawer(
+      child: ListView(
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Colors.grey),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text("Nombre", style: TextStyle(fontSize: 30)),
+                Text("Puesto", style: TextStyle(fontSize: 20)),
+              ],
+            ),
+          ),
+          Column(
+            spacing: 15,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                  backgroundColor: Colors.black,
+                ),
+                child: Text(
+                  "Añadir un producto",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                  backgroundColor: Colors.black,
+                ),
+                child: Text(
+                  "Añadir un producto",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                style: FilledButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    side: BorderSide(color: Colors.black, width: 5),
+                  ),
+                ),
+                child: Text(
+                  "Añadir un producto",
+                  style: TextStyle(fontSize: 20, color: Colors.black),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

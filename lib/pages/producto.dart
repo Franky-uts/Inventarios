@@ -3,14 +3,18 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:inventarios/models/productoModel.dart';
+import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/inventario.dart';
 
 class Producto extends StatefulWidget {
   final ProductoModel productoInfo;
-  final String url;
 
-  const Producto({super.key, required this.productoInfo, required this.url});
+  //final String url;
+
+  const Producto({
+    super.key,
+    required this.productoInfo /*, required this.url*/,
+  });
 
   @override
   State<Producto> createState() => _ProductoState();
@@ -18,13 +22,14 @@ class Producto extends StatefulWidget {
 
 class _ProductoState extends State<Producto> {
   late int cajasEntrantes = widget.productoInfo.entrada,
-      productosSalida = widget.productoInfo.salida,
+      cajasSalida = widget.productoInfo.salida,
       productosPerdido = widget.productoInfo.perdida;
 
   get textovalor => null;
 
   @override
   void initState() {
+    print(widget.productoInfo.ultimaModificacion);
     super.initState();
   }
 
@@ -36,7 +41,7 @@ class _ProductoState extends State<Producto> {
   Future guardarDatos(String columna, int dato) async {
     return await http.put(
       Uri.parse(
-        "http://192.168.1.179:4000/productos/${widget.productoInfo.id}/cantidad/$columna",
+        "http://192.168.1.179:4000/almacen/${widget.productoInfo.id}/$columna",
       ),
       headers: {
         "Accept": "application/json",
@@ -48,55 +53,45 @@ class _ProductoState extends State<Producto> {
 
   Future enviarDatos(int valor) async {
     switch (valor) {
-      case 2:
-        if (cajasEntrantes > widget.productoInfo.entrads) {
-          guardarDatos(
-            "Cajas",
-            (cajasEntrantes - widget.productoInfo.entrada) +
-                widget.productoInfo.unidad,
-          );
+      case 1:
+        if (cajasEntrantes > widget.productoInfo.entrada) {
+          final int unidades =
+              (cajasEntrantes - widget.productoInfo.entrada) +
+              widget.productoInfo.unidades;
+          guardarDatos("Unidades", unidades);
           guardarDatos("Entrada", (cajasEntrantes));
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Inventario()),
-          );
-          ProductoModel.getProductos(widget.url);
+          setState(() {
+            widget.productoInfo.unidades = unidades;
+            widget.productoInfo.entrada = cajasEntrantes;
+          });
+          //ProductoModel.getProductos(widget.url);
+        } else {
+          toast("No hay cambios");
+        }
+        break;
+      case 2:
+        if (cajasSalida > widget.productoInfo.salida) {
+          final int unidades =
+              widget.productoInfo.unidades -
+              (cajasSalida - widget.productoInfo.salida);
+          guardarDatos("Unidades", unidades);
+          guardarDatos("Salida", (cajasSalida));
+          setState(() {
+            widget.productoInfo.unidades = unidades;
+            widget.productoInfo.salida = cajasSalida;
+          });
+          //ProductoModel.getProductos(widget.url);
         } else {
           toast("No hay cambios");
         }
         break;
       case 3:
-        if (productosSalida > widget.productoInfo.salida) {
-          guardarDatos(
-            "Unidades",
-            (widget.productoInfo.unidades -
-                productosSalida -
-                widget.productoInfo.salida),
-          );
-          guardarDatos("Salidas", (productosSalida));
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Inventario()),
-          );
-          ProductoModel.getProductos(widget.url);
-        } else {
-          toast("No hay cambios");
-        }
-        break;
-      case 4:
         if (productosPerdido > widget.productoInfo.perdida) {
-          guardarDatos(
-            "Unidades",
-            (widget.productoInfo.unidades -
-                productosPerdido -
-                widget.productoInfo.perdida),
-          );
-          guardarDatos("Perdidas", (productosPerdido));
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => Inventario()),
-          );
-          ProductoModel.getProductos(widget.url);
+          guardarDatos("Perdida", (productosPerdido));
+          setState(() {
+            widget.productoInfo.perdida = productosPerdido;
+          });
+          //ProductoModel.getProductos(widget.url);
         } else {
           toast("No hay cambios");
         }
@@ -115,7 +110,6 @@ class _ProductoState extends State<Producto> {
     );
   }
 
-  
   void cambioCajasEntrantes(int num) {
     if ((cajasEntrantes + num) >= widget.productoInfo.entrada) {
       cajasEntrantes += num;
@@ -129,14 +123,11 @@ class _ProductoState extends State<Producto> {
   }
 
   void cambioProductoSalida(int num) {
-    if ((productosSalida +
-            num +
-            (productosPerdido - widget.productoInfo.perdida) -
-            widget.productoInfo.salida) <=
+    if ((cajasSalida + num - widget.productoInfo.salida) <=
         widget.productoInfo.unidades) {
-      if ((productosSalida + num) >= 0) {
-        if ((productosSalida + num) >= widget.productoInfo.salida) {
-          productosSalida += num;
+      if ((cajasSalida + num) >= 0) {
+        if ((cajasSalida + num) >= widget.productoInfo.salida) {
+          cajasSalida += num;
         } else {
           toast("El valor ya esta registrado.");
         }
@@ -149,22 +140,14 @@ class _ProductoState extends State<Producto> {
   }
 
   void cambioProductoPerdido(int num) {
-    if ((productosPerdido +
-            num +
-            (productosSalida - widget.productoInfo.salida) -
-            widget.productoInfo.perdida) <=
-        widget.productoInfo.unidades) {
-      if ((productosPerdido + num) >= 0) {
-        if ((productosPerdido + num) >= widget.productoInfo.perdida) {
-          productosPerdido += num;
-        } else {
-          toast("El valor ya esta registrado.");
-        }
+    if ((productosPerdido + num) >= widget.productoInfo.perdida) {
+      productosPerdido += num;
+    } else {
+      if (productosPerdido + num >= 0) {
+        toast("El valor ya esta registrado.");
       } else {
         toast("El valor no puede ser menor a 0.");
       }
-    } else {
-      toast("Ya son todos los productos.");
     }
   }
 
@@ -205,17 +188,36 @@ class _ProductoState extends State<Producto> {
                 widget.productoInfo.unidades.toString(),
               ),
               contenedorInfo(
-                "Cajas entrantes:",
+                "Cajas que entraron:",
                 widget.productoInfo.entrada.toString(),
               ),
               contenedorInfo(
-                "Salidas del producto:",
+                "Cajas que salieron:",
                 widget.productoInfo.salida.toString(),
               ),
               contenedorInfo(
                 "Productos perdidos:",
                 widget.productoInfo.perdida.toString(),
               ),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * .45,
+              height: 35,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text("Ultima modificación", style: TextStyle(fontSize: 15, color: Colors.grey)),
+                  Container(
+                    width: MediaQuery.of(context).size.width * .1,
+                    height: 1,
+                    decoration: BoxDecoration(
+                      border: Border(bottom: BorderSide(color: Colors.grey)),
+                    ),
+                  ),
+                  Text(widget.productoInfo.ultimaModificacion, style: TextStyle(fontSize: 15, color: Colors.grey)),
+                ],
+              ),
+            ),
               Container(
                 margin: EdgeInsets.symmetric(vertical: 15),
 
@@ -223,9 +225,9 @@ class _ProductoState extends State<Producto> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    botonesAccion("Cajas entrantes", cajasEntrantes, 2),
-                    botonesAccion("Salida de producto", productosSalida, 3),
-                    botonesAccion("Producto perdido", productosPerdido, 4),
+                    botonesAccion("Cajas entrantes", cajasEntrantes, 1),
+                    botonesAccion("Salida de producto", cajasSalida, 2),
+                    botonesAccion("Producto perdido", productosPerdido, 3),
                   ],
                 ),
               ),
@@ -267,17 +269,17 @@ class _ProductoState extends State<Producto> {
             IconButton(
               onPressed: () {
                 switch (tipo) {
-                  case 2:
+                  case 1:
                     setState(() {
                       cambioCajasEntrantes(-1);
                     });
                     break;
-                  case 3:
+                  case 2:
                     setState(() {
                       cambioProductoSalida(-1);
                     });
                     break;
-                  case 4:
+                  case 3:
                     setState(() {
                       cambioProductoPerdido(-1);
                     });
@@ -307,17 +309,17 @@ class _ProductoState extends State<Producto> {
             IconButton(
               onPressed: () {
                 switch (tipo) {
-                  case 2:
+                  case 1:
                     setState(() {
                       cambioCajasEntrantes(1);
                     });
                     break;
-                  case 3:
+                  case 2:
                     setState(() {
                       cambioProductoSalida(1);
                     });
                     break;
-                  case 4:
+                  case 3:
                     setState(() {
                       cambioProductoPerdido(1);
                     });

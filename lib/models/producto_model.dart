@@ -27,9 +27,9 @@ class ProductoModel{
   });
 
   static List<ProductoModel> listaProvicional(){
-    List<ProductoModel> Productos = [];
+    List<ProductoModel> productos = [];
 
-    Productos.add(
+    productos.add(
         ProductoModel(
           id: 1,
           nombre: "Producto 1",
@@ -44,7 +44,7 @@ class ProductoModel{
         )
     );
 
-    Productos.add(
+    productos.add(
         ProductoModel(
           id: 2,
           nombre: "Producto 2",
@@ -59,7 +59,7 @@ class ProductoModel{
         )
     );
 
-    return Productos;
+    return productos;
   }
 
   static Future<List<ProductoModel>> getProductos(String url)async{
@@ -75,7 +75,7 @@ class ProductoModel{
             nombre: item["Nombre"].toString(),
             tipo: item["Tipo"].toString(),
             unidades: item["Unidades"],
-            ultimaModificacion: item["UltimaModificacion"].toString(),
+            ultimaModificacion: item["UltimaModificación"],
             cantidadPorUnidad: item["CantidadPorUnidad"],
             area: item["Area"].toString(),
             entrada: item["Entrada"],
