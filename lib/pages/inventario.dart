@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:inventarios/models/producto_model.dart';
+import 'package:inventarios/models/usuario_model.dart';
+import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/pages/producto.dart';
+import 'package:inventarios/services/local_storage.dart';
 
 enum Filtros { id, nombre, tipo, area }
 
 class Inventario extends StatefulWidget {
-  const Inventario({super.key});
+  final usuarioModel usuario;
+
+  const Inventario({super.key, required this.usuario});
 
   @override
   State<Inventario> createState() => _InventarioState();
@@ -21,6 +26,10 @@ class _InventarioState extends State<Inventario> {
 
   Future<void> _getProductos() async {
     productos = await ProductoModel.getProductos(url());
+  }
+
+  Future<void> datosExcel() async{
+
   }
 
   String url() {
@@ -94,6 +103,102 @@ class _InventarioState extends State<Inventario> {
     );
   }
 
+  Drawer drawer() {
+    return Drawer(
+      child: ListView(
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: Colors.grey),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Bienvenido, ", style: TextStyle(fontSize: 15)),
+                    Text(
+                      widget.usuario.nombre,
+                      style: TextStyle(fontSize: 30),
+                      maxLines: 1,
+                    ),
+                  ],
+                ),
+                Text(widget.usuario.puesto, style: TextStyle(fontSize: 20)),
+              ],
+            ),
+          ),
+          Column(
+            spacing: 15,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              TextButton(
+                onPressed: () {
+                  datosExcel();
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                  backgroundColor: Colors.black,
+                ),
+                child: Text(
+                  "Descargar reporte",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                  backgroundColor: Colors.black,
+                ),
+                child: Text(
+                  "Añadir un producto",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              TextButton(
+                onPressed: () {},
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                  backgroundColor: Colors.black,
+                ),
+                child: Text(
+                  "Añadir un producto",
+                  style: TextStyle(fontSize: 20, color: Colors.white),
+                ),
+              ),
+              TextButton(
+                onPressed: () async {
+                  await LocalStorage.preferencias.remove('usuario');
+                  await LocalStorage.preferencias.remove('puesto');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => Inicio()),
+                  );
+                },
+                style: FilledButton.styleFrom(
+                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                  backgroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    side: BorderSide(color: Colors.black, width: 5),
+                  ),
+                ),
+                child: Text(
+                  "Cerrar sesión",
+                  style: TextStyle(fontSize: 20, color: Colors.black),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
   AppBar appBar() {
     return AppBar(
       title: Text(
@@ -147,7 +252,9 @@ class _InventarioState extends State<Inventario> {
             },
             onTapOutside: (event) {
               busqueda = busquedaTexto.text;
-              _getProductos();
+              if (busqueda.isNotEmpty) {
+                _getProductos();
+              }
               FocusManager.instance.primaryFocus?.unfocus();
             },
             decoration: InputDecoration(
@@ -318,7 +425,10 @@ class _InventarioState extends State<Inventario> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => Producto(productoInfo: lista[index]),
+                  builder: (context) => Producto(
+                    productoInfo: lista[index],
+                    usuario: widget.usuario,
+                  ),
                 ),
               ),
             },
@@ -398,71 +508,6 @@ class _InventarioState extends State<Inventario> {
         }
         return Center(child: CircularProgressIndicator());
       },
-    );
-  }
-
-  Drawer drawer() {
-    return Drawer(
-      child: ListView(
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Colors.grey),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text("Nombre", style: TextStyle(fontSize: 30)),
-                Text("Puesto", style: TextStyle(fontSize: 20)),
-              ],
-            ),
-          ),
-          Column(
-            spacing: 15,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                  backgroundColor: Colors.black,
-                ),
-                child: Text(
-                  "Añadir un producto",
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                  backgroundColor: Colors.black,
-                ),
-                child: Text(
-                  "Añadir un producto",
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                style: FilledButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    side: BorderSide(color: Colors.black, width: 5),
-                  ),
-                ),
-                child: Text(
-                  "Añadir un producto",
-                  style: TextStyle(fontSize: 20, color: Colors.black),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
