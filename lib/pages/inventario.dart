@@ -1,17 +1,23 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/pages/producto.dart';
+import 'package:inventarios/pages/add_producto.dart';
 import 'package:inventarios/services/local_storage.dart';
+import 'package:excel/excel.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 enum Filtros { id, nombre, tipo, area }
 
 class Inventario extends StatefulWidget {
-  final usuarioModel usuario;
+  final UsuarioModel usuario;
+  final String busqueda;
 
-  const Inventario({super.key, required this.usuario});
+  const Inventario({super.key, required this.usuario, required this.busqueda});
 
   @override
   State<Inventario> createState() => _InventarioState();
@@ -19,24 +25,126 @@ class Inventario extends StatefulWidget {
 
 class _InventarioState extends State<Inventario> {
   static Filtros? seleccionFiltro;
-  static String busqueda = "";
-  static List<ProductoModel> productos = [];
   final busquedaTexto = TextEditingController();
+  static List<ProductoModel> productos = [];
   final focusBusqueda = FocusNode();
+  late bool valido;
+
+  @override
+  void initState() {
+    valido = false;
+    busquedaTexto.text = widget.busqueda;
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    //_getProductos();
+    super.dispose();
+  }
 
   Future<void> _getProductos() async {
     productos = await ProductoModel.getProductos(url());
   }
 
-  Future<void> datosExcel() async{
-
+  Future<void> datosExcel(BuildContext context) async {
+    var excel = Excel.createExcel();
+    Sheet sheetObject = excel['Inventario'];
+    List<String> headers = [
+      'id',
+      'Nombre',
+      'Tipo',
+      'Unidades',
+      'Area',
+      'Entrada',
+      'Salida',
+      'Perdida',
+      'UltimaModificación',
+    ];
+    for (int i = 0; i < headers.length; i++) {
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
+          .value = TextCellValue(
+        headers[i],
+      );
+    }
+    for (int i = 0; i < productos.length; i++) {
+      ProductoModel item = productos[i];
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 1))
+          .value = IntCellValue(
+        item.id,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 1))
+          .value = TextCellValue(
+        item.nombre,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1))
+          .value = TextCellValue(
+        item.tipo,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1))
+          .value = IntCellValue(
+        item.unidades,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1))
+          .value = TextCellValue(
+        item.area,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1))
+          .value = IntCellValue(
+        item.entrada,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1))
+          .value = IntCellValue(
+        item.salida,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1))
+          .value = IntCellValue(
+        item.perdida,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: i + 1))
+          .value = TextCellValue(
+        item.ultimaModificacion,
+      );
+    }
+    var status = await Permission.manageExternalStorage.request();
+    if (status.isDenied) {
+      await Permission.manageExternalStorage.request();
+    }
+    if (status.isPermanentlyDenied) {
+      openAppSettings();
+    }
+    if (status.isGranted) {
+      final path = '/storage/emulated/0/Download/Inventarios';
+      String fecha =
+          '${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}';
+      List<int>? fileBytes = excel.save();
+      if (fileBytes != null) {
+        File('$path/$fecha.xlsx')
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(fileBytes, flush: true);
+        //print('File saved at $path/$fecha.xlsx');
+        toast('Archivo guardado en: $path/$fecha.xlsx');
+      }
+    } else {
+      toast('Se aborto el proceso');
+    }
   }
 
   String url() {
-    if (busqueda.isEmpty) {
-      return "http://192.168.1.179:4000/almacen/${filtroTexto()}";
+    if (busquedaTexto.text.isEmpty) {
+      return "http://192.168.1.93:4000/almacen/${filtroTexto()}";
     } else {
-      return "http://192.168.1.179:4000/almacen/${filtroTexto()}/$busqueda";
+      return "http://192.168.1.93:4000/almacen/${filtroTexto()}/${busquedaTexto.text}";
     }
   }
 
@@ -62,16 +170,15 @@ class _InventarioState extends State<Inventario> {
     return filtro;
   }
 
-  @override
-  void initState() {
-    //_getProductos();
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    //_getProductos();
-    super.dispose();
+  void toast(String texto) {
+    Fluttertoast.showToast(
+      msg: texto,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.grey,
+      textColor: Colors.white,
+      fontSize: 15,
+    );
   }
 
   @override
@@ -84,17 +191,14 @@ class _InventarioState extends State<Inventario> {
         canPop: false,
         child: Builder(
           builder: (context) => Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               barraDeBusqueda(context),
               contenedorInfo(),
-              Column(
-                children: [
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 97,
-                    child: listaFutura(),
-                  ),
-                ],
+              SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height - 97,
+                child: listaFutura(),
               ),
             ],
           ),
@@ -109,6 +213,7 @@ class _InventarioState extends State<Inventario> {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(color: Colors.grey),
+            margin: EdgeInsets.zero,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -129,70 +234,76 @@ class _InventarioState extends State<Inventario> {
               ],
             ),
           ),
-          Column(
-            spacing: 15,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              TextButton(
-                onPressed: () {
-                  datosExcel();
-                },
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                  backgroundColor: Colors.black,
-                ),
-                child: Text(
-                  "Descargar reporte",
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                  backgroundColor: Colors.black,
-                ),
-                child: Text(
-                  "Añadir un producto",
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                ),
-              ),
-              TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                  backgroundColor: Colors.black,
-                ),
-                child: Text(
-                  "Añadir un producto",
-                  style: TextStyle(fontSize: 20, color: Colors.white),
-                ),
-              ),
-              TextButton(
-                onPressed: () async {
-                  await LocalStorage.preferencias.remove('usuario');
-                  await LocalStorage.preferencias.remove('puesto');
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => Inicio()),
-                  );
-                },
-                style: FilledButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    side: BorderSide(color: Colors.black, width: 5),
+          Container(
+            height: MediaQuery.of(context).size.height * .585,
+            decoration: BoxDecoration(color: Colors.white),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                TextButton(
+                  onPressed: () {
+                    if (valido) {
+                      datosExcel(context);
+                    } else {
+                      toast("Espera a que los datos carguen.");
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                    backgroundColor: Colors.black,
+                  ),
+                  child: Text(
+                    "Descargar reporte",
+                    style: TextStyle(fontSize: 20, color: Colors.white),
                   ),
                 ),
-                child: Text(
-                  "Cerrar sesión",
-                  style: TextStyle(fontSize: 20, color: Colors.black),
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Addproducto(
+                          usuario: widget.usuario,
+                          busqueda: busquedaTexto.text,
+                        ),
+                      ),
+                    );
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                    backgroundColor: Colors.black,
+                  ),
+                  child: Text(
+                    "Añadir un producto",
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  ),
                 ),
-              ),
-            ],
+                TextButton(
+                  onPressed: () async {
+                    await LocalStorage.preferencias.remove('usuario');
+                    await LocalStorage.preferencias.remove('puesto');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => Inicio()),
+                    );
+                  },
+                  style: FilledButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                    backgroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      side: BorderSide(color: Colors.black, width: 5),
+                    ),
+                  ),
+                  child: Text(
+                    "Cerrar sesión",
+                    style: TextStyle(fontSize: 20, color: Colors.black),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -243,16 +354,11 @@ class _InventarioState extends State<Inventario> {
           child: TextField(
             controller: busquedaTexto,
             focusNode: focusBusqueda,
-            onChanged: (event) {
-              busqueda = busquedaTexto.text;
-            },
             onSubmitted: (event) {
-              busqueda = busquedaTexto.text;
               _getProductos();
             },
             onTapOutside: (event) {
-              busqueda = busquedaTexto.text;
-              if (busqueda.isNotEmpty) {
+              if (busquedaTexto.text.isNotEmpty) {
                 _getProductos();
               }
               FocusManager.instance.primaryFocus?.unfocus();
@@ -311,7 +417,7 @@ class _InventarioState extends State<Inventario> {
   }
 
   IconButton botonBusqueda() {
-    if (busqueda.isEmpty) {
+    if (busquedaTexto.text.isEmpty) {
       return IconButton(
         onPressed: () {
           if (busquedaTexto.text.isEmpty) {
@@ -319,7 +425,6 @@ class _InventarioState extends State<Inventario> {
           } else {
             FocusManager.instance.primaryFocus?.unfocus();
             setState(() {
-              busqueda = busquedaTexto.text;
               _getProductos();
             });
           }
@@ -331,8 +436,7 @@ class _InventarioState extends State<Inventario> {
         onPressed: () {
           FocusManager.instance.primaryFocus?.unfocus();
           setState(() {
-            busquedaTexto.text = "";
-            busqueda = "";
+            busquedaTexto.clear();
           });
           _getProductos();
         },
@@ -428,6 +532,7 @@ class _InventarioState extends State<Inventario> {
                   builder: (context) => Producto(
                     productoInfo: lista[index],
                     usuario: widget.usuario,
+                    busqueda: busquedaTexto.text,
                   ),
                 ),
               ),
@@ -494,6 +599,7 @@ class _InventarioState extends State<Inventario> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
+            valido = true;
             productos = snapshot.data;
             if (productos.isNotEmpty) {
               return listaPrincipal(productos);
@@ -501,7 +607,7 @@ class _InventarioState extends State<Inventario> {
               return Center(child: Text("No hay coincidencias."));
             }
           } else {
-            if (busqueda.isNotEmpty) {
+            if (busquedaTexto.text.isNotEmpty) {
               return Center(child: Text("No hay coincidencias."));
             }
           }

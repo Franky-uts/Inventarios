@@ -91,4 +91,24 @@ class ProductoModel {
     }
     return productosFuture;
   }
+
+  static Future<List> getTipos() async {
+    late List tipos = [];
+    var res = await http.get(Uri.parse('http://192.168.1.93:4000/tipos'));
+    final datos = json.decode(res.body);
+    for (var item in datos) {
+      tipos.add(item['Nombre']);
+    }
+    return tipos;
+  }
+
+  static Future<List> getAreas() async {
+    late List areas = [];
+    var res = await http.get(Uri.parse('http://192.168.1.93:4000/areas'));
+    final datos = json.decode(res.body);
+    for (var item in datos) {
+      areas.add(item['Nombre']);
+    }
+    return areas;
+  }
 }

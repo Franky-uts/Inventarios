@@ -27,10 +27,11 @@ class MyApp extends StatelessWidget {
   Widget ruta() {
     if (LocalStorage.preferencias.getString('usuario') != null) {
       return Inventario(
-        usuario: usuarioModel(
+        usuario: UsuarioModel(
           nombre: LocalStorage.preferencias.getString('usuario').toString(),
           puesto: LocalStorage.preferencias.getString('puesto').toString(),
         ),
+        busqueda: "",
       );
     } else {
       return Inicio();

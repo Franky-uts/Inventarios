@@ -9,7 +9,8 @@ import 'package:inventarios/pages/inventario.dart';
 
 class Producto extends StatefulWidget {
   final ProductoModel productoInfo;
-  final usuarioModel usuario;
+  final UsuarioModel usuario;
+  final String busqueda;
 
   //final String url;
 
@@ -17,6 +18,7 @@ class Producto extends StatefulWidget {
     super.key,
     required this.productoInfo,
     required this.usuario,
+    required this.busqueda,
   });
 
   @override
@@ -44,13 +46,17 @@ class _ProductoState extends State<Producto> {
   @override
   void dispose() {
     timer?.cancel();
+    colorCampo1;
+    colorCampo2;
+    colorCampo3;
+    carga;
     super.dispose();
   }
 
   Future guardarDatos(String columna, int dato) async {
     final res = await http.put(
       Uri.parse(
-        "http://192.168.1.179:4000/almacen/${widget.productoInfo.id}/$columna",
+        "http://192.168.1.93:4000/almacen/${widget.productoInfo.id}/$columna",
       ),
       headers: {
         "Accept": "application/json",
@@ -77,7 +83,7 @@ class _ProductoState extends State<Producto> {
           await guardarDatos("Unidades", unidades);
           await guardarDatos("Entrada", cajasEntrantes);
           setState(() {
-            carga=!carga;
+            carga = !carga;
             colorCampo1 = 0xFF000000;
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.entrada = cajasEntrantes;
@@ -96,7 +102,7 @@ class _ProductoState extends State<Producto> {
           await guardarDatos("Unidades", unidades);
           await guardarDatos("Salida", cajasSalida);
           setState(() {
-            carga=!carga;
+            carga = !carga;
             colorCampo2 = 0xFF000000;
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.salida = cajasSalida;
@@ -111,7 +117,7 @@ class _ProductoState extends State<Producto> {
         if (productosPerdido > widget.productoInfo.perdida) {
           await guardarDatos("Perdida", productosPerdido);
           setState(() {
-            carga=!carga;
+            carga = !carga;
             colorCampo3 = 0xFF000000;
             widget.productoInfo.perdida = productosPerdido;
           });
@@ -142,7 +148,7 @@ class _ProductoState extends State<Producto> {
           setState(() {
             cajasEntrantes += valor;
             if (cajasEntrantes != widget.productoInfo.entrada) {
-              colorCampo1 = 0xFF1B5E20;
+              colorCampo1 = 0xFF00be00;
             } else {
               colorCampo1 = 0xFF000000;
             }
@@ -150,11 +156,11 @@ class _ProductoState extends State<Producto> {
         } else {
           if (cajasEntrantes + valor >= 0) {
             setState(() {
-              colorCampo1 = 0xFFB71C1C;
+              colorCampo1 = 0xFFFF0000;
             });
           } else {
             setState(() {
-              colorCampo1 = 0xFFB71C1C;
+              colorCampo1 = 0xFFFF0000;
             });
           }
         }
@@ -167,19 +173,19 @@ class _ProductoState extends State<Producto> {
               setState(() {
                 cajasSalida += valor;
                 if (cajasSalida != widget.productoInfo.salida) {
-                  colorCampo2 = 0xFF1B5E20;
+                  colorCampo2 = 0xFF00be00;
                 } else {
                   colorCampo2 = 0xFF000000;
                 }
               });
             } else {
               setState(() {
-                colorCampo2 = 0xFFB71C1C;
+                colorCampo2 = 0xFFFF0000;
               });
             }
           } else {
             setState(() {
-              colorCampo2 = 0xFFB71C1C;
+              colorCampo2 = 0xFFFF0000;
             });
           }
         } else {
@@ -191,7 +197,7 @@ class _ProductoState extends State<Producto> {
           setState(() {
             productosPerdido += valor;
             if (productosPerdido != widget.productoInfo.perdida) {
-              colorCampo3 = 0xFF1B5E20;
+              colorCampo3 = 0xFF00be00;
             } else {
               colorCampo3 = 0xFF000000;
             }
@@ -199,11 +205,11 @@ class _ProductoState extends State<Producto> {
         } else {
           if (productosPerdido + valor >= 0) {
             setState(() {
-              colorCampo3 = 0xFFB71C1C;
+              colorCampo3 = 0xFFFF0000;
             });
           } else {
             setState(() {
-              colorCampo3 = 0xFFB71C1C;
+              colorCampo3 = 0xFFFF0000;
             });
           }
         }
@@ -220,11 +226,11 @@ class _ProductoState extends State<Producto> {
       floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          if(carga==false){
+          if (carga == false) {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Inventario(usuario: widget.usuario),
+                builder: (context) => Inventario(usuario: widget.usuario, busqueda: widget.busqueda),
               ),
             );
           }

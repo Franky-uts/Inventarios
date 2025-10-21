@@ -15,7 +15,7 @@ class _InicioState extends State<Inicio> {
   final usuarioContr = TextEditingController();
   final contr = TextEditingController();
   late int colorUsu, colorCont;
-  late usuarioModel usuarioMod;
+  late UsuarioModel usuarioMod;
   late bool carga;
 
   @override
@@ -110,85 +110,82 @@ class _InicioState extends State<Inicio> {
                 visible: carga,
                 child: TextButton.icon(
                   onPressed: () async => {
-                    if (usuarioContr.text.isNotEmpty)
+                    setState(() {
+                      colorCont = 0xFFFFFFFF;
+                      colorUsu = 0xFFFFFFFF;
+                    }),
+                    if (usuarioContr.text.isNotEmpty && contr.text.isNotEmpty)
                       {
-                        if (contr.text.isNotEmpty)
+                        setState(() {
+                          carga = !carga;
+                        }),
+                        usuarioMod = await UsuarioModel.getUsuario(
+                          usuarioContr.text,
+                          contr.text,
+                        ),
+                        if (usuarioMod.nombre != "error")
                           {
-                            setState(() {
-                              carga = !carga;
-                            }),
-                            usuarioMod = await usuarioModel.getUsuario(
-                              usuarioContr.text,
-                              contr.text,
+                            await LocalStorage.preferencias.setString(
+                              'usuario',
+                              usuarioMod.nombre,
                             ),
-                            if (usuarioMod.nombre != "error")
-                              {
-                                await LocalStorage.preferencias.setString(
-                                  'usuario',
-                                  usuarioMod.nombre,
-                                ),
-                                await LocalStorage.preferencias.setString(
-                                  'puesto',
-                                  usuarioMod.puesto,
-                                ),
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        Inventario(usuario: usuarioMod),
-                                  ),
-                                ),
-                              }
-                            else
-                              {
-                                if (usuarioMod.puesto == "El usuario no existe")
-                                  {
-                                    setState(() {
-                                      carga = !carga;
-                                      colorUsu = 0xFFFF0000;
-                                      colorCont = 0xFFFFFFFF;
-                                    }),
-                                  }
-                                else if (usuarioMod.puesto ==
-                                    "Contraseña incorrecta")
-                                  {
-                                    setState(() {
-                                      carga = !carga;
-                                      colorUsu = 0xFFFFFFFF;
-                                      colorCont = 0xFFFF0000;
-                                    }),
-                                  }
-                                else
-                                  {
-                                    Fluttertoast.showToast(
-                                      msg: usuarioMod.puesto,
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.BOTTOM,
-                                      backgroundColor: Colors.grey,
-                                      textColor: Colors.white,
-                                      fontSize: 15,
-                                    ),
-                                    setState(() {
-                                      carga = !carga;
-                                      colorUsu = 0xFFFFFFFF;
-                                      colorCont = 0xFFFFFFFF;
-                                    }),
-                                  },
-                              },
+                            await LocalStorage.preferencias.setString(
+                              'puesto',
+                              usuarioMod.puesto,
+                            ),
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    Inventario(usuario: usuarioMod, busqueda: "",),
+                              ),
+                            ),
                           }
                         else
                           {
-                            setState(() {
-                              colorCont = 0xFFFF0000;
-                              colorUsu = 0xFFFFFFFF;
-                            }),
+                            if (usuarioMod.puesto == "El usuario no existe")
+                              {
+                                setState(() {
+                                  carga = !carga;
+                                  colorUsu = 0xFFFF0000;
+                                }),
+                              }
+                            else if (usuarioMod.puesto ==
+                                "Contraseña incorrecta")
+                              {
+                                setState(() {
+                                  carga = !carga;
+                                  colorCont = 0xFFFF0000;
+                                }),
+                              }
+                            else
+                              {
+                                Fluttertoast.showToast(
+                                  msg: usuarioMod.puesto,
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  backgroundColor: Colors.grey,
+                                  textColor: Colors.white,
+                                  fontSize: 15,
+                                ),
+                                setState(() {
+                                  carga = !carga;
+                                  colorUsu = 0xFFFFFFFF;
+                                  colorCont = 0xFFFFFFFF;
+                                }),
+                              },
                           },
-                      }
-                    else
+                      },
+                    if (usuarioContr.text.isEmpty)
                       {
                         setState(() {
-                          colorCont = 0xFFFFFFFF;
                           colorUsu = 0xFFFF0000;
+                        }),
+                      },
+                    if (contr.text.isEmpty)
+                      {
+                        setState(() {
+                          colorCont = 0xFFFF0000;
                         }),
                       },
                   },
