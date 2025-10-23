@@ -27,12 +27,16 @@ class _InventarioState extends State<Inventario> {
   static Filtros? seleccionFiltro;
   final busquedaTexto = TextEditingController();
   static List<ProductoModel> productos = [];
+  static List tipos = [];
+  static List areas = [];
   final focusBusqueda = FocusNode();
   late bool valido;
+  late bool carga;
 
   @override
   void initState() {
     valido = false;
+    carga = false;
     busquedaTexto.text = widget.busqueda;
     super.initState();
   }
@@ -45,6 +49,38 @@ class _InventarioState extends State<Inventario> {
 
   Future<void> _getProductos() async {
     productos = await ProductoModel.getProductos(url());
+  }
+
+  Future<void> _getListas() async {
+    setState(() {
+      carga = true;
+    });
+    Navigator.of(context).pop();
+    tipos = await ProductoModel.getTipos();
+    areas = await ProductoModel.getAreas();
+    if (tipos[0].toString().split(": ")[0] == "Error") {
+      toast(tipos[0].toString().split(": ")[1]);
+      setState(() {
+        carga = false;
+      });
+    } else if (areas[0].toString().split(": ")[0] == "Error") {
+      toast(areas[0].toString().split(": ")[1]);
+      setState(() {
+        carga = false;
+      });
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Addproducto(
+            listaArea: areas,
+            listaTipo: tipos,
+            usuario: widget.usuario,
+            busqueda: busquedaTexto.text,
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> datosExcel(BuildContext context) async {
@@ -189,19 +225,30 @@ class _InventarioState extends State<Inventario> {
       backgroundColor: Colors.white,
       body: PopScope(
         canPop: false,
-        child: Builder(
-          builder: (context) => Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              barraDeBusqueda(context),
-              contenedorInfo(),
-              SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height - 97,
-                child: listaFutura(),
+        child: Stack(
+          children: [
+            Builder(
+              builder: (context) => Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  barraDeBusqueda(context),
+                  contenedorInfo(),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height - 97,
+                    child: listaFutura(),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+            Visibility(
+              visible: carga,
+              child: Container(
+                decoration: BoxDecoration(color: Colors.black45),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -260,16 +307,8 @@ class _InventarioState extends State<Inventario> {
                   ),
                 ),
                 TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Addproducto(
-                          usuario: widget.usuario,
-                          busqueda: busquedaTexto.text,
-                        ),
-                      ),
-                    );
+                  onPressed: () async {
+                    await _getListas();
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),

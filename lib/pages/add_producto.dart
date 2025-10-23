@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
@@ -6,36 +7,46 @@ import 'package:inventarios/pages/inventario.dart';
 class Addproducto extends StatefulWidget {
   final UsuarioModel usuario;
   final String busqueda;
+  final List listaArea;
+  final List listaTipo;
 
-  const Addproducto({super.key, required this.usuario, required this.busqueda});
+  const Addproducto({
+    super.key,
+    required this.usuario,
+    required this.busqueda,
+    required this.listaArea,
+    required this.listaTipo,
+  });
 
   @override
   State<Addproducto> createState() => _AddproductoState();
 }
 
 class _AddproductoState extends State<Addproducto> {
-  late List<String> lista = <String>['One', 'Two', 'Three', 'Four'];
+  late List<String> listaArea = widget.listaArea
+      .map((item) => item as String)
+      .toList();
+  late List<String> listaTipo = widget.listaTipo
+      .map((item) => item as String)
+      .toList();
+  late String valorArea;
+  late String valorTipo;
+  late String respuesta;
   late bool carga;
   final nombreControl = TextEditingController(),
-      tipoControl = TextEditingController(),
-      areaControl = TextEditingController(),
       cantidadControl = TextEditingController();
   late int colorNombre = 0xFFFFFFFFFF,
       colorTipo = 0xFFFFFFFF,
       colorArea = 0xFFFFFFFFFF,
       colorCantidad = 0xFFFFFFFFFF;
 
-  void cambioSeleccionTipo(TextEditingController control, String valor) {
-    control.text = valor;
-  }
-
-  void cambioSeleccionArea(TextEditingController control, String valor) {
-    control.text = valor;
-  }
-
   @override
   void initState() {
     carga = false;
+    listaTipo.add("Tipo");
+    listaArea.add("Área");
+    valorArea = listaArea.last;
+    valorTipo = listaTipo.last;
     super.initState();
   }
 
@@ -78,7 +89,7 @@ class _AddproductoState extends State<Addproducto> {
             Container(
               alignment: Alignment.center,
               child: Column(
-                spacing: 25,
+                spacing: 20,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -97,20 +108,129 @@ class _AddproductoState extends State<Addproducto> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      campoDeSeleccion(
-                        tipoControl,
-                        colorTipo,
-                        "Tipo",
-                        Icon(Icons.settings_suggest, color: Colors.white),
+                      Column(
+                        children: [
+                          Text(
+                            "Tipo",
+                            style: TextStyle(color: Colors.black, fontSize: 15),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * (.365),
+                            margin: EdgeInsets.symmetric(horizontal: 10),
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.black, width: 1),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.settings_suggest,
+                                  color: Colors.black,
+                                ),
+                                Container(
+                                  padding: EdgeInsetsGeometry.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  width:
+                                      MediaQuery.of(context).size.width *
+                                      (.276),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton(
+                                      elevation: 1,
+                                      alignment: AlignmentGeometry.center,
+                                      value: valorTipo,
+                                      icon: Icon(
+                                        Icons.arrow_drop_down,
+                                        color: Colors.white,
+                                      ),
+                                      dropdownColor: Colors.white,
+                                      items: listaTipo.map<DropdownMenuItem>((
+                                        String value,
+                                      ) {
+                                        return DropdownMenuItem(
+                                          value: value,
+                                          child: Text(value),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          valorTipo = value;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.warning_rounded,
+                                  color: Color(colorTipo),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      campoDeSeleccion2(
-                        areaControl,
-                        colorArea,
-                        "Área",
-                        Icon(
-                          Icons.door_front_door_rounded,
-                          color: Colors.white,
-                        ),
+                      Column(
+                        children: [
+                          Text(
+                            "Área",
+                            style: TextStyle(color: Colors.black, fontSize: 15),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * (.365),
+                            margin: EdgeInsets.symmetric(horizontal: 10),
+                            padding: EdgeInsets.symmetric(horizontal: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.black, width: 1),
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.door_front_door_rounded,
+                                  color: Colors.black,
+                                ),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 10),
+                                  width:
+                                      MediaQuery.of(context).size.width *
+                                      (.276),
+                                  child: DropdownButtonHideUnderline(
+                                    child: DropdownButton(
+                                      elevation: 1,
+                                      alignment: AlignmentGeometry.center,
+                                      value: valorArea,
+                                      icon: Icon(
+                                        Icons.arrow_drop_down,
+                                        color: Colors.white,
+                                      ),
+                                      dropdownColor: Colors.white,
+                                      items: listaArea.map<DropdownMenuItem>((
+                                        String value,
+                                      ) {
+                                        return DropdownMenuItem(
+                                          value: value,
+                                          child: Text(value),
+                                        );
+                                      }).toList(),
+                                      onChanged: (value) {
+                                        setState(() {
+                                          valorArea = value;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                Icon(
+                                  Icons.warning_rounded,
+                                  color: Color(colorArea),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -121,75 +241,81 @@ class _AddproductoState extends State<Addproducto> {
                         colorTipo = 0xFFFFFFFF;
                         colorNombre = 0xFFFFFFFF;
                         colorArea = 0xFFFFFFFF;
-                      }) /*
-                    if (usuarioContr.text.isNotEmpty &&
-                        contr.text.isNotEmpty){
-                      setState(() {
-                        carga = !carga;
                       }),
-                      usuarioMod = await UsuarioModel.getUsuario(
-                        usuarioContr.text,
-                        contr.text,
-                      ),
-                      if (usuarioMod.nombre != "error"){
-                          await LocalStorage.preferencias.setString(
-                            'usuario',
-                            usuarioMod.nombre,
+                      if (nombreControl.text.isEmpty)
+                        {
+                          setState(() {
+                            colorNombre = 0xFFFF0000;
+                          }),
+                        },
+                      if (cantidadControl.text.isEmpty)
+                        {
+                          setState(() {
+                            colorCantidad = 0xFFFF0000;
+                          }),
+                        },
+                      if (valorArea == "Área")
+                        {
+                          setState(() {
+                            colorArea = 0xFFFF0000;
+                          }),
+                        },
+                      if (valorTipo == "Tipo")
+                        {
+                          setState(() {
+                            colorTipo = 0xFFFF0000;
+                          }),
+                        },
+                      if (nombreControl.text.isNotEmpty &&
+                          cantidadControl.text.isNotEmpty &&
+                          valorTipo != "Tipo" &&
+                          valorArea != "Área")
+                        {
+                          setState(() {
+                            carga = !carga;
+                          }),
+                          respuesta = await ProductoModel.addProducto(
+                            nombreControl.text,
+                            int.parse(cantidadControl.text),
+                            valorTipo,
+                            valorArea,
+                            widget.usuario.nombre,
                           ),
-                          await LocalStorage.preferencias.setString(
-                            'puesto',
-                            usuarioMod.puesto,
-                          ),
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  Inventario(usuario: usuarioMod),
-                            ),
-                          ),
-                        }
-                      else {
-                          if (usuarioMod.puesto == "El usuario no existe"){
+                          if (respuesta.toString().split(": ")[0] != "Error")
+                            {
+                              setState(() {
+                                nombreControl.text = "";
+                                cantidadControl.text = "";
+                                valorTipo = listaTipo.last;
+                                valorArea = listaArea.last;
+                              }),
+                              Fluttertoast.showToast(
+                                msg: "Se guardo $respuesta correctamente",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                backgroundColor: Colors.grey,
+                                textColor: Colors.white,
+                                fontSize: 15,
+                              ),
                               setState(() {
                                 carga = !carga;
-                                colorUsu = 0xFFFF0000;
                               }),
                             }
                           else
-                            if (usuarioMod.puesto ==
-                                "Contraseña incorrecta"){
-                                setState(() {
-                                  carga = !carga;
-                                  colorCont = 0xFFFF0000;
-                                }),
-                              }
-                            else {
-                                Fluttertoast.showToast(
-                                  msg: usuarioMod.puesto,
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  backgroundColor: Colors.grey,
-                                  textColor: Colors.white,
-                                  fontSize: 15,
-                                ),
-                                setState(() {
-                                  carga = !carga;
-                                  colorUsu = 0xFFFFFFFF;
-                                  colorCont = 0xFFFFFFFF;
-                                }),
-                              },
+                            {
+                              setState(() {
+                                carga = !carga;
+                              }),
+                              Fluttertoast.showToast(
+                                msg: respuesta.toString().split(": ")[1],
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                backgroundColor: Colors.grey,
+                                textColor: Colors.white,
+                                fontSize: 15,
+                              ),
+                            },
                         },
-                    },
-                    if (usuarioContr.text.isEmpty){
-                      setState(() {
-                        colorUsu = 0xFFFF0000;
-                      }),
-                    },
-                    if(contr.text.isEmpty){
-                      setState(() {
-                        colorCont = 0xFFFF0000;
-                      }),
-                    }*/,
                     },
                     style: IconButton.styleFrom(
                       padding: EdgeInsets.all(15),
@@ -198,9 +324,9 @@ class _AddproductoState extends State<Addproducto> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    icon: Icon(Icons.login_rounded, color: Colors.white),
+                    icon: Icon(Icons.add_circle_rounded, color: Colors.white),
                     label: Text(
-                      "Ingresar",
+                      "Añadir",
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -303,58 +429,12 @@ class _AddproductoState extends State<Addproducto> {
     );
   }
 
-  Container campoDeSeleccion2(
-    TextEditingController control,
-    int color,
-    String texto,
-    Icon icono,
-  ) {
-    return Container(
-      width: MediaQuery.of(context).size.width * (.365),
-      margin: EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.black, width: 1),
-        borderRadius: BorderRadius.circular(30),
-      ),
-
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton(
-          elevation: 16,
-          dropdownColor: Colors.white,
-          icon: icono,
-          items: lista.map<DropdownMenuItem>((String value) {
-            return DropdownMenuItem(value: value, child: Text(value));
-          }).toList(),
-          onChanged: (value) {
-            control.text = value;
-          },
-        ),
-      ),
-    );
-  }
-
-  /*PopupMenuButton popUpButton(Icon icono, TextEditingController control) {
-    return PopupMenuButton(
-      icon: icono,
-      itemBuilder: (context){
-        return <PopupMenuEntry>[
-          for(int i = 0;i<lista.length; i++){
-            PopupMenuItem(
-              value: "SampleItem.itemThree",
-              child: Text('Item 3'),
-            )
-          },
-        ];
-      }
-    );
-  }*/
-
   DropdownButton dropDownOpciones(Icon icono, TextEditingController control) {
     return DropdownButton(
       elevation: 16,
       dropdownColor: Colors.white,
       icon: icono,
-      items: lista.map<DropdownMenuItem>((String value) {
+      items: listaArea.map<DropdownMenuItem>((String value) {
         return DropdownMenuItem(value: value, child: Text(value));
       }).toList(),
       onChanged: (value) {

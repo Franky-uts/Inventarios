@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -92,22 +95,84 @@ class ProductoModel {
     return productosFuture;
   }
 
+  static Future<String> addProducto(String nombre, int cantidad,
+      String tipo, String area, String usuario) async {
+    late String productoFuture;
+    try {
+      final res = await http.post(
+        Uri.parse(
+          "http://192.168.1.93:4000/almacen/",
+        ),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+        body: jsonEncode({
+          'nombre': nombre,
+          'cantidad': cantidad,
+          'tipo': tipo,
+          'area': area,
+          'usuario': usuario
+        }),
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          productoFuture = item["Nombre"];
+        }
+      } else {
+        productoFuture = res.body.toString();
+      }
+    }on TimeoutException catch(e){
+      productoFuture = "Error: ${e.message.toString()}";
+    }on SocketException catch(e){
+      productoFuture = "Error: ${e.message.toString()}";
+    } on Error catch(e){
+      productoFuture = "Error: ${e.toString()}";
+    }
+    return productoFuture;
+  }
+
   static Future<List> getTipos() async {
     late List tipos = [];
-    var res = await http.get(Uri.parse('http://192.168.1.93:4000/tipos'));
-    final datos = json.decode(res.body);
-    for (var item in datos) {
-      tipos.add(item['Nombre']);
+    try {
+      var res = await http.get(Uri.parse('http://192.168.1.93:4000/tipos'));
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          tipos.add(item['Nombre']);
+        }
+      } else {
+        tipos.add(res.body);
+      }
+    } on TimeoutException catch (e) {
+      tipos.add("Error: ${e.message.toString()}");
+    } on SocketException catch (e) {
+      tipos.add("Error: ${e.message.toString()}");
+    } on Error catch (e) {
+      tipos.add("Error: ${e.toString()}");
     }
     return tipos;
   }
 
   static Future<List> getAreas() async {
     late List areas = [];
-    var res = await http.get(Uri.parse('http://192.168.1.93:4000/areas'));
-    final datos = json.decode(res.body);
-    for (var item in datos) {
-      areas.add(item['Nombre']);
+    try {
+      var res = await http.get(Uri.parse('http://192.168.1.93:4000/areas'));
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          areas.add(item['Nombre']);
+        }
+      } else {
+        areas.add(res.body);
+      }
+    } on TimeoutException catch (e) {
+      areas.add("Error: ${e.message.toString()}");
+    } on SocketException catch (e) {
+      areas.add("Error: ${e.message.toString()}");
+    } on Error catch (e) {
+      areas.add("Error: ${e.toString()}");
     }
     return areas;
   }
