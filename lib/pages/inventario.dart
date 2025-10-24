@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
@@ -32,18 +33,19 @@ class _InventarioState extends State<Inventario> {
   final focusBusqueda = FocusNode();
   late bool valido;
   late bool carga;
+  late bool ventanaConf;
 
   @override
   void initState() {
     valido = false;
     carga = false;
+    ventanaConf = false;
     busquedaTexto.text = widget.busqueda;
     super.initState();
   }
 
   @override
   void dispose() {
-    //_getProductos();
     super.dispose();
   }
 
@@ -168,7 +170,6 @@ class _InventarioState extends State<Inventario> {
         File('$path/$fecha.xlsx')
           ..createSync(recursive: true)
           ..writeAsBytesSync(fileBytes, flush: true);
-        //print('File saved at $path/$fecha.xlsx');
         toast('Archivo guardado en: $path/$fecha.xlsx');
       }
     } else {
@@ -178,9 +179,9 @@ class _InventarioState extends State<Inventario> {
 
   String url() {
     if (busquedaTexto.text.isEmpty) {
-      return "http://192.168.1.93:4000/almacen/${filtroTexto()}";
+      return "http://192.168.1.93:4000/almacen/${filtroTexto()}/${widget.usuario.locacion}";
     } else {
-      return "http://192.168.1.93:4000/almacen/${filtroTexto()}/${busquedaTexto.text}";
+      return "http://192.168.1.93:4000/almacen/${filtroTexto()}/${widget.usuario.locacion}/${busquedaTexto.text}";
     }
   }
 
@@ -248,6 +249,80 @@ class _InventarioState extends State<Inventario> {
                 child: Center(child: CircularProgressIndicator()),
               ),
             ),
+            Visibility(
+              visible: ventanaConf,
+              child: Container(
+                padding: EdgeInsets.all(90),
+                decoration: BoxDecoration(color: Colors.black38),
+                child: Center(
+                  child: Card(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 10,
+                      children: [
+                        Text(
+                          "¿Seguro quieres poner todas las entradas, salidas y perdidas en 0?",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Row(
+                          spacing: 10,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            OutlinedButton(
+                              onPressed: () {
+                                setState(() {
+                                  ventanaConf = false;
+                                });
+                              },
+                              child: Text("No", style: TextStyle(fontSize: 20)),
+                            ),
+                            OutlinedButton(
+                              onPressed: () async {
+                                setState(() {
+                                  ventanaConf = false;
+                                });
+                                try {
+                                  final res = await http.put(
+                                    Uri.parse(
+                                      "http://192.168.1.93:4000/almacen/reiniciarMovimientos",
+                                    ),
+                                    headers: {
+                                      "Accept": "application/json",
+                                      "content-type":
+                                          "application/json; charset=UTF-8",
+                                    },
+                                  );
+                                  if (res.statusCode == 200) {
+                                    toast(
+                                      "Cambio a exitoso.",
+                                    );
+                                  } else {
+                                    toast("${res.reasonPhrase}");
+                                  }
+                                } on TimeoutException catch (e) {
+                                  toast("Error: ${e.message.toString()}");
+                                } on SocketException catch (e) {
+                                  toast("Error: ${e.message.toString()}");
+                                } on Error catch (e) {
+                                  toast("Error: ${e.toString()}");
+                                }
+                              },
+                              child: Text("Si", style: TextStyle(fontSize: 20)),
+                            ),
+                            SizedBox(width: 10),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -289,7 +364,7 @@ class _InventarioState extends State<Inventario> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               mainAxisSize: MainAxisSize.max,
               children: [
-                TextButton(
+                TextButton.icon(
                   onPressed: () {
                     if (valido) {
                       datosExcel(context);
@@ -301,12 +376,42 @@ class _InventarioState extends State<Inventario> {
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
                     backgroundColor: Colors.black,
                   ),
-                  child: Text(
+                  icon: Icon(
+                    Icons.download_rounded,
+                    color: Colors.white,
+                    size: 25,
+                  ),
+                  label: Text(
                     "Descargar reporte",
                     style: TextStyle(fontSize: 20, color: Colors.white),
                   ),
                 ),
-                TextButton(
+                TextButton.icon(
+                  onPressed: () {
+                    if (valido) {
+                      setState(() {
+                        ventanaConf = true;
+                      });
+                      Navigator.of(context).pop();
+                    } else {
+                      toast("Espera a que los datos carguen.");
+                    }
+                  },
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                    backgroundColor: Colors.black,
+                  ),
+                  icon: Icon(
+                    Icons.refresh_rounded,
+                    color: Colors.white,
+                    size: 25,
+                  ),
+                  label: Text(
+                    "Reiniciar movimientos",
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  ),
+                ),
+                TextButton.icon(
                   onPressed: () async {
                     await _getListas();
                   },
@@ -314,15 +419,21 @@ class _InventarioState extends State<Inventario> {
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
                     backgroundColor: Colors.black,
                   ),
-                  child: Text(
+                  icon: Icon(
+                    Icons.edit_note_rounded,
+                    color: Colors.white,
+                    size: 25,
+                  ),
+                  label: Text(
                     "Añadir un producto",
                     style: TextStyle(fontSize: 20, color: Colors.white),
                   ),
                 ),
-                TextButton(
+                TextButton.icon(
                   onPressed: () async {
                     await LocalStorage.preferencias.remove('usuario');
                     await LocalStorage.preferencias.remove('puesto');
+                    await LocalStorage.preferencias.remove('locación');
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => Inicio()),
@@ -336,7 +447,12 @@ class _InventarioState extends State<Inventario> {
                       side: BorderSide(color: Colors.black, width: 5),
                     ),
                   ),
-                  child: Text(
+                  icon: Icon(
+                    Icons.logout_rounded,
+                    color: Colors.black,
+                    size: 25,
+                  ),
+                  label: Text(
                     "Cerrar sesión",
                     style: TextStyle(fontSize: 20, color: Colors.black),
                   ),
@@ -641,10 +757,22 @@ class _InventarioState extends State<Inventario> {
             valido = true;
             productos = snapshot.data;
             if (productos.isNotEmpty) {
-              return listaPrincipal(productos);
+              if (productos[0].nombre == "Error") {
+                return Center(child: Text(productos[0].tipo));
+              } else {
+                return listaPrincipal(productos);
+              }
             } else {
-              return Center(child: Text("No hay coincidencias."));
+              return Center(child: Text("No hay productos registrados."));
             }
+          } else if (snapshot.hasError) {
+            valido = false;
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [Text("Error:"), Text(snapshot.error.toString())],
+              ),
+            );
           } else {
             if (busquedaTexto.text.isNotEmpty) {
               return Center(child: Text("No hay coincidencias."));

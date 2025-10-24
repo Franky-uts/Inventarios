@@ -133,11 +133,17 @@ class _InicioState extends State<Inicio> {
                               'puesto',
                               usuarioMod.puesto,
                             ),
+                            await LocalStorage.preferencias.setString(
+                              'locación',
+                              usuarioMod.locacion,
+                            ),
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    Inventario(usuario: usuarioMod, busqueda: "",),
+                                builder: (context) => Inventario(
+                                  usuario: usuarioMod,
+                                  busqueda: "",
+                                ),
                               ),
                             ),
                           }

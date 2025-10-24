@@ -230,7 +230,10 @@ class _ProductoState extends State<Producto> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Inventario(usuario: widget.usuario, busqueda: widget.busqueda),
+                builder: (context) => Inventario(
+                  usuario: widget.usuario,
+                  busqueda: widget.busqueda,
+                ),
               ),
             );
           }

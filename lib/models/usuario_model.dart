@@ -7,17 +7,26 @@ import 'dart:convert';
 class UsuarioModel {
   String nombre;
   String puesto;
+  String locacion;
 
-  UsuarioModel({required this.nombre, required this.puesto});
+  UsuarioModel({
+    required this.nombre,
+    required this.puesto,
+    required this.locacion,
+  });
 
   static UsuarioModel usuarioProvisional() {
-    UsuarioModel usuario = UsuarioModel(nombre: "Usuario", puesto: "Encargado");
+    UsuarioModel usuario = UsuarioModel(
+      nombre: "Usuario",
+      puesto: "Encargado",
+      locacion: "almacen",
+    );
     return usuario;
   }
 
   static Future<UsuarioModel> getUsuario(String usuario, String contr) async {
     late UsuarioModel usuarioFuture;
-    try{
+    try {
       final res = await http.get(
         Uri.parse("http://192.168.1.93:4000/usuarios/$usuario/$contr"),
       );
@@ -26,19 +35,36 @@ class UsuarioModel {
         usuarioFuture = UsuarioModel(
           nombre: datos[0]["Nombre"],
           puesto: datos[0]["Puesto"],
+          locacion: datos[0]["Locacion"],
         );
       } else {
-        usuarioFuture = UsuarioModel(nombre: "error", puesto: res.body);
+        usuarioFuture = UsuarioModel(
+          nombre: "error",
+          puesto: res.body,
+          locacion: res.body,
+        );
       }
-    }on TimeoutException catch(e){
+    } on TimeoutException catch (e) {
       //print(e.message.toString());
-      usuarioFuture = UsuarioModel(nombre: "error", puesto: e.message.toString());
-    }on SocketException catch(e){
+      usuarioFuture = UsuarioModel(
+        nombre: "error",
+        puesto: e.message.toString(),
+        locacion: e.message.toString(),
+      );
+    } on SocketException catch (e) {
       //print(e.message.toString());
-      usuarioFuture = UsuarioModel(nombre: "error", puesto: e.message.toString());
-    } on Error catch(e){
+      usuarioFuture = UsuarioModel(
+        nombre: "error",
+        puesto: e.message.toString(),
+        locacion: e.message.toString(),
+      );
+    } on Error catch (e) {
       //print(e.toString());
-      usuarioFuture = UsuarioModel(nombre: "error", puesto: e.toString());
+      usuarioFuture = UsuarioModel(
+        nombre: "error",
+        puesto: e.toString(),
+        locacion: e.toString(),
+      );
     }
     return usuarioFuture;
   }

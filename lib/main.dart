@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
         usuario: UsuarioModel(
           nombre: LocalStorage.preferencias.getString('usuario').toString(),
           puesto: LocalStorage.preferencias.getString('puesto').toString(),
+          locacion: LocalStorage.preferencias.getString('locación').toString(),
         ),
         busqueda: "",
       );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
@@ -98,12 +99,16 @@ class _AddproductoState extends State<Addproducto> {
                     colorNombre,
                     "Nombre",
                     Icon(Icons.file_copy_rounded),
+                    TextInputType.text,
+                    FilteringTextInputFormatter.singleLineFormatter,
                   ),
                   campoDeTexto(
                     cantidadControl,
                     colorCantidad,
                     "Cantidad por unidades",
                     Icon(Icons.numbers_rounded),
+                    TextInputType.number,
+                    FilteringTextInputFormatter.digitsOnly,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -351,12 +356,15 @@ class _AddproductoState extends State<Addproducto> {
     int color,
     String texto,
     Icon icono,
+    TextInputType input,
+    TextInputFormatter filtro,
   ) {
     return Container(
       width: MediaQuery.of(context).size.width * .75,
       child: TextField(
         controller: control,
-        keyboardType: TextInputType.text,
+        inputFormatters: [filtro],
+        keyboardType: input,
         onTapOutside: (event) {
           FocusManager.instance.primaryFocus?.unfocus();
         },

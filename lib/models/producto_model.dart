@@ -73,36 +73,90 @@ class ProductoModel {
     late List<ProductoModel> productosFuture = [];
 
     var res = await http.get(Uri.parse(url));
-
-    final datos = json.decode(res.body);
-    for (var item in datos) {
+    try {
+      final datos = json.decode(res.body);
+      if (res.statusCode == 200) {
+        for (var item in datos) {
+          productosFuture.add(
+            ProductoModel(
+              id: item["id"],
+              nombre: item["Nombre"].toString(),
+              tipo: item["Tipo"].toString(),
+              unidades: item["Unidades"],
+              ultimaModificacion: item["UltimaModificación"],
+              cantidadPorUnidad: item["CantidadPorUnidad"],
+              area: item["Area"].toString(),
+              entrada: item["Entrada"],
+              salida: item["Salida"],
+              perdida: item["Perdida"],
+              ultimoUsuario: item["UltimoUsuario"],
+            ),
+          );
+        }
+      }
+    } on TimeoutException catch (e) {
       productosFuture.add(
         ProductoModel(
-          id: item["id"],
-          nombre: item["Nombre"].toString(),
-          tipo: item["Tipo"].toString(),
-          unidades: item["Unidades"],
-          ultimaModificacion: item["UltimaModificación"],
-          cantidadPorUnidad: item["CantidadPorUnidad"],
-          area: item["Area"].toString(),
-          entrada: item["Entrada"],
-          salida: item["Salida"],
-          perdida: item["Perdida"],
-          ultimoUsuario: item["UltimoUsuario"],
+          id: 0,
+          nombre: "Error",
+          tipo: e.message.toString(),
+          unidades: 0,
+          ultimaModificacion: e.message.toString(),
+          cantidadPorUnidad: 0,
+          area: e.message.toString(),
+          entrada: 0,
+          salida: 0,
+          perdida: 0,
+          ultimoUsuario: e.message.toString(),
+        ),
+      );
+    } on SocketException catch (e) {
+      productosFuture.add(
+        ProductoModel(
+          id: 0,
+          nombre: "Error",
+          tipo: e.message.toString(),
+          unidades: 0,
+          ultimaModificacion: e.message.toString(),
+          cantidadPorUnidad: 0,
+          area: e.message.toString(),
+          entrada: 0,
+          salida: 0,
+          perdida: 0,
+          ultimoUsuario: e.message.toString(),
+        ),
+      );
+    } on Error catch (e) {
+      productosFuture.add(
+        ProductoModel(
+          id: 0,
+          nombre: "Error",
+          tipo: e.toString(),
+          unidades: 0,
+          ultimaModificacion: e.toString(),
+          cantidadPorUnidad: 0,
+          area: e.toString(),
+          entrada: 0,
+          salida: 0,
+          perdida: 0,
+          ultimoUsuario: e.toString(),
         ),
       );
     }
     return productosFuture;
   }
 
-  static Future<String> addProducto(String nombre, int cantidad,
-      String tipo, String area, String usuario) async {
+  static Future<String> addProducto(
+    String nombre,
+    int cantidad,
+    String tipo,
+    String area,
+    String usuario,
+  ) async {
     late String productoFuture;
     try {
       final res = await http.post(
-        Uri.parse(
-          "http://192.168.1.93:4000/almacen/",
-        ),
+        Uri.parse("http://192.168.1.93:4000/almacen/"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
@@ -112,7 +166,7 @@ class ProductoModel {
           'cantidad': cantidad,
           'tipo': tipo,
           'area': area,
-          'usuario': usuario
+          'usuario': usuario,
         }),
       );
       if (res.statusCode == 200) {
@@ -123,11 +177,11 @@ class ProductoModel {
       } else {
         productoFuture = res.body.toString();
       }
-    }on TimeoutException catch(e){
+    } on TimeoutException catch (e) {
       productoFuture = "Error: ${e.message.toString()}";
-    }on SocketException catch(e){
+    } on SocketException catch (e) {
       productoFuture = "Error: ${e.message.toString()}";
-    } on Error catch(e){
+    } on Error catch (e) {
       productoFuture = "Error: ${e.toString()}";
     }
     return productoFuture;
