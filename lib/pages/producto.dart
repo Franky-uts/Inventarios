@@ -89,9 +89,15 @@ class _ProductoState extends State<Producto> {
             widget.productoInfo.entrada = cajasEntrantes;
           });
           toast("Entradas guardadas");
+          setState(() {
+            carga = !carga;
+          });
           //ProductoModel.getProductos(widget.url);
         } else {
           toast("No hay cambios");
+          setState(() {
+            carga = !carga;
+          });
         }
         break;
       case 2:
@@ -109,8 +115,14 @@ class _ProductoState extends State<Producto> {
           });
           //ProductoModel.getProductos(widget.url);
           toast("Salidas guardadas");
+          setState(() {
+            carga = !carga;
+          });
         } else {
           toast("No hay cambios");
+          setState(() {
+            carga = !carga;
+          });
         }
         break;
       case 3:
@@ -122,9 +134,15 @@ class _ProductoState extends State<Producto> {
             widget.productoInfo.perdida = productosPerdido;
           });
           toast("Perdidas guardadas");
+          setState(() {
+            carga = !carga;
+          });
           //ProductoModel.getProductos(widget.url);
         } else {
           toast("No hay cambios");
+          setState(() {
+            carga = !carga;
+          });
         }
         break;
     }
