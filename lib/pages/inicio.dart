@@ -137,15 +137,18 @@ class _InicioState extends State<Inicio> {
                               'locación',
                               usuarioMod.locacion,
                             ),
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => Inventario(
-                                  usuario: usuarioMod,
-                                  busqueda: "",
+                            if (context.mounted)
+                              {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => Inventario(
+                                      usuario: usuarioMod,
+                                      busqueda: "",
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
+                              },
                           }
                         else
                           {

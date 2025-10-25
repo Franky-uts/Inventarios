@@ -56,7 +56,7 @@ class _ProductoState extends State<Producto> {
   Future guardarDatos(String columna, int dato) async {
     final res = await http.put(
       Uri.parse(
-        "http://192.168.1.93:4000/almacen/${widget.productoInfo.id}/$columna",
+        "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/${widget.productoInfo.id}/$columna",
       ),
       headers: {
         "Accept": "application/json",

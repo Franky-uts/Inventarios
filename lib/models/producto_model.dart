@@ -71,11 +71,10 @@ class ProductoModel {
 
   static Future<List<ProductoModel>> getProductos(String url) async {
     late List<ProductoModel> productosFuture = [];
-
     var res = await http.get(Uri.parse(url));
     try {
-      final datos = json.decode(res.body);
       if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
         for (var item in datos) {
           productosFuture.add(
             ProductoModel(
@@ -93,6 +92,22 @@ class ProductoModel {
             ),
           );
         }
+      } else {
+        productosFuture.add(
+          ProductoModel(
+            id: 0,
+            nombre: "Error",
+            tipo: res.body,
+            unidades: 0,
+            ultimaModificacion: res.body,
+            cantidadPorUnidad: 0,
+            area: res.body,
+            entrada: 0,
+            salida: 0,
+            perdida: 0,
+            ultimoUsuario: res.body,
+          ),
+        );
       }
     } on TimeoutException catch (e) {
       productosFuture.add(
@@ -152,11 +167,12 @@ class ProductoModel {
     String tipo,
     String area,
     String usuario,
+    String locacion,
   ) async {
     late String productoFuture;
     try {
       final res = await http.post(
-        Uri.parse("http://192.168.1.93:4000/almacen/"),
+        Uri.parse("http://192.168.1.130:4000/inventario/$locacion"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
@@ -190,7 +206,7 @@ class ProductoModel {
   static Future<List> getTipos() async {
     late List tipos = [];
     try {
-      var res = await http.get(Uri.parse('http://192.168.1.93:4000/tipos'));
+      var res = await http.get(Uri.parse('http://192.168.1.130:4000/tipos'));
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
@@ -212,7 +228,7 @@ class ProductoModel {
   static Future<List> getAreas() async {
     late List areas = [];
     try {
-      var res = await http.get(Uri.parse('http://192.168.1.93:4000/areas'));
+      var res = await http.get(Uri.parse('http://192.168.1.130:4000/areas'));
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {

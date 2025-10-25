@@ -285,6 +285,7 @@ class _AddproductoState extends State<Addproducto> {
                             valorTipo,
                             valorArea,
                             widget.usuario.nombre,
+                            widget.usuario.locacion,
                           ),
                           if (respuesta.toString().split(": ")[0] != "Error")
                             {
@@ -360,6 +361,7 @@ class _AddproductoState extends State<Addproducto> {
     TextInputFormatter filtro,
   ) {
     return Container(
+      color: Colors.white,
       width: MediaQuery.of(context).size.width * .75,
       child: TextField(
         controller: control,

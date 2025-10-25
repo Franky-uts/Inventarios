@@ -53,7 +53,16 @@ class _InventarioState extends State<Inventario> {
     productos = await ProductoModel.getProductos(url());
   }
 
-  Future<void> _getListas() async {
+  Future<void> logut(BuildContext ctx) async {
+    await LocalStorage.preferencias.remove('usuario');
+    await LocalStorage.preferencias.remove('puesto');
+    await LocalStorage.preferencias.remove('locación');
+    if (ctx.mounted) {
+      Navigator.push(ctx, MaterialPageRoute(builder: (context) => Inicio()));
+    }
+  }
+
+  Future<void> _getListas(BuildContext ctx) async {
     setState(() {
       carga = true;
     });
@@ -71,17 +80,19 @@ class _InventarioState extends State<Inventario> {
         carga = false;
       });
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Addproducto(
-            listaArea: areas,
-            listaTipo: tipos,
-            usuario: widget.usuario,
-            busqueda: busquedaTexto.text,
+      if (ctx.mounted) {
+        Navigator.push(
+          ctx,
+          MaterialPageRoute(
+            builder: (context) => Addproducto(
+              listaArea: areas,
+              listaTipo: tipos,
+              usuario: widget.usuario,
+              busqueda: busquedaTexto.text,
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
   }
 
@@ -179,9 +190,9 @@ class _InventarioState extends State<Inventario> {
 
   String url() {
     if (busquedaTexto.text.isEmpty) {
-      return "http://192.168.1.93:4000/almacen/${filtroTexto()}/${widget.usuario.locacion}";
+      return "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/${filtroTexto()}";
     } else {
-      return "http://192.168.1.93:4000/almacen/${filtroTexto()}/${widget.usuario.locacion}/${busquedaTexto.text}";
+      return "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/${filtroTexto()}/${busquedaTexto.text}";
     }
   }
 
@@ -289,7 +300,7 @@ class _InventarioState extends State<Inventario> {
                                 try {
                                   final res = await http.put(
                                     Uri.parse(
-                                      "http://192.168.1.93:4000/almacen/reiniciarMovimientos",
+                                      "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/reiniciarMovimientos",
                                     ),
                                     headers: {
                                       "Accept": "application/json",
@@ -298,9 +309,7 @@ class _InventarioState extends State<Inventario> {
                                     },
                                   );
                                   if (res.statusCode == 200) {
-                                    toast(
-                                      "Cambio a exitoso.",
-                                    );
+                                    toast("Cambio a exitoso.");
                                   } else {
                                     toast("${res.reasonPhrase}");
                                   }
@@ -334,25 +343,28 @@ class _InventarioState extends State<Inventario> {
       child: ListView(
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: Colors.grey),
+            decoration: BoxDecoration(color: Colors.grey, ),
             margin: EdgeInsets.zero,
             child: Column(
+              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Bienvenido, ", style: TextStyle(fontSize: 15)),
-                    Text(
-                      widget.usuario.nombre,
-                      style: TextStyle(fontSize: 30),
-                      maxLines: 1,
-                    ),
-                  ],
+                Text("Bienvenido, ", style: TextStyle(fontSize: 15)),
+                Text(
+                  widget.usuario.nombre,
+                  style: TextStyle(fontSize: 30),
+                  maxLines: 1,
                 ),
-                Text(widget.usuario.puesto, style: TextStyle(fontSize: 20)),
+                Text(
+                  widget.usuario.puesto,
+                  style: TextStyle(fontSize: 15),
+                  maxLines: 1,
+                ),
+                Text(
+                  "Mostrando: ${widget.usuario.locacion}",
+                  style: TextStyle(fontSize: 20),
+                ),
               ],
             ),
           ),
@@ -413,7 +425,7 @@ class _InventarioState extends State<Inventario> {
                 ),
                 TextButton.icon(
                   onPressed: () async {
-                    await _getListas();
+                    await _getListas(context);
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
@@ -431,13 +443,7 @@ class _InventarioState extends State<Inventario> {
                 ),
                 TextButton.icon(
                   onPressed: () async {
-                    await LocalStorage.preferencias.remove('usuario');
-                    await LocalStorage.preferencias.remove('puesto');
-                    await LocalStorage.preferencias.remove('locación');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Inicio()),
-                    );
+                    await logut(context);
                   },
                   style: FilledButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
