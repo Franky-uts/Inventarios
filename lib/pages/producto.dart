@@ -83,21 +83,14 @@ class _ProductoState extends State<Producto> {
           await guardarDatos("Unidades", unidades);
           await guardarDatos("Entrada", cajasEntrantes);
           setState(() {
-            carga = !carga;
             colorCampo1 = 0xFF000000;
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.entrada = cajasEntrantes;
           });
           toast("Entradas guardadas");
-          setState(() {
-            carga = !carga;
-          });
           //ProductoModel.getProductos(widget.url);
         } else {
           toast("No hay cambios");
-          setState(() {
-            carga = !carga;
-          });
         }
         break;
       case 2:
@@ -108,44 +101,33 @@ class _ProductoState extends State<Producto> {
           await guardarDatos("Unidades", unidades);
           await guardarDatos("Salida", cajasSalida);
           setState(() {
-            carga = !carga;
             colorCampo2 = 0xFF000000;
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.salida = cajasSalida;
           });
           //ProductoModel.getProductos(widget.url);
           toast("Salidas guardadas");
-          setState(() {
-            carga = !carga;
-          });
         } else {
           toast("No hay cambios");
-          setState(() {
-            carga = !carga;
-          });
         }
         break;
       case 3:
         if (productosPerdido > widget.productoInfo.perdida) {
           await guardarDatos("Perdida", productosPerdido);
           setState(() {
-            carga = !carga;
             colorCampo3 = 0xFF000000;
             widget.productoInfo.perdida = productosPerdido;
           });
           toast("Perdidas guardadas");
-          setState(() {
-            carga = !carga;
-          });
           //ProductoModel.getProductos(widget.url);
         } else {
           toast("No hay cambios");
-          setState(() {
-            carga = !carga;
-          });
         }
         break;
     }
+    setState(() {
+      carga = false;
+    });
   }
 
   void toast(String texto) {
@@ -492,7 +474,7 @@ class _ProductoState extends State<Producto> {
         IconButton(
           onPressed: () {
             setState(() {
-              carga = !carga;
+              carga = true;
             });
             enviarDatos(tipo);
           },

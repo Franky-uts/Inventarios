@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inicio.dart';
+import 'package:inventarios/pages/orden_salida.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/pages/add_producto.dart';
 import 'package:inventarios/services/local_storage.dart';
@@ -26,11 +27,11 @@ class Inventario extends StatefulWidget {
 
 class _InventarioState extends State<Inventario> {
   static Filtros? seleccionFiltro;
-  final busquedaTexto = TextEditingController();
   static List<ProductoModel> productos = [];
   static List tipos = [];
   static List areas = [];
   final focusBusqueda = FocusNode();
+  final busquedaTexto = TextEditingController();
   late bool valido;
   late bool carga;
   late bool ventanaConf;
@@ -343,14 +344,38 @@ class _InventarioState extends State<Inventario> {
       child: ListView(
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: Colors.grey, ),
+            decoration: BoxDecoration(color: Colors.grey),
             margin: EdgeInsets.zero,
+            padding: EdgeInsets.all(6.5),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Bienvenido, ", style: TextStyle(fontSize: 15)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text("Bienvenido, ", style: TextStyle(fontSize: 15)),
+                    IconButton(
+                      onPressed: () async {
+                        await logut(context);
+                      },
+                      style: FilledButton.styleFrom(
+                        padding: EdgeInsets.all(10),
+                        backgroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          side: BorderSide(color: Colors.black, width: 3),
+                        ),
+                      ),
+                      icon: Icon(
+                        Icons.logout_rounded,
+                        color: Colors.black,
+                        size: 25,
+                      ),
+                    ),
+                  ],
+                ),
                 Text(
                   widget.usuario.nombre,
                   style: TextStyle(fontSize: 30),
@@ -442,8 +467,16 @@ class _InventarioState extends State<Inventario> {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: () async {
-                    await logut(context);
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OrdenSalida(
+                          usuario: widget.usuario,
+                          busqueda: busquedaTexto.text,
+                        ),
+                      ),
+                    );
                   },
                   style: FilledButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
@@ -454,12 +487,12 @@ class _InventarioState extends State<Inventario> {
                     ),
                   ),
                   icon: Icon(
-                    Icons.logout_rounded,
+                    Icons.add_shopping_cart_rounded,
                     color: Colors.black,
                     size: 25,
                   ),
                   label: Text(
-                    "Cerrar sesión",
+                    "Nueva orden",
                     style: TextStyle(fontSize: 20, color: Colors.black),
                   ),
                 ),
