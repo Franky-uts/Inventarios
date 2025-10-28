@@ -12,8 +12,6 @@ class Producto extends StatefulWidget {
   final UsuarioModel usuario;
   final String busqueda;
 
-  //final String url;
-
   const Producto({
     super.key,
     required this.productoInfo,
@@ -29,7 +27,6 @@ class _ProductoState extends State<Producto> {
   late int cajasEntrantes = widget.productoInfo.entrada,
       cajasSalida = widget.productoInfo.salida,
       productosPerdido = widget.productoInfo.perdida;
-
   late bool carga;
   Timer? timer;
   late int colorCampo1, colorCampo2, colorCampo3;
@@ -50,6 +47,9 @@ class _ProductoState extends State<Producto> {
     colorCampo2;
     colorCampo3;
     carga;
+    cajasEntrantes;
+    cajasSalida;
+    productosPerdido;
     super.dispose();
   }
 
@@ -65,10 +65,8 @@ class _ProductoState extends State<Producto> {
       body: jsonEncode({'dato': dato, 'usuario': widget.usuario.nombre}),
     );
     if (res.statusCode == 200) {
-      //print("cambio");
       return res;
     } else {
-      //print("fallo");
       throw Exception(res.reasonPhrase);
     }
   }
@@ -88,7 +86,6 @@ class _ProductoState extends State<Producto> {
             widget.productoInfo.entrada = cajasEntrantes;
           });
           toast("Entradas guardadas");
-          //ProductoModel.getProductos(widget.url);
         } else {
           toast("No hay cambios");
         }
@@ -105,7 +102,6 @@ class _ProductoState extends State<Producto> {
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.salida = cajasSalida;
           });
-          //ProductoModel.getProductos(widget.url);
           toast("Salidas guardadas");
         } else {
           toast("No hay cambios");
@@ -119,7 +115,6 @@ class _ProductoState extends State<Producto> {
             widget.productoInfo.perdida = productosPerdido;
           });
           toast("Perdidas guardadas");
-          //ProductoModel.getProductos(widget.url);
         } else {
           toast("No hay cambios");
         }

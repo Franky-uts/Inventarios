@@ -28,6 +28,12 @@ class _InicioState extends State<Inicio> {
 
   @override
   void dispose() {
+    colorCont;
+    colorUsu;
+    carga;
+    usuarioMod;
+    contr.dispose();
+    usuarioContr.dispose();
     super.dispose();
   }
 

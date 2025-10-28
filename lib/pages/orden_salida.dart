@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import '../models/producto_model.dart';
@@ -19,19 +20,22 @@ class OrdenSalida extends StatefulWidget {
 class _OrdenSalidaState extends State<OrdenSalida> {
   static Filtros? seleccionFiltro;
   static List<ProductoModel> productos = [];
+  static List<ProductoModel> productosPorId = [];
+  static List<ProductoModel> listaProd = [];
   final busquedaTexto = TextEditingController();
   final focusBusqueda = FocusNode();
   late bool carga;
+  late bool ventanaCarga;
   late bool valido;
   late bool lista;
   late List<int> cantidad = [];
   late List<int> color = [];
-  Timer? timer;
 
   @override
   void initState() {
     busquedaTexto.text = widget.busqueda;
     carga = false;
+    ventanaCarga = false;
     valido = false;
     lista = true;
     super.initState();
@@ -39,7 +43,17 @@ class _OrdenSalidaState extends State<OrdenSalida> {
 
   @override
   void dispose() {
-    timer?.cancel();
+    listaProd.clear();
+    productosPorId.clear();
+    productos.clear();
+    cantidad.clear();
+    color.clear();
+    busquedaTexto.dispose();
+    focusBusqueda.dispose();
+    carga;
+    ventanaCarga;
+    valido;
+    lista;
     super.dispose();
   }
 
@@ -55,6 +69,17 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       }
       lista = false;
     }
+  }
+
+  void toast(String texto) {
+    Fluttertoast.showToast(
+      msg: texto,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      backgroundColor: Colors.grey,
+      textColor: Colors.white,
+      fontSize: 15,
+    );
   }
 
   String url() {
@@ -113,6 +138,14 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               child: Container(
                 decoration: BoxDecoration(color: Colors.black45),
                 child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
+            Visibility(
+              visible: ventanaCarga,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 90, vertical: 15),
+                decoration: BoxDecoration(color: Colors.black38),
+                child: Center(child: contenidoVentana()),
               ),
             ),
           ],
@@ -200,6 +233,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               ),
             );
           },
+          tooltip: "Regresar",
           icon: Icon(Icons.arrow_back_rounded, size: 35),
           style: IconButton.styleFrom(
             backgroundColor: Colors.black,
@@ -210,12 +244,20 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         ),
         IconButton.filled(
           onPressed: () {
-            for(int i=0;i<cantidad.length;i++){
-              if(cantidad[i]!=0){
-                print(i);
+            for (int i = 0; i < cantidad.length; i++) {
+              if (cantidad[i] != 0) {
+                listaProd.add(productosPorId[i]);
               }
             }
+            if (listaProd.isEmpty) {
+              toast("No hay productos seleccionados.");
+            } else {
+              setState(() {
+                ventanaCarga = true;
+              });
+            }
           },
+          tooltip: "Realizar orden",
           icon: Icon(Icons.task_rounded, size: 35),
           style: IconButton.styleFrom(
             backgroundColor: Colors.black,
@@ -224,8 +266,21 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             ),
           ),
         ),
+        IconButton.filled(
+          onPressed: () {
+            print("Aqui deberia estar el historial.");
+          },
+          tooltip: "Historial de ordenes",
+          icon: Icon(Icons.history_rounded, size: 35),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.black,
+            shape: ContinuousRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+        ),
         Container(
-          width: MediaQuery.of(context).size.width * .8,
+          width: MediaQuery.of(context).size.width * .7,
           margin: EdgeInsets.symmetric(vertical: 10),
           child: TextField(
             controller: busquedaTexto,
@@ -361,7 +416,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                   width: MediaQuery.sizeOf(context).width * .2,
                   child: botones(
                     cantidad[lista[index].id - 1],
-                    0,
                     color[lista[index].id - 1],
                     lista[index].id,
                   ),
@@ -383,6 +437,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             listas(snapshot.data.length);
             valido = true;
             productos = snapshot.data;
+            productosPorId = productos;
             if (productos.isNotEmpty) {
               if (productos[0].nombre == "Error") {
                 return Center(child: Text(productos[0].tipo));
@@ -411,21 +466,21 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     );
   }
 
-  Row botones(int textoValor, int tipo, int colorBorde, int id) {
+  Row botones(int textoValor, int colorBorde, int id) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
           onPressed: () {
-            if((cantidad[id - 1]-1)>-1){
+            if ((cantidad[id - 1] - 1) > -1) {
               setState(() {
-                color[id-1] = 0xFF000000;
+                color[id - 1] = 0xFF000000;
                 cantidad[id - 1] -= 1;
               });
-            }else{
+            } else {
               setState(() {
-                color[id-1] = 0xFFFF0000;
+                color[id - 1] = 0xFFFF0000;
               });
             }
           },
@@ -453,7 +508,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         IconButton(
           onPressed: () {
             setState(() {
-              color[id-1] = 0xFF000000;
+              color[id - 1] = 0xFF000000;
               cantidad[id - 1] += 1;
             });
           },
@@ -467,6 +522,144 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           ),
         ),
       ],
+    );
+  }
+
+  Container contenidoVentana() {
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      padding: EdgeInsets.symmetric(vertical: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadiusGeometry.circular(25),
+        border: BoxBorder.all(color: Colors.black54),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: 0,
+        children: [
+          Text(
+            "Productos seleccionados:",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+          ),
+          Container(
+            width: MediaQuery.sizeOf(context).width,
+            margin: EdgeInsets.zero,
+            decoration: BoxDecoration(color: Colors.grey),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _barraSuperior(.105, "id"),
+                _divider(),
+                _barraSuperior(0.3, "Nombre"),
+                _divider(),
+                _barraSuperior(.125, "Ordenar"),
+                _divider(),
+                _barraSuperior(.125, "Prod./Caja"),
+                _divider(),
+                _barraSuperior(.125, "Prod. Total"),
+              ],
+            ),
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height - 150,
+            margin: EdgeInsets.zero,
+            child: ListView.separated(
+              itemCount: listaProd.length,
+              scrollDirection: Axis.vertical,
+              separatorBuilder: (context, index) => Container(
+                height: 2,
+                decoration: BoxDecoration(color: Colors.grey),
+              ),
+              itemBuilder: (context, index) {
+                return Container(
+                  width: MediaQuery.sizeOf(context).width,
+                  height: 40,
+                  decoration: BoxDecoration(color: Colors.white54),
+                  child: Container(
+                    padding: EdgeInsets.zero,
+                    decoration: BoxDecoration(),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _barraDato(
+                          .105,
+                          listaProd[index].id.toString(),
+                          TextAlign.center,
+                          20,
+                        ),
+                        _divider(),
+                        _barraDato(
+                          .3,
+                          listaProd[index].nombre,
+                          TextAlign.center,
+                          20,
+                        ),
+                        _divider(),
+                        _barraDato(
+                          .125,
+                          cantidad[listaProd[index].id - 1].toString(),
+                          TextAlign.center,
+                          20,
+                        ),
+                        _divider(),
+                        _barraDato(
+                          .125,
+                          listaProd[index].cantidadPorUnidad.toString(),
+                          TextAlign.center,
+                          20,
+                        ),
+                        _divider(),
+                        _barraDato(
+                          .125,
+                          (cantidad[listaProd[index].id - 1] *
+                                  listaProd[index].cantidadPorUnidad)
+                              .toString(),
+                          TextAlign.center,
+                          20,
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Text(
+                "Enviar orden:",
+                style: TextStyle(color: Colors.black, fontSize: 20),
+              ),
+              Row(
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    onPressed: () {
+                      setState(() {
+                        ventanaCarga = false;
+                        listaProd.clear();
+                      });
+                    },
+                    child: Text("No", style: TextStyle(fontSize: 20)),
+                  ),
+                  OutlinedButton(
+                    onPressed: () {},
+                    child: Text("Si", style: TextStyle(fontSize: 20)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

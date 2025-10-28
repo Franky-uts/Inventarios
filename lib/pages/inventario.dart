@@ -47,6 +47,14 @@ class _InventarioState extends State<Inventario> {
 
   @override
   void dispose() {
+    productos.clear();
+    tipos.clear();
+    areas.clear();
+    busquedaTexto.dispose();
+    focusBusqueda.dispose();
+    valido;
+    carga;
+    ventanaConf;
     super.dispose();
   }
 
@@ -267,7 +275,13 @@ class _InventarioState extends State<Inventario> {
                 padding: EdgeInsets.all(90),
                 decoration: BoxDecoration(color: Colors.black38),
                 child: Center(
-                  child: Card(
+                  child: Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadiusGeometry.circular(25),
+                      border: BoxBorder.all(color: Colors.black54),
+                    ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -310,7 +324,7 @@ class _InventarioState extends State<Inventario> {
                                     },
                                   );
                                   if (res.statusCode == 200) {
-                                    toast("Cambio a exitoso.");
+                                    toast("Reinicio exitoso.");
                                   } else {
                                     toast("${res.reasonPhrase}");
                                   }

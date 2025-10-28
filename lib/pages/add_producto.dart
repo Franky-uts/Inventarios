@@ -54,6 +54,17 @@ class _AddproductoState extends State<Addproducto> {
   @override
   void dispose() {
     carga;
+    colorNombre;
+    colorTipo;
+    colorArea;
+    valorArea;
+    valorTipo;
+    respuesta;
+    colorCantidad;
+    nombreControl.dispose();
+    cantidadControl.dispose();
+    listaArea.clear();
+    listaTipo.clear();
     super.dispose();
   }
 

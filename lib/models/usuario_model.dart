@@ -45,21 +45,18 @@ class UsuarioModel {
         );
       }
     } on TimeoutException catch (e) {
-      //print(e.message.toString());
       usuarioFuture = UsuarioModel(
         nombre: "error",
         puesto: e.message.toString(),
         locacion: e.message.toString(),
       );
     } on SocketException catch (e) {
-      //print(e.message.toString());
       usuarioFuture = UsuarioModel(
         nombre: "error",
         puesto: e.message.toString(),
         locacion: e.message.toString(),
       );
     } on Error catch (e) {
-      //print(e.toString());
       usuarioFuture = UsuarioModel(
         nombre: "error",
         puesto: e.toString(),
