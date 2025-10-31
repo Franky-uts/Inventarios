@@ -2,19 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
 
+import '../services/local_storage.dart';
+
 class Addproducto extends StatefulWidget {
-  final UsuarioModel usuario;
-  final String busqueda;
   final List listaArea;
   final List listaTipo;
 
   const Addproducto({
     super.key,
-    required this.usuario,
-    required this.busqueda,
     required this.listaArea,
     required this.listaTipo,
   });
@@ -80,12 +77,7 @@ class _AddproductoState extends State<Addproducto> {
           if (carga == false) {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => Inventario(
-                  usuario: widget.usuario,
-                  busqueda: widget.busqueda,
-                ),
-              ),
+              MaterialPageRoute(builder: (context) => Inventario()),
             );
           }
         },
@@ -295,8 +287,12 @@ class _AddproductoState extends State<Addproducto> {
                             int.parse(cantidadControl.text),
                             valorTipo,
                             valorArea,
-                            widget.usuario.nombre,
-                            widget.usuario.locacion,
+                            LocalStorage.preferencias
+                                .getString('usuario')
+                                .toString(),
+                            LocalStorage.preferencias
+                                .getString('locación')
+                                .toString(),
                           ),
                           if (respuesta.toString().split(": ")[0] != "Error")
                             {
@@ -307,7 +303,7 @@ class _AddproductoState extends State<Addproducto> {
                                 valorArea = listaArea.last;
                               }),
                               Fluttertoast.showToast(
-                                msg: "Se guardo $respuesta correctamente",
+                                msg: "Se guardo $respuesta correctamente.",
                                 toastLength: Toast.LENGTH_SHORT,
                                 gravity: ToastGravity.BOTTOM,
                                 backgroundColor: Colors.grey,

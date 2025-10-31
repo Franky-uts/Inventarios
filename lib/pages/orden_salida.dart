@@ -1,17 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:inventarios/models/orden_model.dart';
+import 'package:inventarios/pages/historial_ordenes.dart';
 import 'package:inventarios/pages/inventario.dart';
-import 'package:inventarios/models/usuario_model.dart';
 import '../models/producto_model.dart';
+import '../services/local_storage.dart';
 
 enum Filtros { id, nombre, tipo, area }
 
 class OrdenSalida extends StatefulWidget {
-  final UsuarioModel usuario;
-  final String busqueda;
+  final List<ProductoModel> productosPorId;
 
-  const OrdenSalida({super.key, required this.usuario, required this.busqueda});
+  const OrdenSalida({super.key, required this.productosPorId});
 
   @override
   State<OrdenSalida> createState() => _OrdenSalidaState();
@@ -20,8 +21,8 @@ class OrdenSalida extends StatefulWidget {
 class _OrdenSalidaState extends State<OrdenSalida> {
   static Filtros? seleccionFiltro;
   static List<ProductoModel> productos = [];
-  static List<ProductoModel> productosPorId = [];
   static List<ProductoModel> listaProd = [];
+  late String respuesta;
   final busquedaTexto = TextEditingController();
   final focusBusqueda = FocusNode();
   late bool carga;
@@ -33,7 +34,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
 
   @override
   void initState() {
-    busquedaTexto.text = widget.busqueda;
+    busquedaTexto.text = LocalStorage.preferencias
+        .getString('busqueda')
+        .toString();
     carga = false;
     ventanaCarga = false;
     valido = false;
@@ -44,7 +47,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   @override
   void dispose() {
     listaProd.clear();
-    productosPorId.clear();
     productos.clear();
     cantidad.clear();
     color.clear();
@@ -61,9 +63,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     productos = await ProductoModel.getProductos(url());
   }
 
-  void listas(int length) {
+  void listas() {
     if (lista) {
-      for (int i = 0; i < length; i++) {
+      for (int i = 0; i < widget.productosPorId.length; i++) {
         cantidad.add(0);
         color.add(0xFF000000);
       }
@@ -84,9 +86,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
 
   String url() {
     if (busquedaTexto.text.isEmpty) {
-      return "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/${filtroTexto()}";
+      return "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${filtroTexto()}";
     } else {
-      return "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/${filtroTexto()}/${busquedaTexto.text}";
+      return "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${filtroTexto()}/${busquedaTexto.text}";
     }
   }
 
@@ -134,18 +136,18 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               ],
             ),
             Visibility(
-              visible: carga,
-              child: Container(
-                decoration: BoxDecoration(color: Colors.black45),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-            Visibility(
               visible: ventanaCarga,
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 90, vertical: 15),
                 decoration: BoxDecoration(color: Colors.black38),
                 child: Center(child: contenidoVentana()),
+              ),
+            ),
+            Visibility(
+              visible: carga,
+              child: Container(
+                decoration: BoxDecoration(color: Colors.black45),
+                child: Center(child: CircularProgressIndicator()),
               ),
             ),
           ],
@@ -222,16 +224,17 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         IconButton.filled(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => Inventario(
-                  usuario: widget.usuario,
-                  busqueda: busquedaTexto.text,
-                ),
-              ),
+          onPressed: () async {
+            await LocalStorage.preferencias.setString(
+              'busqueda',
+              busquedaTexto.text,
             );
+            if (context.mounted) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Inventario()),
+              );
+            }
           },
           tooltip: "Regresar",
           icon: Icon(Icons.arrow_back_rounded, size: 35),
@@ -244,17 +247,21 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         ),
         IconButton.filled(
           onPressed: () {
-            for (int i = 0; i < cantidad.length; i++) {
-              if (cantidad[i] != 0) {
-                listaProd.add(productosPorId[i]);
+            if (valido) {
+              for (int i = 0; i < cantidad.length; i++) {
+                if (cantidad[i] != 0) {
+                  listaProd.add(widget.productosPorId[i]);
+                }
               }
-            }
-            if (listaProd.isEmpty) {
-              toast("No hay productos seleccionados.");
+              if (listaProd.isEmpty) {
+                toast("No hay productos seleccionados.");
+              } else {
+                setState(() {
+                  ventanaCarga = true;
+                });
+              }
             } else {
-              setState(() {
-                ventanaCarga = true;
-              });
+              toast("Espera a que los datos carguen.");
             }
           },
           tooltip: "Realizar orden",
@@ -267,8 +274,24 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           ),
         ),
         IconButton.filled(
-          onPressed: () {
-            print("Aqui deberia estar el historial.");
+          onPressed: () async {
+            if (valido) {
+              await LocalStorage.preferencias.setString(
+                'busqueda',
+                busquedaTexto.text,
+              );
+              if (context.mounted) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        HistorialOrdenes(productosPorId: widget.productosPorId),
+                  ),
+                );
+              }
+            } else {
+              toast("Espera a que los datos carguen.");
+            }
           },
           tooltip: "Historial de ordenes",
           icon: Icon(Icons.history_rounded, size: 35),
@@ -434,10 +457,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
-            listas(snapshot.data.length);
+            listas();
             valido = true;
             productos = snapshot.data;
-            productosPorId = productos;
             if (productos.isNotEmpty) {
               if (productos[0].nombre == "Error") {
                 return Center(child: Text(productos[0].tipo));
@@ -648,11 +670,68 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         listaProd.clear();
                       });
                     },
-                    child: Text("No", style: TextStyle(fontSize: 20)),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.black, width: 1),
+                    ),
+                    child: Text(
+                      "No",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
                   ),
                   OutlinedButton(
-                    onPressed: () {},
-                    child: Text("Si", style: TextStyle(fontSize: 20)),
+                    onPressed: () async {
+                      setState(() {
+                        carga = true;
+                      });
+                      List<String> articulos = [];
+                      List<int> cantidades = [];
+                      for (int i = 0; i < listaProd.length; i++) {
+                        articulos.add(listaProd[i].nombre);
+                        cantidades.add(cantidad[listaProd[i].id - 1]);
+                      }
+                      respuesta = await OrdenModel.postOrden(
+                        articulos,
+                        cantidades,
+                        "En proceso",
+                        LocalStorage.preferencias
+                            .getString('usuario')
+                            .toString(),
+                        LocalStorage.preferencias
+                            .getString('locación')
+                            .toString(),
+                      );
+                      if (respuesta.toString().split(": ")[0] != "Error") {
+                        Fluttertoast.showToast(
+                          msg:
+                              "Se guardo la orden ${respuesta.toString()} correctamente con ${articulos.length} artículos.",
+                          toastLength: Toast.LENGTH_LONG,
+                          gravity: ToastGravity.BOTTOM,
+                          backgroundColor: Colors.grey,
+                          textColor: Colors.white,
+                          fontSize: 15,
+                        );
+                        setState(() {
+                          for (int i = 0; i < listaProd.length; i++) {
+                            cantidad[listaProd[i].id - 1] = 0;
+                          }
+                          listaProd.clear();
+                          ventanaCarga = false;
+                          carga = false;
+                        });
+                      } else {
+                        setState(() {
+                          carga = !carga;
+                        });
+                        toast(respuesta.toString().split(": ")[1]);
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.black, width: 1),
+                    ),
+                    child: Text(
+                      "Si",
+                      style: TextStyle(fontSize: 20, color: Colors.black),
+                    ),
                   ),
                 ],
               ),

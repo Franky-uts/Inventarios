@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
+import 'package:inventarios/pages/ordenes.dart';
 import 'package:inventarios/services/local_storage.dart';
 
 class Inicio extends StatefulWidget {
@@ -17,12 +19,16 @@ class _InicioState extends State<Inicio> {
   late int colorUsu, colorCont;
   late UsuarioModel usuarioMod;
   late bool carga;
+  late bool verContr;
+  late IconData iconoContr;
 
   @override
   void initState() {
     colorUsu = 0xFFFFFFFF;
     colorCont = 0xFFFFFFFF;
+    verContr = true;
     carga = true;
+    iconoContr = Icons.remove_red_eye_rounded;
     super.initState();
   }
 
@@ -31,6 +37,7 @@ class _InicioState extends State<Inicio> {
     colorCont;
     colorUsu;
     carga;
+    verContr;
     usuarioMod;
     contr.dispose();
     usuarioContr.dispose();
@@ -80,37 +87,55 @@ class _InicioState extends State<Inicio> {
                   ),
                 ),
               ),
-              Container(
-                width: MediaQuery.of(context).size.width * .75,
-                margin: EdgeInsets.symmetric(vertical: 20),
-                alignment: Alignment.center,
-                child: TextField(
-                  obscureText: true,
-                  controller: contr,
-                  onTapOutside: (event) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  decoration: InputDecoration(
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide(color: Colors.black, width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide(color: Colors.black, width: 2),
-                    ),
-                    prefixIcon: Icon(Icons.lock_rounded),
-                    prefixIconColor: Colors.black,
-                    suffixIcon: Icon(Icons.warning_rounded),
-                    suffixIconColor: Color(colorCont),
-                    fillColor: Colors.white,
-                    label: Text(
-                      "Contraseña",
-                      style: TextStyle(color: Colors.black),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: MediaQuery.of(context).size.width * .693,
+                    margin: EdgeInsets.symmetric(vertical: 20, horizontal: 0),
+                    alignment: Alignment.center,
+                    child: TextField(
+                      obscureText: verContr,
+                      controller: contr,
+                      onTapOutside: (event) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(color: Colors.black, width: 1),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(color: Colors.black, width: 2),
+                        ),
+                        prefixIcon: Icon(Icons.lock_rounded),
+                        prefixIconColor: Colors.black,
+                        suffixIcon: Icon(Icons.warning_rounded),
+                        suffixIconColor: Color(colorCont),
+                        fillColor: Colors.white,
+                        label: Text(
+                          "Contraseña",
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        verContr = !verContr;
+                        if (verContr) {
+                          iconoContr = Icons.remove_red_eye_rounded;
+                        } else {
+                          iconoContr = Icons.remove_red_eye_outlined;
+                        }
+                      });
+                    },
+                    icon: Icon(iconoContr, color: Colors.black, size: 25),
+                  ),
+                ],
               ),
               Visibility(
                 visible: carga,
@@ -143,17 +168,30 @@ class _InicioState extends State<Inicio> {
                               'locación',
                               usuarioMod.locacion,
                             ),
+                            await LocalStorage.preferencias.setString(
+                              'busqueda',
+                              "",
+                            ),
                             if (context.mounted)
                               {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => Inventario(
-                                      usuario: usuarioMod,
-                                      busqueda: "",
+                                if (usuarioMod.puesto == "Proveedor")
+                                  {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Ordenes(),
+                                      ),
                                     ),
-                                  ),
-                                ),
+                                  }
+                                else
+                                  {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => Inventario(),
+                                      ),
+                                    ),
+                                  },
                               },
                           }
                         else

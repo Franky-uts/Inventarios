@@ -6,29 +6,21 @@ import 'dart:convert';
 
 class OrdenModel {
   int id;
-  String nombre;
-  String tipo;
-  int unidades;
+  List articulos;
+  List cantidades;
+  String estado;
+  String remitente;
   String ultimaModificacion;
-  int cantidadPorUnidad;
-  String area;
-  int entrada;
-  int salida;
-  int perdida;
-  String ultimoUsuario;
+  String destino;
 
   OrdenModel({
     required this.id,
-    required this.nombre,
-    required this.tipo,
-    required this.unidades,
+    required this.articulos,
+    required this.cantidades,
+    required this.estado,
+    required this.remitente,
     required this.ultimaModificacion,
-    required this.cantidadPorUnidad,
-    required this.area,
-    required this.entrada,
-    required this.salida,
-    required this.perdida,
-    required this.ultimoUsuario,
+    required this.destino,
   });
 
   static List<OrdenModel> listaProvicional() {
@@ -37,158 +29,136 @@ class OrdenModel {
     productos.add(
       OrdenModel(
         id: 1,
-        nombre: "Producto 1",
-        tipo: "Tipo 1",
-        unidades: 12,
-        ultimaModificacion: "Lun 15/09 10:30pm",
-        cantidadPorUnidad: 2,
-        area: "Area 1",
-        entrada: 0,
-        salida: 0,
-        perdida: 0,
-        ultimoUsuario: "usuario",
+        articulos: ["Articulo1", "Articulo2"],
+        cantidades: [1, 2],
+        estado: "En proceso",
+        remitente: "Usuario",
+        ultimaModificacion: "28/10/2025 16:11:32",
+        destino: 'Almacen',
       ),
     );
 
     productos.add(
       OrdenModel(
         id: 2,
-        nombre: "Producto 2",
-        tipo: "Tipo 2",
-        unidades: 21,
-        ultimaModificacion: "Dom 26/09 3:10am",
-        cantidadPorUnidad: 20,
-        area: "Area 1",
-        entrada: 0,
-        salida: 0,
-        perdida: 0,
-        ultimoUsuario: "usuario",
+        articulos: ["Articulo3"],
+        cantidades: [3],
+        estado: "Finalizado",
+        remitente: "Frank",
+        ultimaModificacion: "28/10/2025 16:11:32",
+        destino: 'Almacen',
       ),
     );
 
     return productos;
   }
 
-  static Future<List<OrdenModel>> getProductos(String url) async {
-    late List<OrdenModel> productosFuture = [];
+  static Future<List<OrdenModel>> getOrdenes(String url) async {
+    late List<OrdenModel> ordenesFuture = [];
     var res = await http.get(Uri.parse(url));
     try {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
+
         for (var item in datos) {
-          productosFuture.add(
+          ordenesFuture.add(
             OrdenModel(
               id: item["id"],
-              nombre: item["Nombre"].toString(),
-              tipo: item["Tipo"].toString(),
-              unidades: item["Unidades"],
+              articulos: item['Artículos'],
+              cantidades: item['Cantidades'],
+              estado: item["Estado"],
+              remitente: item["Remitente"],
               ultimaModificacion: item["UltimaModificación"],
-              cantidadPorUnidad: item["CantidadPorUnidad"],
-              area: item["Area"].toString(),
-              entrada: item["Entrada"],
-              salida: item["Salida"],
-              perdida: item["Perdida"],
-              ultimoUsuario: item["UltimoUsuario"],
+              destino: item["Destino"],
             ),
           );
         }
       } else {
-        productosFuture.add(
+        ordenesFuture.add(
           OrdenModel(
             id: 0,
-            nombre: "Error",
-            tipo: res.body,
-            unidades: 0,
+            articulos: ["Error"],
+            cantidades: [0],
+            estado: "Error",
+            remitente: res.body,
             ultimaModificacion: res.body,
-            cantidadPorUnidad: 0,
-            area: res.body,
-            entrada: 0,
-            salida: 0,
-            perdida: 0,
-            ultimoUsuario: res.body,
+            destino: res.body,
           ),
         );
       }
     } on TimeoutException catch (e) {
-      productosFuture.add(
+      ordenesFuture.add(
         OrdenModel(
           id: 0,
-          nombre: "Error",
-          tipo: e.message.toString(),
-          unidades: 0,
+          articulos: ["Error"],
+          cantidades: [0],
+          estado: "Error",
+          remitente: e.message.toString(),
           ultimaModificacion: e.message.toString(),
-          cantidadPorUnidad: 0,
-          area: e.message.toString(),
-          entrada: 0,
-          salida: 0,
-          perdida: 0,
-          ultimoUsuario: e.message.toString(),
+          destino: e.message.toString(),
         ),
       );
     } on SocketException catch (e) {
-      productosFuture.add(
+      ordenesFuture.add(
         OrdenModel(
           id: 0,
-          nombre: "Error",
-          tipo: e.message.toString(),
-          unidades: 0,
+          articulos: ["Error"],
+          cantidades: [0],
+          estado: "Error",
+          remitente: e.message.toString(),
           ultimaModificacion: e.message.toString(),
-          cantidadPorUnidad: 0,
-          area: e.message.toString(),
-          entrada: 0,
-          salida: 0,
-          perdida: 0,
-          ultimoUsuario: e.message.toString(),
+          destino: e.message.toString(),
         ),
       );
     } on Error catch (e) {
-      productosFuture.add(
+      ordenesFuture.add(
         OrdenModel(
           id: 0,
-          nombre: "Error",
-          tipo: e.toString(),
-          unidades: 0,
+          articulos: ["Error"],
+          cantidades: [0],
+          estado: "Error",
+          remitente: e.toString(),
           ultimaModificacion: e.toString(),
-          cantidadPorUnidad: 0,
-          area: e.toString(),
-          entrada: 0,
-          salida: 0,
-          perdida: 0,
-          ultimoUsuario: e.toString(),
+          destino: e.toString(),
         ),
       );
     }
-    return productosFuture;
+    return ordenesFuture;
   }
 
-  static Future<String> addProducto(
-    String nombre,
-    int cantidad,
-    String tipo,
-    String area,
-    String usuario,
-    String locacion,
+  static Future<String> postOrden(
+    List<String> articulos,
+    List<int> cantidades,
+    String estado,
+    String remitente,
+    String destino,
   ) async {
     late String productoFuture;
     try {
       final res = await http.post(
-        Uri.parse("http://192.168.1.130:4000/inventario/$locacion"),
+        Uri.parse("http://192.168.1.130:4000/ordenes/"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
         },
         body: jsonEncode({
-          'nombre': nombre,
-          'cantidad': cantidad,
-          'tipo': tipo,
-          'area': area,
-          'usuario': usuario,
+          'articulos': articulos
+              .toString()
+              .replaceAll("[", "{")
+              .replaceAll("]", "}"),
+          'cantidades': cantidades
+              .toString()
+              .replaceAll("[", "{")
+              .replaceAll("]", "}"),
+          'estado': estado,
+          'remitente': remitente,
+          'destino': destino,
         }),
       );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          productoFuture = item["Nombre"];
+          productoFuture = item["id"].toString();
         }
       } else {
         productoFuture = res.body.toString();
@@ -201,49 +171,5 @@ class OrdenModel {
       productoFuture = "Error: ${e.toString()}";
     }
     return productoFuture;
-  }
-
-  static Future<List> getTipos() async {
-    late List tipos = [];
-    try {
-      var res = await http.get(Uri.parse('http://192.168.1.130:4000/tipos'));
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          tipos.add(item['Nombre']);
-        }
-      } else {
-        tipos.add(res.body);
-      }
-    } on TimeoutException catch (e) {
-      tipos.add("Error: ${e.message.toString()}");
-    } on SocketException catch (e) {
-      tipos.add("Error: ${e.message.toString()}");
-    } on Error catch (e) {
-      tipos.add("Error: ${e.toString()}");
-    }
-    return tipos;
-  }
-
-  static Future<List> getAreas() async {
-    late List areas = [];
-    try {
-      var res = await http.get(Uri.parse('http://192.168.1.130:4000/areas'));
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          areas.add(item['Nombre']);
-        }
-      } else {
-        areas.add(res.body);
-      }
-    } on TimeoutException catch (e) {
-      areas.add("Error: ${e.message.toString()}");
-    } on SocketException catch (e) {
-      areas.add("Error: ${e.message.toString()}");
-    } on Error catch (e) {
-      areas.add("Error: ${e.toString()}");
-    }
-    return areas;
   }
 }

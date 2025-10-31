@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/pages/inventario.dart';
+import 'package:inventarios/pages/ordenes.dart';
 import 'package:inventarios/services/local_storage.dart';
 
 void main() async {
@@ -26,14 +26,11 @@ class MyApp extends StatelessWidget {
 
   Widget ruta() {
     if (LocalStorage.preferencias.getString('usuario') != null) {
-      return Inventario(
-        usuario: UsuarioModel(
-          nombre: LocalStorage.preferencias.getString('usuario').toString(),
-          puesto: LocalStorage.preferencias.getString('puesto').toString(),
-          locacion: LocalStorage.preferencias.getString('locación').toString(),
-        ),
-        busqueda: "",
-      );
+      if (LocalStorage.preferencias.getString('puesto') == 'Proveedor') {
+        return Ordenes();
+      } else {
+        return Inventario();
+      }
     } else {
       return Inicio();
     }

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/pages/orden_salida.dart';
 import 'package:inventarios/pages/producto.dart';
@@ -16,10 +15,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 enum Filtros { id, nombre, tipo, area }
 
 class Inventario extends StatefulWidget {
-  final UsuarioModel usuario;
-  final String busqueda;
-
-  const Inventario({super.key, required this.usuario, required this.busqueda});
+  const Inventario({super.key});
 
   @override
   State<Inventario> createState() => _InventarioState();
@@ -41,7 +37,9 @@ class _InventarioState extends State<Inventario> {
     valido = false;
     carga = false;
     ventanaConf = false;
-    busquedaTexto.text = widget.busqueda;
+    busquedaTexto.text = LocalStorage.preferencias
+        .getString('busqueda')
+        .toString();
     super.initState();
   }
 
@@ -62,12 +60,59 @@ class _InventarioState extends State<Inventario> {
     productos = await ProductoModel.getProductos(url());
   }
 
+  Future<void> historialOrdenes(BuildContext ctx) async {
+    setState(() {
+      carga = true;
+    });
+    Navigator.of(context).pop();
+    List<ProductoModel> listaPorid = [];
+    try {
+      listaPorid = await ProductoModel.getProductos(
+        "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/id",
+      );
+      if (listaPorid[0].nombre != "Error") {
+        await LocalStorage.preferencias.setString(
+          'busqueda',
+          busquedaTexto.text,
+        );
+        if (ctx.mounted) {
+          Navigator.push(
+            ctx,
+            MaterialPageRoute(
+              builder: (context) => OrdenSalida(productosPorId: listaPorid),
+            ),
+          );
+        } else {
+          setState(() {
+            carga = false;
+          });
+        }
+      } else {
+        toast(listaPorid[0].tipo);
+      }
+    } catch (e) {
+      toast("Error: ${e.toString()}");
+      setState(() {
+        carga = false;
+      });
+    }
+  }
+
   Future<void> logut(BuildContext ctx) async {
+    setState(() {
+      carga = true;
+    });
+    Navigator.of(context).pop();
     await LocalStorage.preferencias.remove('usuario');
     await LocalStorage.preferencias.remove('puesto');
     await LocalStorage.preferencias.remove('locación');
+    await LocalStorage.preferencias.remove('busqueda');
     if (ctx.mounted) {
       Navigator.push(ctx, MaterialPageRoute(builder: (context) => Inicio()));
+    } else {
+      setState(() {
+        carga = false;
+      });
     }
   }
 
@@ -89,18 +134,19 @@ class _InventarioState extends State<Inventario> {
         carga = false;
       });
     } else {
+      await LocalStorage.preferencias.setString('busqueda', busquedaTexto.text);
       if (ctx.mounted) {
         Navigator.push(
           ctx,
           MaterialPageRoute(
-            builder: (context) => Addproducto(
-              listaArea: areas,
-              listaTipo: tipos,
-              usuario: widget.usuario,
-              busqueda: busquedaTexto.text,
-            ),
+            builder: (context) =>
+                Addproducto(listaArea: areas, listaTipo: tipos),
           ),
         );
+      } else {
+        setState(() {
+          carga = false;
+        });
       }
     }
   }
@@ -199,9 +245,9 @@ class _InventarioState extends State<Inventario> {
 
   String url() {
     if (busquedaTexto.text.isEmpty) {
-      return "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/${filtroTexto()}";
+      return "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${filtroTexto()}";
     } else {
-      return "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/${filtroTexto()}/${busquedaTexto.text}";
+      return "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${filtroTexto()}/${busquedaTexto.text}";
     }
   }
 
@@ -263,13 +309,6 @@ class _InventarioState extends State<Inventario> {
               ),
             ),
             Visibility(
-              visible: carga,
-              child: Container(
-                decoration: BoxDecoration(color: Colors.black45),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            ),
-            Visibility(
               visible: ventanaConf,
               child: Container(
                 padding: EdgeInsets.all(90),
@@ -315,7 +354,7 @@ class _InventarioState extends State<Inventario> {
                                 try {
                                   final res = await http.put(
                                     Uri.parse(
-                                      "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/reiniciarMovimientos",
+                                      "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/reiniciarMovimientos",
                                     ),
                                     headers: {
                                       "Accept": "application/json",
@@ -347,6 +386,13 @@ class _InventarioState extends State<Inventario> {
                 ),
               ),
             ),
+            Visibility(
+              visible: carga,
+              child: Container(
+                decoration: BoxDecoration(color: Colors.black45),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
           ],
         ),
       ),
@@ -371,8 +417,8 @@ class _InventarioState extends State<Inventario> {
                   children: [
                     Text("Bienvenido, ", style: TextStyle(fontSize: 15)),
                     IconButton(
-                      onPressed: () async {
-                        await logut(context);
+                      onPressed: () {
+                        logut(context);
                       },
                       style: FilledButton.styleFrom(
                         padding: EdgeInsets.all(10),
@@ -391,17 +437,17 @@ class _InventarioState extends State<Inventario> {
                   ],
                 ),
                 Text(
-                  widget.usuario.nombre,
+                  LocalStorage.preferencias.getString('usuario').toString(),
                   style: TextStyle(fontSize: 30),
                   maxLines: 1,
                 ),
                 Text(
-                  widget.usuario.puesto,
+                  LocalStorage.preferencias.getString('puesto').toString(),
                   style: TextStyle(fontSize: 15),
                   maxLines: 1,
                 ),
                 Text(
-                  "Mostrando: ${widget.usuario.locacion}",
+                  "Mostrando: ${LocalStorage.preferencias.getString('locación').toString()}",
                   style: TextStyle(fontSize: 20),
                 ),
               ],
@@ -464,7 +510,11 @@ class _InventarioState extends State<Inventario> {
                 ),
                 TextButton.icon(
                   onPressed: () async {
-                    await _getListas(context);
+                    if (valido) {
+                      await _getListas(context);
+                    } else {
+                      toast("Espera a que los datos carguen.");
+                    }
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
@@ -482,15 +532,11 @@ class _InventarioState extends State<Inventario> {
                 ),
                 TextButton.icon(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => OrdenSalida(
-                          usuario: widget.usuario,
-                          busqueda: busquedaTexto.text,
-                        ),
-                      ),
-                    );
+                    if (valido) {
+                      historialOrdenes(context);
+                    } else {
+                      toast("Espera a que los datos carguen.");
+                    }
                   },
                   style: FilledButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
@@ -733,17 +779,21 @@ class _InventarioState extends State<Inventario> {
           height: 40,
           decoration: BoxDecoration(color: Colors.white54),
           child: TextButton(
-            onPressed: () => {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Producto(
-                    productoInfo: lista[index],
-                    usuario: widget.usuario,
-                    busqueda: busquedaTexto.text,
-                  ),
-                ),
+            onPressed: () async => {
+              await LocalStorage.preferencias.setString(
+                'busqueda',
+                busquedaTexto.text,
               ),
+              if (context.mounted)
+                {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          Producto(productoInfo: lista[index]),
+                    ),
+                  ),
+                },
             },
             style: TextButton.styleFrom(
               padding: EdgeInsets.all(0),

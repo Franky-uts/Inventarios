@@ -4,20 +4,14 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
+
+import '../services/local_storage.dart';
 
 class Producto extends StatefulWidget {
   final ProductoModel productoInfo;
-  final UsuarioModel usuario;
-  final String busqueda;
 
-  const Producto({
-    super.key,
-    required this.productoInfo,
-    required this.usuario,
-    required this.busqueda,
-  });
+  const Producto({super.key, required this.productoInfo});
 
   @override
   State<Producto> createState() => _ProductoState();
@@ -29,13 +23,10 @@ class _ProductoState extends State<Producto> {
       productosPerdido = widget.productoInfo.perdida;
   late bool carga;
   Timer? timer;
-  late int colorCampo1, colorCampo2, colorCampo3;
+  final List<int> color = [0xFF000000, 0xFF000000, 0xFF000000];
 
   @override
   void initState() {
-    colorCampo1 = 0xFF000000;
-    colorCampo2 = 0xFF000000;
-    colorCampo3 = 0xFF000000;
     carga = false;
     super.initState();
   }
@@ -43,9 +34,7 @@ class _ProductoState extends State<Producto> {
   @override
   void dispose() {
     timer?.cancel();
-    colorCampo1;
-    colorCampo2;
-    colorCampo3;
+    color;
     carga;
     cajasEntrantes;
     cajasSalida;
@@ -56,13 +45,16 @@ class _ProductoState extends State<Producto> {
   Future guardarDatos(String columna, int dato) async {
     final res = await http.put(
       Uri.parse(
-        "http://192.168.1.130:4000/inventario/${widget.usuario.locacion}/${widget.productoInfo.id}/$columna",
+        "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${widget.productoInfo.id}/$columna",
       ),
       headers: {
         "Accept": "application/json",
         "content-type": "application/json; charset=UTF-8",
       },
-      body: jsonEncode({'dato': dato, 'usuario': widget.usuario.nombre}),
+      body: jsonEncode({
+        'dato': dato,
+        'usuario': LocalStorage.preferencias.getString('usuario').toString(),
+      }),
     );
     if (res.statusCode == 200) {
       return res;
@@ -81,7 +73,7 @@ class _ProductoState extends State<Producto> {
           await guardarDatos("Unidades", unidades);
           await guardarDatos("Entrada", cajasEntrantes);
           setState(() {
-            colorCampo1 = 0xFF000000;
+            color[0] = 0xFF000000;
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.entrada = cajasEntrantes;
           });
@@ -98,7 +90,7 @@ class _ProductoState extends State<Producto> {
           await guardarDatos("Unidades", unidades);
           await guardarDatos("Salida", cajasSalida);
           setState(() {
-            colorCampo2 = 0xFF000000;
+            color[1] = 0xFF000000;
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.salida = cajasSalida;
           });
@@ -111,7 +103,7 @@ class _ProductoState extends State<Producto> {
         if (productosPerdido > widget.productoInfo.perdida) {
           await guardarDatos("Perdida", productosPerdido);
           setState(() {
-            colorCampo3 = 0xFF000000;
+            color[2] = 0xFF000000;
             widget.productoInfo.perdida = productosPerdido;
           });
           toast("Perdidas guardadas");
@@ -143,19 +135,19 @@ class _ProductoState extends State<Producto> {
           setState(() {
             cajasEntrantes += valor;
             if (cajasEntrantes != widget.productoInfo.entrada) {
-              colorCampo1 = 0xFF00be00;
+              color[0] = 0xFF00be00;
             } else {
-              colorCampo1 = 0xFF000000;
+              color[0] = 0xFF000000;
             }
           });
         } else {
           if (cajasEntrantes + valor >= 0) {
             setState(() {
-              colorCampo1 = 0xFFFF0000;
+              color[0] = 0xFFFF0000;
             });
           } else {
             setState(() {
-              colorCampo1 = 0xFFFF0000;
+              color[0] = 0xFFFF0000;
             });
           }
         }
@@ -168,19 +160,19 @@ class _ProductoState extends State<Producto> {
               setState(() {
                 cajasSalida += valor;
                 if (cajasSalida != widget.productoInfo.salida) {
-                  colorCampo2 = 0xFF00be00;
+                  color[1] = 0xFF00be00;
                 } else {
-                  colorCampo2 = 0xFF000000;
+                  color[1] = 0xFF000000;
                 }
               });
             } else {
               setState(() {
-                colorCampo2 = 0xFFFF0000;
+                color[1] = 0xFFFF0000;
               });
             }
           } else {
             setState(() {
-              colorCampo2 = 0xFFFF0000;
+              color[1] = 0xFFFF0000;
             });
           }
         } else {
@@ -192,19 +184,19 @@ class _ProductoState extends State<Producto> {
           setState(() {
             productosPerdido += valor;
             if (productosPerdido != widget.productoInfo.perdida) {
-              colorCampo3 = 0xFF00be00;
+              color[2] = 0xFF00be00;
             } else {
-              colorCampo3 = 0xFF000000;
+              color[2] = 0xFF000000;
             }
           });
         } else {
           if (productosPerdido + valor >= 0) {
             setState(() {
-              colorCampo3 = 0xFFFF0000;
+              color[2] = 0xFFFF0000;
             });
           } else {
             setState(() {
-              colorCampo3 = 0xFFFF0000;
+              color[2] = 0xFFFF0000;
             });
           }
         }
@@ -224,12 +216,7 @@ class _ProductoState extends State<Producto> {
           if (carga == false) {
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => Inventario(
-                  usuario: widget.usuario,
-                  busqueda: widget.busqueda,
-                ),
-              ),
+              MaterialPageRoute(builder: (context) => Inventario()),
             );
           }
         },
@@ -292,19 +279,19 @@ class _ProductoState extends State<Producto> {
                     "Cajas que entraron:",
                     cajasEntrantes,
                     1,
-                    colorCampo1,
+                    color[0],
                   ),
                   contenedorInfo(
                     "Cajas que salieron:",
                     cajasSalida,
                     2,
-                    colorCampo2,
+                    color[1],
                   ),
                   contenedorInfo(
                     "Productos perdidos:",
                     productosPerdido,
                     3,
-                    colorCampo3,
+                    color[2],
                   ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
