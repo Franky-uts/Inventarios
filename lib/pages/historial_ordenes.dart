@@ -65,19 +65,21 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     super.dispose();
   }
 
+  String local(String clave) {
+    String res = LocalStorage.preferencias.getString(clave).toString();
+    return res;
+  }
+
   Future editarEstado(String columna, String dato) async {
     String respuesta;
     try {
       final res = await http.put(
-        Uri.parse("http://192.168.1.130:4000/ordenes/$idVen/$columna"),
+        Uri.parse("${local('conexion')}/ordenes/$idVen/$columna"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
         },
-        body: jsonEncode({
-          'dato': dato,
-          'usuario': LocalStorage.preferencias.getString('usuario').toString(),
-        }),
+        body: jsonEncode({'dato': dato, 'usuario': local('usuario')}),
       );
       if (res.statusCode == 200) {
         respuesta = "Se cancelo la orden.";
@@ -103,10 +105,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
       textColor: Colors.white,
       fontSize: 15,
     );
-  }
-
-  String url() {
-    return "http://192.168.1.130:4000/ordenes/$filtro";
   }
 
   void filtroTexto(int valor) {
@@ -349,7 +347,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
 
   FutureBuilder listaFutura() {
     return FutureBuilder(
-      future: OrdenModel.getOrdenes(url()),
+      future: OrdenModel.getOrdenes(filtro),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {

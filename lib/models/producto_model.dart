@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../services/local_storage.dart';
+
 class ProductoModel {
   int id;
   String nombre;
@@ -69,95 +71,129 @@ class ProductoModel {
     return productos;
   }
 
-  static Future<List<ProductoModel>> getProductos(String url) async {
+  static Future<List<ProductoModel>> getProductos(
+    String filtro,
+    String busqueda,
+  ) async {
+    late String url;
+    String conexion = LocalStorage.preferencias
+        .getString('conexion')
+        .toString();
+    String locacion = LocalStorage.preferencias
+        .getString('locación')
+        .toString();
+    if (busqueda.isEmpty) {
+      url = "$conexion/inventario/$locacion/$filtro";
+    } else {
+      url = "$conexion/inventario/$locacion/$filtro/$busqueda";
+    }
     late List<ProductoModel> productosFuture = [];
-    var res = await http.get(Uri.parse(url));
-    try {
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
+    if (locacion.isEmpty || locacion == "null") {
+      productosFuture.add(
+        ProductoModel(
+          id: 0,
+          nombre: "Error",
+          tipo: "No hay locación establecida",
+          unidades: 0,
+          ultimaModificacion: "No hay locación establecida",
+          cantidadPorUnidad: 0,
+          area: "No hay locación establecida",
+          entrada: 0,
+          salida: 0,
+          perdida: 0,
+          ultimoUsuario: "No hay locación establecida",
+        ),
+      );
+    } else {
+      try {
+        var res = await http.get(Uri.parse(url));
+        if (res.statusCode == 200) {
+          final datos = json.decode(res.body);
+          for (var item in datos) {
+            productosFuture.add(
+              ProductoModel(
+                id: item["id"],
+                nombre: item["Nombre"].toString(),
+                tipo: item["Tipo"].toString(),
+                unidades: item["Unidades"],
+                ultimaModificacion: item["UltimaModificación"],
+                cantidadPorUnidad: item["CantidadPorUnidad"],
+                area: item["Area"].toString(),
+                entrada: item["Entrada"],
+                salida: item["Salida"],
+                perdida: item["Perdida"],
+                ultimoUsuario: item["UltimoUsuario"],
+              ),
+            );
+          }
+        } else {
           productosFuture.add(
             ProductoModel(
-              id: item["id"],
-              nombre: item["Nombre"].toString(),
-              tipo: item["Tipo"].toString(),
-              unidades: item["Unidades"],
-              ultimaModificacion: item["UltimaModificación"],
-              cantidadPorUnidad: item["CantidadPorUnidad"],
-              area: item["Area"].toString(),
-              entrada: item["Entrada"],
-              salida: item["Salida"],
-              perdida: item["Perdida"],
-              ultimoUsuario: item["UltimoUsuario"],
+              id: 0,
+              nombre: "Error",
+              tipo: res.body,
+              unidades: 0,
+              ultimaModificacion: res.body,
+              cantidadPorUnidad: 0,
+              area: res.body,
+              entrada: 0,
+              salida: 0,
+              perdida: 0,
+              ultimoUsuario: res.body,
             ),
           );
         }
-      } else {
+      } on TimeoutException catch (e) {
         productosFuture.add(
           ProductoModel(
             id: 0,
             nombre: "Error",
-            tipo: res.body,
+            tipo: e.message.toString(),
             unidades: 0,
-            ultimaModificacion: res.body,
+            ultimaModificacion: e.message.toString(),
             cantidadPorUnidad: 0,
-            area: res.body,
+            area: e.message.toString(),
             entrada: 0,
             salida: 0,
             perdida: 0,
-            ultimoUsuario: res.body,
+            ultimoUsuario: e.message.toString(),
+          ),
+        );
+      } on SocketException catch (e) {
+        productosFuture.add(
+          ProductoModel(
+            id: 0,
+            nombre: "Error",
+            tipo: e.message.toString(),
+            unidades: 0,
+            ultimaModificacion: e.message.toString(),
+            cantidadPorUnidad: 0,
+            area: e.message.toString(),
+            entrada: 0,
+            salida: 0,
+            perdida: 0,
+            ultimoUsuario: e.message.toString(),
+          ),
+        );
+      } on Error catch (e) {
+        productosFuture.add(
+          ProductoModel(
+            id: 0,
+            nombre: "Error",
+            tipo: e.toString(),
+            unidades: 0,
+            ultimaModificacion: e.toString(),
+            cantidadPorUnidad: 0,
+            area: e.toString(),
+            entrada: 0,
+            salida: 0,
+            perdida: 0,
+            ultimoUsuario: e.toString(),
           ),
         );
       }
-    } on TimeoutException catch (e) {
-      productosFuture.add(
-        ProductoModel(
-          id: 0,
-          nombre: "Error",
-          tipo: e.message.toString(),
-          unidades: 0,
-          ultimaModificacion: e.message.toString(),
-          cantidadPorUnidad: 0,
-          area: e.message.toString(),
-          entrada: 0,
-          salida: 0,
-          perdida: 0,
-          ultimoUsuario: e.message.toString(),
-        ),
-      );
-    } on SocketException catch (e) {
-      productosFuture.add(
-        ProductoModel(
-          id: 0,
-          nombre: "Error",
-          tipo: e.message.toString(),
-          unidades: 0,
-          ultimaModificacion: e.message.toString(),
-          cantidadPorUnidad: 0,
-          area: e.message.toString(),
-          entrada: 0,
-          salida: 0,
-          perdida: 0,
-          ultimoUsuario: e.message.toString(),
-        ),
-      );
-    } on Error catch (e) {
-      productosFuture.add(
-        ProductoModel(
-          id: 0,
-          nombre: "Error",
-          tipo: e.toString(),
-          unidades: 0,
-          ultimaModificacion: e.toString(),
-          cantidadPorUnidad: 0,
-          area: e.toString(),
-          entrada: 0,
-          salida: 0,
-          perdida: 0,
-          ultimoUsuario: e.toString(),
-        ),
-      );
     }
+
     return productosFuture;
   }
 
@@ -172,7 +208,9 @@ class ProductoModel {
     late String productoFuture;
     try {
       final res = await http.post(
-        Uri.parse("http://192.168.1.130:4000/inventario/$locacion"),
+        Uri.parse(
+          "${LocalStorage.preferencias.getString('conexion').toString()}/inventario/$locacion",
+        ),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
@@ -206,7 +244,11 @@ class ProductoModel {
   static Future<List> getTipos() async {
     late List tipos = [];
     try {
-      var res = await http.get(Uri.parse('http://192.168.1.130:4000/tipos'));
+      var res = await http.get(
+        Uri.parse(
+          '${LocalStorage.preferencias.getString('conexion').toString()}/tipos',
+        ),
+      );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
@@ -228,7 +270,11 @@ class ProductoModel {
   static Future<List> getAreas() async {
     late List areas = [];
     try {
-      var res = await http.get(Uri.parse('http://192.168.1.130:4000/areas'));
+      var res = await http.get(
+        Uri.parse(
+          '${LocalStorage.preferencias.getString('conexion').toString()}/areas',
+        ),
+      );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {

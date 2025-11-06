@@ -34,9 +34,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
 
   @override
   void initState() {
-    busquedaTexto.text = LocalStorage.preferencias
-        .getString('busqueda')
-        .toString();
+    busquedaTexto.text = local('busqueda');
     carga = false;
     ventanaCarga = false;
     valido = false;
@@ -59,8 +57,16 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     super.dispose();
   }
 
+  String local(String clave) {
+    String res = LocalStorage.preferencias.getString(clave).toString();
+    return res;
+  }
+
   Future<void> _getProductos() async {
-    productos = await ProductoModel.getProductos(url());
+    productos = await ProductoModel.getProductos(
+      filtroTexto(),
+      busquedaTexto.text,
+    );
   }
 
   void listas() {
@@ -82,14 +88,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       textColor: Colors.white,
       fontSize: 15,
     );
-  }
-
-  String url() {
-    if (busquedaTexto.text.isEmpty) {
-      return "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${filtroTexto()}";
-    } else {
-      return "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${filtroTexto()}/${busquedaTexto.text}";
-    }
   }
 
   String filtroTexto() {
@@ -453,7 +451,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
 
   FutureBuilder listaFutura() {
     return FutureBuilder(
-      future: ProductoModel.getProductos(url()),
+      future: ProductoModel.getProductos(filtroTexto(), busquedaTexto.text),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
@@ -693,12 +691,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         articulos,
                         cantidades,
                         "En proceso",
-                        LocalStorage.preferencias
-                            .getString('usuario')
-                            .toString(),
-                        LocalStorage.preferencias
-                            .getString('locación')
-                            .toString(),
+                        local('usuario'),
+                        local('locación'),
                       );
                       if (respuesta.toString().split(": ")[0] != "Error") {
                         Fluttertoast.showToast(

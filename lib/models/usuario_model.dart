@@ -27,7 +27,7 @@ class UsuarioModel {
     late UsuarioModel usuarioFuture;
     try {
       final res = await http.get(
-        Uri.parse("http://192.168.1.130:4000/usuarios/$usuario/$contr"),
+        Uri.parse("http://189.187.131.23:3000/usuarios/$usuario/$contr"),
       );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);

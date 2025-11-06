@@ -37,9 +37,7 @@ class _InventarioState extends State<Inventario> {
     valido = false;
     carga = false;
     ventanaConf = false;
-    busquedaTexto.text = LocalStorage.preferencias
-        .getString('busqueda')
-        .toString();
+    busquedaTexto.text = local('busqueda');
     super.initState();
   }
 
@@ -57,7 +55,10 @@ class _InventarioState extends State<Inventario> {
   }
 
   Future<void> _getProductos() async {
-    productos = await ProductoModel.getProductos(url());
+    productos = await ProductoModel.getProductos(
+      filtroTexto(),
+      busquedaTexto.text,
+    );
   }
 
   Future<void> historialOrdenes(BuildContext ctx) async {
@@ -67,9 +68,7 @@ class _InventarioState extends State<Inventario> {
     Navigator.of(context).pop();
     List<ProductoModel> listaPorid = [];
     try {
-      listaPorid = await ProductoModel.getProductos(
-        "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/id",
-      );
+      listaPorid = await ProductoModel.getProductos("id", "");
       if (listaPorid[0].nombre != "Error") {
         await LocalStorage.preferencias.setString(
           'busqueda',
@@ -98,7 +97,7 @@ class _InventarioState extends State<Inventario> {
     }
   }
 
-  Future<void> logut(BuildContext ctx) async {
+  Future<void> logout(BuildContext ctx) async {
     setState(() {
       carga = true;
     });
@@ -107,6 +106,7 @@ class _InventarioState extends State<Inventario> {
     await LocalStorage.preferencias.remove('puesto');
     await LocalStorage.preferencias.remove('locación');
     await LocalStorage.preferencias.remove('busqueda');
+    await LocalStorage.preferencias.remove('conexion');
     if (ctx.mounted) {
       Navigator.push(ctx, MaterialPageRoute(builder: (context) => Inicio()));
     } else {
@@ -243,12 +243,9 @@ class _InventarioState extends State<Inventario> {
     }
   }
 
-  String url() {
-    if (busquedaTexto.text.isEmpty) {
-      return "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${filtroTexto()}";
-    } else {
-      return "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${filtroTexto()}/${busquedaTexto.text}";
-    }
+  String local(String clave) {
+    String res = LocalStorage.preferencias.getString(clave).toString();
+    return res;
   }
 
   String filtroTexto() {
@@ -327,7 +324,7 @@ class _InventarioState extends State<Inventario> {
                       spacing: 10,
                       children: [
                         Text(
-                          "¿Seguro quieres poner todas las entradas, salidas y perdidas en 0?",
+                          "¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?",
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 25,
@@ -354,7 +351,7 @@ class _InventarioState extends State<Inventario> {
                                 try {
                                   final res = await http.put(
                                     Uri.parse(
-                                      "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/reiniciarMovimientos",
+                                      "${local('conexion')}/inventario/${local('locación')}/reiniciarMovimientos",
                                     ),
                                     headers: {
                                       "Accept": "application/json",
@@ -418,7 +415,7 @@ class _InventarioState extends State<Inventario> {
                     Text("Bienvenido, ", style: TextStyle(fontSize: 15)),
                     IconButton(
                       onPressed: () {
-                        logut(context);
+                        logout(context);
                       },
                       style: FilledButton.styleFrom(
                         padding: EdgeInsets.all(10),
@@ -437,17 +434,17 @@ class _InventarioState extends State<Inventario> {
                   ],
                 ),
                 Text(
-                  LocalStorage.preferencias.getString('usuario').toString(),
+                  local('usuario'),
                   style: TextStyle(fontSize: 30),
                   maxLines: 1,
                 ),
                 Text(
-                  LocalStorage.preferencias.getString('puesto').toString(),
+                  local('puesto'),
                   style: TextStyle(fontSize: 15),
                   maxLines: 1,
                 ),
                 Text(
-                  "Mostrando: ${LocalStorage.preferencias.getString('locación').toString()}",
+                  "Mostrando: ${local('locación')}",
                   style: TextStyle(fontSize: 20),
                 ),
               ],
@@ -853,7 +850,7 @@ class _InventarioState extends State<Inventario> {
 
   FutureBuilder listaFutura() {
     return FutureBuilder(
-      future: ProductoModel.getProductos(url()),
+      future: ProductoModel.getProductos(filtroTexto(), busquedaTexto.text),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {

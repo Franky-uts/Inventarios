@@ -65,6 +65,11 @@ class _AddproductoState extends State<Addproducto> {
     super.dispose();
   }
 
+  String local(String clave) {
+    String res = LocalStorage.preferencias.getString(clave).toString();
+    return res;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -287,12 +292,8 @@ class _AddproductoState extends State<Addproducto> {
                             int.parse(cantidadControl.text),
                             valorTipo,
                             valorArea,
-                            LocalStorage.preferencias
-                                .getString('usuario')
-                                .toString(),
-                            LocalStorage.preferencias
-                                .getString('locación')
-                                .toString(),
+                            local('usuario'),
+                            local('locación'),
                           ),
                           if (respuesta.toString().split(": ")[0] != "Error")
                             {

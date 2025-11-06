@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../services/local_storage.dart';
+
 class OrdenModel {
   int id;
   List articulos;
@@ -53,7 +55,12 @@ class OrdenModel {
     return productos;
   }
 
-  static Future<List<OrdenModel>> getOrdenes(String url) async {
+  static Future<List<OrdenModel>> getOrdenes(String filtro) async {
+    late String url;
+    String conexion = LocalStorage.preferencias
+        .getString('conexion')
+        .toString();
+    url = "$conexion/ordenes/$filtro";
     late List<OrdenModel> ordenesFuture = [];
     var res = await http.get(Uri.parse(url));
     try {
@@ -136,7 +143,9 @@ class OrdenModel {
     late String productoFuture;
     try {
       final res = await http.post(
-        Uri.parse("http://192.168.1.130:4000/ordenes/"),
+        Uri.parse(
+          "${LocalStorage.preferencias.getString('conexion').toString()}/ordenes/",
+        ),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",

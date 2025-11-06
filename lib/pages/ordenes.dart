@@ -66,6 +66,11 @@ class _OrdenesState extends State<Ordenes> {
     super.dispose();
   }
 
+  String local(String clave) {
+    String res = LocalStorage.preferencias.getString(clave).toString();
+    return res;
+  }
+
   Future editarEstado(String columna, String dato) async {
     String respuesta;
     if (dato == "finalizar") {
@@ -74,17 +79,13 @@ class _OrdenesState extends State<Ordenes> {
       dato = "Denegado";
     }
     try {
-      print(dato);
       final res = await http.put(
-        Uri.parse("http://192.168.1.130:4000/ordenes/$idVen/$columna"),
+        Uri.parse("${local('conexion')}/ordenes/$idVen/$columna"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
         },
-        body: jsonEncode({
-          'dato': dato,
-          'usuario': LocalStorage.preferencias.getString('usuario').toString(),
-        }),
+        body: jsonEncode({'dato': dato, 'usuario': local('usuario')}),
       );
       if (res.statusCode == 200) {
         respuesta = "Se modificó la orden.";
@@ -125,10 +126,6 @@ class _OrdenesState extends State<Ordenes> {
     );
   }
 
-  String url() {
-    return "http://192.168.1.130:4000/ordenes/$filtro";
-  }
-
   void filtroTexto(int valor) {
     setState(() {
       colores[1] = 0xFFFFFFFF;
@@ -157,7 +154,7 @@ class _OrdenesState extends State<Ordenes> {
     }
   }
 
-  Future<void> logut(BuildContext ctx) async {
+  Future<void> logout(BuildContext ctx) async {
     setState(() {
       carga = true;
     });
@@ -166,6 +163,7 @@ class _OrdenesState extends State<Ordenes> {
     await LocalStorage.preferencias.remove('puesto');
     await LocalStorage.preferencias.remove('locación');
     await LocalStorage.preferencias.remove('busqueda');
+    await LocalStorage.preferencias.remove('conexion');
     if (ctx.mounted) {
       Navigator.push(ctx, MaterialPageRoute(builder: (context) => Inicio()));
     } else {
@@ -310,7 +308,7 @@ class _OrdenesState extends State<Ordenes> {
         children: [
           IconButton.filled(
             onPressed: () {
-              logut(context);
+              logout(context);
             },
             tooltip: "Cerrar sesión",
             icon: Icon(Icons.logout_rounded, size: 35),
@@ -378,7 +376,7 @@ class _OrdenesState extends State<Ordenes> {
 
   FutureBuilder listaFutura() {
     return FutureBuilder(
-      future: OrdenModel.getOrdenes(url()),
+      future: OrdenModel.getOrdenes(filtro),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {

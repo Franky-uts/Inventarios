@@ -42,19 +42,21 @@ class _ProductoState extends State<Producto> {
     super.dispose();
   }
 
+  String local(String clave) {
+    String res = LocalStorage.preferencias.getString(clave).toString();
+    return res;
+  }
+
   Future guardarDatos(String columna, int dato) async {
     final res = await http.put(
       Uri.parse(
-        "http://192.168.1.130:4000/inventario/${LocalStorage.preferencias.getString('locación').toString()}/${widget.productoInfo.id}/$columna",
+        "${local('conexion')}/inventario/${local('locación')}/${widget.productoInfo.id}/$columna",
       ),
       headers: {
         "Accept": "application/json",
         "content-type": "application/json; charset=UTF-8",
       },
-      body: jsonEncode({
-        'dato': dato,
-        'usuario': LocalStorage.preferencias.getString('usuario').toString(),
-      }),
+      body: jsonEncode({'dato': dato, 'usuario': local('usuario')}),
     );
     if (res.statusCode == 200) {
       return res;

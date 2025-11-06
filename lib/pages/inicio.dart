@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
@@ -42,6 +41,74 @@ class _InicioState extends State<Inicio> {
     contr.dispose();
     usuarioContr.dispose();
     super.dispose();
+  }
+
+  void verificar(BuildContext ctx) async {
+    if (usuarioContr.text.isNotEmpty && contr.text.isNotEmpty) {
+      setState(() {
+        carga = !carga;
+      });
+      usuarioMod = await UsuarioModel.getUsuario(usuarioContr.text, contr.text);
+      if (usuarioMod.nombre != "error") {
+        await LocalStorage.preferencias.setString(
+          'conexion',
+          "http://189.187.131.23:3000",
+        );
+        await LocalStorage.preferencias.setString('usuario', usuarioMod.nombre);
+        await LocalStorage.preferencias.setString('puesto', usuarioMod.puesto);
+        await LocalStorage.preferencias.setString(
+          'locación',
+          usuarioMod.locacion,
+        );
+        await LocalStorage.preferencias.setString('busqueda', "");
+        if (ctx.mounted) {
+          if (usuarioMod.puesto == "Proveedor") {
+            Navigator.push(ctx, MaterialPageRoute(builder: (ctx) => Ordenes()));
+          } else {
+            Navigator.push(
+              ctx,
+              MaterialPageRoute(builder: (ctx) => Inventario()),
+            );
+          }
+        }
+      } else {
+        if (usuarioMod.puesto == "El usuario no existe") {
+          setState(() {
+            carga = !carga;
+            colorUsu = 0xFFFF0000;
+          });
+        } else if (usuarioMod.puesto == "Contraseña incorrecta") {
+          setState(() {
+            carga = !carga;
+            colorCont = 0xFFFF0000;
+          });
+        } else {
+          Fluttertoast.showToast(
+            msg: usuarioMod.puesto,
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            backgroundColor: Colors.grey,
+            textColor: Colors.white,
+            fontSize: 15,
+          );
+          setState(() {
+            carga = !carga;
+            colorUsu = 0xFFFFFFFF;
+            colorCont = 0xFFFFFFFF;
+          });
+        }
+      }
+    }
+    if (usuarioContr.text.isEmpty) {
+      setState(() {
+        colorUsu = 0xFFFF0000;
+      });
+    }
+    if (contr.text.isEmpty) {
+      setState(() {
+        colorCont = 0xFFFF0000;
+      });
+    }
   }
 
   @override
@@ -145,102 +212,7 @@ class _InicioState extends State<Inicio> {
                       colorCont = 0xFFFFFFFF;
                       colorUsu = 0xFFFFFFFF;
                     }),
-                    if (usuarioContr.text.isNotEmpty && contr.text.isNotEmpty)
-                      {
-                        setState(() {
-                          carga = !carga;
-                        }),
-                        usuarioMod = await UsuarioModel.getUsuario(
-                          usuarioContr.text,
-                          contr.text,
-                        ),
-                        if (usuarioMod.nombre != "error")
-                          {
-                            await LocalStorage.preferencias.setString(
-                              'usuario',
-                              usuarioMod.nombre,
-                            ),
-                            await LocalStorage.preferencias.setString(
-                              'puesto',
-                              usuarioMod.puesto,
-                            ),
-                            await LocalStorage.preferencias.setString(
-                              'locación',
-                              usuarioMod.locacion,
-                            ),
-                            await LocalStorage.preferencias.setString(
-                              'busqueda',
-                              "",
-                            ),
-                            if (context.mounted)
-                              {
-                                if (usuarioMod.puesto == "Proveedor")
-                                  {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Ordenes(),
-                                      ),
-                                    ),
-                                  }
-                                else
-                                  {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => Inventario(),
-                                      ),
-                                    ),
-                                  },
-                              },
-                          }
-                        else
-                          {
-                            if (usuarioMod.puesto == "El usuario no existe")
-                              {
-                                setState(() {
-                                  carga = !carga;
-                                  colorUsu = 0xFFFF0000;
-                                }),
-                              }
-                            else if (usuarioMod.puesto ==
-                                "Contraseña incorrecta")
-                              {
-                                setState(() {
-                                  carga = !carga;
-                                  colorCont = 0xFFFF0000;
-                                }),
-                              }
-                            else
-                              {
-                                Fluttertoast.showToast(
-                                  msg: usuarioMod.puesto,
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  backgroundColor: Colors.grey,
-                                  textColor: Colors.white,
-                                  fontSize: 15,
-                                ),
-                                setState(() {
-                                  carga = !carga;
-                                  colorUsu = 0xFFFFFFFF;
-                                  colorCont = 0xFFFFFFFF;
-                                }),
-                              },
-                          },
-                      },
-                    if (usuarioContr.text.isEmpty)
-                      {
-                        setState(() {
-                          colorUsu = 0xFFFF0000;
-                        }),
-                      },
-                    if (contr.text.isEmpty)
-                      {
-                        setState(() {
-                          colorCont = 0xFFFF0000;
-                        }),
-                      },
+                    verificar(context),
                   },
                   style: IconButton.styleFrom(
                     padding: EdgeInsets.all(15),
