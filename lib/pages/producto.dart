@@ -244,14 +244,14 @@ class _ProductoState extends State<Producto> {
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width * .5,
-                    height: 45,
+                    height: 50,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Text("Unidades:", style: TextStyle(fontSize: 20)),
+                        tipoTexto(widget.productoInfo.tipo),
                         Container(
-                          width: MediaQuery.of(context).size.width * .275,
+                          width: MediaQuery.of(context).size.width * .26,
                           height: 1,
                           decoration: BoxDecoration(
                             border: Border(
@@ -277,18 +277,8 @@ class _ProductoState extends State<Producto> {
                       ],
                     ),
                   ),
-                  contenedorInfo(
-                    "Cajas que entraron:",
-                    cajasEntrantes,
-                    1,
-                    color[0],
-                  ),
-                  contenedorInfo(
-                    "Cajas que salieron:",
-                    cajasSalida,
-                    2,
-                    color[1],
-                  ),
+                  contenedorInfo(" que entraron:", cajasEntrantes, 1, color[0]),
+                  contenedorInfo(" que salieron:", cajasSalida, 2, color[1]),
                   contenedorInfo(
                     "Productos perdidos:",
                     productosPerdido,
@@ -365,6 +355,48 @@ class _ProductoState extends State<Producto> {
     );
   }
 
+  Widget tipoTexto(String tipo) {
+    if (tipo == "Granel" || tipo == "Costal") {
+      return Column(
+        children: [
+          Text("Unidades:", style: TextStyle(fontSize: 20)),
+          Text(
+            "Kilos por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}",
+            style: TextStyle(fontSize: 15, color: Colors.grey),
+          ),
+        ],
+      );
+    } else if (tipo == "Caja" || tipo == "Bulto") {
+      return Column(
+        children: [
+          Text("${tipo}s:", style: TextStyle(fontSize: 20)),
+          Text(
+            "Productos por $tipo: ${widget.productoInfo.cantidadPorUnidad.toString()}",
+            style: TextStyle(fontSize: 15, color: Colors.grey),
+          ),
+        ],
+      );
+    } else if (tipo == "Galón") {
+      return Text("Galones:", style: TextStyle(fontSize: 20));
+    } else {
+      return Text("${tipo}s:", style: TextStyle(fontSize: 20));
+    }
+  }
+
+  Text textoTipoContenedorInfo(String textoInfo, String tipo) {
+    if (textoInfo != "Productos perdidos:") {
+      if (tipo == "Granel") {
+        return Text("Unidades$textoInfo", style: TextStyle(fontSize: 20));
+      } else if (tipo == "Galón") {
+        return Text("Galones$textoInfo", style: TextStyle(fontSize: 20));
+      } else {
+        return Text("${tipo}s$textoInfo", style: TextStyle(fontSize: 20));
+      }
+    } else {
+      return Text(textoInfo, style: TextStyle(fontSize: 20));
+    }
+  }
+
   SizedBox contenedorInfo(
     String textoInfo,
     int textoValor,
@@ -378,7 +410,7 @@ class _ProductoState extends State<Producto> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(textoInfo, style: TextStyle(fontSize: 20)),
+          textoTipoContenedorInfo(textoInfo, widget.productoInfo.tipo),
           Container(
             width: MediaQuery.of(context).size.width * .25,
             height: 1,
