@@ -18,7 +18,7 @@ class Ordenes extends StatefulWidget {
 
 class _OrdenesState extends State<Ordenes> {
   static List<OrdenModel> ordenes = [];
-  final List<int> colores = [0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF];
+  final List<int> colores = [0xFF8F01AF, 0xFFFFFFFF, 0xFFFFFFFF];
   late List artVen = [];
   late List canVen = [];
   late bool valido;
@@ -41,9 +41,6 @@ class _OrdenesState extends State<Ordenes> {
     carga = false;
     filtro = "id";
     accion = "";
-    colores[0] = 0xFF000000;
-    colores[1] = 0xFFFFFFFF;
-    colores[2] = 0xFFFFFFFF;
     super.initState();
   }
 
@@ -120,7 +117,7 @@ class _OrdenesState extends State<Ordenes> {
       msg: texto,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.grey,
+      backgroundColor: Color(0x80FDC930),
       textColor: Colors.white,
       fontSize: 15,
     );
@@ -136,19 +133,19 @@ class _OrdenesState extends State<Ordenes> {
       case (1):
         setState(() {
           filtro = "id";
-          colores[0] = 0xFF000000;
+          colores[0] = 0xFF8F01AF;
         });
         break;
       case (2):
         setState(() {
           filtro = "Estado";
-          colores[1] = 0xFF000000;
+          colores[1] = 0xFF8F01AF;
         });
         break;
       case (3):
         setState(() {
           filtro = "Remitente";
-          colores[2] = 0xFF000000;
+          colores[2] = 0xFF8F01AF;
         });
         break;
     }
@@ -176,8 +173,7 @@ class _OrdenesState extends State<Ordenes> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
         child: Stack(
@@ -199,7 +195,7 @@ class _OrdenesState extends State<Ordenes> {
             Visibility(
               visible: ventanaDatos,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
+                padding: EdgeInsets.symmetric(horizontal: 89, vertical: 30),
                 decoration: BoxDecoration(color: Colors.black38),
                 child: Center(child: contenidoVentana()),
               ),
@@ -215,7 +211,10 @@ class _OrdenesState extends State<Ordenes> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadiusGeometry.circular(25),
-                      border: BoxBorder.all(color: Colors.black54),
+                      border: BoxBorder.all(
+                        color: Color(0xFFFDC930),
+                        width: 2.5,
+                      ),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -226,6 +225,7 @@ class _OrdenesState extends State<Ordenes> {
                           "¿Segur@ que quieres $accion la orden?",
                           textAlign: TextAlign.center,
                           style: TextStyle(
+                            color: Color(0xFF8F01AF),
                             fontSize: 25,
                             fontWeight: FontWeight.w500,
                           ),
@@ -241,13 +241,17 @@ class _OrdenesState extends State<Ordenes> {
                                 });
                               },
                               style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: Colors.black, width: 1),
+                                backgroundColor: Color(0xFF8F01AF),
+                                side: BorderSide(
+                                  color: Color(0xFFF6AFCF),
+                                  width: 2,
+                                ),
                               ),
                               child: Text(
                                 "No, volver",
                                 style: TextStyle(
                                   fontSize: 17.5,
-                                  color: Colors.black,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -268,13 +272,17 @@ class _OrdenesState extends State<Ordenes> {
                                 });
                               },
                               style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: Colors.black, width: 1),
+                                backgroundColor: Color(0xFF8F01AF),
+                                side: BorderSide(
+                                  color: Color(0xFFF6AFCF),
+                                  width: 2,
+                                ),
                               ),
                               child: Text(
                                 "Si, $accion",
                                 style: TextStyle(
                                   fontSize: 17.5,
-                                  color: Colors.black,
+                                  color: Colors.white,
                                 ),
                               ),
                             ),
@@ -290,7 +298,9 @@ class _OrdenesState extends State<Ordenes> {
               visible: carga,
               child: Container(
                 decoration: BoxDecoration(color: Colors.black45),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
+                ),
               ),
             ),
           ],
@@ -313,7 +323,7 @@ class _OrdenesState extends State<Ordenes> {
             tooltip: "Cerrar sesión",
             icon: Icon(Icons.logout_rounded, size: 35),
             style: IconButton.styleFrom(
-              backgroundColor: Colors.black,
+              backgroundColor: Color(0xFF8F01AF),
               shape: ContinuousRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
@@ -323,8 +333,12 @@ class _OrdenesState extends State<Ordenes> {
             onPressed: () {
               filtroTexto(1);
             },
-            label: Text("ID", style: TextStyle(color: Colors.black)),
-            icon: Icon(Icons.numbers_rounded, size: 25, color: Colors.black),
+            label: Text("ID", style: TextStyle(color: Color(0xFF8F01AF))),
+            icon: Icon(
+              Icons.numbers_rounded,
+              size: 25,
+              color: Color(0xFF8F01AF),
+            ),
             style: IconButton.styleFrom(
               side: BorderSide(color: Color(colores[0]), width: 2),
               backgroundColor: Colors.white,
@@ -337,11 +351,11 @@ class _OrdenesState extends State<Ordenes> {
             onPressed: () {
               filtroTexto(2);
             },
-            label: Text("Estado", style: TextStyle(color: Colors.black)),
+            label: Text("Estado", style: TextStyle(color: Color(0xFF8F01AF))),
             icon: Icon(
               Icons.query_builder_rounded,
               size: 25,
-              color: Colors.black,
+              color: Color(0xFF8F01AF),
             ),
             style: IconButton.styleFrom(
               side: BorderSide(color: Color(colores[1]), width: 2),
@@ -355,11 +369,14 @@ class _OrdenesState extends State<Ordenes> {
             onPressed: () {
               filtroTexto(3);
             },
-            label: Text("Remitente", style: TextStyle(color: Colors.black)),
+            label: Text(
+              "Remitente",
+              style: TextStyle(color: Color(0xFF8F01AF)),
+            ),
             icon: Icon(
               Icons.perm_identity_outlined,
               size: 25,
-              color: Colors.black,
+              color: Color(0xFF8F01AF),
             ),
             style: IconButton.styleFrom(
               side: BorderSide(color: Color(colores[2]), width: 2),
@@ -405,7 +422,9 @@ class _OrdenesState extends State<Ordenes> {
             return Center(child: Text("No se recuperaron órdenes."));
           }
         }
-        return Center(child: CircularProgressIndicator());
+        return Center(
+          child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
+        );
       },
     );
   }
@@ -414,13 +433,15 @@ class _OrdenesState extends State<Ordenes> {
     return ListView.separated(
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
-      separatorBuilder: (context, index) =>
-          Container(height: 2, decoration: BoxDecoration(color: Colors.grey)),
+      separatorBuilder: (context, index) => Container(
+        height: 2,
+        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+      ),
       itemBuilder: (context, index) {
         return Container(
           width: MediaQuery.sizeOf(context).width,
           height: 40,
-          decoration: BoxDecoration(color: Colors.white54),
+          decoration: BoxDecoration(color: Colors.white),
           child: TextButton(
             onPressed: () => {
               setState(() {
@@ -477,7 +498,7 @@ class _OrdenesState extends State<Ordenes> {
   Container contenedorInfo() {
     return Container(
       width: MediaQuery.sizeOf(context).width,
-      decoration: BoxDecoration(color: Colors.grey),
+      decoration: BoxDecoration(color: Color(0xFF8F01AF)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -522,7 +543,7 @@ class _OrdenesState extends State<Ordenes> {
       texto,
       textAlign: alineamiento,
       maxLines: 1,
-      style: TextStyle(color: Colors.black, fontSize: tamanoFuente),
+      style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
     ),
   );
 
@@ -530,7 +551,7 @@ class _OrdenesState extends State<Ordenes> {
     return VerticalDivider(
       thickness: 1,
       width: 0,
-      color: Colors.grey,
+      color: Color(0xFFFDC930),
       indent: 5,
       endIndent: 5,
     );
@@ -543,7 +564,7 @@ class _OrdenesState extends State<Ordenes> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadiusGeometry.circular(25),
-        border: BoxBorder.all(color: Colors.black54),
+        border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -556,19 +577,27 @@ class _OrdenesState extends State<Ordenes> {
               Text(
                 "Id de la orden: $idVen",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: Color(0xFF8F01AF),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
               Text(
                 "Estado: $estVen",
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+                style: TextStyle(
+                  color: Color(0xFF8F01AF),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
           Container(
             width: MediaQuery.sizeOf(context).width,
             margin: EdgeInsets.zero,
-            decoration: BoxDecoration(color: Colors.grey),
+            decoration: BoxDecoration(color: Color(0xFF8F01AF)),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -581,14 +610,14 @@ class _OrdenesState extends State<Ordenes> {
           ),
           Container(
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height - 195,
+            height: MediaQuery.of(context).size.height - 198,
             margin: EdgeInsets.zero,
             child: ListView.separated(
               itemCount: artVen.length,
               scrollDirection: Axis.vertical,
               separatorBuilder: (context, index) => Container(
                 height: 2,
-                decoration: BoxDecoration(color: Colors.grey),
+                decoration: BoxDecoration(color: Color(0xFFFDC930)),
               ),
               itemBuilder: (context, index) {
                 return Container(
@@ -625,15 +654,15 @@ class _OrdenesState extends State<Ordenes> {
                 children: [
                   Text(
                     "Destino: $desVen",
-                    style: TextStyle(color: Colors.grey, fontSize: 15),
+                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 15),
                   ),
                   Text(
                     "Remitente: $remVen",
-                    style: TextStyle(color: Colors.grey, fontSize: 15),
+                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 15),
                   ),
                   Text(
                     "Última modificación: $modVen",
-                    style: TextStyle(color: Colors.grey, fontSize: 15),
+                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 15),
                   ),
                 ],
               ),
@@ -648,11 +677,12 @@ class _OrdenesState extends State<Ordenes> {
                       });
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.black, width: 1),
+                      backgroundColor: Color(0xFF8F01AF),
+                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2),
                     ),
                     child: Text(
                       "Cerrar",
-                      style: TextStyle(fontSize: 17.5, color: Colors.black),
+                      style: TextStyle(fontSize: 17.5, color: Colors.white),
                     ),
                   ),
                   TextButton(
@@ -660,11 +690,12 @@ class _OrdenesState extends State<Ordenes> {
                       cambiarEstado("denegar");
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.black, width: 1),
+                      backgroundColor: Color(0xFF8F01AF),
+                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2),
                     ),
                     child: Text(
                       "Denegar",
-                      style: TextStyle(fontSize: 17.5, color: Colors.black),
+                      style: TextStyle(fontSize: 17.5, color: Colors.white),
                     ),
                   ),
                   TextButton(
@@ -672,11 +703,12 @@ class _OrdenesState extends State<Ordenes> {
                       cambiarEstado("finalizar");
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.black, width: 1),
+                      backgroundColor: Color(0xFF8F01AF),
+                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2),
                     ),
                     child: Text(
                       "Finalizar",
-                      style: TextStyle(fontSize: 17.5, color: Colors.black),
+                      style: TextStyle(fontSize: 17.5, color: Colors.white),
                     ),
                   ),
                 ],

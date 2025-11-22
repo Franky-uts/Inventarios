@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:inventarios/models/usuario_model.dart';
@@ -50,10 +51,18 @@ class _InicioState extends State<Inicio> {
       });
       usuarioMod = await UsuarioModel.getUsuario(usuarioContr.text, contr.text);
       if (usuarioMod.nombre != "error") {
-        await LocalStorage.preferencias.setString(
-          'conexion',
-          "http://189.187.131.23:3000",
-        );
+        if (kIsWeb) {
+          await LocalStorage.preferencias.setString(
+            'conexion',
+            "http://127.0.0.1:3000",
+          );
+        } else {
+          await LocalStorage.preferencias.setString(
+            'conexion',
+            "http://187.193.118.129:3000",
+          );
+        }
+
         await LocalStorage.preferencias.setString('usuario', usuarioMod.nombre);
         await LocalStorage.preferencias.setString('puesto', usuarioMod.puesto);
         await LocalStorage.preferencias.setString(
@@ -87,7 +96,7 @@ class _InicioState extends State<Inicio> {
             msg: usuarioMod.puesto,
             toastLength: Toast.LENGTH_SHORT,
             gravity: ToastGravity.BOTTOM,
-            backgroundColor: Colors.grey,
+            backgroundColor: Color(0x80FDC930),
             textColor: Colors.white,
             fontSize: 15,
           );
@@ -114,123 +123,185 @@ class _InicioState extends State<Inicio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
+      backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
-        child: Container(
-          alignment: Alignment.center,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: MediaQuery.of(context).size.width * .75,
-                margin: EdgeInsets.symmetric(vertical: 10),
-                child: TextField(
-                  controller: usuarioContr,
-                  onTapOutside: (event) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  decoration: InputDecoration(
-                    filled: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide(color: Colors.black, width: 10),
+        child: Stack(
+          children: [
+            Container(
+              alignment: Alignment.center,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(bottom: 10),
+                      child: Image.asset(
+                        'assets/logo.jpg',
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide(color: Colors.black, width: 2),
-                    ),
-                    prefixIcon: Icon(Icons.person_rounded),
-                    prefixIconColor: Colors.black,
-                    suffixIcon: Icon(Icons.warning_rounded),
-                    suffixIconColor: Color(colorUsu),
-                    fillColor: Colors.white,
-                    label: Text(
-                      "Usuario",
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    width: MediaQuery.of(context).size.width * .693,
-                    margin: EdgeInsets.symmetric(vertical: 20, horizontal: 0),
-                    alignment: Alignment.center,
-                    child: TextField(
-                      obscureText: verContr,
-                      controller: contr,
-                      onTapOutside: (event) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                      },
-                      decoration: InputDecoration(
-                        filled: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide(color: Colors.black, width: 1),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(30),
-                          borderSide: BorderSide(color: Colors.black, width: 2),
-                        ),
-                        prefixIcon: Icon(Icons.lock_rounded),
-                        prefixIconColor: Colors.black,
-                        suffixIcon: Icon(Icons.warning_rounded),
-                        suffixIconColor: Color(colorCont),
-                        fillColor: Colors.white,
-                        label: Text(
-                          "Contraseña",
-                          style: TextStyle(color: Colors.black),
+                    Container(
+                      width: MediaQuery.of(context).size.width * .75,
+                      margin: EdgeInsets.symmetric(vertical: 10),
+                      child: TextField(
+                        controller: usuarioContr,
+                        onTapOutside: (event) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                        cursorColor: Color(0xFF8F01AF),
+                        style: TextStyle(color: Color(0xFF8F01AF)),
+                        decoration: InputDecoration(
+                          filled: true,
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide(
+                              color: Color(0xFFFDC930),
+                              width: 3.5,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(30),
+                            borderSide: BorderSide(
+                              color: Color(0xFFFDC930),
+                              width: 3.5,
+                            ),
+                          ),
+                          prefixIcon: Icon(Icons.person_rounded),
+                          prefixIconColor: Color(0xFF8F01AF),
+                          suffixIcon: Icon(Icons.warning_rounded),
+                          suffixIconColor: Color(colorUsu),
+                          fillColor: Colors.white,
+                          label: Text(
+                            "Usuario",
+                            style: TextStyle(color: Color(0xFF8F01AF)),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        verContr = !verContr;
-                        if (verContr) {
-                          iconoContr = Icons.remove_red_eye_rounded;
-                        } else {
-                          iconoContr = Icons.remove_red_eye_outlined;
-                        }
-                      });
-                    },
-                    icon: Icon(iconoContr, color: Colors.black, size: 25),
-                  ),
-                ],
-              ),
-              Visibility(
-                visible: carga,
-                child: TextButton.icon(
-                  onPressed: () async => {
-                    setState(() {
-                      colorCont = 0xFFFFFFFF;
-                      colorUsu = 0xFFFFFFFF;
-                    }),
-                    verificar(context),
-                  },
-                  style: IconButton.styleFrom(
-                    padding: EdgeInsets.all(15),
-                    backgroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: MediaQuery.of(context).size.width * .693,
+                          margin: EdgeInsets.symmetric(
+                            vertical: 20,
+                            horizontal: 0,
+                          ),
+                          alignment: Alignment.center,
+                          child: TextField(
+                            obscureText: verContr,
+                            controller: contr,
+                            onTapOutside: (event) {
+                              FocusManager.instance.primaryFocus?.unfocus();
+                            },
+                            cursorColor: Color(0xFF8F01AF),
+                            style: TextStyle(color: Color(0xFF8F01AF)),
+                            decoration: InputDecoration(
+                              filled: true,
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide(
+                                  color: Color(0xFFFDC930),
+                                  width: 3.5,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(30),
+                                borderSide: BorderSide(
+                                  color: Color(0xFFFDC930),
+                                  width: 3.5,
+                                ),
+                              ),
+                              prefixIcon: Icon(Icons.lock_rounded),
+                              prefixIconColor: Color(0xFF8F01AF),
+                              suffixIcon: Icon(Icons.warning_rounded),
+                              suffixIconColor: Color(colorCont),
+                              fillColor: Colors.white,
+                              label: Text(
+                                "Contraseña",
+                                style: TextStyle(color: Color(0xFF8F01AF)),
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            setState(() {
+                              verContr = !verContr;
+                              if (verContr) {
+                                iconoContr = Icons.remove_red_eye_rounded;
+                              } else {
+                                iconoContr = Icons.remove_red_eye_outlined;
+                              }
+                            });
+                          },
+                          icon: Icon(
+                            iconoContr,
+                            color: Color(0xFFFFFFFF),
+                            size: 25,
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  icon: Icon(Icons.login_rounded, color: Colors.white),
-                  label: Text(
-                    "Ingresar",
-                    style: TextStyle(color: Colors.white),
+                    Visibility(
+                      visible: carga,
+                      child: TextButton.icon(
+                        onPressed: () async => {
+                          setState(() {
+                            colorCont = 0xFFFFFFFF;
+                            colorUsu = 0xFFFFFFFF;
+                          }),
+                          verificar(context),
+                        },
+                        style: IconButton.styleFrom(
+                          padding: EdgeInsets.all(15),
+                          backgroundColor: Color(0xFF8A03A9),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        icon: Icon(Icons.login_rounded, color: Colors.white),
+                        label: Text(
+                          "Ingresar",
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    Visibility(
+                      visible: !carga,
+                      child: CircularProgressIndicator(
+                        color: Color(0xFFF6AFCF),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.all(10),
+              alignment: Alignment.topLeft,
+              child: IconButton.filled(
+                onPressed: () {
+                  if (kIsWeb) {
+                    print("web");
+                  } else {
+                    print("otra mamada");
+                  }
+                },
+                icon: Icon(Icons.settings, size: 35, color: Color(0xFFFFFFFF)),
+                style: IconButton.styleFrom(
+                  backgroundColor: Color(0xFF8F01AF),
+                  shape: ContinuousRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
                   ),
                 ),
               ),
-              Visibility(visible: !carga, child: CircularProgressIndicator()),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

@@ -88,6 +88,9 @@ class _InventarioState extends State<Inventario> {
         }
       } else {
         toast(listaPorid[0].tipo);
+        setState(() {
+          carga = false;
+        });
       }
     } catch (e) {
       toast("Error: ${e.toString()}");
@@ -275,7 +278,7 @@ class _InventarioState extends State<Inventario> {
       msg: texto,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.grey,
+      backgroundColor: Color(0x80FDC930),
       textColor: Colors.white,
       fontSize: 15,
     );
@@ -285,30 +288,31 @@ class _InventarioState extends State<Inventario> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: drawer(),
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
         child: Stack(
           children: [
             Builder(
-              builder: (context) => Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  barraDeBusqueda(context),
-                  contenedorInfo(),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 97,
-                    child: listaFutura(),
-                  ),
-                ],
+              builder: (context) => SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    barraDeBusqueda(context),
+                    contenedorInfo(),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height - 97,
+                      child: listaFutura(),
+                    ),
+                  ],
+                ),
               ),
             ),
             Visibility(
               visible: ventanaConf,
               child: Container(
-                padding: EdgeInsets.all(90),
+                padding: EdgeInsets.all(100),
                 decoration: BoxDecoration(color: Colors.black38),
                 child: Center(
                   child: Container(
@@ -316,7 +320,7 @@ class _InventarioState extends State<Inventario> {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadiusGeometry.circular(25),
-                      border: BoxBorder.all(color: Colors.black54),
+                      border: BoxBorder.all(color: Color(0xFFFDC930), width: 3),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -327,6 +331,7 @@ class _InventarioState extends State<Inventario> {
                           "¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?",
                           textAlign: TextAlign.center,
                           style: TextStyle(
+                            color: Color(0xFF8F01AF),
                             fontSize: 25,
                             fontWeight: FontWeight.w500,
                           ),
@@ -336,14 +341,34 @@ class _InventarioState extends State<Inventario> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
                             OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Color(0xFF8F01AF),
+                                side: BorderSide(
+                                  color: Color(0xFFF6AFCF),
+                                  width: 2,
+                                ),
+                              ),
                               onPressed: () {
                                 setState(() {
                                   ventanaConf = false;
                                 });
                               },
-                              child: Text("No", style: TextStyle(fontSize: 20)),
+                              child: Text(
+                                "No",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Color(0xFFFFFFFF),
+                                ),
+                              ),
                             ),
                             OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                backgroundColor: Color(0xFF8F01AF),
+                                side: BorderSide(
+                                  color: Color(0xFFF6AFCF),
+                                  width: 2,
+                                ),
+                              ),
                               onPressed: () async {
                                 setState(() {
                                   ventanaConf = false;
@@ -372,7 +397,13 @@ class _InventarioState extends State<Inventario> {
                                   toast("Error: ${e.toString()}");
                                 }
                               },
-                              child: Text("Si", style: TextStyle(fontSize: 20)),
+                              child: Text(
+                                "Si",
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
                             SizedBox(width: 10),
                           ],
@@ -387,7 +418,9 @@ class _InventarioState extends State<Inventario> {
               visible: carga,
               child: Container(
                 decoration: BoxDecoration(color: Colors.black45),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
+                ),
               ),
             ),
           ],
@@ -401,7 +434,7 @@ class _InventarioState extends State<Inventario> {
       child: ListView(
         children: [
           DrawerHeader(
-            decoration: BoxDecoration(color: Colors.grey),
+            decoration: BoxDecoration(color: Color(0xFFFDC930)),
             margin: EdgeInsets.zero,
             padding: EdgeInsets.all(6.5),
             child: Column(
@@ -412,22 +445,25 @@ class _InventarioState extends State<Inventario> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text("Bienvenido, ", style: TextStyle(fontSize: 15)),
+                    Text(
+                      "Bienvenido, ",
+                      style: TextStyle(fontSize: 15, color: Color(0xFF8F01AF)),
+                    ),
                     IconButton(
                       onPressed: () {
                         logout(context);
                       },
                       style: FilledButton.styleFrom(
                         padding: EdgeInsets.all(10),
-                        backgroundColor: Colors.white,
+                        backgroundColor: Color(0xFFFFFFFF),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
-                          side: BorderSide(color: Colors.black, width: 3),
+                          side: BorderSide(color: Color(0xFF8F01AF), width: 3),
                         ),
                       ),
                       icon: Icon(
                         Icons.logout_rounded,
-                        color: Colors.black,
+                        color: Color(0xFF8F01AF),
                         size: 25,
                       ),
                     ),
@@ -435,24 +471,24 @@ class _InventarioState extends State<Inventario> {
                 ),
                 Text(
                   local('usuario'),
-                  style: TextStyle(fontSize: 30),
+                  style: TextStyle(fontSize: 30, color: Color(0xFF8F01AF)),
                   maxLines: 1,
                 ),
                 Text(
                   local('puesto'),
-                  style: TextStyle(fontSize: 15),
+                  style: TextStyle(fontSize: 15, color: Color(0xFF8F01AF)),
                   maxLines: 1,
                 ),
                 Text(
                   "Mostrando: ${local('locación')}",
-                  style: TextStyle(fontSize: 20),
+                  style: TextStyle(fontSize: 20, color: Color(0xFF8F01AF)),
                 ),
               ],
             ),
           ),
           Container(
             height: MediaQuery.of(context).size.height * .585,
-            decoration: BoxDecoration(color: Colors.white),
+            decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -468,7 +504,7 @@ class _InventarioState extends State<Inventario> {
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                    backgroundColor: Colors.black,
+                    backgroundColor: Color(0xFF8F01AF),
                   ),
                   icon: Icon(
                     Icons.download_rounded,
@@ -493,7 +529,7 @@ class _InventarioState extends State<Inventario> {
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                    backgroundColor: Colors.black,
+                    backgroundColor: Color(0xFF8F01AF),
                   ),
                   icon: Icon(
                     Icons.refresh_rounded,
@@ -515,7 +551,7 @@ class _InventarioState extends State<Inventario> {
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                    backgroundColor: Colors.black,
+                    backgroundColor: Color(0xFF8F01AF),
                   ),
                   icon: Icon(
                     Icons.edit_note_rounded,
@@ -540,17 +576,17 @@ class _InventarioState extends State<Inventario> {
                     backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(25),
-                      side: BorderSide(color: Colors.black, width: 5),
+                      side: BorderSide(color: Color(0xFF8F01AF), width: 5),
                     ),
                   ),
                   icon: Icon(
                     Icons.add_shopping_cart_rounded,
-                    color: Colors.black,
+                    color: Color(0xFF8F01AF),
                     size: 25,
                   ),
                   label: Text(
                     "Nueva orden",
-                    style: TextStyle(fontSize: 20, color: Colors.black),
+                    style: TextStyle(fontSize: 20, color: Color(0xFF8F01AF)),
                   ),
                 ),
               ],
@@ -561,7 +597,7 @@ class _InventarioState extends State<Inventario> {
     );
   }
 
-  AppBar appBar() {
+  /*AppBar appBar() {
     return AppBar(
       title: Text(
         "Inventario",
@@ -580,7 +616,7 @@ class _InventarioState extends State<Inventario> {
         child: Icon(Icons.menu_rounded, size: 30),
       ),
     );
-  }
+  }*/
 
   Widget barraDeBusqueda(BuildContext context) {
     return Row(
@@ -591,9 +627,9 @@ class _InventarioState extends State<Inventario> {
           onPressed: () {
             Scaffold.of(context).openDrawer();
           },
-          icon: Icon(Icons.menu_rounded, size: 35),
+          icon: Icon(Icons.menu_rounded, size: 35, color: Color(0xFFFFFFFF)),
           style: IconButton.styleFrom(
-            backgroundColor: Colors.black,
+            backgroundColor: Color(0xFF8F01AF),
             shape: ContinuousRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
@@ -605,6 +641,7 @@ class _InventarioState extends State<Inventario> {
           child: TextField(
             controller: busquedaTexto,
             focusNode: focusBusqueda,
+            cursorColor: Color(0xFF8F01AF),
             onSubmitted: (event) {
               _getProductos();
             },
@@ -614,15 +651,16 @@ class _InventarioState extends State<Inventario> {
               }
               FocusManager.instance.primaryFocus?.unfocus();
             },
+            style: TextStyle(color: Color(0xFF8F01AF)),
             decoration: InputDecoration(
               filled: true,
-              border: OutlineInputBorder(
+              enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey, width: 1),
+                borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.black, width: 2),
+                borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
               ),
               fillColor: Colors.white,
               suffixIcon: Container(
@@ -630,8 +668,9 @@ class _InventarioState extends State<Inventario> {
                 child: botonBusqueda(),
               ),
               prefixIcon: PopupMenuButton<Filtros>(
-                icon: Icon(Icons.filter_list_rounded),
+                icon: Icon(Icons.filter_list_rounded, color: Color(0xFF8F01AF)),
                 initialValue: seleccionFiltro,
+                color: Colors.white,
                 onSelected: (Filtros filtro) {
                   setState(() {
                     seleccionFiltro = filtro;
@@ -642,24 +681,48 @@ class _InventarioState extends State<Inventario> {
                     <PopupMenuEntry<Filtros>>[
                       PopupMenuItem<Filtros>(
                         value: Filtros.id,
-                        child: Text("id"),
+                        child: Text(
+                          "id",
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            color: Color(0xFF8F01AF),
+                          ),
+                        ),
                       ),
                       PopupMenuItem<Filtros>(
                         value: Filtros.nombre,
-                        child: Text("Nombre"),
+                        child: Text(
+                          "Nombre",
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            color: Color(0xFF8F01AF),
+                          ),
+                        ),
                       ),
                       PopupMenuItem<Filtros>(
                         value: Filtros.tipo,
-                        child: Text("Tipo"),
+                        child: Text(
+                          "Tipo",
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            color: Color(0xFF8F01AF),
+                          ),
+                        ),
                       ),
                       PopupMenuItem<Filtros>(
                         value: Filtros.area,
-                        child: Text("Área"),
+                        child: Text(
+                          "Área",
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            color: Color(0xFF8F01AF),
+                          ),
+                        ),
                       ),
                     ],
               ),
               hintText: "Buscar",
-              hintStyle: TextStyle(color: Colors.grey),
+              hintStyle: TextStyle(color: Color(0xFFF6AFCF)),
             ),
           ),
         ),
@@ -680,7 +743,7 @@ class _InventarioState extends State<Inventario> {
             });
           }
         },
-        icon: Icon(Icons.search),
+        icon: Icon(Icons.search, color: Color(0xFF8F01AF)),
       );
     } else {
       return IconButton(
@@ -691,7 +754,7 @@ class _InventarioState extends State<Inventario> {
           });
           _getProductos();
         },
-        icon: Icon(Icons.close_rounded),
+        icon: Icon(Icons.close_rounded, color: Color(0xFF8F01AF)),
       );
     }
   }
@@ -699,7 +762,7 @@ class _InventarioState extends State<Inventario> {
   Container contenedorInfo() {
     return Container(
       width: MediaQuery.sizeOf(context).width,
-      decoration: BoxDecoration(color: Colors.grey),
+      decoration: BoxDecoration(color: Color(0xFF8F01AF)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -728,7 +791,7 @@ class _InventarioState extends State<Inventario> {
     return VerticalDivider(
       thickness: 1,
       width: 0,
-      color: Colors.grey,
+      color: Color(0xFFFDC930),
       indent: 5,
       endIndent: 5,
     );
@@ -747,9 +810,10 @@ class _InventarioState extends State<Inventario> {
     ),
     child: Text(
       texto,
+      overflow: TextOverflow.ellipsis,
       textAlign: alineamiento,
       maxLines: 1,
-      style: TextStyle(color: Colors.black, fontSize: tamanoFuente),
+      style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
     ),
   );
 
@@ -768,13 +832,15 @@ class _InventarioState extends State<Inventario> {
     return ListView.separated(
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
-      separatorBuilder: (context, index) =>
-          Container(height: 2, decoration: BoxDecoration(color: Colors.grey)),
+      separatorBuilder: (context, index) => Container(
+        height: 2,
+        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+      ),
       itemBuilder: (context, index) {
         return Container(
           width: MediaQuery.sizeOf(context).width,
           height: 40,
-          decoration: BoxDecoration(color: Colors.white54),
+          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: TextButton(
             onPressed: () async => {
               await LocalStorage.preferencias.setString(
@@ -858,28 +924,54 @@ class _InventarioState extends State<Inventario> {
             productos = snapshot.data;
             if (productos.isNotEmpty) {
               if (productos[0].nombre == "Error") {
-                return Center(child: Text(productos[0].tipo));
+                return Center(
+                  child: Text(
+                    productos[0].tipo,
+                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
+                  ),
+                );
               } else {
                 return listaPrincipal(productos);
               }
             } else {
-              return Center(child: Text("No hay productos registrados."));
+              return Center(
+                child: Text(
+                  "No hay productos registrados.",
+                  style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
+                ),
+              );
             }
           } else if (snapshot.hasError) {
             valido = false;
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [Text("Error:"), Text(snapshot.error.toString())],
+                children: [
+                  Text(
+                    "Error:",
+                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
+                  ),
+                  Text(
+                    snapshot.error.toString(),
+                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
+                  ),
+                ],
               ),
             );
           } else {
             if (busquedaTexto.text.isNotEmpty) {
-              return Center(child: Text("No hay coincidencias."));
+              return Center(
+                child: Text(
+                  "No hay coincidencias.",
+                  style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
+                ),
+              );
             }
           }
         }
-        return Center(child: CircularProgressIndicator());
+        return Center(
+          child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
+        );
       },
     );
   }

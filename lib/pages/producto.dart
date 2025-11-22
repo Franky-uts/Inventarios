@@ -23,7 +23,7 @@ class _ProductoState extends State<Producto> {
       productosPerdido = widget.productoInfo.perdida;
   late bool carga;
   Timer? timer;
-  final List<int> color = [0xFF000000, 0xFF000000, 0xFF000000];
+  final List<int> color = [0xFF8F01AF, 0xFF8F01AF, 0xFF8F01AF];
 
   @override
   void initState() {
@@ -75,7 +75,7 @@ class _ProductoState extends State<Producto> {
           await guardarDatos("Unidades", unidades);
           await guardarDatos("Entrada", cajasEntrantes);
           setState(() {
-            color[0] = 0xFF000000;
+            color[0] = 0xFF8F01AF;
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.entrada = cajasEntrantes;
           });
@@ -92,7 +92,7 @@ class _ProductoState extends State<Producto> {
           await guardarDatos("Unidades", unidades);
           await guardarDatos("Salida", cajasSalida);
           setState(() {
-            color[1] = 0xFF000000;
+            color[1] = 0xFF8F01AF;
             widget.productoInfo.unidades = unidades;
             widget.productoInfo.salida = cajasSalida;
           });
@@ -105,7 +105,7 @@ class _ProductoState extends State<Producto> {
         if (productosPerdido > widget.productoInfo.perdida) {
           await guardarDatos("Perdida", productosPerdido);
           setState(() {
-            color[2] = 0xFF000000;
+            color[2] = 0xFF8F01AF;
             widget.productoInfo.perdida = productosPerdido;
           });
           toast("Perdidas guardadas");
@@ -124,7 +124,7 @@ class _ProductoState extends State<Producto> {
       msg: texto,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.grey,
+      backgroundColor: Color(0x80FDC930),
       textColor: Colors.white,
       fontSize: 15,
     );
@@ -139,7 +139,7 @@ class _ProductoState extends State<Producto> {
             if (cajasEntrantes != widget.productoInfo.entrada) {
               color[0] = 0xFF00be00;
             } else {
-              color[0] = 0xFF000000;
+              color[0] = 0xFF8F01AF;
             }
           });
         } else {
@@ -164,7 +164,7 @@ class _ProductoState extends State<Producto> {
                 if (cajasSalida != widget.productoInfo.salida) {
                   color[1] = 0xFF00be00;
                 } else {
-                  color[1] = 0xFF000000;
+                  color[1] = 0xFF8F01AF;
                 }
               });
             } else {
@@ -188,7 +188,7 @@ class _ProductoState extends State<Producto> {
             if (productosPerdido != widget.productoInfo.perdida) {
               color[2] = 0xFF00be00;
             } else {
-              color[2] = 0xFF000000;
+              color[2] = 0xFF8F01AF;
             }
           });
         } else {
@@ -209,7 +209,6 @@ class _ProductoState extends State<Producto> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
       floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
@@ -223,7 +222,7 @@ class _ProductoState extends State<Producto> {
           }
         },
         elevation: 0,
-        backgroundColor: Colors.grey,
+        backgroundColor: Color(0xFF8F01AF),
         tooltip: "Volver.",
         child: Icon(Icons.arrow_back_rounded, color: Colors.white),
       ),
@@ -240,7 +239,7 @@ class _ProductoState extends State<Producto> {
                 children: [
                   Text(
                     widget.productoInfo.nombre,
-                    style: TextStyle(color: Colors.black, fontSize: 30),
+                    style: TextStyle(color: Color(0xFF8F01AF), fontSize: 30),
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width * .5,
@@ -255,13 +254,16 @@ class _ProductoState extends State<Producto> {
                           height: 1,
                           decoration: BoxDecoration(
                             border: Border(
-                              bottom: BorderSide(color: Colors.grey),
+                              bottom: BorderSide(color: Color(0xFFFDC930)),
                             ),
                           ),
                         ),
                         Container(
                           decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black, width: 2.5),
+                            border: Border.all(
+                              color: Color(0xFF8F01AF),
+                              width: 2.5,
+                            ),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           padding: EdgeInsets.symmetric(
@@ -271,7 +273,10 @@ class _ProductoState extends State<Producto> {
                           margin: EdgeInsets.symmetric(horizontal: 5),
                           child: Text(
                             widget.productoInfo.unidades.toString(),
-                            style: TextStyle(color: Colors.black, fontSize: 20),
+                            style: TextStyle(
+                              color: Color(0xFF8F01AF),
+                              fontSize: 20,
+                            ),
                           ),
                         ),
                       ],
@@ -300,14 +305,14 @@ class _ProductoState extends State<Producto> {
                               "Ultima modificación:",
                               style: TextStyle(
                                 fontSize: 15,
-                                color: Colors.grey,
+                                color: Color(0xFFF6AFCF),
                               ),
                             ),
                             Text(
                               widget.productoInfo.ultimaModificacion,
                               style: TextStyle(
                                 fontSize: 15,
-                                color: Colors.grey,
+                                color: Color(0xFFF6AFCF),
                               ),
                             ),
                           ],
@@ -324,14 +329,14 @@ class _ProductoState extends State<Producto> {
                               "Modificada por:",
                               style: TextStyle(
                                 fontSize: 15,
-                                color: Colors.grey,
+                                color: Color(0xFFF6AFCF),
                               ),
                             ),
                             Text(
                               widget.productoInfo.ultimoUsuario,
                               style: TextStyle(
                                 fontSize: 15,
-                                color: Colors.grey,
+                                color: Color(0xFFF6AFCF),
                               ),
                             ),
                           ],
@@ -346,7 +351,7 @@ class _ProductoState extends State<Producto> {
               visible: carga,
               child: Container(
                 decoration: BoxDecoration(color: Colors.black45),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: CircularProgressIndicator(color: Color(0xFFF6AFCF))),
               ),
             ),
           ],
@@ -356,44 +361,93 @@ class _ProductoState extends State<Producto> {
   }
 
   Widget tipoTexto(String tipo) {
-    if (tipo == "Granel" || tipo == "Costal") {
+    if (tipo == "Kilo" || tipo == "Costal") {
       return Column(
         children: [
-          Text("Unidades:", style: TextStyle(fontSize: 20)),
+          Text(
+            "Unidades:",
+            style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+          ),
           Text(
             "Kilos por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}",
-            style: TextStyle(fontSize: 15, color: Colors.grey),
+            style: TextStyle(fontSize: 15, color: Color(0xFFF6AFCF)),
           ),
         ],
       );
-    } else if (tipo == "Caja" || tipo == "Bulto") {
+    }else if (tipo == "Bote") {
       return Column(
         children: [
-          Text("${tipo}s:", style: TextStyle(fontSize: 20)),
+          Text(
+            "Unidades:",
+            style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+          ),
+          Text(
+            "Litros por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}",
+            style: TextStyle(fontSize: 15, color: Color(0xFFF6AFCF)),
+          ),
+        ],
+      );
+    } else if (tipo == "Caja" || tipo == "Bulto" || tipo == "Paquete") {
+      return Column(
+        children: [
+          Text(
+            "${tipo}s:",
+            style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+          ),
           Text(
             "Productos por $tipo: ${widget.productoInfo.cantidadPorUnidad.toString()}",
-            style: TextStyle(fontSize: 15, color: Colors.grey),
+            style: TextStyle(fontSize: 15, color: Color(0xFFF6AFCF)),
           ),
         ],
       );
     } else if (tipo == "Galón") {
-      return Text("Galones:", style: TextStyle(fontSize: 20));
+      return Text(
+        "Galones:",
+        style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+      );
     } else {
-      return Text("${tipo}s:", style: TextStyle(fontSize: 20));
+      return Text(
+        "${tipo}s:",
+        style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+      );
     }
   }
 
   Text textoTipoContenedorInfo(String textoInfo, String tipo) {
     if (textoInfo != "Productos perdidos:") {
-      if (tipo == "Granel") {
-        return Text("Unidades$textoInfo", style: TextStyle(fontSize: 20));
+      if (tipo == "Kilo") {
+        return Text(
+          "Unidades$textoInfo",
+          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+        );
       } else if (tipo == "Galón") {
-        return Text("Galones$textoInfo", style: TextStyle(fontSize: 20));
+        return Text(
+          "Galones$textoInfo",
+          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+        );
       } else {
-        return Text("${tipo}s$textoInfo", style: TextStyle(fontSize: 20));
+        return Text(
+          "${tipo}s$textoInfo",
+          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+        );
       }
     } else {
-      return Text(textoInfo, style: TextStyle(fontSize: 20));
+      if (tipo == "Kilo" || tipo == "Costal") {
+        return Text(
+          "Kilos perdidos:",
+          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+        );
+      }else if (tipo == "Bote") {
+        return Text(
+          "Litros perdidos:",
+          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+        );
+      }else{
+        return Text(
+          textoInfo,
+          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
+        );
+      }
     }
   }
 
@@ -415,7 +469,7 @@ class _ProductoState extends State<Producto> {
             width: MediaQuery.of(context).size.width * .25,
             height: 1,
             decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.grey)),
+              border: Border(bottom: BorderSide(color: Color(0xFFFDC930))),
             ),
           ),
           botones(textoValor, valor, colorBorde),
@@ -445,7 +499,7 @@ class _ProductoState extends State<Producto> {
             icon: Icon(Icons.remove, color: Colors.white),
             style: IconButton.styleFrom(
               padding: EdgeInsets.zero,
-              backgroundColor: Colors.black,
+              backgroundColor: Color(0xFF8F01AF),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -480,7 +534,7 @@ class _ProductoState extends State<Producto> {
             icon: Icon(Icons.add, color: Colors.white),
             style: IconButton.styleFrom(
               padding: EdgeInsets.zero,
-              backgroundColor: Colors.black,
+              backgroundColor: Color(0xFF8F01AF),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
@@ -497,7 +551,7 @@ class _ProductoState extends State<Producto> {
           icon: Icon(Icons.save_rounded, color: Colors.white),
           style: IconButton.styleFrom(
             padding: EdgeInsets.zero,
-            backgroundColor: Colors.black,
+            backgroundColor: Color(0xFF8F01AF),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),

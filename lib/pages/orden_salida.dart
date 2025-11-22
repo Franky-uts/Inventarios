@@ -73,7 +73,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     if (lista) {
       for (int i = 0; i < widget.productosPorId.length; i++) {
         cantidad.add(0);
-        color.add(0xFF000000);
+        color.add(0xFFFDC930);
       }
       lista = false;
     }
@@ -84,7 +84,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       msg: texto,
       toastLength: Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Colors.grey,
+      backgroundColor: Color(0x80FDC930),
       textColor: Colors.white,
       fontSize: 15,
     );
@@ -115,28 +115,29 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
+      backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
         child: Stack(
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                barraDeBusqueda(context),
-                contenedorInfo(),
-                SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height - 97,
-                  child: listaFutura(),
-                ),
-              ],
+            SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  barraDeBusqueda(context),
+                  contenedorInfo(),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height - 97,
+                    child: listaFutura(),
+                  ),
+                ],
+              ),
             ),
             Visibility(
               visible: ventanaCarga,
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 90, vertical: 15),
+                padding: EdgeInsets.symmetric(horizontal: 89, vertical: 15),
                 decoration: BoxDecoration(color: Colors.black38),
                 child: Center(child: contenidoVentana()),
               ),
@@ -145,7 +146,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               visible: carga,
               child: Container(
                 decoration: BoxDecoration(color: Colors.black45),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
+                ),
               ),
             ),
           ],
@@ -169,7 +172,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     return VerticalDivider(
       thickness: 1,
       width: 0,
-      color: Colors.grey,
+      color: Color(0xFFFDC930),
       indent: 5,
       endIndent: 5,
     );
@@ -178,7 +181,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   Container contenedorInfo() {
     return Container(
       width: MediaQuery.sizeOf(context).width,
-      decoration: BoxDecoration(color: Colors.grey),
+      decoration: BoxDecoration(color: Color(0xFF8F01AF)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -202,19 +205,61 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     String texto,
     TextAlign alineamiento,
     double tamanoFuente,
-  ) => Container(
-    width: MediaQuery.sizeOf(context).width * grosor,
-    decoration: BoxDecoration(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Text(
-      texto,
-      textAlign: alineamiento,
-      maxLines: 1,
-      style: TextStyle(color: Colors.black, fontSize: tamanoFuente),
-    ),
-  );
+  ) {
+    return Container(
+      width: MediaQuery.sizeOf(context).width * grosor,
+      decoration: BoxDecoration(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        texto,
+        textAlign: alineamiento,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
+      ),
+    );
+  }
+
+  Widget _barraDatoProdCaja(
+    double grosor,
+    String texto,
+    TextAlign alineamiento,
+    double tamanoFuente,
+  ) {
+    if (texto == "1") {
+      return Container(
+        width: MediaQuery.sizeOf(context).width * grosor,
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          "-",
+          textAlign: alineamiento,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
+        ),
+      );
+    } else {
+      return Container(
+        width: MediaQuery.sizeOf(context).width * grosor,
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          texto,
+          textAlign: alineamiento,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
+        ),
+      );
+    }
+  }
 
   Widget barraDeBusqueda(BuildContext context) {
     return Row(
@@ -237,7 +282,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           tooltip: "Regresar",
           icon: Icon(Icons.arrow_back_rounded, size: 35),
           style: IconButton.styleFrom(
-            backgroundColor: Colors.black,
+            backgroundColor: Color(0xFF8F01AF),
             shape: ContinuousRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
@@ -265,7 +310,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           tooltip: "Realizar orden",
           icon: Icon(Icons.task_rounded, size: 35),
           style: IconButton.styleFrom(
-            backgroundColor: Colors.black,
+            backgroundColor: Color(0xFF8F01AF),
             shape: ContinuousRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
@@ -294,7 +339,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           tooltip: "Historial de ordenes",
           icon: Icon(Icons.history_rounded, size: 35),
           style: IconButton.styleFrom(
-            backgroundColor: Colors.black,
+            backgroundColor: Color(0xFF8F01AF),
             shape: ContinuousRectangleBorder(
               borderRadius: BorderRadius.circular(30),
             ),
@@ -315,15 +360,17 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               }
               FocusManager.instance.primaryFocus?.unfocus();
             },
+            cursorColor: Color(0xFF8F01AF),
+            style: TextStyle(color: Color(0xFF8F01AF)),
             decoration: InputDecoration(
               filled: true,
-              border: OutlineInputBorder(
+              enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.grey, width: 1),
+                borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Colors.black, width: 2),
+                borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
               ),
               fillColor: Colors.white,
               suffixIcon: Container(
@@ -331,8 +378,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                 child: botonBusqueda(),
               ),
               prefixIcon: PopupMenuButton<Filtros>(
-                icon: Icon(Icons.filter_list_rounded),
+                icon: Icon(Icons.filter_list_rounded, color: Color(0xFF8F01AF)),
                 initialValue: seleccionFiltro,
+                color: Colors.white,
                 onSelected: (Filtros filtro) {
                   setState(() {
                     seleccionFiltro = filtro;
@@ -343,24 +391,48 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     <PopupMenuEntry<Filtros>>[
                       PopupMenuItem<Filtros>(
                         value: Filtros.id,
-                        child: Text("id"),
+                        child: Text(
+                          "id",
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            color: Color(0xFF8F01AF),
+                          ),
+                        ),
                       ),
                       PopupMenuItem<Filtros>(
                         value: Filtros.nombre,
-                        child: Text("Nombre"),
+                        child: Text(
+                          "Nombre",
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            color: Color(0xFF8F01AF),
+                          ),
+                        ),
                       ),
                       PopupMenuItem<Filtros>(
                         value: Filtros.tipo,
-                        child: Text("Tipo"),
+                        child: Text(
+                          "Tipo",
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            color: Color(0xFF8F01AF),
+                          ),
+                        ),
                       ),
                       PopupMenuItem<Filtros>(
                         value: Filtros.area,
-                        child: Text("Área"),
+                        child: Text(
+                          "Área",
+                          style: TextStyle(
+                            fontSize: 17.5,
+                            color: Color(0xFF8F01AF),
+                          ),
+                        ),
                       ),
                     ],
               ),
               hintText: "Buscar",
-              hintStyle: TextStyle(color: Colors.grey),
+              hintStyle: TextStyle(color: Color(0xFFF6AFCF)),
             ),
           ),
         ),
@@ -381,7 +453,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             });
           }
         },
-        icon: Icon(Icons.search),
+        icon: Icon(Icons.search, color: Color(0xFF8F01AF)),
       );
     } else {
       return IconButton(
@@ -392,7 +464,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           });
           _getProductos();
         },
-        icon: Icon(Icons.close_rounded),
+        icon: Icon(Icons.close_rounded, color: Color(0xFF8F01AF)),
       );
     }
   }
@@ -401,13 +473,15 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     return ListView.separated(
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
-      separatorBuilder: (context, index) =>
-          Container(height: 2, decoration: BoxDecoration(color: Colors.grey)),
+      separatorBuilder: (context, index) => Container(
+        height: 2,
+        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+      ),
       itemBuilder: (context, index) {
         return Container(
           width: MediaQuery.sizeOf(context).width,
           height: 40,
-          decoration: BoxDecoration(color: Colors.white54),
+          decoration: BoxDecoration(color: Colors.white),
           child: Container(
             padding: EdgeInsets.zero,
             decoration: BoxDecoration(),
@@ -481,7 +555,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             }
           }
         }
-        return Center(child: CircularProgressIndicator());
+        return Center(
+          child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
+        );
       },
     );
   }
@@ -495,7 +571,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           onPressed: () {
             if ((cantidad[id - 1] - 1) > -1) {
               setState(() {
-                color[id - 1] = 0xFF000000;
+                color[id - 1] = 0xFFFDC930;
                 cantidad[id - 1] -= 1;
               });
             } else {
@@ -507,7 +583,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           icon: Icon(Icons.remove, color: Colors.white),
           style: IconButton.styleFrom(
             padding: EdgeInsets.zero,
-            backgroundColor: Colors.black,
+            backgroundColor: Color(0xFF8F01AF),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -522,20 +598,20 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           ),
           child: Text(
             textoValor.toString(),
-            style: TextStyle(color: Colors.black, fontSize: 20),
+            style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
           ),
         ),
         IconButton(
           onPressed: () {
             setState(() {
-              color[id - 1] = 0xFF000000;
+              color[id - 1] = 0xFFFDC930;
               cantidad[id - 1] += 1;
             });
           },
           icon: Icon(Icons.add, color: Colors.white),
           style: IconButton.styleFrom(
             padding: EdgeInsets.zero,
-            backgroundColor: Colors.black,
+            backgroundColor: Color(0xFF8F01AF),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10),
             ),
@@ -552,7 +628,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadiusGeometry.circular(25),
-        border: BoxBorder.all(color: Colors.black54),
+        border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -562,12 +638,16 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           Text(
             "Productos seleccionados:",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              color: Color(0xFF8F01AF),
+              fontSize: 20,
+              fontWeight: FontWeight.w500,
+            ),
           ),
           Container(
             width: MediaQuery.sizeOf(context).width,
             margin: EdgeInsets.zero,
-            decoration: BoxDecoration(color: Colors.grey),
+            decoration: BoxDecoration(color: Color(0xFF8F01AF)),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -586,20 +666,20 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           ),
           Container(
             width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height - 150,
+            height: MediaQuery.of(context).size.height - 153,
             margin: EdgeInsets.zero,
             child: ListView.separated(
               itemCount: listaProd.length,
               scrollDirection: Axis.vertical,
               separatorBuilder: (context, index) => Container(
                 height: 2,
-                decoration: BoxDecoration(color: Colors.grey),
+                decoration: BoxDecoration(color: Color(0xFFFDC930)),
               ),
               itemBuilder: (context, index) {
                 return Container(
                   width: MediaQuery.sizeOf(context).width,
                   height: 40,
-                  decoration: BoxDecoration(color: Colors.white54),
+                  decoration: BoxDecoration(color: Colors.white),
                   child: Container(
                     padding: EdgeInsets.zero,
                     decoration: BoxDecoration(),
@@ -628,7 +708,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                           20,
                         ),
                         _divider(),
-                        _barraDato(
+                        _barraDatoProdCaja(
                           .125,
                           listaProd[index].cantidadPorUnidad.toString(),
                           TextAlign.center,
@@ -655,7 +735,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             children: [
               Text(
                 "Enviar orden:",
-                style: TextStyle(color: Colors.black, fontSize: 20),
+                style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
               ),
               Row(
                 spacing: 10,
@@ -669,11 +749,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       });
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.black, width: 1),
+                      backgroundColor: Color(0xFF8F01AF),
+                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2),
                     ),
                     child: Text(
                       "No",
-                      style: TextStyle(fontSize: 20, color: Colors.black),
+                      style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                   ),
                   OutlinedButton(
@@ -700,7 +781,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                               "Se guardo la orden ${respuesta.toString()} correctamente con ${articulos.length} artículos.",
                           toastLength: Toast.LENGTH_LONG,
                           gravity: ToastGravity.BOTTOM,
-                          backgroundColor: Colors.grey,
+                          backgroundColor: Color(0x80FDC930),
                           textColor: Colors.white,
                           fontSize: 15,
                         );
@@ -720,11 +801,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       }
                     },
                     style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.black, width: 1),
+                      backgroundColor: Color(0xFF8F01AF),
+                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2),
                     ),
                     child: Text(
                       "Si",
-                      style: TextStyle(fontSize: 20, color: Colors.black),
+                      style: TextStyle(fontSize: 20, color: Colors.white),
                     ),
                   ),
                 ],

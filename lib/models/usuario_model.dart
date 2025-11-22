@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -18,7 +19,7 @@ class UsuarioModel {
     UsuarioModel usuario = UsuarioModel(
       nombre: "Usuario",
       puesto: "Encargado",
-      locacion: "almacen",
+      locacion: "Almacen",
     );
     return usuario;
   }
@@ -26,10 +27,17 @@ class UsuarioModel {
   static Future<UsuarioModel> getUsuario(String usuario, String contr) async {
     late UsuarioModel usuarioFuture;
     try {
-      final res = await http.get(
-        Uri.parse("http://189.187.131.23:3000/usuarios/$usuario/$contr"),
-      );
-      if (res.statusCode == 200) {
+      final http.Response res;
+      if (kIsWeb) {
+        res = await http.get(
+          Uri.parse("http://127.0.0.1:3000/usuarios/$usuario/$contr"),
+        );
+      } else {
+        res = await http.get(
+          Uri.parse("http://187.193.118.129:3000/usuarios/$usuario/$contr"),
+        );
+      }
+      if (res.statusCode == 200 && res.reasonPhrase == 'OK') {
         final datos = json.decode(res.body);
         usuarioFuture = UsuarioModel(
           nombre: datos[0]["Nombre"],
