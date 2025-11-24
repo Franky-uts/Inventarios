@@ -48,9 +48,6 @@ class _InventarioState extends State<Inventario> {
     areas.clear();
     busquedaTexto.dispose();
     focusBusqueda.dispose();
-    valido;
-    carga;
-    ventanaConf;
     super.dispose();
   }
 
@@ -75,7 +72,7 @@ class _InventarioState extends State<Inventario> {
           busquedaTexto.text,
         );
         if (ctx.mounted) {
-          Navigator.push(
+          Navigator.pushReplacement(
             ctx,
             MaterialPageRoute(
               builder: (context) => OrdenSalida(productosPorId: listaPorid),
@@ -111,7 +108,10 @@ class _InventarioState extends State<Inventario> {
     await LocalStorage.preferencias.remove('busqueda');
     await LocalStorage.preferencias.remove('conexion');
     if (ctx.mounted) {
-      Navigator.push(ctx, MaterialPageRoute(builder: (context) => Inicio()));
+      Navigator.pushReplacement(
+        ctx,
+        MaterialPageRoute(builder: (context) => Inicio()),
+      );
     } else {
       setState(() {
         carga = false;
@@ -139,7 +139,7 @@ class _InventarioState extends State<Inventario> {
     } else {
       await LocalStorage.preferencias.setString('busqueda', busquedaTexto.text);
       if (ctx.mounted) {
-        Navigator.push(
+        Navigator.pushReplacement(
           ctx,
           MaterialPageRoute(
             builder: (context) =>
@@ -431,6 +431,7 @@ class _InventarioState extends State<Inventario> {
 
   Drawer drawer() {
     return Drawer(
+      backgroundColor: Colors.white,
       child: ListView(
         children: [
           DrawerHeader(
@@ -849,7 +850,7 @@ class _InventarioState extends State<Inventario> {
               ),
               if (context.mounted)
                 {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) =>

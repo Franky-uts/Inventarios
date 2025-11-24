@@ -106,7 +106,13 @@ class ProductoModel {
       );
     } else {
       try {
-        var res = await http.get(Uri.parse(url));
+        var res = await http.get(
+          Uri.parse(url),
+          headers: {
+            "Accept": "application/json",
+            "content-type": "application/json; charset=UTF-8",
+          },
+        );
         if (res.statusCode == 200) {
           final datos = json.decode(res.body);
           for (var item in datos) {
@@ -248,6 +254,10 @@ class ProductoModel {
         Uri.parse(
           '${LocalStorage.preferencias.getString('conexion').toString()}/tipos',
         ),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
       );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
@@ -274,6 +284,10 @@ class ProductoModel {
         Uri.parse(
           '${LocalStorage.preferencias.getString('conexion').toString()}/areas',
         ),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
       );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);

@@ -50,16 +50,6 @@ class _OrdenesState extends State<Ordenes> {
     colores.clear();
     artVen.clear();
     canVen.clear();
-    valido;
-    carga;
-    ventanaDatos;
-    ventanaConf;
-    filtro;
-    accion;
-    idVen;
-    remVen;
-    estVen;
-    modVen;
     super.dispose();
   }
 
@@ -162,7 +152,10 @@ class _OrdenesState extends State<Ordenes> {
     await LocalStorage.preferencias.remove('busqueda');
     await LocalStorage.preferencias.remove('conexion');
     if (ctx.mounted) {
-      Navigator.push(ctx, MaterialPageRoute(builder: (context) => Inicio()));
+      Navigator.pushReplacement(
+        ctx,
+        MaterialPageRoute(builder: (context) => Inicio()),
+      );
     } else {
       setState(() {
         carga = false;

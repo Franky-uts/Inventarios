@@ -34,11 +34,7 @@ class _ProductoState extends State<Producto> {
   @override
   void dispose() {
     timer?.cancel();
-    color;
-    carga;
-    cajasEntrantes;
-    cajasSalida;
-    productosPerdido;
+    color.clear();
     super.dispose();
   }
 
@@ -215,7 +211,7 @@ class _ProductoState extends State<Producto> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (carga == false) {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => Inventario()),
             );
@@ -351,7 +347,9 @@ class _ProductoState extends State<Producto> {
               visible: carga,
               child: Container(
                 decoration: BoxDecoration(color: Colors.black45),
-                child: Center(child: CircularProgressIndicator(color: Color(0xFFF6AFCF))),
+                child: Center(
+                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
+                ),
               ),
             ),
           ],
@@ -374,7 +372,7 @@ class _ProductoState extends State<Producto> {
           ),
         ],
       );
-    }else if (tipo == "Bote") {
+    } else if (tipo == "Bote") {
       return Column(
         children: [
           Text(
@@ -437,12 +435,12 @@ class _ProductoState extends State<Producto> {
           "Kilos perdidos:",
           style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
         );
-      }else if (tipo == "Bote") {
+      } else if (tipo == "Bote") {
         return Text(
           "Litros perdidos:",
           style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
         );
-      }else{
+      } else {
         return Text(
           textoInfo,
           style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),

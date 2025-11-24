@@ -27,16 +27,13 @@ class UsuarioModel {
   static Future<UsuarioModel> getUsuario(String usuario, String contr) async {
     late UsuarioModel usuarioFuture;
     try {
-      final http.Response res;
-      if (kIsWeb) {
-        res = await http.get(
-          Uri.parse("http://127.0.0.1:3000/usuarios/$usuario/$contr"),
-        );
-      } else {
-        res = await http.get(
-          Uri.parse("http://187.193.118.129:3000/usuarios/$usuario/$contr"),
-        );
-      }
+      final res = await http.get(
+        Uri.parse("http://187.193.118.129:3000/usuarios/$usuario/$contr"),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+      );
       if (res.statusCode == 200 && res.reasonPhrase == 'OK') {
         final datos = json.decode(res.body);
         usuarioFuture = UsuarioModel(

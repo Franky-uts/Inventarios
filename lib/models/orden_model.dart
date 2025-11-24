@@ -62,7 +62,13 @@ class OrdenModel {
         .toString();
     url = "$conexion/ordenes/$filtro";
     late List<OrdenModel> ordenesFuture = [];
-    var res = await http.get(Uri.parse(url));
+    var res = await http.get(
+      Uri.parse(url),
+      headers: {
+        "Accept": "application/json",
+        "content-type": "application/json; charset=UTF-8",
+      },
+    );
     try {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);

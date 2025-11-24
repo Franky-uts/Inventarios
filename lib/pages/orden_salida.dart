@@ -50,10 +50,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     color.clear();
     busquedaTexto.dispose();
     focusBusqueda.dispose();
-    carga;
-    ventanaCarga;
-    valido;
-    lista;
     super.dispose();
   }
 
@@ -273,7 +269,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               busquedaTexto.text,
             );
             if (context.mounted) {
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => Inventario()),
               );
@@ -324,7 +320,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                 busquedaTexto.text,
               );
               if (context.mounted) {
-                Navigator.push(
+                Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (context) =>

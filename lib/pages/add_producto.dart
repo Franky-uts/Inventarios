@@ -49,11 +49,7 @@ class _AddproductoState extends State<Addproducto> {
 
   @override
   void dispose() {
-    carga;
     colorCampo.clear();
-    valorArea;
-    valorTipo;
-    respuesta;
     nombreControl.dispose();
     cantidadControl.dispose();
     listaArea.clear();
@@ -93,7 +89,7 @@ class _AddproductoState extends State<Addproducto> {
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           if (carga == false) {
-            Navigator.push(
+            Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => Inventario()),
             );

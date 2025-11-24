@@ -34,11 +34,6 @@ class _InicioState extends State<Inicio> {
 
   @override
   void dispose() {
-    colorCont;
-    colorUsu;
-    carga;
-    verContr;
-    usuarioMod;
     contr.dispose();
     usuarioContr.dispose();
     super.dispose();
@@ -72,9 +67,12 @@ class _InicioState extends State<Inicio> {
         await LocalStorage.preferencias.setString('busqueda', "");
         if (ctx.mounted) {
           if (usuarioMod.puesto == "Proveedor") {
-            Navigator.push(ctx, MaterialPageRoute(builder: (ctx) => Ordenes()));
+            Navigator.pushReplacement(
+              ctx,
+              MaterialPageRoute(builder: (ctx) => Ordenes()),
+            );
           } else {
-            Navigator.push(
+            Navigator.pushReplacement(
               ctx,
               MaterialPageRoute(builder: (ctx) => Inventario()),
             );
@@ -186,7 +184,7 @@ class _InicioState extends State<Inicio> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          width: MediaQuery.of(context).size.width * .693,
+                          width: MediaQuery.of(context).size.width * .69,
                           margin: EdgeInsets.symmetric(
                             vertical: 20,
                             horizontal: 0,
@@ -228,21 +226,25 @@ class _InicioState extends State<Inicio> {
                             ),
                           ),
                         ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              verContr = !verContr;
-                              if (verContr) {
-                                iconoContr = Icons.remove_red_eye_rounded;
-                              } else {
-                                iconoContr = Icons.remove_red_eye_outlined;
-                              }
-                            });
-                          },
-                          icon: Icon(
-                            iconoContr,
-                            color: Color(0xFFFFFFFF),
-                            size: 25,
+                        Container(
+                          width: MediaQuery.of(context).size.width * .057,
+                          alignment: Alignment.center,
+                          child: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                verContr = !verContr;
+                                if (verContr) {
+                                  iconoContr = Icons.remove_red_eye_rounded;
+                                } else {
+                                  iconoContr = Icons.remove_red_eye_outlined;
+                                }
+                              });
+                            },
+                            icon: Icon(
+                              iconoContr,
+                              color: Color(0xFFFFFFFF),
+                              size: 25,
+                            ),
                           ),
                         ),
                       ],
@@ -281,22 +283,25 @@ class _InicioState extends State<Inicio> {
                 ),
               ),
             ),
-            Container(
-              margin: EdgeInsets.all(10),
-              alignment: Alignment.topLeft,
-              child: IconButton.filled(
-                onPressed: () {
-                  if (kIsWeb) {
-                    print("web");
-                  } else {
-                    print("otra mamada");
-                  }
-                },
-                icon: Icon(Icons.settings, size: 35, color: Color(0xFFFFFFFF)),
-                style: IconButton.styleFrom(
-                  backgroundColor: Color(0xFF8F01AF),
-                  shape: ContinuousRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+            Visibility(
+              visible: !kIsWeb,
+              child: Container(
+                margin: EdgeInsets.all(10),
+                alignment: Alignment.topLeft,
+                child: IconButton.filled(
+                  onPressed: () {
+                    print("pilin");
+                  },
+                  icon: Icon(
+                    Icons.settings,
+                    size: 35,
+                    color: Color(0xFFFFFFFF),
+                  ),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Color(0xFF8F01AF),
+                    shape: ContinuousRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                 ),
               ),

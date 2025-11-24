@@ -50,15 +50,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     colores.clear();
     artVen.clear();
     canVen.clear();
-    valido;
-    carga;
-    ventanaDatos;
-    ventanaConf;
-    filtro;
-    idVen;
-    remVen;
-    estVen;
-    modVen;
     super.dispose();
   }
 
@@ -283,7 +274,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               setState(() {
                 carga = true;
               });
-              Navigator.push(
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
