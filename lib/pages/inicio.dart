@@ -290,7 +290,6 @@ class _InicioState extends State<Inicio> {
                 alignment: Alignment.topLeft,
                 child: IconButton.filled(
                   onPressed: () {
-                    print("pilin");
                   },
                   icon: Icon(
                     Icons.settings,
