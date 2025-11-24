@@ -27,7 +27,7 @@ class UsuarioModel {
     late UsuarioModel usuarioFuture;
     try {
       final res = await http.get(
-        Uri.parse("http://187.193.118.129:3000/usuarios/$usuario/$contr"),
+        Uri.parse("http://189.187.189.95:3000/usuarios/$usuario/$contr"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",

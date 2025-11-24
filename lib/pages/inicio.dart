@@ -46,18 +46,10 @@ class _InicioState extends State<Inicio> {
       });
       usuarioMod = await UsuarioModel.getUsuario(usuarioContr.text, contr.text);
       if (usuarioMod.nombre != "error") {
-        if (kIsWeb) {
-          await LocalStorage.preferencias.setString(
-            'conexion',
-            "http://127.0.0.1:3000",
-          );
-        } else {
-          await LocalStorage.preferencias.setString(
-            'conexion',
-            "http://187.193.118.129:3000",
-          );
-        }
-
+        await LocalStorage.preferencias.setString(
+          'conexion',
+          "http://189.187.189.95:3000",
+        );
         await LocalStorage.preferencias.setString('usuario', usuarioMod.nombre);
         await LocalStorage.preferencias.setString('puesto', usuarioMod.puesto);
         await LocalStorage.preferencias.setString(
