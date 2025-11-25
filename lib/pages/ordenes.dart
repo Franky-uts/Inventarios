@@ -400,7 +400,10 @@ class _OrdenesState extends State<Ordenes> {
               }
             } else {
               return Center(
-                child: Text("Todo está en orden, no hay órdenes entrantes."),
+                child: Text(
+                  "Todo está en orden, no hay órdenes entrantes.",
+                  style: TextStyle(color: Color(0xFFF6AFCF)),
+                ),
               );
             }
           } else if (snapshot.hasError) {
@@ -408,11 +411,22 @@ class _OrdenesState extends State<Ordenes> {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [Text("Error:"), Text(snapshot.error.toString())],
+                children: [
+                  Text("Error:", style: TextStyle(color: Color(0xFFF6AFCF))),
+                  Text(
+                    snapshot.error.toString(),
+                    style: TextStyle(color: Color(0xFFF6AFCF)),
+                  ),
+                ],
               ),
             );
           } else {
-            return Center(child: Text("No se recuperaron órdenes."));
+            return Center(
+              child: Text(
+                "No se recuperaron órdenes.",
+                style: TextStyle(color: Color(0xFFF6AFCF)),
+              ),
+            );
           }
         }
         return Center(
