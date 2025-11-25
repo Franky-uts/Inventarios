@@ -494,6 +494,7 @@ class _ProductoState extends State<Producto> {
             onPressed: () {
               cambioValor(tipo, -1);
             },
+            tooltip: "Menos",
             icon: Icon(Icons.remove, color: Colors.white),
             style: IconButton.styleFrom(
               padding: EdgeInsets.zero,
@@ -529,6 +530,7 @@ class _ProductoState extends State<Producto> {
             onPressed: () {
               cambioValor(tipo, 1);
             },
+            tooltip: "Más",
             icon: Icon(Icons.add, color: Colors.white),
             style: IconButton.styleFrom(
               padding: EdgeInsets.zero,
@@ -546,6 +548,7 @@ class _ProductoState extends State<Producto> {
             });
             enviarDatos(tipo);
           },
+          tooltip: "Guardar datos",
           icon: Icon(Icons.save_rounded, color: Colors.white),
           style: IconButton.styleFrom(
             padding: EdgeInsets.zero,

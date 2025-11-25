@@ -386,7 +386,7 @@ class _OrdenesState extends State<Ordenes> {
 
   FutureBuilder listaFutura() {
     return FutureBuilder(
-      future: OrdenModel.getOrdenes(filtro),
+      future: OrdenModel.getAllOrdenes(filtro),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {

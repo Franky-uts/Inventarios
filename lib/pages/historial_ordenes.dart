@@ -355,7 +355,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
 
   FutureBuilder listaFutura() {
     return FutureBuilder(
-      future: OrdenModel.getOrdenes(filtro),
+      future: OrdenModel.getOrdenes(filtro, local('locacion')),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {

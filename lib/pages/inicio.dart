@@ -48,7 +48,7 @@ class _InicioState extends State<Inicio> {
       if (usuarioMod.nombre != "error") {
         await LocalStorage.preferencias.setString(
           'conexion',
-          "http://189.187.187.157:3000",
+          "http://189.187.153.15:3000",
         );
         await LocalStorage.preferencias.setString('usuario', usuarioMod.nombre);
         await LocalStorage.preferencias.setString('puesto', usuarioMod.puesto);
@@ -281,8 +281,7 @@ class _InicioState extends State<Inicio> {
                 margin: EdgeInsets.all(10),
                 alignment: Alignment.topLeft,
                 child: IconButton.filled(
-                  onPressed: () {
-                  },
+                  onPressed: () {},
                   icon: Icon(
                     Icons.settings,
                     size: 35,

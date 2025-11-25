@@ -55,7 +55,91 @@ class OrdenModel {
     return productos;
   }
 
-  static Future<List<OrdenModel>> getOrdenes(String filtro) async {
+  static Future<List<OrdenModel>> getOrdenes(String filtro, String locacion) async {
+    late String url;
+    String conexion = LocalStorage.preferencias
+        .getString('conexion')
+        .toString();
+    url = "$conexion/ordenes/$filtro/$locacion";
+    late List<OrdenModel> ordenesFuture = [];
+    var res = await http.get(
+      Uri.parse(url),
+      headers: {
+        "Accept": "application/json",
+        "content-type": "application/json; charset=UTF-8",
+      },
+    );
+    try {
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+
+        for (var item in datos) {
+          ordenesFuture.add(
+            OrdenModel(
+              id: item["id"],
+              articulos: item['Artículos'],
+              cantidades: item['Cantidades'],
+              estado: item["Estado"],
+              remitente: item["Remitente"],
+              ultimaModificacion: item["UltimaModificación"],
+              destino: item["Destino"],
+            ),
+          );
+        }
+      } else {
+        ordenesFuture.add(
+          OrdenModel(
+            id: 0,
+            articulos: ["Error"],
+            cantidades: [0],
+            estado: "Error",
+            remitente: res.body,
+            ultimaModificacion: res.body,
+            destino: res.body,
+          ),
+        );
+      }
+    } on TimeoutException catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ["Error"],
+          cantidades: [0],
+          estado: "Error",
+          remitente: e.message.toString(),
+          ultimaModificacion: e.message.toString(),
+          destino: e.message.toString(),
+        ),
+      );
+    } on SocketException catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ["Error"],
+          cantidades: [0],
+          estado: "Error",
+          remitente: e.message.toString(),
+          ultimaModificacion: e.message.toString(),
+          destino: e.message.toString(),
+        ),
+      );
+    } on Error catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ["Error"],
+          cantidades: [0],
+          estado: "Error",
+          remitente: e.toString(),
+          ultimaModificacion: e.toString(),
+          destino: e.toString(),
+        ),
+      );
+    }
+    return ordenesFuture;
+  }
+
+  static Future<List<OrdenModel>> getAllOrdenes(String filtro) async {
     late String url;
     String conexion = LocalStorage.preferencias
         .getString('conexion')

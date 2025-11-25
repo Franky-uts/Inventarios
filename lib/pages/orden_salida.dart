@@ -377,6 +377,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                 icon: Icon(Icons.filter_list_rounded, color: Color(0xFF8F01AF)),
                 initialValue: seleccionFiltro,
                 color: Colors.white,
+                tooltip: "Filtros",
                 onSelected: (Filtros filtro) {
                   setState(() {
                     seleccionFiltro = filtro;

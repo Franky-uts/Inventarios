@@ -454,6 +454,7 @@ class _InventarioState extends State<Inventario> {
                       onPressed: () {
                         logout(context);
                       },
+                      tooltip: "Cerrar sesión",
                       style: FilledButton.styleFrom(
                         padding: EdgeInsets.all(10),
                         backgroundColor: Color(0xFFFFFFFF),
@@ -678,6 +679,7 @@ class _InventarioState extends State<Inventario> {
                     _getProductos();
                   });
                 },
+                tooltip: "Filtros",
                 itemBuilder: (BuildContext context) =>
                     <PopupMenuEntry<Filtros>>[
                       PopupMenuItem<Filtros>(
