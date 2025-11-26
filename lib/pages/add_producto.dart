@@ -34,7 +34,7 @@ class _AddproductoState extends State<Addproducto> {
   late bool cantidad;
   final nombreControl = TextEditingController(),
       cantidadControl = TextEditingController();
-  late List<int> colorCampo = [0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF];
+  late List<int> colorCampo = [0x00FFFFFF, 0x00FFFFFF, 0x00FFFFFF, 0x00FFFFFF];
 
   @override
   void initState() {
@@ -287,10 +287,10 @@ class _AddproductoState extends State<Addproducto> {
                     TextButton.icon(
                       onPressed: () async => {
                         setState(() {
-                          colorCampo[3] = 0xFFFFFFFF;
-                          colorCampo[1] = 0xFFFFFFFF;
-                          colorCampo[0] = 0xFFFFFFFF;
-                          colorCampo[2] = 0xFFFFFFFF;
+                          colorCampo[3] = 0x00FFFFFF;
+                          colorCampo[1] = 0x00FFFFFF;
+                          colorCampo[0] = 0x00FFFFFF;
+                          colorCampo[2] = 0x00FFFFFF;
                         }),
                         if (nombreControl.text.isEmpty)
                           {

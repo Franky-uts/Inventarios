@@ -24,8 +24,8 @@ class _InicioState extends State<Inicio> {
 
   @override
   void initState() {
-    colorUsu = 0xFFFFFFFF;
-    colorCont = 0xFFFFFFFF;
+    colorUsu = 0x00FFFFFF;
+    colorCont = 0x00FFFFFF;
     verContr = true;
     carga = true;
     iconoContr = Icons.remove_red_eye_rounded;
@@ -92,8 +92,8 @@ class _InicioState extends State<Inicio> {
           );
           setState(() {
             carga = !carga;
-            colorUsu = 0xFFFFFFFF;
-            colorCont = 0xFFFFFFFF;
+            colorUsu = 0x00FFFFFF;
+            colorCont = 0x00FFFFFF;
           });
         }
       }
@@ -246,8 +246,8 @@ class _InicioState extends State<Inicio> {
                       child: TextButton.icon(
                         onPressed: () async => {
                           setState(() {
-                            colorCont = 0xFFFFFFFF;
-                            colorUsu = 0xFFFFFFFF;
+                            colorCont = 0x00FFFFFF;
+                            colorUsu = 0x00FFFFFF;
                           }),
                           verificar(context),
                         },
