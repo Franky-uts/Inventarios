@@ -48,7 +48,7 @@ class _InicioState extends State<Inicio> {
       if (usuarioMod.nombre != "error") {
         await LocalStorage.preferencias.setString(
           'conexion',
-          "http://192.168.1.130:3000",
+          "http://189.187.144.139:3000",
         );
         await LocalStorage.preferencias.setString('usuario', usuarioMod.nombre);
         await LocalStorage.preferencias.setString('puesto', usuarioMod.puesto);
