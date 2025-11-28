@@ -380,7 +380,7 @@ class _ProductoState extends State<Producto> {
             style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
           ),
           Text(
-            "Litros por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}",
+            "Kilos/Piezas por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}",
             style: TextStyle(fontSize: 15, color: Color(0xFFF6AFCF)),
           ),
         ],
@@ -437,7 +437,7 @@ class _ProductoState extends State<Producto> {
         );
       } else if (tipo == "Bote") {
         return Text(
-          "Litros perdidos:",
+          "Kilos/Piezas perdidos:",
           style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
         );
       } else {
