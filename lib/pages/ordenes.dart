@@ -72,7 +72,7 @@ class _OrdenesState extends State<Ordenes> {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
         },
-        body: jsonEncode({'dato': dato, 'usuario': local('usuario')}),
+        body: jsonEncode({'dato': dato}),
       );
       if (res.statusCode == 200) {
         respuesta = "Se modificó la orden.";
@@ -139,6 +139,25 @@ class _OrdenesState extends State<Ordenes> {
         });
         break;
     }
+  }
+
+  Color colorEstado(String estado) {
+    late Color color;
+    switch (estado) {
+      case ('En proceso'):
+        color = Colors.blue.shade200;
+        break;
+      case ('Finalizado'):
+        color = Colors.green.shade200;
+        break;
+      case ('Cancelado'):
+        color = Colors.red.shade200;
+        break;
+      case ('Denegado'):
+        color = Colors.red.shade300;
+        break;
+    }
+    return color;
   }
 
   Future<void> logout(BuildContext ctx) async {
@@ -475,6 +494,7 @@ class _OrdenesState extends State<Ordenes> {
                   lista[index].id.toString(),
                   TextAlign.center,
                   20,
+                  Colors.transparent,
                 ),
                 _divider(),
                 _barraDato(
@@ -482,17 +502,31 @@ class _OrdenesState extends State<Ordenes> {
                   lista[index].articulos.length.toString(),
                   TextAlign.center,
                   20,
+                  Colors.transparent,
                 ),
                 _divider(),
-                _barraDato(.2, lista[index].estado, TextAlign.center, 20),
+                _barraDato(
+                  .2,
+                  lista[index].estado,
+                  TextAlign.center,
+                  20,
+                  colorEstado(lista[index].estado),
+                ),
                 _divider(),
-                _barraDato(.3, lista[index].remitente, TextAlign.center, 20),
+                _barraDato(
+                  .3,
+                  lista[index].remitente,
+                  TextAlign.center,
+                  20,
+                  Colors.transparent,
+                ),
                 _divider(),
                 _barraDato(
                   .25,
                   lista[index].ultimaModificacion,
                   TextAlign.center,
                   20,
+                  Colors.transparent,
                 ),
               ],
             ),
@@ -540,10 +574,11 @@ class _OrdenesState extends State<Ordenes> {
     String texto,
     TextAlign alineamiento,
     double tamanoFuente,
+    Color color,
   ) => Container(
     width: MediaQuery.sizeOf(context).width * grosor,
     decoration: BoxDecoration(
-      color: Colors.transparent,
+      color: color,
       borderRadius: BorderRadius.circular(10),
     ),
     child: Text(
@@ -638,13 +673,20 @@ class _OrdenesState extends State<Ordenes> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _barraDato(.5, artVen[index], TextAlign.center, 20),
+                        _barraDato(
+                          .5,
+                          artVen[index],
+                          TextAlign.center,
+                          20,
+                          Colors.transparent,
+                        ),
                         _divider(),
                         _barraDato(
                           .28,
                           canVen[index].toString(),
                           TextAlign.center,
                           20,
+                          Colors.transparent,
                         ),
                       ],
                     ),

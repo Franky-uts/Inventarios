@@ -67,7 +67,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
         },
-        body: jsonEncode({'dato': dato, 'usuario': local('usuario')}),
+        body: jsonEncode({'dato': dato}),
       );
       if (res.statusCode == 200) {
         respuesta = "Se cancelo la orden.";
@@ -121,6 +121,25 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         });
         break;
     }
+  }
+
+  Color colorEstado(String estado) {
+    late Color color;
+    switch (estado) {
+      case ('En proceso'):
+        color = Colors.blue.shade200;
+        break;
+      case ('Finalizado'):
+        color = Colors.green.shade200;
+        break;
+      case ('Cancelado'):
+        color = Colors.red.shade200;
+        break;
+      case ('Denegado'):
+        color = Colors.red.shade400;
+        break;
+    }
+    return color;
   }
 
   @override
@@ -355,7 +374,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
 
   FutureBuilder listaFutura() {
     return FutureBuilder(
-      future: OrdenModel.getOrdenes(filtro, local('locacion')),
+      future: OrdenModel.getOrdenes(filtro, local('locación')),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
@@ -444,6 +463,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   lista[index].id.toString(),
                   TextAlign.center,
                   20,
+                  Colors.transparent,
                 ),
                 _divider(),
                 _barraDato(
@@ -451,17 +471,31 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   lista[index].articulos.length.toString(),
                   TextAlign.center,
                   20,
+                  Colors.transparent,
                 ),
                 _divider(),
-                _barraDato(.2, lista[index].estado, TextAlign.center, 20),
+                _barraDato(
+                  .2,
+                  lista[index].estado,
+                  TextAlign.center,
+                  20,
+                  colorEstado(lista[index].estado),
+                ),
                 _divider(),
-                _barraDato(.3, lista[index].remitente, TextAlign.center, 20),
+                _barraDato(
+                  .3,
+                  lista[index].remitente,
+                  TextAlign.center,
+                  20,
+                  Colors.transparent,
+                ),
                 _divider(),
                 _barraDato(
                   .25,
                   lista[index].ultimaModificacion,
                   TextAlign.center,
                   20,
+                  Colors.transparent,
                 ),
               ],
             ),
@@ -509,19 +543,22 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     String texto,
     TextAlign alineamiento,
     double tamanoFuente,
-  ) => Container(
-    width: MediaQuery.sizeOf(context).width * grosor,
-    decoration: BoxDecoration(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Text(
-      texto,
-      textAlign: alineamiento,
-      maxLines: 1,
-      style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
-    ),
-  );
+    Color color,
+  ) {
+    return Container(
+      width: MediaQuery.sizeOf(context).width * grosor,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        texto,
+        textAlign: alineamiento,
+        maxLines: 1,
+        style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
+      ),
+    );
+  }
 
   VerticalDivider _divider() {
     return VerticalDivider(
@@ -607,13 +644,20 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _barraDato(.5, artVen[index], TextAlign.center, 20),
+                        _barraDato(
+                          .5,
+                          artVen[index],
+                          TextAlign.center,
+                          20,
+                          Colors.transparent,
+                        ),
                         _divider(),
                         _barraDato(
                           .28,
                           canVen[index].toString(),
                           TextAlign.center,
                           20,
+                          Colors.transparent,
                         ),
                       ],
                     ),
