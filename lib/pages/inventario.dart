@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:excel/excel.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -24,9 +24,9 @@ class Inventario extends StatefulWidget {
 }
 
 class _InventarioState extends State<Inventario> {
-  static List<ProductoModel> productos = [];
-  static List tipos = [];
-  static List areas = [];
+  List<ProductoModel> productos = [];
+  List tipos = [];
+  List areas = [];
   late bool carga;
   late bool ventanaConf;
 
@@ -251,7 +251,7 @@ class _InventarioState extends State<Inventario> {
             Builder(
               builder: (context) => SingleChildScrollView(
                 child: Column(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.max,
                   children: [
                     barraSuperior(context),
                     Tablas.contenedorInfo(
@@ -275,7 +275,7 @@ class _InventarioState extends State<Inventario> {
                         listaPrincipal,
                         "No hay productos registrados.",
                         "No hay coincidencias.",
-                        modelo: () => ProductoModel.getProductos(
+                        () => ProductoModel.getProductos(
                           CampoTexto.filtroTexto(),
                           CampoTexto.busquedaTexto.text,
                         ),
@@ -536,9 +536,9 @@ class _InventarioState extends State<Inventario> {
                   ),
                 ),
                 TextButton.icon(
-                  onPressed: () {
-                    if (Tablas.valido) {
-                      historialOrdenes(context);
+                  onPressed: () async {
+                    if (Tablas.valido)  {
+                      await historialOrdenes(context);
                     } else {
                       ToastText.toast("Espera a que los datos carguen.", false);
                     }

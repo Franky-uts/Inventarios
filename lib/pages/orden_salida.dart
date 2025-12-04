@@ -11,8 +11,6 @@ import 'package:inventarios/pages/inventario.dart';
 import '../models/producto_model.dart';
 import '../services/local_storage.dart';
 
-enum Filtros { id, nombre, tipo, area }
-
 class OrdenSalida extends StatefulWidget {
   final List<ProductoModel> productosPorId;
 
@@ -23,14 +21,14 @@ class OrdenSalida extends StatefulWidget {
 }
 
 class _OrdenSalidaState extends State<OrdenSalida> {
-  static List<ProductoModel> productos = [];
-  static List<ProductoModel> listaProd = [];
+  List<ProductoModel> productos = [];
+  List<ProductoModel> listaProd = [];
   late String respuesta;
   late bool carga;
   late bool ventanaCarga;
   late bool lista;
-  late List<int> cantidad = [];
-  late List<int> color = [];
+  List<int> cantidad = [];
+  List<int> color = [];
 
   @override
   void initState() {
@@ -77,33 +75,32 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         canPop: false,
         child: Stack(
           children: [
-            SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  barraDeBusqueda(context),
-                  Tablas.contenedorInfo(
-                    MediaQuery.sizeOf(context).width,
-                    [.05, 0.25, 0.175, 0.175, 0.08, 0.2],
-                    ["id", "Nombre", "Tipo", "Área", "Unidades", "Acciones"],
-                  ),
-                  SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 97,
-                    child: listaFutura(),
-                    /*Tablas.listaFutura(
-                      listaPrincipal,
-                      "No hay productos registrados.",
-                      "No hay coincidencias.",
-                      modelo: () => {
-                        ProductoModel.getProductos(
+            Builder(
+              builder: (context) => SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    barraDeBusqueda(context),
+                    Tablas.contenedorInfo(
+                      MediaQuery.sizeOf(context).width,
+                      [.05, 0.25, 0.175, 0.175, 0.08, 0.2],
+                      ["id", "Nombre", "Tipo", "Área", "Unidades", "Acciones"],
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height - 97,
+                      child: Tablas.listaFutura(
+                        listaPrincipal,
+                        "No hay productos registrados.",
+                        "No hay coincidencias.",
+                        () => ProductoModel.getProductos(
                           CampoTexto.filtroTexto(),
                           CampoTexto.busquedaTexto.text,
                         ),
-                      },
-                    )*/
-                  ),
-                ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
             Visibility(
@@ -209,70 +206,24 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        return Container(
-          width: MediaQuery.sizeOf(context).width,
-          height: 40,
-          decoration: BoxDecoration(color: Colors.white),
-          child: Tablas.barraDatos(
-            MediaQuery.sizeOf(context).width,
-            [.05, .25, .175, .175, .08, .2],
-            [
-              lista[index].id.toString(),
-              lista[index].nombre,
-              lista[index].tipo,
-              lista[index].area,
-              lista[index].unidades.toString(),
-              "",
-            ],
-            [],
-            false,
-            botones(
-              cantidad[lista[index].id - 1],
-              color[lista[index].id - 1],
-              lista[index].id,
-            ),
+        return Tablas.barraDatos(
+          MediaQuery.sizeOf(context).width,
+          [.05, .25, .175, .175, .08, .2],
+          [
+            lista[index].id.toString(),
+            lista[index].nombre,
+            lista[index].tipo,
+            lista[index].area,
+            lista[index].unidades.toString(),
+            "",
+          ],
+          [],
+          false,
+          botones(
+            cantidad[lista[index].id - 1],
+            color[lista[index].id - 1],
+            lista[index].id,
           ),
-        );
-      },
-    );
-  }
-
-  FutureBuilder listaFutura() {
-    return FutureBuilder(
-      future: ProductoModel.getProductos(
-        CampoTexto.filtroTexto(),
-        CampoTexto.busquedaTexto.text,
-      ),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData) {
-            Tablas.valido = true;
-            productos = snapshot.data;
-            if (productos.isNotEmpty) {
-              if (productos[0].nombre == "Error") {
-                return Center(child: Text(productos[0].tipo));
-              } else {
-                return listaPrincipal(productos);
-              }
-            } else {
-              return Center(child: Text("No hay productos registrados."));
-            }
-          } else if (snapshot.hasError) {
-            Tablas.valido = false;
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [Text("Error:"), Text(snapshot.error.toString())],
-              ),
-            );
-          } else {
-            if (CampoTexto.busquedaTexto.text.isNotEmpty) {
-              return Center(child: Text("No hay coincidencias."));
-            }
-          }
-        }
-        return Center(
-          child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
         );
       },
     );

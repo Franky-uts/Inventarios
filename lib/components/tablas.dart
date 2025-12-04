@@ -36,9 +36,9 @@ class Tablas {
   static FutureBuilder listaFutura(
     ListView Function(List<dynamic>) lista,
     String textoListaVacia,
-    String errorTexto, {
-    required Function modelo,
-  }) {
+    String errorTexto,
+    Function modelo,
+  ) {
     return FutureBuilder(
       future: modelo(),
       builder: (context, snapshot) {

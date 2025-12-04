@@ -158,7 +158,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                       listaPrincipal,
                       "Todo está en orden, no hay órdenes entrantes.",
                       "No se recuperaron órdenes.",
-                      modelo: () => OrdenModel.getOrdenes(
+                      () => OrdenModel.getOrdenes(
                         filtro,
                         LocalStorage.local('locación'),
                       ),

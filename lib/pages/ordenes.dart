@@ -197,7 +197,7 @@ class _OrdenesState extends State<Ordenes> {
                       listaPrincipal,
                       "Todo está en orden, no hay órdenes entrantes.",
                       "No se recuperaron órdenes.",
-                      modelo: () => OrdenModel.getAllOrdenes(filtro),
+                      () => OrdenModel.getAllOrdenes(filtro),
                     ),
                   ),
                 ],
