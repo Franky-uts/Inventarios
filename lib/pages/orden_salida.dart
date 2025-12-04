@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:inventarios/components/botones.dart';
+import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/input_texto.dart';
+import 'package:inventarios/components/tablas.dart';
+import 'package:inventarios/components/toast_text.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/pages/historial_ordenes.dart';
 import 'package:inventarios/pages/inventario.dart';
@@ -19,26 +23,23 @@ class OrdenSalida extends StatefulWidget {
 }
 
 class _OrdenSalidaState extends State<OrdenSalida> {
-  static Filtros? seleccionFiltro;
   static List<ProductoModel> productos = [];
   static List<ProductoModel> listaProd = [];
   late String respuesta;
-  final busquedaTexto = TextEditingController();
-  final focusBusqueda = FocusNode();
   late bool carga;
   late bool ventanaCarga;
-  late bool valido;
   late bool lista;
   late List<int> cantidad = [];
   late List<int> color = [];
 
   @override
   void initState() {
-    busquedaTexto.text = local('busqueda');
+    CampoTexto.busquedaTexto.text = LocalStorage.local('busqueda');
     carga = false;
     ventanaCarga = false;
-    valido = false;
+    Tablas.valido = false;
     lista = true;
+    listas();
     super.initState();
   }
 
@@ -48,20 +49,13 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     productos.clear();
     cantidad.clear();
     color.clear();
-    busquedaTexto.dispose();
-    focusBusqueda.dispose();
     super.dispose();
-  }
-
-  String local(String clave) {
-    String res = LocalStorage.preferencias.getString(clave).toString();
-    return res;
   }
 
   Future<void> _getProductos() async {
     productos = await ProductoModel.getProductos(
-      filtroTexto(),
-      busquedaTexto.text,
+      CampoTexto.filtroTexto(),
+      CampoTexto.busquedaTexto.text,
     );
   }
 
@@ -73,39 +67,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       }
       lista = false;
     }
-  }
-
-  void toast(String texto) {
-    Fluttertoast.showToast(
-      msg: texto,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: Color(0x80FDC930),
-      textColor: Colors.white,
-      fontSize: 15,
-    );
-  }
-
-  String filtroTexto() {
-    String filtro;
-    switch (seleccionFiltro) {
-      case (Filtros.id):
-        filtro = "id";
-        break;
-      case (Filtros.nombre):
-        filtro = "Nombre";
-        break;
-      case (Filtros.tipo):
-        filtro = "Tipo";
-        break;
-      case (Filtros.area):
-        filtro = "Area";
-        break;
-      default:
-        filtro = "id";
-        break;
-    }
-    return filtro;
   }
 
   @override
@@ -121,11 +82,26 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   barraDeBusqueda(context),
-                  contenedorInfo(),
+                  Tablas.contenedorInfo(
+                    MediaQuery.sizeOf(context).width,
+                    [.05, 0.25, 0.175, 0.175, 0.08, 0.2],
+                    ["id", "Nombre", "Tipo", "Área", "Unidades", "Acciones"],
+                  ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height - 97,
                     child: listaFutura(),
+                    /*Tablas.listaFutura(
+                      listaPrincipal,
+                      "No hay productos registrados.",
+                      "No hay coincidencias.",
+                      modelo: () => {
+                        ProductoModel.getProductos(
+                          CampoTexto.filtroTexto(),
+                          CampoTexto.busquedaTexto.text,
+                        ),
+                      },
+                    )*/
                   ),
                 ],
               ),
@@ -138,123 +114,11 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                 child: Center(child: contenidoVentana()),
               ),
             ),
-            Visibility(
-              visible: carga,
-              child: Container(
-                decoration: BoxDecoration(color: Colors.black45),
-                child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
-                ),
-              ),
-            ),
+            Carga.ventanaCarga(carga),
           ],
         ),
       ),
     );
-  }
-
-  SizedBox _barraSuperior(double grosor, String texto) {
-    return SizedBox(
-      width: MediaQuery.sizeOf(context).width * grosor,
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: 15),
-      ),
-    );
-  }
-
-  VerticalDivider _divider() {
-    return VerticalDivider(
-      thickness: 1,
-      width: 0,
-      color: Color(0xFFFDC930),
-      indent: 5,
-      endIndent: 5,
-    );
-  }
-
-  Container contenedorInfo() {
-    return Container(
-      width: MediaQuery.sizeOf(context).width,
-      decoration: BoxDecoration(color: Color(0xFF8F01AF)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _barraSuperior(.05, "id"),
-          _divider(),
-          _barraSuperior(0.25, "Nombre"),
-          _divider(),
-          _barraSuperior(.175, "Tipo"),
-          _divider(),
-          _barraSuperior(.08, "Unidades"),
-          _divider(),
-          _barraSuperior(.2, "Acciones"),
-        ],
-      ),
-    );
-  }
-
-  Widget _barraDato(
-    double grosor,
-    String texto,
-    TextAlign alineamiento,
-    double tamanoFuente,
-  ) {
-    return Container(
-      width: MediaQuery.sizeOf(context).width * grosor,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        texto,
-        textAlign: alineamiento,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
-      ),
-    );
-  }
-
-  Widget _barraDatoProdCaja(
-    double grosor,
-    String texto,
-    TextAlign alineamiento,
-    double tamanoFuente,
-  ) {
-    if (texto == "1") {
-      return Container(
-        width: MediaQuery.sizeOf(context).width * grosor,
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          "-",
-          textAlign: alineamiento,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
-        ),
-      );
-    } else {
-      return Container(
-        width: MediaQuery.sizeOf(context).width * grosor,
-        decoration: BoxDecoration(
-          color: Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          texto,
-          textAlign: alineamiento,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
-        ),
-      );
-    }
   }
 
   Widget barraDeBusqueda(BuildContext context) {
@@ -262,208 +126,78 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        IconButton.filled(
-          onPressed: () async {
-            await LocalStorage.preferencias.setString(
-              'busqueda',
-              busquedaTexto.text,
-            );
-            if (context.mounted) {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Inventario()),
-              );
-            }
-          },
-          tooltip: "Regresar",
-          icon: Icon(Icons.arrow_back_rounded, size: 35),
-          style: IconButton.styleFrom(
-            backgroundColor: Color(0xFF8F01AF),
-            shape: ContinuousRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
-        ),
-        IconButton.filled(
-          onPressed: () {
-            if (valido) {
-              for (int i = 0; i < cantidad.length; i++) {
-                if (cantidad[i] != 0) {
-                  listaProd.add(widget.productosPorId[i]);
-                }
-              }
-              if (listaProd.isEmpty) {
-                toast("No hay productos seleccionados.");
-              } else {
-                setState(() {
-                  ventanaCarga = true;
-                });
-              }
-            } else {
-              toast("Espera a que los datos carguen.");
-            }
-          },
-          tooltip: "Realizar orden",
-          icon: Icon(Icons.task_rounded, size: 35),
-          style: IconButton.styleFrom(
-            backgroundColor: Color(0xFF8F01AF),
-            shape: ContinuousRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
-        ),
-        IconButton.filled(
-          onPressed: () async {
-            if (valido) {
-              await LocalStorage.preferencias.setString(
-                'busqueda',
-                busquedaTexto.text,
-              );
-              if (context.mounted) {
+        Botones.btnRctMor(
+          "Regresar",
+          Icon(Icons.arrow_back_rounded, size: 35),
+          accion: () async => {
+            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            if (context.mounted)
+              {
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        HistorialOrdenes(productosPorId: widget.productosPorId),
-                  ),
-                );
-              }
-            } else {
-              toast("Espera a que los datos carguen.");
-            }
+                  MaterialPageRoute(builder: (context) => Inventario()),
+                ),
+              },
           },
-          tooltip: "Historial de ordenes",
-          icon: Icon(Icons.history_rounded, size: 35),
-          style: IconButton.styleFrom(
-            backgroundColor: Color(0xFF8F01AF),
-            shape: ContinuousRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
         ),
-        Container(
-          width: MediaQuery.of(context).size.width * .7,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: TextField(
-            controller: busquedaTexto,
-            focusNode: focusBusqueda,
-            onSubmitted: (event) {
-              _getProductos();
-            },
-            onTapOutside: (event) {
-              if (busquedaTexto.text.isNotEmpty) {
-                _getProductos();
+        Botones.btnRctMor(
+          "Regresar",
+          Icon(Icons.task_rounded, size: 35),
+          accion: () => {
+            if (Tablas.valido)
+              {
+                for (int i = 0; i < cantidad.length; i++)
+                  {
+                    if (cantidad[i] != 0)
+                      {listaProd.add(widget.productosPorId[i])},
+                  },
+                if (listaProd.isEmpty)
+                  {ToastText.toast("No hay productos seleccionados.", false)}
+                else
+                  {
+                    setState(() {
+                      ventanaCarga = true;
+                    }),
+                  },
               }
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-            cursorColor: Color(0xFF8F01AF),
-            style: TextStyle(color: Color(0xFF8F01AF)),
-            decoration: InputDecoration(
-              filled: true,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
-              ),
-              fillColor: Colors.white,
-              suffixIcon: Container(
-                margin: EdgeInsets.only(right: 5),
-                child: botonBusqueda(),
-              ),
-              prefixIcon: PopupMenuButton<Filtros>(
-                icon: Icon(Icons.filter_list_rounded, color: Color(0xFF8F01AF)),
-                initialValue: seleccionFiltro,
-                color: Colors.white,
-                tooltip: "Filtros",
-                onSelected: (Filtros filtro) {
-                  setState(() {
-                    seleccionFiltro = filtro;
-                    _getProductos();
-                  });
-                },
-                itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<Filtros>>[
-                      PopupMenuItem<Filtros>(
-                        value: Filtros.id,
-                        child: Text(
-                          "id",
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            color: Color(0xFF8F01AF),
-                          ),
+            else
+              {ToastText.toast("Espera a que los datos carguen.", false)},
+          },
+        ),
+        Botones.btnRctMor(
+          "Historial de ordenes",
+          Icon(Icons.history_rounded, size: 35),
+          accion: () async => {
+            if (Tablas.valido)
+              {
+                await LocalStorage.set(
+                  'busqueda',
+                  CampoTexto.busquedaTexto.text,
+                ),
+                if (context.mounted)
+                  {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HistorialOrdenes(
+                          productosPorId: widget.productosPorId,
                         ),
                       ),
-                      PopupMenuItem<Filtros>(
-                        value: Filtros.nombre,
-                        child: Text(
-                          "Nombre",
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            color: Color(0xFF8F01AF),
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem<Filtros>(
-                        value: Filtros.tipo,
-                        child: Text(
-                          "Tipo",
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            color: Color(0xFF8F01AF),
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem<Filtros>(
-                        value: Filtros.area,
-                        child: Text(
-                          "Área",
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            color: Color(0xFF8F01AF),
-                          ),
-                        ),
-                      ),
-                    ],
-              ),
-              hintText: "Buscar",
-              hintStyle: TextStyle(color: Color(0xFFF6AFCF)),
-            ),
-          ),
+                    ),
+                  },
+              }
+            else
+              {ToastText.toast("Espera a que los datos carguen.", false)},
+          },
+        ),
+        CampoTexto.barraBusqueda(
+          MediaQuery.of(context).size.width * .7,
+          accion: () => setState(() {
+            _getProductos();
+          }),
         ),
       ],
     );
-  }
-
-  IconButton botonBusqueda() {
-    if (busquedaTexto.text.isEmpty) {
-      return IconButton(
-        onPressed: () {
-          if (busquedaTexto.text.isEmpty) {
-            focusBusqueda.requestFocus();
-          } else {
-            FocusManager.instance.primaryFocus?.unfocus();
-            setState(() {
-              _getProductos();
-            });
-          }
-        },
-        icon: Icon(Icons.search, color: Color(0xFF8F01AF)),
-      );
-    } else {
-      return IconButton(
-        onPressed: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          setState(() {
-            busquedaTexto.clear();
-          });
-          _getProductos();
-        },
-        icon: Icon(Icons.close_rounded, color: Color(0xFF8F01AF)),
-      );
-    }
   }
 
   ListView listaPrincipal(List lista) {
@@ -479,40 +213,23 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           width: MediaQuery.sizeOf(context).width,
           height: 40,
           decoration: BoxDecoration(color: Colors.white),
-          child: Container(
-            padding: EdgeInsets.zero,
-            decoration: BoxDecoration(),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _barraDato(
-                  .05,
-                  lista[index].id.toString(),
-                  TextAlign.center,
-                  20,
-                ),
-                _divider(),
-                _barraDato(.25, lista[index].nombre, TextAlign.center, 20),
-                _divider(),
-                _barraDato(.175, lista[index].tipo, TextAlign.center, 20),
-                _divider(),
-                _barraDato(
-                  .08,
-                  lista[index].unidades.toString(),
-                  TextAlign.center,
-                  20,
-                ),
-                _divider(),
-                SizedBox(
-                  width: MediaQuery.sizeOf(context).width * .2,
-                  child: botones(
-                    cantidad[lista[index].id - 1],
-                    color[lista[index].id - 1],
-                    lista[index].id,
-                  ),
-                ),
-              ],
+          child: Tablas.barraDatos(
+            MediaQuery.sizeOf(context).width,
+            [.05, .25, .175, .175, .08, .2],
+            [
+              lista[index].id.toString(),
+              lista[index].nombre,
+              lista[index].tipo,
+              lista[index].area,
+              lista[index].unidades.toString(),
+              "",
+            ],
+            [],
+            false,
+            botones(
+              cantidad[lista[index].id - 1],
+              color[lista[index].id - 1],
+              lista[index].id,
             ),
           ),
         );
@@ -522,12 +239,14 @@ class _OrdenSalidaState extends State<OrdenSalida> {
 
   FutureBuilder listaFutura() {
     return FutureBuilder(
-      future: ProductoModel.getProductos(filtroTexto(), busquedaTexto.text),
+      future: ProductoModel.getProductos(
+        CampoTexto.filtroTexto(),
+        CampoTexto.busquedaTexto.text,
+      ),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
-            listas();
-            valido = true;
+            Tablas.valido = true;
             productos = snapshot.data;
             if (productos.isNotEmpty) {
               if (productos[0].nombre == "Error") {
@@ -539,7 +258,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               return Center(child: Text("No hay productos registrados."));
             }
           } else if (snapshot.hasError) {
-            valido = false;
+            Tablas.valido = false;
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -547,7 +266,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               ),
             );
           } else {
-            if (busquedaTexto.text.isNotEmpty) {
+            if (CampoTexto.busquedaTexto.text.isNotEmpty) {
               return Center(child: Text("No hay coincidencias."));
             }
           }
@@ -641,25 +360,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          Container(
-            width: MediaQuery.sizeOf(context).width,
-            margin: EdgeInsets.zero,
-            decoration: BoxDecoration(color: Color(0xFF8F01AF)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _barraSuperior(.105, "id"),
-                _divider(),
-                _barraSuperior(0.3, "Nombre"),
-                _divider(),
-                _barraSuperior(.125, "Ordenar"),
-                _divider(),
-                _barraSuperior(.125, "Prod./Caja"),
-                _divider(),
-                _barraSuperior(.125, "Prod. Total"),
-              ],
-            ),
+          Tablas.contenedorInfo(
+            MediaQuery.sizeOf(context).width,
+            [.1, 0.25, 0.2, 0.075, 0.075, 0.075],
+            ["id", "Nombre", "Área", "Ordenar", "Prod./Caja", "Prod. Total"],
           ),
           Container(
             width: MediaQuery.of(context).size.width,
@@ -673,56 +377,20 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                 decoration: BoxDecoration(color: Color(0xFFFDC930)),
               ),
               itemBuilder: (context, index) {
-                return Container(
-                  width: MediaQuery.sizeOf(context).width,
-                  height: 40,
-                  decoration: BoxDecoration(color: Colors.white),
-                  child: Container(
-                    padding: EdgeInsets.zero,
-                    decoration: BoxDecoration(),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _barraDato(
-                          .105,
-                          listaProd[index].id.toString(),
-                          TextAlign.center,
-                          20,
-                        ),
-                        _divider(),
-                        _barraDato(
-                          .3,
-                          listaProd[index].nombre,
-                          TextAlign.center,
-                          20,
-                        ),
-                        _divider(),
-                        _barraDato(
-                          .125,
-                          cantidad[listaProd[index].id - 1].toString(),
-                          TextAlign.center,
-                          20,
-                        ),
-                        _divider(),
-                        _barraDatoProdCaja(
-                          .125,
-                          listaProd[index].cantidadPorUnidad.toString(),
-                          TextAlign.center,
-                          20,
-                        ),
-                        _divider(),
-                        _barraDato(
-                          .125,
-                          (cantidad[listaProd[index].id - 1] *
-                                  listaProd[index].cantidadPorUnidad)
-                              .toString(),
-                          TextAlign.center,
-                          20,
-                        ),
-                      ],
-                    ),
-                  ),
+                return Tablas.barraDatos(
+                  MediaQuery.sizeOf(context).width,
+                  [.1, .25, .2, .075, .075, .075],
+                  [
+                    listaProd[index].id.toString(),
+                    listaProd[index].nombre,
+                    listaProd[index].area,
+                    cantidad[listaProd[index].id - 1].toString(),
+                    listaProd[index].cantidadPorUnidad.toString(),
+                    listaProd[index].cantidadPorUnidad.toString(),
+                  ],
+                  [],
+                  false,
+                  null,
                 );
               },
             ),
@@ -769,18 +437,13 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         articulos,
                         cantidades,
                         "En proceso",
-                        local('usuario'),
-                        local('locación'),
+                        LocalStorage.local('usuario'),
+                        LocalStorage.local('locación'),
                       );
                       if (respuesta.toString().split(": ")[0] != "Error") {
-                        Fluttertoast.showToast(
-                          msg:
-                              "Se guardo la orden ${respuesta.toString()} correctamente con ${articulos.length} artículos.",
-                          toastLength: Toast.LENGTH_LONG,
-                          gravity: ToastGravity.BOTTOM,
-                          backgroundColor: Color(0x80FDC930),
-                          textColor: Colors.white,
-                          fontSize: 15,
+                        ToastText.toast(
+                          "Se guardo la orden ${respuesta.toString()} correctamente con ${articulos.length} artículos.",
+                          true,
                         );
                         setState(() {
                           for (int i = 0; i < listaProd.length; i++) {
@@ -794,7 +457,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         setState(() {
                           carga = !carga;
                         });
-                        toast(respuesta.toString().split(": ")[1]);
+                        ToastText.toast(
+                          respuesta.toString().split(": ")[1],
+                          false,
+                        );
                       }
                     },
                     style: OutlinedButton.styleFrom(

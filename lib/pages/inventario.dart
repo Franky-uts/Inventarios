@@ -1,18 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:async';
+import 'package:http/http.dart' as http;
+import 'package:excel/excel.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/input_texto.dart';
+import 'package:inventarios/components/tablas.dart';
+import 'package:inventarios/components/toast_text.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/pages/orden_salida.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/pages/add_producto.dart';
 import 'package:inventarios/services/local_storage.dart';
-import 'package:excel/excel.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-
-enum Filtros { id, nombre, tipo, area }
+import 'package:inventarios/components/botones.dart';
 
 class Inventario extends StatefulWidget {
   const Inventario({super.key});
@@ -22,22 +24,18 @@ class Inventario extends StatefulWidget {
 }
 
 class _InventarioState extends State<Inventario> {
-  static Filtros? seleccionFiltro;
   static List<ProductoModel> productos = [];
   static List tipos = [];
   static List areas = [];
-  final focusBusqueda = FocusNode();
-  final busquedaTexto = TextEditingController();
-  late bool valido;
   late bool carga;
   late bool ventanaConf;
 
   @override
   void initState() {
-    valido = false;
+    Tablas.valido = false;
     carga = false;
     ventanaConf = false;
-    busquedaTexto.text = local('busqueda');
+    CampoTexto.busquedaTexto.text = LocalStorage.local('busqueda');
     super.initState();
   }
 
@@ -46,15 +44,13 @@ class _InventarioState extends State<Inventario> {
     productos.clear();
     tipos.clear();
     areas.clear();
-    busquedaTexto.dispose();
-    focusBusqueda.dispose();
     super.dispose();
   }
 
   Future<void> _getProductos() async {
     productos = await ProductoModel.getProductos(
-      filtroTexto(),
-      busquedaTexto.text,
+      CampoTexto.filtroTexto(),
+      CampoTexto.busquedaTexto.text,
     );
   }
 
@@ -67,10 +63,7 @@ class _InventarioState extends State<Inventario> {
     try {
       listaPorid = await ProductoModel.getProductos("id", "");
       if (listaPorid[0].nombre != "Error") {
-        await LocalStorage.preferencias.setString(
-          'busqueda',
-          busquedaTexto.text,
-        );
+        await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
         if (ctx.mounted) {
           Navigator.pushReplacement(
             ctx,
@@ -84,13 +77,13 @@ class _InventarioState extends State<Inventario> {
           });
         }
       } else {
-        toast(listaPorid[0].tipo);
+        ToastText.toast(listaPorid[0].tipo, false);
         setState(() {
           carga = false;
         });
       }
     } catch (e) {
-      toast("Error: ${e.toString()}");
+      ToastText.toast("Error: ${e.toString()}", false);
       setState(() {
         carga = false;
       });
@@ -102,11 +95,11 @@ class _InventarioState extends State<Inventario> {
       carga = true;
     });
     Navigator.of(context).pop();
-    await LocalStorage.preferencias.remove('usuario');
-    await LocalStorage.preferencias.remove('puesto');
-    await LocalStorage.preferencias.remove('locación');
-    await LocalStorage.preferencias.remove('busqueda');
-    await LocalStorage.preferencias.remove('conexion');
+    await LocalStorage.eliminar('usuario');
+    await LocalStorage.eliminar('puesto');
+    await LocalStorage.eliminar('locación');
+    await LocalStorage.eliminar('busqueda');
+    await LocalStorage.eliminar('conexion');
     if (ctx.mounted) {
       Navigator.pushReplacement(
         ctx,
@@ -127,17 +120,17 @@ class _InventarioState extends State<Inventario> {
     tipos = await ProductoModel.getTipos();
     areas = await ProductoModel.getAreas();
     if (tipos[0].toString().split(": ")[0] == "Error") {
-      toast(tipos[0].toString().split(": ")[1]);
+      ToastText.toast(tipos[0].toString().split(": ")[1], false);
       setState(() {
         carga = false;
       });
     } else if (areas[0].toString().split(": ")[0] == "Error") {
-      toast(areas[0].toString().split(": ")[1]);
+      ToastText.toast(areas[0].toString().split(": ")[1], false);
       setState(() {
         carga = false;
       });
     } else {
-      await LocalStorage.preferencias.setString('busqueda', busquedaTexto.text);
+      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
       if (ctx.mounted) {
         Navigator.pushReplacement(
           ctx,
@@ -239,49 +232,11 @@ class _InventarioState extends State<Inventario> {
         File('$path/$fecha.xlsx')
           ..createSync(recursive: true)
           ..writeAsBytesSync(fileBytes, flush: true);
-        toast('Archivo guardado en: $path/$fecha.xlsx');
+        ToastText.toast('Archivo guardado en: $path/$fecha.xlsx', true);
       }
     } else {
-      toast('Se aborto el proceso');
+      ToastText.toast('Se aborto el proceso', false);
     }
-  }
-
-  String local(String clave) {
-    String res = LocalStorage.preferencias.getString(clave).toString();
-    return res;
-  }
-
-  String filtroTexto() {
-    String filtro;
-    switch (seleccionFiltro) {
-      case (Filtros.id):
-        filtro = "id";
-        break;
-      case (Filtros.nombre):
-        filtro = "Nombre";
-        break;
-      case (Filtros.tipo):
-        filtro = "Tipo";
-        break;
-      case (Filtros.area):
-        filtro = "Area";
-        break;
-      default:
-        filtro = "id";
-        break;
-    }
-    return filtro;
-  }
-
-  void toast(String texto) {
-    Fluttertoast.showToast(
-      msg: texto,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: Color(0x80FDC930),
-      textColor: Colors.white,
-      fontSize: 15,
-    );
   }
 
   @override
@@ -298,12 +253,33 @@ class _InventarioState extends State<Inventario> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    barraDeBusqueda(context),
-                    contenedorInfo(),
+                    barraSuperior(context),
+                    Tablas.contenedorInfo(
+                      MediaQuery.sizeOf(context).width,
+                      [.05, 0.25, 0.175, 0.08, 0.175, 0.075, 0.075, 0.075],
+                      [
+                        "id",
+                        "Nombre",
+                        "Tipo",
+                        "Unidades",
+                        "Área",
+                        "Entrada",
+                        "Salida",
+                        "Perdida",
+                      ],
+                    ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height - 97,
-                      child: listaFutura(),
+                      child: Tablas.listaFutura(
+                        listaPrincipal,
+                        "No hay productos registrados.",
+                        "No hay coincidencias.",
+                        modelo: () => ProductoModel.getProductos(
+                          CampoTexto.filtroTexto(),
+                          CampoTexto.busquedaTexto.text,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -373,10 +349,11 @@ class _InventarioState extends State<Inventario> {
                                 setState(() {
                                   ventanaConf = false;
                                 });
+                                String texto = "";
                                 try {
                                   final res = await http.put(
                                     Uri.parse(
-                                      "${local('conexion')}/inventario/${local('locación')}/reiniciarMovimientos",
+                                      "${LocalStorage.local('conexion')}/inventario/${LocalStorage.local('locación')}/reiniciarMovimientos",
                                     ),
                                     headers: {
                                       "Accept": "application/json",
@@ -385,17 +362,18 @@ class _InventarioState extends State<Inventario> {
                                     },
                                   );
                                   if (res.statusCode == 200) {
-                                    toast("Reinicio exitoso.");
+                                    texto = "Reinicio exitoso.";
                                   } else {
-                                    toast("${res.reasonPhrase}");
+                                    texto = "${res.reasonPhrase}";
                                   }
                                 } on TimeoutException catch (e) {
-                                  toast("Error: ${e.message.toString()}");
+                                  texto = "Error: ${e.message.toString()}";
                                 } on SocketException catch (e) {
-                                  toast("Error: ${e.message.toString()}");
+                                  texto = "Error: ${e.message.toString()}";
                                 } on Error catch (e) {
-                                  toast("Error: ${e.toString()}");
+                                  texto = "Error: ${e.toString()}";
                                 }
+                                ToastText.toast(texto, true);
                               },
                               child: Text(
                                 "Si",
@@ -414,15 +392,7 @@ class _InventarioState extends State<Inventario> {
                 ),
               ),
             ),
-            Visibility(
-              visible: carga,
-              child: Container(
-                decoration: BoxDecoration(color: Colors.black45),
-                child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
-                ),
-              ),
-            ),
+            Carga.ventanaCarga(carga),
           ],
         ),
       ),
@@ -472,17 +442,17 @@ class _InventarioState extends State<Inventario> {
                   ],
                 ),
                 Text(
-                  local('usuario'),
+                  LocalStorage.local('usuario'),
                   style: TextStyle(fontSize: 30, color: Color(0xFF8F01AF)),
                   maxLines: 1,
                 ),
                 Text(
-                  local('puesto'),
+                  LocalStorage.local('puesto'),
                   style: TextStyle(fontSize: 15, color: Color(0xFF8F01AF)),
                   maxLines: 1,
                 ),
                 Text(
-                  "Mostrando: ${local('locación')}",
+                  "Mostrando: ${LocalStorage.local('locación')}",
                   style: TextStyle(fontSize: 20, color: Color(0xFF8F01AF)),
                 ),
               ],
@@ -498,10 +468,10 @@ class _InventarioState extends State<Inventario> {
               children: [
                 TextButton.icon(
                   onPressed: () {
-                    if (valido) {
+                    if (Tablas.valido) {
                       datosExcel(context);
                     } else {
-                      toast("Espera a que los datos carguen.");
+                      ToastText.toast("Espera a que los datos carguen.", false);
                     }
                   },
                   style: TextButton.styleFrom(
@@ -520,13 +490,13 @@ class _InventarioState extends State<Inventario> {
                 ),
                 TextButton.icon(
                   onPressed: () {
-                    if (valido) {
+                    if (Tablas.valido) {
                       setState(() {
                         ventanaConf = true;
                       });
                       Navigator.of(context).pop();
                     } else {
-                      toast("Espera a que los datos carguen.");
+                      ToastText.toast("Espera a que los datos carguen.", false);
                     }
                   },
                   style: TextButton.styleFrom(
@@ -545,10 +515,10 @@ class _InventarioState extends State<Inventario> {
                 ),
                 TextButton.icon(
                   onPressed: () async {
-                    if (valido) {
+                    if (Tablas.valido) {
                       await _getListas(context);
                     } else {
-                      toast("Espera a que los datos carguen.");
+                      ToastText.toast("Espera a que los datos carguen.", false);
                     }
                   },
                   style: TextButton.styleFrom(
@@ -567,10 +537,10 @@ class _InventarioState extends State<Inventario> {
                 ),
                 TextButton.icon(
                   onPressed: () {
-                    if (valido) {
+                    if (Tablas.valido) {
                       historialOrdenes(context);
                     } else {
-                      toast("Espera a que los datos carguen.");
+                      ToastText.toast("Espera a que los datos carguen.", false);
                     }
                   },
                   style: FilledButton.styleFrom(
@@ -599,235 +569,23 @@ class _InventarioState extends State<Inventario> {
     );
   }
 
-  /*AppBar appBar() {
-    return AppBar(
-      title: Text(
-        "Inventario",
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 25,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-      backgroundColor: Colors.black,
-      elevation: 0,
-      centerTitle: true,
-      leading: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(color: Colors.grey),
-        child: Icon(Icons.menu_rounded, size: 30),
-      ),
-    );
-  }*/
-
-  Widget barraDeBusqueda(BuildContext context) {
+  Widget barraSuperior(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        IconButton.filled(
-          onPressed: () {
-            Scaffold.of(context).openDrawer();
-          },
-          icon: Icon(Icons.menu_rounded, size: 35, color: Color(0xFFFFFFFF)),
-          style: IconButton.styleFrom(
-            backgroundColor: Color(0xFF8F01AF),
-            shape: ContinuousRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
+        Botones.btnRctMor(
+          "Abrir menú",
+          Icon(Icons.menu_rounded, size: 35, color: Color(0xFFFFFFFF)),
+          accion: () => Scaffold.of(context).openDrawer(),
         ),
-        Container(
-          width: MediaQuery.of(context).size.width * .875,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: TextField(
-            controller: busquedaTexto,
-            focusNode: focusBusqueda,
-            cursorColor: Color(0xFF8F01AF),
-            onSubmitted: (event) {
-              _getProductos();
-            },
-            onTapOutside: (event) {
-              if (busquedaTexto.text.isNotEmpty) {
-                _getProductos();
-              }
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
-            style: TextStyle(color: Color(0xFF8F01AF)),
-            decoration: InputDecoration(
-              filled: true,
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
-              ),
-              fillColor: Colors.white,
-              suffixIcon: Container(
-                margin: EdgeInsets.only(right: 5),
-                child: botonBusqueda(),
-              ),
-              prefixIcon: PopupMenuButton<Filtros>(
-                icon: Icon(Icons.filter_list_rounded, color: Color(0xFF8F01AF)),
-                initialValue: seleccionFiltro,
-                color: Colors.white,
-                onSelected: (Filtros filtro) {
-                  setState(() {
-                    seleccionFiltro = filtro;
-                    _getProductos();
-                  });
-                },
-                tooltip: "Filtros",
-                itemBuilder: (BuildContext context) =>
-                    <PopupMenuEntry<Filtros>>[
-                      PopupMenuItem<Filtros>(
-                        value: Filtros.id,
-                        child: Text(
-                          "id",
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            color: Color(0xFF8F01AF),
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem<Filtros>(
-                        value: Filtros.nombre,
-                        child: Text(
-                          "Nombre",
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            color: Color(0xFF8F01AF),
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem<Filtros>(
-                        value: Filtros.tipo,
-                        child: Text(
-                          "Tipo",
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            color: Color(0xFF8F01AF),
-                          ),
-                        ),
-                      ),
-                      PopupMenuItem<Filtros>(
-                        value: Filtros.area,
-                        child: Text(
-                          "Área",
-                          style: TextStyle(
-                            fontSize: 17.5,
-                            color: Color(0xFF8F01AF),
-                          ),
-                        ),
-                      ),
-                    ],
-              ),
-              hintText: "Buscar",
-              hintStyle: TextStyle(color: Color(0xFFF6AFCF)),
-            ),
-          ),
+        CampoTexto.barraBusqueda(
+          MediaQuery.of(context).size.width * .875,
+          accion: () => setState(() {
+            _getProductos();
+          }),
         ),
       ],
-    );
-  }
-
-  IconButton botonBusqueda() {
-    if (busquedaTexto.text.isEmpty) {
-      return IconButton(
-        onPressed: () {
-          if (busquedaTexto.text.isEmpty) {
-            focusBusqueda.requestFocus();
-          } else {
-            FocusManager.instance.primaryFocus?.unfocus();
-            setState(() {
-              _getProductos();
-            });
-          }
-        },
-        icon: Icon(Icons.search, color: Color(0xFF8F01AF)),
-      );
-    } else {
-      return IconButton(
-        onPressed: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          setState(() {
-            busquedaTexto.clear();
-          });
-          _getProductos();
-        },
-        icon: Icon(Icons.close_rounded, color: Color(0xFF8F01AF)),
-      );
-    }
-  }
-
-  Container contenedorInfo() {
-    return Container(
-      width: MediaQuery.sizeOf(context).width,
-      decoration: BoxDecoration(color: Color(0xFF8F01AF)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _barraSuperior(.05, "id"),
-          _divider(),
-          _barraSuperior(0.25, "Nombre"),
-          _divider(),
-          _barraSuperior(.175, "Tipo"),
-          _divider(),
-          _barraSuperior(.08, "Unidades"),
-          _divider(),
-          _barraSuperior(.175, "Área"),
-          _divider(),
-          _barraSuperior(.075, "Entrada"),
-          _divider(),
-          _barraSuperior(.075, "Salida"),
-          _divider(),
-          _barraSuperior(.075, "Perdida"),
-        ],
-      ),
-    );
-  }
-
-  VerticalDivider _divider() {
-    return VerticalDivider(
-      thickness: 1,
-      width: 0,
-      color: Color(0xFFFDC930),
-      indent: 5,
-      endIndent: 5,
-    );
-  }
-
-  Widget _barraDato(
-    double grosor,
-    String texto,
-    TextAlign alineamiento,
-    double tamanoFuente,
-  ) => Container(
-    width: MediaQuery.sizeOf(context).width * grosor,
-    decoration: BoxDecoration(
-      color: Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Text(
-      texto,
-      overflow: TextOverflow.ellipsis,
-      textAlign: alineamiento,
-      maxLines: 1,
-      style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
-    ),
-  );
-
-  SizedBox _barraSuperior(double grosor, String texto) {
-    return SizedBox(
-      width: MediaQuery.sizeOf(context).width * grosor,
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: 15),
-      ),
     );
   }
 
@@ -840,140 +598,33 @@ class _InventarioState extends State<Inventario> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        return Container(
-          width: MediaQuery.sizeOf(context).width,
-          height: 40,
-          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-          child: TextButton(
-            onPressed: () async => {
-              await LocalStorage.preferencias.setString(
-                'busqueda',
-                busquedaTexto.text,
-              ),
-              if (context.mounted)
-                {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          Producto(productoInfo: lista[index]),
-                    ),
+        return Tablas.barraDatos(
+          MediaQuery.sizeOf(context).width,
+          [.05, .25, .175, .08, .175, .075, .075, .075],
+          [
+            lista[index].id.toString(),
+            lista[index].nombre,
+            lista[index].tipo,
+            lista[index].unidades.toString(),
+            lista[index].area,
+            lista[index].entrada.toString(),
+            lista[index].salida.toString(),
+            lista[index].perdida.toString(),
+          ],
+          [],
+          true,
+          () async => {
+            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            if (context.mounted)
+              {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Producto(productoInfo: lista[index]),
                   ),
-                },
-            },
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.all(0),
-              shape: ContinuousRectangleBorder(),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _barraDato(
-                  .05,
-                  lista[index].id.toString(),
-                  TextAlign.center,
-                  20,
                 ),
-                _divider(),
-                _barraDato(.25, lista[index].nombre, TextAlign.center, 20),
-                _divider(),
-                _barraDato(.175, lista[index].tipo, TextAlign.center, 20),
-                _divider(),
-                _barraDato(
-                  .08,
-                  lista[index].unidades.toString(),
-                  TextAlign.center,
-                  20,
-                ),
-                _divider(),
-                _barraDato(.175, lista[index].area, TextAlign.center, 20),
-                _divider(),
-                _barraDato(
-                  .075,
-                  lista[index].entrada.toString(),
-                  TextAlign.center,
-                  20,
-                ),
-                _divider(),
-                _barraDato(
-                  .075,
-                  lista[index].salida.toString(),
-                  TextAlign.center,
-                  20,
-                ),
-                _divider(),
-                _barraDato(
-                  .075,
-                  lista[index].perdida.toString(),
-                  TextAlign.center,
-                  20,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  FutureBuilder listaFutura() {
-    return FutureBuilder(
-      future: ProductoModel.getProductos(filtroTexto(), busquedaTexto.text),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData) {
-            valido = true;
-            productos = snapshot.data;
-            if (productos.isNotEmpty) {
-              if (productos[0].nombre == "Error") {
-                return Center(
-                  child: Text(
-                    productos[0].tipo,
-                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
-                  ),
-                );
-              } else {
-                return listaPrincipal(productos);
-              }
-            } else {
-              return Center(
-                child: Text(
-                  "No hay productos registrados.",
-                  style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
-                ),
-              );
-            }
-          } else if (snapshot.hasError) {
-            valido = false;
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Error:",
-                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
-                  ),
-                  Text(
-                    snapshot.error.toString(),
-                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            if (busquedaTexto.text.isNotEmpty) {
-              return Center(
-                child: Text(
-                  "No hay coincidencias.",
-                  style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
-                ),
-              );
-            }
-          }
-        }
-        return Center(
-          child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
+              },
+          },
         );
       },
     );

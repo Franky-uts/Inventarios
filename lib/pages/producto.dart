@@ -1,12 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import 'dart:async';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter/material.dart';
+import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/toast_text.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/inventario.dart';
-
-import '../services/local_storage.dart';
 
 class Producto extends StatefulWidget {
   final ProductoModel productoInfo;
@@ -38,46 +35,30 @@ class _ProductoState extends State<Producto> {
     super.dispose();
   }
 
-  String local(String clave) {
-    String res = LocalStorage.preferencias.getString(clave).toString();
-    return res;
-  }
-
-  Future guardarDatos(String columna, int dato) async {
-    final res = await http.put(
-      Uri.parse(
-        "${local('conexion')}/inventario/${local('locación')}/${widget.productoInfo.id}/$columna",
-      ),
-      headers: {
-        "Accept": "application/json",
-        "content-type": "application/json; charset=UTF-8",
-      },
-      body: jsonEncode({'dato': dato, 'usuario': local('usuario')}),
-    );
-    if (res.statusCode == 200) {
-      return res;
-    } else {
-      throw Exception(res.reasonPhrase);
-    }
-  }
-
   Future enviarDatos(int valor) async {
+    String texto = "";
     switch (valor) {
       case 1:
         if (cajasEntrantes > widget.productoInfo.entrada) {
           final int unidades =
               (cajasEntrantes - widget.productoInfo.entrada) +
               widget.productoInfo.unidades;
-          await guardarDatos("Unidades", unidades);
-          await guardarDatos("Entrada", cajasEntrantes);
-          setState(() {
-            color[0] = 0xFF8F01AF;
-            widget.productoInfo.unidades = unidades;
-            widget.productoInfo.entrada = cajasEntrantes;
-          });
-          toast("Entradas guardadas");
+          texto = await ProductoModel.guardarDatos(
+            "Entrada",
+            unidades,
+            cajasEntrantes,
+            widget.productoInfo.id,
+          );
+          if (texto.split(": ")[0] != "Error") {
+            setState(() {
+              color[0] = 0xFF8F01AF;
+              widget.productoInfo.unidades = unidades;
+              widget.productoInfo.entrada = cajasEntrantes;
+            });
+            texto = "Entradas registradas";
+          }
         } else {
-          toast("No hay cambios");
+          texto = "No hay cambios";
         }
         break;
       case 2:
@@ -85,45 +66,48 @@ class _ProductoState extends State<Producto> {
           final int unidades =
               widget.productoInfo.unidades -
               (cajasSalida - widget.productoInfo.salida);
-          await guardarDatos("Unidades", unidades);
-          await guardarDatos("Salida", cajasSalida);
-          setState(() {
-            color[1] = 0xFF8F01AF;
-            widget.productoInfo.unidades = unidades;
-            widget.productoInfo.salida = cajasSalida;
-          });
-          toast("Salidas guardadas");
+          texto = await ProductoModel.guardarDatos(
+            "Salida",
+            unidades,
+            cajasSalida,
+            widget.productoInfo.id,
+          );
+          if (texto.split(": ")[0] != "Error") {
+            setState(() {
+              color[1] = 0xFF8F01AF;
+              widget.productoInfo.unidades = unidades;
+              widget.productoInfo.salida = cajasSalida;
+            });
+            texto = "Salidas registradas";
+          }
         } else {
-          toast("No hay cambios");
+          texto = "No hay cambios";
         }
         break;
       case 3:
         if (productosPerdido > widget.productoInfo.perdida) {
-          await guardarDatos("Perdida", productosPerdido);
-          setState(() {
-            color[2] = 0xFF8F01AF;
-            widget.productoInfo.perdida = productosPerdido;
-          });
-          toast("Perdidas guardadas");
+          texto = await ProductoModel.guardarDatos(
+            "Perdida",
+            widget.productoInfo.unidades,
+            productosPerdido,
+            widget.productoInfo.id,
+          );
+          if (texto.split(": ")[0] != "Error") {
+            setState(() {
+              color[2] = 0xFF8F01AF;
+              widget.productoInfo.perdida = productosPerdido;
+            });
+            texto = "Perdidas registradas";
+          }
         } else {
-          toast("No hay cambios");
+          texto = "No hay cambios";
         }
         break;
     }
+    ToastText.toast(texto, false);
     setState(() {
       carga = false;
     });
-  }
-
-  void toast(String texto) {
-    Fluttertoast.showToast(
-      msg: texto,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: Color(0x80FDC930),
-      textColor: Colors.white,
-      fontSize: 15,
-    );
   }
 
   void cambioValor(int tipo, int valor) {
@@ -174,7 +158,7 @@ class _ProductoState extends State<Producto> {
             });
           }
         } else {
-          toast("Ya son todos los productos.");
+          ToastText.toast("Ya son todos los productos.", false);
         }
         break;
       case 3:
@@ -219,7 +203,7 @@ class _ProductoState extends State<Producto> {
         },
         elevation: 0,
         backgroundColor: Color(0xFF8F01AF),
-        tooltip: "Volver.",
+        tooltip: "Volver",
         child: Icon(Icons.arrow_back_rounded, color: Colors.white),
       ),
       body: PopScope(
@@ -246,7 +230,7 @@ class _ProductoState extends State<Producto> {
                       children: [
                         tipoTexto(widget.productoInfo.tipo),
                         Container(
-                          width: MediaQuery.of(context).size.width * .26,
+                          width: MediaQuery.of(context).size.width * .23,
                           height: 1,
                           decoration: BoxDecoration(
                             border: Border(
@@ -343,15 +327,7 @@ class _ProductoState extends State<Producto> {
                 ],
               ),
             ),
-            Visibility(
-              visible: carga,
-              child: Container(
-                decoration: BoxDecoration(color: Colors.black45),
-                child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
-                ),
-              ),
-            ),
+            Carga.ventanaCarga(carga),
           ],
         ),
       ),
@@ -494,7 +470,6 @@ class _ProductoState extends State<Producto> {
             onPressed: () {
               cambioValor(tipo, -1);
             },
-            tooltip: "Menos",
             icon: Icon(Icons.remove, color: Colors.white),
             style: IconButton.styleFrom(
               padding: EdgeInsets.zero,
@@ -530,7 +505,6 @@ class _ProductoState extends State<Producto> {
             onPressed: () {
               cambioValor(tipo, 1);
             },
-            tooltip: "Más",
             icon: Icon(Icons.add, color: Colors.white),
             style: IconButton.styleFrom(
               padding: EdgeInsets.zero,

@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:inventarios/components/botones.dart';
+import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/tablas.dart';
+import 'package:inventarios/components/toast_text.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/orden_salida.dart';
@@ -23,7 +26,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   final List<int> colores = [0xFF8F01AF, 0xFFFFFFFF, 0xFFFFFFFF];
   late List artVen = [];
   late List canVen = [];
-  late bool valido;
   late bool carga;
   late bool ventanaDatos;
   late bool ventanaConf;
@@ -36,7 +38,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
 
   @override
   void initState() {
-    valido = false;
     ventanaDatos = false;
     ventanaConf = false;
     carga = false;
@@ -53,16 +54,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     super.dispose();
   }
 
-  String local(String clave) {
-    String res = LocalStorage.preferencias.getString(clave).toString();
-    return res;
-  }
-
   Future editarEstado(String columna, String dato) async {
     String respuesta;
     try {
       final res = await http.put(
-        Uri.parse("${local('conexion')}/ordenes/$idVen/$columna"),
+        Uri.parse("${LocalStorage.local('conexion')}/ordenes/$idVen/$columna"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
@@ -82,17 +78,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
       respuesta = e.toString();
     }
     return respuesta;
-  }
-
-  void toast(String texto) {
-    Fluttertoast.showToast(
-      msg: texto,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      backgroundColor: Color(0x80FDC930),
-      textColor: Colors.white,
-      fontSize: 15,
-    );
   }
 
   void filtroTexto(int valor) {
@@ -155,11 +140,29 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   opciones(context),
-                  contenedorInfo(),
+                  Tablas.contenedorInfo(
+                    MediaQuery.sizeOf(context).width,
+                    [.05, 0.2, 0.2, 0.3, 0.25],
+                    [
+                      "id",
+                      "Art. ordenados",
+                      "Estado",
+                      "Remitente",
+                      "Última modificación",
+                    ],
+                  ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height - 82,
-                    child: listaFutura(),
+                    child: Tablas.listaFutura(
+                      listaPrincipal,
+                      "Todo está en orden, no hay órdenes entrantes.",
+                      "No se recuperaron órdenes.",
+                      modelo: () => OrdenModel.getOrdenes(
+                        filtro,
+                        LocalStorage.local('locación'),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -237,7 +240,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                   "Estado",
                                   "Cancelado",
                                 );
-                                toast(res);
+                                ToastText.toast(res, false);
                                 setState(() {
                                   ventanaDatos = false;
                                   carga = false;
@@ -266,15 +269,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 ),
               ),
             ),
-            Visibility(
-              visible: carga,
-              child: Container(
-                decoration: BoxDecoration(color: Colors.black45),
-                child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
-                ),
-              ),
-            ),
+            Carga.ventanaCarga(carga),
           ],
         ),
       ),
@@ -288,27 +283,21 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          IconButton.filled(
-            onPressed: () {
+          Botones.btnRctMor(
+            "Regresar",
+            Icon(Icons.arrow_back_rounded, size: 35),
+            accion: () => {
               setState(() {
                 carga = true;
-              });
+              }),
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
                       OrdenSalida(productosPorId: widget.productosPorId),
                 ),
-              );
-            },
-            tooltip: "Regresar",
-            icon: Icon(Icons.arrow_back_rounded, size: 35),
-            style: IconButton.styleFrom(
-              backgroundColor: Color(0xFF8F01AF),
-              shape: ContinuousRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
               ),
-            ),
+            },
           ),
           TextButton.icon(
             onPressed: () {
@@ -372,58 +361,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     );
   }
 
-  FutureBuilder listaFutura() {
-    return FutureBuilder(
-      future: OrdenModel.getOrdenes(filtro, local('locación')),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done) {
-          if (snapshot.hasData) {
-            valido = true;
-            ordenes = snapshot.data;
-            if (ordenes.isNotEmpty) {
-              if (ordenes[0].estado == "Error") {
-                return Center(child: Text(ordenes[0].remitente));
-              } else {
-                return listaPrincipal(ordenes);
-              }
-            } else {
-              return Center(
-                child: Text(
-                  "Todo está en orden, no hay órdenes en salida.",
-                  style: TextStyle(color: Color(0xFFF6AFCF)),
-                ),
-              );
-            }
-          } else if (snapshot.hasError) {
-            valido = false;
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Error:", style: TextStyle(color: Color(0xFFF6AFCF))),
-                  Text(
-                    snapshot.error.toString(),
-                    style: TextStyle(color: Color(0xFFF6AFCF)),
-                  ),
-                ],
-              ),
-            );
-          } else {
-            return Center(
-              child: Text(
-                "No se recuperaron órdenes.",
-                style: TextStyle(color: Color(0xFFF6AFCF)),
-              ),
-            );
-          }
-        }
-        return Center(
-          child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
-        );
-      },
-    );
-  }
-
   ListView listaPrincipal(List lista) {
     return ListView.separated(
       itemCount: lista.length,
@@ -433,140 +370,38 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        return Container(
-          width: MediaQuery.sizeOf(context).width,
-          height: 40,
-          decoration: BoxDecoration(color: Colors.white),
-          child: TextButton(
-            onPressed: () => {
-              setState(() {
-                idVen = lista[index].id.toString();
-                remVen = lista[index].remitente;
-                estVen = lista[index].estado;
-                modVen = lista[index].ultimaModificacion;
-                desVen = lista[index].destino;
-                artVen = lista[index].articulos;
-                canVen = lista[index].cantidades;
-                ventanaDatos = true;
-              }),
-            },
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.all(0),
-              shape: ContinuousRectangleBorder(),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _barraDato(
-                  .05,
-                  lista[index].id.toString(),
-                  TextAlign.center,
-                  20,
-                  Colors.transparent,
-                ),
-                _divider(),
-                _barraDato(
-                  .2,
-                  lista[index].articulos.length.toString(),
-                  TextAlign.center,
-                  20,
-                  Colors.transparent,
-                ),
-                _divider(),
-                _barraDato(
-                  .2,
-                  lista[index].estado,
-                  TextAlign.center,
-                  20,
-                  colorEstado(lista[index].estado),
-                ),
-                _divider(),
-                _barraDato(
-                  .3,
-                  lista[index].remitente,
-                  TextAlign.center,
-                  20,
-                  Colors.transparent,
-                ),
-                _divider(),
-                _barraDato(
-                  .25,
-                  lista[index].ultimaModificacion,
-                  TextAlign.center,
-                  20,
-                  Colors.transparent,
-                ),
-              ],
-            ),
-          ),
+        return Tablas.barraDatos(
+          MediaQuery.sizeOf(context).width,
+          [.05, .2, .2, .3, .25],
+          [
+            lista[index].id.toString(),
+            lista[index].articulos.length.toString(),
+            lista[index].estado,
+            lista[index].remitente,
+            lista[index].ultimaModificacion,
+          ],
+          [
+            Colors.transparent,
+            Colors.transparent,
+            colorEstado(lista[index].estado),
+            Colors.transparent,
+            Colors.transparent,
+          ],
+          true,
+          () => {
+            setState(() {
+              idVen = lista[index].id.toString();
+              remVen = lista[index].remitente;
+              estVen = lista[index].estado;
+              modVen = lista[index].ultimaModificacion;
+              desVen = lista[index].destino;
+              artVen = lista[index].articulos;
+              canVen = lista[index].cantidades;
+              ventanaDatos = true;
+            }),
+          },
         );
       },
-    );
-  }
-
-  Container contenedorInfo() {
-    return Container(
-      width: MediaQuery.sizeOf(context).width,
-      decoration: BoxDecoration(color: Color(0xFF8F01AF)),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          _barraSuperior(.05, "id"),
-          _divider(),
-          _barraSuperior(.2, "Art. ordenados"),
-          _divider(),
-          _barraSuperior(.2, "Estado"),
-          _divider(),
-          _barraSuperior(.3, "Remitente"),
-          _divider(),
-          _barraSuperior(.25, "Última modificación"),
-        ],
-      ),
-    );
-  }
-
-  SizedBox _barraSuperior(double grosor, String texto) {
-    return SizedBox(
-      width: MediaQuery.sizeOf(context).width * grosor,
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: 15),
-      ),
-    );
-  }
-
-  Widget _barraDato(
-    double grosor,
-    String texto,
-    TextAlign alineamiento,
-    double tamanoFuente,
-    Color color,
-  ) {
-    return Container(
-      width: MediaQuery.sizeOf(context).width * grosor,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        texto,
-        textAlign: alineamiento,
-        maxLines: 1,
-        style: TextStyle(color: Color(0xFF8F01AF), fontSize: tamanoFuente),
-      ),
-    );
-  }
-
-  VerticalDivider _divider() {
-    return VerticalDivider(
-      thickness: 1,
-      width: 0,
-      color: Color(0xFFFDC930),
-      indent: 5,
-      endIndent: 5,
     );
   }
 
@@ -607,19 +442,10 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               ),
             ],
           ),
-          Container(
-            width: MediaQuery.sizeOf(context).width,
-            margin: EdgeInsets.zero,
-            decoration: BoxDecoration(color: Color(0xFF8F01AF)),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                _barraSuperior(.5, "Nombre del articulo"),
-                _divider(),
-                _barraSuperior(.28, "Cantidad ordenada"),
-              ],
-            ),
+          Tablas.contenedorInfo(
+            MediaQuery.sizeOf(context).width,
+            [.5, 0.28],
+            ["Nombre del articulo", "Cantidad ordenada"],
           ),
           Container(
             width: MediaQuery.of(context).size.width,
@@ -633,35 +459,13 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 decoration: BoxDecoration(color: Color(0xFFFDC930)),
               ),
               itemBuilder: (context, index) {
-                return Container(
-                  width: MediaQuery.sizeOf(context).width,
-                  height: 40,
-                  decoration: BoxDecoration(color: Colors.white),
-                  child: Container(
-                    padding: EdgeInsets.zero,
-                    decoration: BoxDecoration(),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        _barraDato(
-                          .5,
-                          artVen[index],
-                          TextAlign.center,
-                          20,
-                          Colors.transparent,
-                        ),
-                        _divider(),
-                        _barraDato(
-                          .28,
-                          canVen[index].toString(),
-                          TextAlign.center,
-                          20,
-                          Colors.transparent,
-                        ),
-                      ],
-                    ),
-                  ),
+                return Tablas.barraDatos(
+                  MediaQuery.sizeOf(context).width,
+                  [.5, .28],
+                  [artVen[index], canVen[index].toString()],
+                  [],
+                  false,
+                  null,
                 );
               },
             ),
@@ -713,9 +517,12 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         });
                       } else if (estVen == "Cancelado" ||
                           estVen == "Denegado") {
-                        toast("La orden ya esta cencelada.");
+                        ToastText.toast("La orden ya esta cencelada.", false);
                       } else {
-                        toast("La orden no se puede cancelar.");
+                        ToastText.toast(
+                          "La orden no se puede cancelar.",
+                          false,
+                        );
                       }
                     },
                     style: OutlinedButton.styleFrom(

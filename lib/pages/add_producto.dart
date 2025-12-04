@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/toast_text.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/inventario.dart';
-
 import '../services/local_storage.dart';
 
 class Addproducto extends StatefulWidget {
@@ -55,11 +55,6 @@ class _AddproductoState extends State<Addproducto> {
     listaArea.clear();
     listaTipo.clear();
     super.dispose();
-  }
-
-  String local(String clave) {
-    String res = LocalStorage.preferencias.getString(clave).toString();
-    return res;
   }
 
   void cantidadValido(String value) {
@@ -329,8 +324,8 @@ class _AddproductoState extends State<Addproducto> {
                               int.parse(cantidadControl.text),
                               valorTipo,
                               valorArea,
-                              local('usuario'),
-                              local('locación'),
+                              LocalStorage.local('usuario'),
+                              LocalStorage.local('locación'),
                             ),
                             if (respuesta.toString().split(": ")[0] != "Error")
                               {
@@ -341,13 +336,9 @@ class _AddproductoState extends State<Addproducto> {
                                   valorTipo = listaTipo.last;
                                   valorArea = listaArea.last;
                                 }),
-                                Fluttertoast.showToast(
-                                  msg: "Se guardo $respuesta correctamente.",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  backgroundColor: Color(0x80FDC930),
-                                  textColor: Colors.white,
-                                  fontSize: 15,
+                                ToastText.toast(
+                                  "Se guardo $respuesta correctamente.",
+                                  true,
                                 ),
                                 setState(() {
                                   carga = !carga;
@@ -358,13 +349,9 @@ class _AddproductoState extends State<Addproducto> {
                                 setState(() {
                                   carga = !carga;
                                 }),
-                                Fluttertoast.showToast(
-                                  msg: respuesta.toString().split(": ")[1],
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.BOTTOM,
-                                  backgroundColor: Color(0x80FDC930),
-                                  textColor: Colors.white,
-                                  fontSize: 15,
+                                ToastText.toast(
+                                  respuesta.toString().split(": ")[1],
+                                  true,
                                 ),
                               },
                           },
@@ -386,15 +373,7 @@ class _AddproductoState extends State<Addproducto> {
                 ),
               ),
             ),
-            Visibility(
-              visible: carga,
-              child: Container(
-                decoration: BoxDecoration(color: Colors.black45),
-                child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFF6AFCF)),
-                ),
-              ),
-            ),
+            Carga.ventanaCarga(carga),
           ],
         ),
       ),

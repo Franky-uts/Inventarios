@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import '../services/local_storage.dart';
 
 class OrdenModel {
@@ -55,11 +53,12 @@ class OrdenModel {
     return productos;
   }
 
-  static Future<List<OrdenModel>> getOrdenes(String filtro, String locacion) async {
+  static Future<List<OrdenModel>> getOrdenes(
+    String filtro,
+    String locacion,
+  ) async {
     late String url;
-    String conexion = LocalStorage.preferencias
-        .getString('conexion')
-        .toString();
+    String conexion = LocalStorage.local('conexion');
     url = "$conexion/ordenes/$filtro/$locacion";
     late List<OrdenModel> ordenesFuture = [];
     var res = await http.get(
@@ -141,9 +140,7 @@ class OrdenModel {
 
   static Future<List<OrdenModel>> getAllOrdenes(String filtro) async {
     late String url;
-    String conexion = LocalStorage.preferencias
-        .getString('conexion')
-        .toString();
+    String conexion = LocalStorage.local('conexion');
     url = "$conexion/ordenes/$filtro";
     late List<OrdenModel> ordenesFuture = [];
     var res = await http.get(
@@ -233,9 +230,7 @@ class OrdenModel {
     late String productoFuture;
     try {
       final res = await http.post(
-        Uri.parse(
-          "${LocalStorage.preferencias.getString('conexion').toString()}/ordenes/",
-        ),
+        Uri.parse("${LocalStorage.local('conexion')}/ordenes/"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",

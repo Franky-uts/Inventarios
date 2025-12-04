@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import '../services/local_storage.dart';
 
 class ProductoModel {
@@ -76,12 +74,8 @@ class ProductoModel {
     String busqueda,
   ) async {
     late String url;
-    String conexion = LocalStorage.preferencias
-        .getString('conexion')
-        .toString();
-    String locacion = LocalStorage.preferencias
-        .getString('locación')
-        .toString();
+    String conexion = LocalStorage.local('conexion');
+    String locacion = LocalStorage.local('locación');
     if (busqueda.isEmpty) {
       url = "$conexion/inventario/$locacion/$filtro";
     } else {
@@ -199,7 +193,6 @@ class ProductoModel {
         );
       }
     }
-
     return productosFuture;
   }
 
@@ -214,9 +207,7 @@ class ProductoModel {
     late String productoFuture;
     try {
       final res = await http.post(
-        Uri.parse(
-          "${LocalStorage.preferencias.getString('conexion').toString()}/inventario/$locacion",
-        ),
+        Uri.parse("${LocalStorage.local('conexion')}/inventario/$locacion"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
@@ -247,13 +238,51 @@ class ProductoModel {
     return productoFuture;
   }
 
+  static Future<String> guardarDatos(
+    String columna,
+    int unidades,
+    int dato,
+    int id,
+  ) async {
+    String mensaje = "";
+    try {
+      final res = await http.put(
+        Uri.parse(
+          "${LocalStorage.local('conexion')}/inventario/${LocalStorage.local('locación')}/$id/$columna/ESP",
+        ),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+        body: jsonEncode({
+          'dato': dato,
+          'unidades': unidades,
+          'usuario': LocalStorage.local('usuario'),
+        }),
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          mensaje = item['Nombre'];
+        }
+      } else {
+        mensaje = "Error:${res.body}";
+      }
+    } on TimeoutException catch (e) {
+      mensaje = "Error: ${e.message.toString()}";
+    } on SocketException catch (e) {
+      mensaje = "Error: ${e.message.toString()}";
+    } on Error catch (e) {
+      mensaje = "Error: ${e.toString()}";
+    }
+    return mensaje;
+  }
+
   static Future<List> getTipos() async {
     late List tipos = [];
     try {
       var res = await http.get(
-        Uri.parse(
-          '${LocalStorage.preferencias.getString('conexion').toString()}/tipos',
-        ),
+        Uri.parse('${LocalStorage.local('conexion')}/tipos'),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
@@ -281,9 +310,7 @@ class ProductoModel {
     late List areas = [];
     try {
       var res = await http.get(
-        Uri.parse(
-          '${LocalStorage.preferencias.getString('conexion').toString()}/areas',
-        ),
+        Uri.parse('${LocalStorage.local('conexion')}/areas'),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",

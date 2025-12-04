@@ -6,4 +6,17 @@ class LocalStorage {
   static Future<void> getPreferencias() async {
     preferencias = await SharedPreferences.getInstance();
   }
+
+  static String local(String clave) {
+    String res = LocalStorage.preferencias.getString(clave).toString();
+    return res;
+  }
+
+  static Future<void> set(String clave, String valor) async {
+    await LocalStorage.preferencias.setString(clave, valor);
+  }
+
+  static Future<void> eliminar(String clave) async {
+    await LocalStorage.preferencias.remove(clave);
+  }
 }

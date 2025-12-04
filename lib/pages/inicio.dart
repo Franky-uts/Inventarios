@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/toast_text.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/ordenes.dart';
@@ -27,7 +28,7 @@ class _InicioState extends State<Inicio> {
     colorUsu = 0x00FFFFFF;
     colorCont = 0x00FFFFFF;
     verContr = true;
-    carga = true;
+    carga = false;
     iconoContr = Icons.remove_red_eye_rounded;
     super.initState();
   }
@@ -46,17 +47,12 @@ class _InicioState extends State<Inicio> {
       });
       usuarioMod = await UsuarioModel.getUsuario(usuarioContr.text, contr.text);
       if (usuarioMod.nombre != "error") {
-        await LocalStorage.preferencias.setString(
-          'conexion',
-          "http://189.187.144.139:3000",
-        );
-        await LocalStorage.preferencias.setString('usuario', usuarioMod.nombre);
-        await LocalStorage.preferencias.setString('puesto', usuarioMod.puesto);
-        await LocalStorage.preferencias.setString(
-          'locación',
-          usuarioMod.locacion,
-        );
-        await LocalStorage.preferencias.setString('busqueda', "");
+        //await LocalStorage.set('conexion', "http://189.187.144.139:3000");
+        await LocalStorage.set('conexion', "http://192.168.1.130:3000");
+        await LocalStorage.set('usuario', usuarioMod.nombre);
+        await LocalStorage.set('puesto', usuarioMod.puesto);
+        await LocalStorage.set('locación', usuarioMod.locacion);
+        await LocalStorage.set('busqueda', "");
         if (ctx.mounted) {
           if (usuarioMod.puesto == "Proveedor") {
             Navigator.pushReplacement(
@@ -82,14 +78,7 @@ class _InicioState extends State<Inicio> {
             colorCont = 0xFFFF0000;
           });
         } else {
-          Fluttertoast.showToast(
-            msg: usuarioMod.puesto,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.BOTTOM,
-            backgroundColor: Color(0x80FDC930),
-            textColor: Colors.white,
-            fontSize: 15,
-          );
+          ToastText.toast(usuarioMod.puesto, false);
           setState(() {
             carga = !carga;
             colorUsu = 0x00FFFFFF;
@@ -222,6 +211,7 @@ class _InicioState extends State<Inicio> {
                           width: MediaQuery.of(context).size.width * .057,
                           alignment: Alignment.center,
                           child: IconButton(
+                            tooltip: "Ver/Ocultar Contraseña",
                             onPressed: () {
                               setState(() {
                                 verContr = !verContr;
@@ -241,40 +231,32 @@ class _InicioState extends State<Inicio> {
                         ),
                       ],
                     ),
-                    Visibility(
-                      visible: carga,
-                      child: TextButton.icon(
-                        onPressed: () async => {
-                          setState(() {
-                            colorCont = 0x00FFFFFF;
-                            colorUsu = 0x00FFFFFF;
-                          }),
-                          verificar(context),
-                        },
-                        style: IconButton.styleFrom(
-                          padding: EdgeInsets.all(15),
-                          backgroundColor: Color(0xFF8A03A9),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        icon: Icon(Icons.login_rounded, color: Colors.white),
-                        label: Text(
-                          "Ingresar",
-                          style: TextStyle(color: Colors.white),
+                    TextButton.icon(
+                      onPressed: () async => {
+                        setState(() {
+                          colorCont = 0x00FFFFFF;
+                          colorUsu = 0x00FFFFFF;
+                        }),
+                        verificar(context),
+                      },
+                      style: IconButton.styleFrom(
+                        padding: EdgeInsets.all(15),
+                        backgroundColor: Color(0xFF8A03A9),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                    ),
-                    Visibility(
-                      visible: !carga,
-                      child: CircularProgressIndicator(
-                        color: Color(0xFFF6AFCF),
+                      icon: Icon(Icons.login_rounded, color: Colors.white),
+                      label: Text(
+                        "Ingresar",
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+            Carga.ventanaCarga(carga),
             Visibility(
               visible: !kIsWeb,
               child: Container(
