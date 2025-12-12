@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-class Carga {
+class Carga with ChangeNotifier{
+  static bool _cargaBool = false;
   static Center carga() {
     return Center(child: CircularProgressIndicator(color: Color(0xFFF6AFCF)));
   }
-  static Visibility ventanaCarga(bool carga){
+  static Visibility ventanaCarga(){
     return Visibility(
-      visible: carga,
+      visible: _cargaBool,
       child: Container(
         decoration: BoxDecoration(color: Colors.black45),
         child: Center(
@@ -14,5 +15,10 @@ class Carga {
         ),
       ),
     );
+  }
+
+  void cargaBool(bool boolean){
+    _cargaBool = boolean;
+    notifyListeners();
   }
 }

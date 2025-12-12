@@ -1,20 +1,20 @@
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:excel/excel.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:inventarios/components/carga.dart';
-import 'package:inventarios/components/input_texto.dart';
+import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/tablas.dart';
-import 'package:inventarios/components/toast_text.dart';
+import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/pages/orden_salida.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/pages/add_producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:inventarios/components/botones.dart';
+import 'package:provider/provider.dart';
 
 class Inventario extends StatefulWidget {
   const Inventario({super.key});
@@ -24,111 +24,99 @@ class Inventario extends StatefulWidget {
 }
 
 class _InventarioState extends State<Inventario> {
-  List<ProductoModel> productos = [];
   List tipos = [];
   List areas = [];
-  late bool carga;
-  late bool ventanaConf;
+  List<ProductoModel> productos = [];
 
   @override
   void initState() {
-    Tablas.valido = false;
-    carga = false;
-    ventanaConf = false;
-    CampoTexto.busquedaTexto.text = LocalStorage.local('busqueda');
+    getProductos();
     super.initState();
   }
 
   @override
   void dispose() {
-    productos.clear();
     tipos.clear();
     areas.clear();
     super.dispose();
   }
 
-  Future<void> _getProductos() async {
-    productos = await ProductoModel.getProductos(
-      CampoTexto.filtroTexto(),
-      CampoTexto.busquedaTexto.text,
-    );
-  }
+  Future<void> getProductos() async =>
+      productos = await ProductoModel.getProductos("id", "");
 
   Future<void> historialOrdenes(BuildContext ctx) async {
-    setState(() {
-      carga = true;
-    });
-    Navigator.of(context).pop();
-    List<ProductoModel> listaPorid = [];
-    try {
-      listaPorid = await ProductoModel.getProductos("id", "");
-      if (listaPorid[0].nombre != "Error") {
-        await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
+    if (productos.length < 2) {
+      await getProductos();
+    }
+    if (ctx.mounted) {
+      ctx.read<Carga>().cargaBool(true);
+      Navigator.of(ctx).pop();
+    }
+    if (productos[0].nombre != "Error") {
+      if (ctx.mounted) {
+        Textos.crearLista(productos.length, 0xFFFDC930);
+        Navigator.pushReplacement(
+          ctx,
+          MaterialPageRoute(
+            builder: (context) => OrdenSalida(productosPorId: productos),
+          ),
+        );
+        ctx.read<Carga>().cargaBool(false);
+        ctx.read<Ventanas>().tabla(false);
+        ctx.read<Tablas>().valido(false);
+      }
+    } else {
+      Textos.toast(productos[0].tipo, false);
+      if (ctx.mounted) {
+        ctx.read<Carga>().cargaBool(false);
+      }
+    }
+  }
+
+  void scan(BuildContext ctx) async {
+    String prod;
+    ctx.read<Carga>().cargaBool(true);
+    prod = await Textos.scan(context);
+    bool flag = true;
+    if (productos.length < 2) {
+      await getProductos();
+    }
+    for (int i = 0; i < productos.length; i++) {
+      print(productos[i].codigoBarras);
+      if (productos[i].codigoBarras == prod) {
+        flag = false;
         if (ctx.mounted) {
           Navigator.pushReplacement(
             ctx,
             MaterialPageRoute(
-              builder: (context) => OrdenSalida(productosPorId: listaPorid),
+              builder: (cxt) => Producto(productoInfo: productos[i]),
             ),
           );
-        } else {
-          setState(() {
-            carga = false;
-          });
+          ctx.read<Carga>().cargaBool(false);
         }
-      } else {
-        ToastText.toast(listaPorid[0].tipo, false);
-        setState(() {
-          carga = false;
-        });
       }
-    } catch (e) {
-      ToastText.toast("Error: ${e.toString()}", false);
-      setState(() {
-        carga = false;
-      });
     }
-  }
-
-  Future<void> logout(BuildContext ctx) async {
-    setState(() {
-      carga = true;
-    });
-    Navigator.of(context).pop();
-    await LocalStorage.eliminar('usuario');
-    await LocalStorage.eliminar('puesto');
-    await LocalStorage.eliminar('locación');
-    await LocalStorage.eliminar('busqueda');
-    await LocalStorage.eliminar('conexion');
-    if (ctx.mounted) {
-      Navigator.pushReplacement(
-        ctx,
-        MaterialPageRoute(builder: (context) => Inicio()),
-      );
-    } else {
-      setState(() {
-        carga = false;
-      });
+    if (flag && ctx.mounted) {
+      Textos.toast("No se reconocio el codigo.", false);
+      ctx.read<Carga>().cargaBool(false);
     }
   }
 
   Future<void> _getListas(BuildContext ctx) async {
-    setState(() {
-      carga = true;
-    });
+    context.read<Carga>().cargaBool(true);
     Navigator.of(context).pop();
     tipos = await ProductoModel.getTipos();
     areas = await ProductoModel.getAreas();
     if (tipos[0].toString().split(": ")[0] == "Error") {
-      ToastText.toast(tipos[0].toString().split(": ")[1], false);
-      setState(() {
-        carga = false;
-      });
+      Textos.toast(tipos[0].toString().split(": ")[1], false);
+      if (ctx.mounted) {
+        ctx.read<Carga>().cargaBool(false);
+      }
     } else if (areas[0].toString().split(": ")[0] == "Error") {
-      ToastText.toast(areas[0].toString().split(": ")[1], false);
-      setState(() {
-        carga = false;
-      });
+      Textos.toast(areas[0].toString().split(": ")[1], false);
+      if (ctx.mounted) {
+        ctx.read<Carga>().cargaBool(false);
+      }
     } else {
       await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
       if (ctx.mounted) {
@@ -139,15 +127,18 @@ class _InventarioState extends State<Inventario> {
                 Addproducto(listaArea: areas, listaTipo: tipos),
           ),
         );
-      } else {
-        setState(() {
-          carga = false;
-        });
+        ctx.read<Carga>().cargaBool(false);
       }
     }
   }
 
   Future<void> datosExcel(BuildContext context) async {
+    if (productos.length < 2) {
+      await getProductos();
+    }
+    if (context.mounted) {
+      context.read<Carga>().cargaBool(true);
+    }
     var excel = Excel.createExcel();
     Sheet sheetObject = excel['Inventario'];
     List<String> headers = [
@@ -232,10 +223,13 @@ class _InventarioState extends State<Inventario> {
         File('$path/$fecha.xlsx')
           ..createSync(recursive: true)
           ..writeAsBytesSync(fileBytes, flush: true);
-        ToastText.toast('Archivo guardado en: $path/$fecha.xlsx', true);
+        Textos.toast('Archivo guardado en: $path/$fecha.xlsx', true);
       }
     } else {
-      ToastText.toast('Se aborto el proceso', false);
+      Textos.toast('Se aborto el proceso', false);
+    }
+    if (context.mounted) {
+      context.read<Carga>().cargaBool(false);
     }
   }
 
@@ -271,128 +265,46 @@ class _InventarioState extends State<Inventario> {
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height - 97,
-                      child: Tablas.listaFutura(
-                        listaPrincipal,
-                        "No hay productos registrados.",
-                        "No hay coincidencias.",
-                        () => ProductoModel.getProductos(
-                          CampoTexto.filtroTexto(),
-                          CampoTexto.busquedaTexto.text,
-                        ),
+                      child: Consumer<Tablas>(
+                        builder: (context, tablas, child) {
+                          return Tablas.listaFutura(
+                            listaPrincipal,
+                            "No hay productos registrados.",
+                            "No hay coincidencias.",
+                            () => ProductoModel.getProductos(
+                              CampoTexto.filtroTexto(),
+                              CampoTexto.busquedaTexto.text,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            Visibility(
-              visible: ventanaConf,
-              child: Container(
-                padding: EdgeInsets.all(100),
-                decoration: BoxDecoration(color: Colors.black38),
-                child: Center(
-                  child: Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadiusGeometry.circular(25),
-                      border: BoxBorder.all(color: Color(0xFFFDC930), width: 3),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 10,
-                      children: [
-                        Text(
-                          "¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFF8F01AF),
-                            fontSize: 25,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Row(
-                          spacing: 10,
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Color(0xFF8F01AF),
-                                side: BorderSide(
-                                  color: Color(0xFFF6AFCF),
-                                  width: 2,
-                                ),
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  ventanaConf = false;
-                                });
-                              },
-                              child: Text(
-                                "No",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Color(0xFFFFFFFF),
-                                ),
-                              ),
-                            ),
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Color(0xFF8F01AF),
-                                side: BorderSide(
-                                  color: Color(0xFFF6AFCF),
-                                  width: 2,
-                                ),
-                              ),
-                              onPressed: () async {
-                                setState(() {
-                                  ventanaConf = false;
-                                });
-                                String texto = "";
-                                try {
-                                  final res = await http.put(
-                                    Uri.parse(
-                                      "${LocalStorage.local('conexion')}/inventario/${LocalStorage.local('locación')}/reiniciarMovimientos",
-                                    ),
-                                    headers: {
-                                      "Accept": "application/json",
-                                      "content-type":
-                                          "application/json; charset=UTF-8",
-                                    },
-                                  );
-                                  if (res.statusCode == 200) {
-                                    texto = "Reinicio exitoso.";
-                                  } else {
-                                    texto = "${res.reasonPhrase}";
-                                  }
-                                } on TimeoutException catch (e) {
-                                  texto = "Error: ${e.message.toString()}";
-                                } on SocketException catch (e) {
-                                  texto = "Error: ${e.message.toString()}";
-                                } on Error catch (e) {
-                                  texto = "Error: ${e.toString()}";
-                                }
-                                ToastText.toast(texto, true);
-                              },
-                              child: Text(
-                                "Si",
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+            Consumer2<Ventanas, Carga>(
+              builder: (context, ventanas, carga, child) {
+                return Ventanas.ventanaEmergente(
+                  "¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?",
+                  "No, volver",
+                  "Si, continuar",
+                  () => ventanas.emergente(false),
+                  () async => {
+                    ventanas.emergente(false),
+                    carga.cargaBool(true),
+                    Textos.toast(await ProductoModel.reiniciarESP(), true),
+                    if (context.mounted)
+                      {context.read<Carga>().cargaBool(false)},
+                  },
+                );
+              },
             ),
-            Carga.ventanaCarga(carga),
+            Consumer<Carga>(
+              builder: (context, carga, child) {
+                return Carga.ventanaCarga();
+              },
+            ),
           ],
         ),
       ),
@@ -416,152 +328,134 @@ class _InventarioState extends State<Inventario> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      "Bienvenido, ",
-                      style: TextStyle(fontSize: 15, color: Color(0xFF8F01AF)),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        logout(context);
+                    Textos.textoGeneral("Bienvenido, ", 15, true, false),
+                    Botones.btnRctMor(
+                      "Cerrar sesión",
+                      0,
+                      Icons.logout_rounded,
+                      true,
+                      () => {
+                        context.read<Carga>().cargaBool(true),
+                        LocalStorage.logout(context),
+                        context.read<Carga>().cargaBool(false),
                       },
-                      tooltip: "Cerrar sesión",
-                      style: FilledButton.styleFrom(
-                        padding: EdgeInsets.all(10),
-                        backgroundColor: Color(0xFFFFFFFF),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                          side: BorderSide(color: Color(0xFF8F01AF), width: 3),
-                        ),
-                      ),
-                      icon: Icon(
-                        Icons.logout_rounded,
-                        color: Color(0xFF8F01AF),
-                        size: 25,
-                      ),
                     ),
                   ],
                 ),
-                Text(
+                Textos.textoGeneral(
                   LocalStorage.local('usuario'),
-                  style: TextStyle(fontSize: 30, color: Color(0xFF8F01AF)),
-                  maxLines: 1,
+                  30,
+                  true,
+                  false,
                 ),
-                Text(
+                Textos.textoGeneral(
                   LocalStorage.local('puesto'),
-                  style: TextStyle(fontSize: 15, color: Color(0xFF8F01AF)),
-                  maxLines: 1,
+                  15,
+                  true,
+                  false,
                 ),
-                Text(
+                Textos.textoGeneral(
                   "Mostrando: ${LocalStorage.local('locación')}",
-                  style: TextStyle(fontSize: 20, color: Color(0xFF8F01AF)),
+                  20,
+                  true,
+                  false,
                 ),
               ],
             ),
           ),
           Container(
-            height: MediaQuery.of(context).size.height * .585,
+            padding: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                TextButton.icon(
-                  onPressed: () {
-                    if (Tablas.valido) {
-                      datosExcel(context);
-                    } else {
-                      ToastText.toast("Espera a que los datos carguen.", false);
-                    }
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                    backgroundColor: Color(0xFF8F01AF),
-                  ),
-                  icon: Icon(
-                    Icons.download_rounded,
-                    color: Colors.white,
-                    size: 25,
-                  ),
-                  label: Text(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                spacing: 10,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisSize: MainAxisSize.max,
+                children: [
+                  Botones.icoCirMor(
                     "Descargar reporte",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                    Icons.download_rounded,
+                    false,
+                    () => {
+                      context.read<Carga>().cargaBool(true),
+                      if (Tablas.getValido())
+                        {datosExcel(context)}
+                      else
+                        {
+                          Textos.toast(
+                            "Espera a que los datos carguen.",
+                            false,
+                          ),
+                        },
+                      context.read<Carga>().cargaBool(false),
+                    },
                   ),
-                ),
-                TextButton.icon(
-                  onPressed: () {
-                    if (Tablas.valido) {
-                      setState(() {
-                        ventanaConf = true;
-                      });
-                      Navigator.of(context).pop();
-                    } else {
-                      ToastText.toast("Espera a que los datos carguen.", false);
-                    }
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                    backgroundColor: Color(0xFF8F01AF),
-                  ),
-                  icon: Icon(
-                    Icons.refresh_rounded,
-                    color: Colors.white,
-                    size: 25,
-                  ),
-                  label: Text(
+                  Botones.icoCirMor(
                     "Reiniciar movimientos",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                    Icons.refresh_rounded,
+                    false,
+                    () => {
+                      if (Tablas.getValido())
+                        {
+                          Navigator.of(context).pop(),
+                          context.read<Ventanas>().emergente(true),
+                        }
+                      else
+                        {
+                          Textos.toast(
+                            "Espera a que los datos carguen.",
+                            false,
+                          ),
+                        },
+                    },
                   ),
-                ),
-                TextButton.icon(
-                  onPressed: () async {
-                    if (Tablas.valido) {
-                      await _getListas(context);
-                    } else {
-                      ToastText.toast("Espera a que los datos carguen.", false);
-                    }
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                    backgroundColor: Color(0xFF8F01AF),
-                  ),
-                  icon: Icon(
-                    Icons.edit_note_rounded,
-                    color: Colors.white,
-                    size: 25,
-                  ),
-                  label: Text(
+                  Botones.icoCirMor(
                     "Añadir un producto",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                    Icons.edit_note_rounded,
+                    false,
+                    () async => {
+                      if (Tablas.getValido())
+                        {
+                          context.read<Carga>().cargaBool(true),
+                          await _getListas(context),
+                        }
+                      else
+                        {
+                          Textos.toast(
+                            "Espera a que los datos carguen.",
+                            false,
+                          ),
+                        },
+                    },
                   ),
-                ),
-                TextButton.icon(
-                  onPressed: () async {
-                    if (Tablas.valido)  {
-                      await historialOrdenes(context);
-                    } else {
-                      ToastText.toast("Espera a que los datos carguen.", false);
-                    }
-                  },
-                  style: FilledButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-                    backgroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25),
-                      side: BorderSide(color: Color(0xFF8F01AF), width: 5),
-                    ),
+                  Botones.icoCirMor(
+                    "Escanear codigo",
+                    Icons.barcode_reader,
+                    false,
+                    () => scan(context),
                   ),
-                  icon: Icon(
-                    Icons.add_shopping_cart_rounded,
-                    color: Color(0xFF8F01AF),
-                    size: 25,
-                  ),
-                  label: Text(
+                  Botones.icoCirMor(
                     "Nueva orden",
-                    style: TextStyle(fontSize: 20, color: Color(0xFF8F01AF)),
+                    Icons.add_shopping_cart_rounded,
+                    true,
+                    () async => {
+                      if (Tablas.getValido())
+                        {
+                          context.read<Carga>().cargaBool(true),
+                          await historialOrdenes(context),
+                        }
+                      else
+                        {
+                          Textos.toast(
+                            "Espera a que los datos carguen.",
+                            false,
+                          ),
+                        },
+                    },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],
@@ -576,14 +470,26 @@ class _InventarioState extends State<Inventario> {
       children: [
         Botones.btnRctMor(
           "Abrir menú",
-          Icon(Icons.menu_rounded, size: 35, color: Color(0xFFFFFFFF)),
-          accion: () => Scaffold.of(context).openDrawer(),
+          35,
+          Icons.menu_rounded,
+          false,
+          () => Scaffold.of(context).openDrawer(),
         ),
-        CampoTexto.barraBusqueda(
-          MediaQuery.of(context).size.width * .875,
-          accion: () => setState(() {
-            _getProductos();
-          }),
+        Container(
+          width: MediaQuery.of(context).size.width * .875,
+          margin: EdgeInsets.symmetric(vertical: 10),
+          child: Consumer2<Tablas, CampoTexto>(
+            builder: (context, tablas, campoTexto, child) {
+              return CampoTexto.barraBusqueda(
+                () async => tablas.datos(
+                  await ProductoModel.getProductos(
+                    CampoTexto.filtroTexto(),
+                    CampoTexto.busquedaTexto.text,
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -598,33 +504,39 @@ class _InventarioState extends State<Inventario> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        return Tablas.barraDatos(
-          MediaQuery.sizeOf(context).width,
-          [.05, .25, .175, .08, .175, .075, .075, .075],
-          [
-            lista[index].id.toString(),
-            lista[index].nombre,
-            lista[index].tipo,
-            lista[index].unidades.toString(),
-            lista[index].area,
-            lista[index].entrada.toString(),
-            lista[index].salida.toString(),
-            lista[index].perdida.toString(),
-          ],
-          [],
-          true,
-          () async => {
-            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
-            if (context.mounted)
-              {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Producto(productoInfo: lista[index]),
+        return Container(
+          width: MediaQuery.sizeOf(context).width,
+          height: 40,
+          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+          child: Tablas.barraDatos(
+            MediaQuery.sizeOf(context).width,
+            [.05, .25, .175, .08, .175, .075, .075, .075],
+            [
+              lista[index].id.toString(),
+              lista[index].nombre,
+              lista[index].tipo,
+              lista[index].unidades.toString(),
+              lista[index].area,
+              lista[index].entrada.toString(),
+              lista[index].salida.toString(),
+              lista[index].perdida.toString(),
+            ],
+            [],
+            true,
+            () async => {
+              await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+              if (context.mounted)
+                {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          Producto(productoInfo: lista[index]),
+                    ),
                   ),
-                ),
-              },
-          },
+                },
+            },
+          ),
         );
       },
     );

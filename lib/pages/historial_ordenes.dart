@@ -1,15 +1,14 @@
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/tablas.dart';
-import 'package:inventarios/components/toast_text.dart';
+import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/components/ven_datos.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/orden_salida.dart';
+import 'package:provider/provider.dart';
 import '../services/local_storage.dart';
 
 class HistorialOrdenes extends StatefulWidget {
@@ -22,88 +21,37 @@ class HistorialOrdenes extends StatefulWidget {
 }
 
 class _HistorialOrdenesState extends State<HistorialOrdenes> {
-  static List<OrdenModel> ordenes = [];
-  final List<int> colores = [0xFF8F01AF, 0xFFFFFFFF, 0xFFFFFFFF];
-  late List artVen = [];
-  late List canVen = [];
-  late bool carga;
-  late bool ventanaDatos;
-  late bool ventanaConf;
-  late String filtro;
-  late String idVen = "";
-  late String remVen = "";
-  late String estVen = "";
-  late String modVen = "";
-  late String desVen = "";
+  List<int> colores = [0xFF8A03A9, 0xFFFFFFFF, 0xFFFFFFFF];
+  String filtro = "id";
 
   @override
   void initState() {
-    ventanaDatos = false;
-    ventanaConf = false;
-    carga = false;
-    filtro = "id";
     super.initState();
   }
 
   @override
   void dispose() {
-    ordenes.clear();
     colores.clear();
-    artVen.clear();
-    canVen.clear();
+    colores.clear();
     super.dispose();
   }
 
-  Future editarEstado(String columna, String dato) async {
-    String respuesta;
-    try {
-      final res = await http.put(
-        Uri.parse("${LocalStorage.local('conexion')}/ordenes/$idVen/$columna"),
-        headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
-        },
-        body: jsonEncode({'dato': dato}),
-      );
-      if (res.statusCode == 200) {
-        respuesta = "Se cancelo la orden.";
-      } else {
-        respuesta = res.reasonPhrase.toString();
-      }
-    } on TimeoutException catch (e) {
-      respuesta = e.message.toString();
-    } on SocketException catch (e) {
-      respuesta = e.message.toString();
-    } on Error catch (e) {
-      respuesta = e.toString();
-    }
-    return respuesta;
-  }
-
   void filtroTexto(int valor) {
-    setState(() {
-      colores[1] = 0xFFFFFFFF;
-      colores[0] = 0xFFFFFFFF;
-      colores[2] = 0xFFFFFFFF;
-    });
+    colores[1] = 0xFFFFFFFF;
+    colores[0] = 0xFFFFFFFF;
+    colores[2] = 0xFFFFFFFF;
     switch (valor) {
       case (1):
-        setState(() {
-          filtro = "id";
-          colores[0] = 0xFF8F01AF;
-        });
+        filtro = "id";
+        colores[0] = 0xFF8A03A9;
         break;
       case (2):
-        setState(() {
-          filtro = "Estado";
-          colores[1] = 0xFF8F01AF;
-        });
+        filtro = "Estado";
+        colores[1] = 0xFF8A03A9;
         break;
       case (3):
-        setState(() {
-          filtro = "Remitente";
-          colores[2] = 0xFF8F01AF;
-        });
+        filtro = "Remitente";
+        colores[2] = 0xFF8A03A9;
         break;
     }
   }
@@ -142,7 +90,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   opciones(context),
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.05, 0.2, 0.2, 0.3, 0.25],
+                    [.05, .2, .2, .3, .25],
                     [
                       "id",
                       "Art. ordenados",
@@ -154,122 +102,125 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height - 82,
-                    child: Tablas.listaFutura(
-                      listaPrincipal,
-                      "Todo está en orden, no hay órdenes entrantes.",
-                      "No se recuperaron órdenes.",
-                      () => OrdenModel.getOrdenes(
-                        filtro,
-                        LocalStorage.local('locación'),
-                      ),
+                    child: Consumer<Tablas>(
+                      builder: (context, tablas, child) {
+                        return Tablas.listaFutura(
+                          listaPrincipal,
+                          "Todo está en orden, no hay órdenes entrantes.",
+                          "No se recuperaron órdenes.",
+                          () => OrdenModel.getOrdenes(
+                            filtro,
+                            LocalStorage.local('locación'),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ],
               ),
             ),
-            Visibility(
-              visible: ventanaDatos,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 89, vertical: 30),
-                decoration: BoxDecoration(color: Colors.black38),
-                child: Center(child: contenidoVentana()),
-              ),
-            ),
-            Visibility(
-              visible: ventanaConf,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
-                decoration: BoxDecoration(color: Colors.black38),
-                child: Center(
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadiusGeometry.circular(25),
-                      border: BoxBorder.all(
-                        color: Color(0xFFFDC930),
-                        width: 2.5,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      spacing: 5,
-                      children: [
-                        Text(
-                          "¿Segur@ que quieres cancelar la orden?",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Color(0xFF8F01AF),
-                            fontSize: 25,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          spacing: 15,
-                          children: [
-                            OutlinedButton(
-                              onPressed: () {
-                                setState(() {
-                                  ventanaConf = false;
-                                });
-                              },
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Color(0xFF8F01AF),
-                                side: BorderSide(
-                                  color: Color(0xFFF6AFCF),
-                                  width: 2.5,
-                                ),
-                              ),
-                              child: Text(
-                                "No, volver",
-                                style: TextStyle(
-                                  fontSize: 17.5,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            OutlinedButton(
-                              onPressed: () async {
-                                setState(() {
-                                  carga = true;
-                                  ventanaConf = false;
-                                });
-                                String res = await editarEstado(
-                                  "Estado",
-                                  "Cancelado",
-                                );
-                                ToastText.toast(res, false);
-                                setState(() {
-                                  ventanaDatos = false;
-                                  carga = false;
-                                });
-                              },
-                              style: OutlinedButton.styleFrom(
-                                backgroundColor: Color(0xFF8F01AF),
-                                side: BorderSide(
-                                  color: Color(0xFFF6AFCF),
-                                  width: 2.5,
-                                ),
-                              ),
-                              child: Text(
-                                "Si, cancelalo",
-                                style: TextStyle(
-                                  fontSize: 17.5,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+            Consumer2<Ventanas, VenDatos>(
+              builder: (context, ventana, venDatos, child) {
+                return Ventanas.ventanaTabla(
+                  MediaQuery.of(context).size.height,
+                  MediaQuery.of(context).size.width,
+                  [
+                    "Id de la orden: ${venDatos.idVen().toString()}",
+                    "Estado: ${venDatos.estVen()}",
+                  ],
+                  [
+                    "Destino: ${venDatos.desVen()}",
+                    "Remitente: ${venDatos.remVen()}",
+                    "Última modificación: ${venDatos.modVen()}",
+                  ],
+                  Tablas.contenedorInfo(
+                    MediaQuery.sizeOf(context).width,
+                    [.3, .17, .17],
+                    [
+                      "Nombre del articulo",
+                      "Cantidad ordenada",
+                      "Cantidad cubierta",
+                    ],
                   ),
-                ),
-              ),
+                  ListView.separated(
+                    itemCount: venDatos.length(),
+                    scrollDirection: Axis.vertical,
+                    separatorBuilder: (context, index) => Container(
+                      height: 2,
+                      decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                    ),
+                    itemBuilder: (context, index) {
+                      return Container(
+                        width: MediaQuery.sizeOf(context).width,
+                        height: 40,
+                        decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+                        child: Tablas.barraDatos(
+                          MediaQuery.sizeOf(context).width,
+                          [.3, .17, .17],
+                          [
+                            venDatos.artVen(index),
+                            venDatos.canVen(index).toString(),
+                            venDatos.canCubVen(index).toString(),
+                          ],
+                          [],
+                          false,
+                          null,
+                        ),
+                      );
+                    },
+                  ),
+                  [
+                    Botones.btnCirRos("Cerrar", () => ventana.tabla(false)),
+                    Botones.btnCirRos(
+                      "Cancelar",
+                      () => {
+                        if (venDatos.estVen() == "En proceso")
+                          {ventana.emergente(true)}
+                        else if (venDatos.estVen() == "Cancelado" ||
+                            venDatos.estVen() == "Denegado")
+                          {Textos.toast("La orden ya esta cencelada.", false)}
+                        else
+                          {
+                            Textos.toast(
+                              "La orden no se puede cancelar.",
+                              false,
+                            ),
+                          },
+                      },
+                    ),
+                  ],
+                );
+              },
             ),
-            Carga.ventanaCarga(carga),
+            Consumer3<Ventanas, Carga, VenDatos>(
+              builder: (context, ventana, carga, venDatos, child) {
+                return Ventanas.ventanaEmergente(
+                  "¿Segur@ que quieres cancelar la orden?",
+                  "No, volver",
+                  "Si, cancelalo",
+                  () => ventana.emergente(false),
+                  () async => {
+                    carga.cargaBool(true),
+                    ventana.tabla(false),
+                    Textos.toast(
+                      await OrdenModel.editarOrden(
+                        venDatos.idVen(),
+                        "Estado",
+                        "Cancelado",
+                      ),
+                      false,
+                    ),
+                    carga.cargaBool(false),
+                    ventana.emergente(false),
+                  },
+                );
+              },
+            ),
+            Consumer<Carga>(
+              builder: (context, carga, child) {
+                return Carga.ventanaCarga();
+              },
+            ),
           ],
         ),
       ),
@@ -279,84 +230,85 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   Widget opciones(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 25),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Botones.btnRctMor(
-            "Regresar",
-            Icon(Icons.arrow_back_rounded, size: 35),
-            accion: () => {
-              setState(() {
-                carga = true;
-              }),
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      OrdenSalida(productosPorId: widget.productosPorId),
-                ),
+      child: Consumer3<Tablas, Carga, Ventanas>(
+        builder: (context, tablas, carga, ventanas, child) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Botones.btnRctMor(
+                "Regresar",
+                35,
+                Icons.arrow_back_rounded,
+                false,
+                () => {
+                  carga.cargaBool(true),
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          OrdenSalida(productosPorId: widget.productosPorId),
+                    ),
+                  ),
+                  ventanas.emergente(false),
+                  ventanas.tabla(false),
+                  carga.cargaBool(false),
+                },
               ),
-            },
-          ),
-          TextButton.icon(
-            onPressed: () {
-              filtroTexto(1);
-            },
-            label: Text("ID", style: TextStyle(color: Color(0xFF8F01AF))),
-            icon: Icon(
-              Icons.numbers_rounded,
-              size: 25,
-              color: Color(0xFF8F01AF),
-            ),
-            style: IconButton.styleFrom(
-              side: BorderSide(color: Color(colores[0]), width: 2),
-              backgroundColor: Colors.white,
-              shape: ContinuousRectangleBorder(
-                borderRadius: BorderRadius.circular(27.5),
+              Botones.icoRctBor(
+                "ID",
+                Icons.numbers_rounded,
+                Color(colores[0]),
+                () async => {
+                  if (filtro != "id")
+                    {
+                      filtroTexto(1),
+                      tablas.datos(
+                        await OrdenModel.getOrdenes(
+                          filtro,
+                          LocalStorage.local('locación'),
+                        ),
+                      ),
+                    },
+                },
               ),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () {
-              filtroTexto(2);
-            },
-            label: Text("Estado", style: TextStyle(color: Color(0xFF8F01AF))),
-            icon: Icon(
-              Icons.query_builder_rounded,
-              size: 25,
-              color: Color(0xFF8F01AF),
-            ),
-            style: IconButton.styleFrom(
-              side: BorderSide(color: Color(colores[1]), width: 2),
-              backgroundColor: Colors.white,
-              shape: ContinuousRectangleBorder(
-                borderRadius: BorderRadius.circular(27.5),
+              Botones.icoRctBor(
+                "Estado",
+                Icons.query_builder_rounded,
+                Color(colores[1]),
+                () async => {
+                  if (filtro != "Estado")
+                    {
+                      filtroTexto(2),
+                      tablas.datos(
+                        await OrdenModel.getOrdenes(
+                          filtro,
+                          LocalStorage.local('locación'),
+                        ),
+                      ),
+                    },
+                },
               ),
-            ),
-          ),
-          TextButton.icon(
-            onPressed: () {
-              filtroTexto(3);
-            },
-            label: Text(
-              "Remitente",
-              style: TextStyle(color: Color(0xFF8F01AF)),
-            ),
-            icon: Icon(
-              Icons.perm_identity_outlined,
-              size: 25,
-              color: Color(0xFF8F01AF),
-            ),
-            style: IconButton.styleFrom(
-              side: BorderSide(color: Color(colores[2]), width: 2),
-              backgroundColor: Colors.white,
-              shape: ContinuousRectangleBorder(
-                borderRadius: BorderRadius.circular(27.5),
+              Botones.icoRctBor(
+                "Remitente",
+                Icons.perm_identity_outlined,
+                Color(colores[2]),
+                () async => {
+                  if (filtro != "Remitente")
+                    {
+                      filtroTexto(3),
+                      tablas.datos(
+                        await OrdenModel.getOrdenes(
+                          filtro,
+                          LocalStorage.local('locación'),
+                        ),
+                      ),
+                    },
+                },
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -370,176 +322,45 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        return Tablas.barraDatos(
-          MediaQuery.sizeOf(context).width,
-          [.05, .2, .2, .3, .25],
-          [
-            lista[index].id.toString(),
-            lista[index].articulos.length.toString(),
-            lista[index].estado,
-            lista[index].remitente,
-            lista[index].ultimaModificacion,
-          ],
-          [
-            Colors.transparent,
-            Colors.transparent,
-            colorEstado(lista[index].estado),
-            Colors.transparent,
-            Colors.transparent,
-          ],
-          true,
-          () => {
-            setState(() {
-              idVen = lista[index].id.toString();
-              remVen = lista[index].remitente;
-              estVen = lista[index].estado;
-              modVen = lista[index].ultimaModificacion;
-              desVen = lista[index].destino;
-              artVen = lista[index].articulos;
-              canVen = lista[index].cantidades;
-              ventanaDatos = true;
-            }),
-          },
+        return Container(
+          width: MediaQuery.sizeOf(context).width,
+          height: 40,
+          decoration: BoxDecoration(color: Colors.white),
+          child: Tablas.barraDatos(
+            MediaQuery.sizeOf(context).width,
+            [.05, .2, .2, .3, .25],
+            [
+              lista[index].id.toString(),
+              lista[index].articulos.length.toString(),
+              lista[index].estado,
+              lista[index].remitente,
+              lista[index].ultimaModificacion,
+            ],
+            [
+              Colors.transparent,
+              Colors.transparent,
+              colorEstado(lista[index].estado),
+              Colors.transparent,
+              Colors.transparent,
+              Colors.transparent,
+            ],
+            true,
+            () => {
+              context.read<VenDatos>().setDatos(
+                lista[index].articulos,
+                lista[index].cantidades,
+                lista[index].cantidadesCubiertas,
+                lista[index].id.toString(),
+                lista[index].remitente,
+                lista[index].estado,
+                lista[index].ultimaModificacion,
+                lista[index].destino,
+              ),
+              context.read<Ventanas>().tabla(true),
+            },
+          ),
         );
       },
-    );
-  }
-
-  Container contenidoVentana() {
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      padding: EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadiusGeometry.circular(25),
-        border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        spacing: 0,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Text(
-                "Id de la orden: $idVen",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF8F01AF),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              Text(
-                "Estado: $estVen",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF8F01AF),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-          Tablas.contenedorInfo(
-            MediaQuery.sizeOf(context).width,
-            [.5, 0.28],
-            ["Nombre del articulo", "Cantidad ordenada"],
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height - 198,
-            margin: EdgeInsets.zero,
-            child: ListView.separated(
-              itemCount: artVen.length,
-              scrollDirection: Axis.vertical,
-              separatorBuilder: (context, index) => Container(
-                height: 2,
-                decoration: BoxDecoration(color: Color(0xFFFDC930)),
-              ),
-              itemBuilder: (context, index) {
-                return Tablas.barraDatos(
-                  MediaQuery.sizeOf(context).width,
-                  [.5, .28],
-                  [artVen[index], canVen[index].toString()],
-                  [],
-                  false,
-                  null,
-                );
-              },
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Destino: $desVen",
-                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 15),
-                  ),
-                  Text(
-                    "Remitente: $remVen",
-                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 15),
-                  ),
-                  Text(
-                    "Última modificación: $modVen",
-                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 15),
-                  ),
-                ],
-              ),
-              Row(
-                spacing: 15,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: () {
-                      setState(() {
-                        ventanaDatos = false;
-                      });
-                    },
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Color(0xFF8F01AF),
-                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2.5),
-                    ),
-                    child: Text(
-                      "Cerrar",
-                      style: TextStyle(fontSize: 17.5, color: Colors.white),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      if (estVen == "En proceso") {
-                        setState(() {
-                          ventanaConf = true;
-                        });
-                      } else if (estVen == "Cancelado" ||
-                          estVen == "Denegado") {
-                        ToastText.toast("La orden ya esta cencelada.", false);
-                      } else {
-                        ToastText.toast(
-                          "La orden no se puede cancelar.",
-                          false,
-                        );
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Color(0xFF8F01AF),
-                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2.5),
-                    ),
-                    child: Text(
-                      "Cancelar",
-                      style: TextStyle(fontSize: 17.5, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }

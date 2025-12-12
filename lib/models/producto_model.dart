@@ -10,12 +10,13 @@ class ProductoModel {
   String tipo;
   int unidades;
   String ultimaModificacion;
-  int cantidadPorUnidad;
+  double cantidadPorUnidad;
   String area;
   int entrada;
   int salida;
   int perdida;
   String ultimoUsuario;
+  String codigoBarras;
 
   ProductoModel({
     required this.id,
@@ -29,6 +30,7 @@ class ProductoModel {
     required this.salida,
     required this.perdida,
     required this.ultimoUsuario,
+    required this.codigoBarras,
   });
 
   static List<ProductoModel> listaProvicional() {
@@ -47,6 +49,7 @@ class ProductoModel {
         salida: 0,
         perdida: 0,
         ultimoUsuario: "usuario",
+        codigoBarras: "12345",
       ),
     );
 
@@ -63,6 +66,7 @@ class ProductoModel {
         salida: 0,
         perdida: 0,
         ultimoUsuario: "usuario",
+        codigoBarras: "12345",
       ),
     );
 
@@ -96,6 +100,7 @@ class ProductoModel {
           salida: 0,
           perdida: 0,
           ultimoUsuario: "No hay locación establecida",
+          codigoBarras: "No hay locación establecida",
         ),
       );
     } else {
@@ -117,12 +122,13 @@ class ProductoModel {
                 tipo: item["Tipo"].toString(),
                 unidades: item["Unidades"],
                 ultimaModificacion: item["UltimaModificación"],
-                cantidadPorUnidad: item["CantidadPorUnidad"],
+                cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
                 area: item["Area"].toString(),
                 entrada: item["Entrada"],
                 salida: item["Salida"],
                 perdida: item["Perdida"],
                 ultimoUsuario: item["UltimoUsuario"],
+                codigoBarras: item["CodigoBarras"],
               ),
             );
           }
@@ -140,6 +146,7 @@ class ProductoModel {
               salida: 0,
               perdida: 0,
               ultimoUsuario: res.body,
+              codigoBarras: res.body,
             ),
           );
         }
@@ -157,6 +164,7 @@ class ProductoModel {
             salida: 0,
             perdida: 0,
             ultimoUsuario: e.message.toString(),
+            codigoBarras: e.message.toString(),
           ),
         );
       } on SocketException catch (e) {
@@ -173,6 +181,24 @@ class ProductoModel {
             salida: 0,
             perdida: 0,
             ultimoUsuario: e.message.toString(),
+            codigoBarras: e.message.toString(),
+          ),
+        );
+      } on http.ClientException catch (e) {
+        productosFuture.add(
+          ProductoModel(
+            id: 0,
+            nombre: "Error",
+            tipo: e.message.toString(),
+            unidades: 0,
+            ultimaModificacion: e.message.toString(),
+            cantidadPorUnidad: 0,
+            area: e.message.toString(),
+            entrada: 0,
+            salida: 0,
+            perdida: 0,
+            ultimoUsuario: e.message.toString(),
+            codigoBarras: e.message.toString(),
           ),
         );
       } on Error catch (e) {
@@ -189,6 +215,7 @@ class ProductoModel {
             salida: 0,
             perdida: 0,
             ultimoUsuario: e.toString(),
+            codigoBarras: e.toString(),
           ),
         );
       }
@@ -203,6 +230,7 @@ class ProductoModel {
     String area,
     String usuario,
     String locacion,
+    String barras,
   ) async {
     late String productoFuture;
     try {
@@ -218,6 +246,7 @@ class ProductoModel {
           'tipo': tipo,
           'area': area,
           'usuario': usuario,
+          'barras' : barras
         }),
       );
       if (res.statusCode == 200) {
@@ -231,6 +260,8 @@ class ProductoModel {
     } on TimeoutException catch (e) {
       productoFuture = "Error: ${e.message.toString()}";
     } on SocketException catch (e) {
+      productoFuture = "Error: ${e.message.toString()}";
+    } on http.ClientException catch (e) {
       productoFuture = "Error: ${e.message.toString()}";
     } on Error catch (e) {
       productoFuture = "Error: ${e.toString()}";
@@ -272,10 +303,41 @@ class ProductoModel {
       mensaje = "Error: ${e.message.toString()}";
     } on SocketException catch (e) {
       mensaje = "Error: ${e.message.toString()}";
+    } on http.ClientException catch (e) {
+      mensaje = "Error: ${e.message.toString()}";
     } on Error catch (e) {
       mensaje = "Error: ${e.toString()}";
     }
     return mensaje;
+  }
+
+  static Future<String> reiniciarESP() async {
+    String texto;
+    try {
+      final res = await http.put(
+        Uri.parse(
+          "${LocalStorage.local('conexion')}/inventario/${LocalStorage.local('locación')}/reiniciarMovimientos",
+        ),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+      );
+      if (res.statusCode == 200) {
+        texto = "Reinicio exitoso.";
+      } else {
+        texto = "${res.reasonPhrase}";
+      }
+    } on TimeoutException catch (e) {
+      texto = "Error: ${e.message.toString()}";
+    } on SocketException catch (e) {
+      texto = "Error: ${e.message.toString()}";
+    } on http.ClientException catch (e) {
+      texto = "Error: ${e.message.toString()}";
+    } on Error catch (e) {
+      texto = "Error: ${e.toString()}";
+    }
+    return texto;
   }
 
   static Future<List> getTipos() async {
@@ -299,6 +361,8 @@ class ProductoModel {
     } on TimeoutException catch (e) {
       tipos.add("Error: ${e.message.toString()}");
     } on SocketException catch (e) {
+      tipos.add("Error: ${e.message.toString()}");
+    } on http.ClientException catch (e) {
       tipos.add("Error: ${e.message.toString()}");
     } on Error catch (e) {
       tipos.add("Error: ${e.toString()}");
@@ -327,6 +391,8 @@ class ProductoModel {
     } on TimeoutException catch (e) {
       areas.add("Error: ${e.message.toString()}");
     } on SocketException catch (e) {
+      areas.add("Error: ${e.message.toString()}");
+    } on http.ClientException catch (e) {
       areas.add("Error: ${e.message.toString()}");
     } on Error catch (e) {
       areas.add("Error: ${e.toString()}");

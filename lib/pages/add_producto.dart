@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
-import 'package:inventarios/components/toast_text.dart';
+import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/inventario.dart';
+import 'package:provider/provider.dart';
 import '../services/local_storage.dart';
 
 class Addproducto extends StatefulWidget {
@@ -21,29 +24,31 @@ class Addproducto extends StatefulWidget {
 }
 
 class _AddproductoState extends State<Addproducto> {
-  late List<String> listaArea = widget.listaArea
-      .map((item) => item as String)
-      .toList();
-  late List<String> listaTipo = widget.listaTipo
-      .map((item) => item as String)
-      .toList();
-  late String valorArea;
-  late String valorTipo;
-  late String respuesta;
-  late bool carga;
+  late List<String> listaArea = [];
+  late List<String> listaTipo = [];
+  late String valorArea, respuesta, valorTipo;
   late bool cantidad;
+  IconData _iconoScan = Icons.document_scanner_rounded;
   final nombreControl = TextEditingController(),
-      cantidadControl = TextEditingController();
-  late List<int> colorCampo = [0x00FFFFFF, 0x00FFFFFF, 0x00FFFFFF, 0x00FFFFFF];
+      cantidadControl = TextEditingController(),
+      barrasControl = TextEditingController();
+  late List<Color> colorCampo = [
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+  ];
+  String? res;
 
   @override
   void initState() {
-    carga = false;
     cantidad = false;
     listaTipo.add("Tipo");
     listaArea.add("Área");
-    valorArea = listaArea.last;
-    valorTipo = listaTipo.last;
+    listaTipo.addAll(widget.listaTipo.map((item) => item as String).toList());
+    listaArea.addAll(widget.listaArea.map((item) => item as String).toList());
+    valorArea = listaArea.first;
+    valorTipo = listaTipo.first;
     super.initState();
   }
 
@@ -52,6 +57,7 @@ class _AddproductoState extends State<Addproducto> {
     colorCampo.clear();
     nombreControl.dispose();
     cantidadControl.dispose();
+    barrasControl.dispose();
     listaArea.clear();
     listaTipo.clear();
     super.dispose();
@@ -63,7 +69,7 @@ class _AddproductoState extends State<Addproducto> {
         value == "Costal" ||
         value == "Paquete" ||
         value == "Bote" ||
-        value == "Kilo") {
+        value == "Granel") {
       cantidad = true;
       cantidadControl.clear();
     } else if (value == "Tipo") {
@@ -75,26 +81,81 @@ class _AddproductoState extends State<Addproducto> {
     }
   }
 
+  void registrarProducto(BuildContext ctx) async {
+    setState(() {
+      colorCampo[3] = Color(0x00FFFFFF);
+      colorCampo[1] = Color(0x00FFFFFF);
+      colorCampo[0] = Color(0x00FFFFFF);
+      colorCampo[2] = Color(0x00FFFFFF);
+    });
+    if (nombreControl.text.isEmpty) {
+      setState(() {
+        colorCampo[0] = Color(0xFFFF0000);
+      });
+    }
+    if (cantidadControl.text.isEmpty) {
+      setState(() {
+        colorCampo[3] = Color(0xFFFF0000);
+      });
+    }
+    if (valorArea == "Área") {
+      setState(() {
+        colorCampo[2] = Color(0xFFFF0000);
+      });
+    }
+    if (valorTipo == "Tipo") {
+      setState(() {
+        colorCampo[1] = Color(0xFFFF0000);
+      });
+    }
+    if (nombreControl.text.isNotEmpty &&
+        cantidadControl.text.isNotEmpty &&
+        valorTipo != "Tipo" &&
+        valorArea != "Área") {
+      context.read<Carga>().cargaBool(true);
+      respuesta = await ProductoModel.addProducto(
+        nombreControl.text,
+        int.parse(cantidadControl.text),
+        valorTipo,
+        valorArea,
+        LocalStorage.local('usuario'),
+        LocalStorage.local('locación'),
+        barrasControl.text,
+      );
+      if (respuesta.toString().split(": ")[0] != "Error") {
+        setState(() {
+          nombreControl.text = "";
+          cantidadControl.text = "";
+          cantidad = false;
+          valorTipo = listaTipo.first;
+          valorArea = listaArea.first;
+        });
+        Textos.toast("Se guardo $respuesta correctamente.", true);
+        if (ctx.mounted) {
+          ctx.read<Carga>().cargaBool(false);
+        }
+      } else {
+        if (ctx.mounted) {
+          ctx.read<Carga>().cargaBool(false);
+        }
+        Textos.toast(respuesta.toString().split(": ")[1], true);
+      }
+    }
+  }
+
+  void iconoScan() {
+    setState(() {
+      _iconoScan = Icons.document_scanner_rounded;
+      if (barrasControl.text.isEmpty) {
+        _iconoScan = Icons.refresh_rounded;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
-      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (carga == false) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Inventario()),
-            );
-          }
-        },
-        elevation: 0,
-        backgroundColor: Color(0xFF8F01AF),
-        tooltip: "Volver.",
-        child: Icon(Icons.arrow_back_rounded, color: Colors.white),
-      ),
       body: PopScope(
         canPop: false,
         child: Stack(
@@ -107,319 +168,135 @@ class _AddproductoState extends State<Addproducto> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    campoDeTexto(
+                    CampoTexto.inputTexto(
+                      MediaQuery.of(context).size.width * .75,
+                      Icons.file_copy_rounded,
+                      "Nombre",
                       nombreControl,
                       colorCampo[0],
-                      "Nombre",
-                      Icon(Icons.file_copy_rounded, color: Color(0xFF8F01AF)),
-                      TextInputType.text,
-                      FilteringTextInputFormatter.singleLineFormatter,
                       true,
-                    ),
-                    campoDeTexto(
-                      cantidadControl,
-                      colorCampo[3],
-                      "Cantidad por unidades",
-                      Icon(Icons.numbers_rounded, color: Color(0xFF8F01AF)),
-                      TextInputType.number,
-                      FilteringTextInputFormatter.digitsOnly,
-                      cantidad,
+                      false,
+                      () => FocusManager.instance.primaryFocus?.unfocus(),
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Column(
                           children: [
-                            Text(
-                              "Tipo",
-                              style: TextStyle(
-                                color: Color(0xFFFFFFFF),
-                                fontSize: 15,
-                              ),
-                            ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * (.365),
-                              margin: EdgeInsets.symmetric(horizontal: 10),
-                              padding: EdgeInsets.symmetric(horizontal: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                  color: Color(0xFFFDC930),
-                                  width: 2.5,
-                                ),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.settings_suggest,
-                                    color: Color(0xFF8F01AF),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsetsGeometry.symmetric(
-                                      horizontal: 10,
-                                    ),
-                                    width:
-                                        MediaQuery.of(context).size.width *
-                                        (.276),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton(
-                                        elevation: 1,
-                                        alignment: AlignmentGeometry.centerLeft,
-                                        value: valorTipo,
-                                        icon: Icon(
-                                          Icons.arrow_drop_down,
-                                          color: Colors.white,
-                                        ),
-                                        dropdownColor: Colors.white,
-                                        items: listaTipo.map<DropdownMenuItem>((
-                                          String value,
-                                        ) {
-                                          return DropdownMenuItem(
-                                            value: value,
-                                            child: Text(
-                                              value,
-                                              style: TextStyle(
-                                                color: Color(0xFF8F01AF),
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          cantidadValido(value);
-                                          setState(() {
-                                            valorTipo = value;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.warning_rounded,
-                                    color: Color(colorCampo[1]),
-                                  ),
-                                ],
-                              ),
+                            Textos.textoBlanco("Tipo", 15),
+                            CampoTexto.inputDropdown(
+                              MediaQuery.of(context).size.width,
+                              Icons.settings_suggest,
+                              valorTipo,
+                              listaTipo,
+                              colorCampo[1],
+                              (value) {
+                                cantidadValido(value);
+                                setState(() {
+                                  valorTipo = value;
+                                });
+                              },
                             ),
                           ],
                         ),
                         Column(
                           children: [
-                            Text(
-                              "Área",
-                              style: TextStyle(
-                                color: Color(0xFFFFFFFF),
-                                fontSize: 15,
-                              ),
-                            ),
-                            Container(
-                              width: MediaQuery.of(context).size.width * (.365),
-                              margin: EdgeInsets.symmetric(horizontal: 10),
-                              padding: EdgeInsets.symmetric(horizontal: 10),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                border: Border.all(
-                                  color: Color(0xFFFDC930),
-                                  width: 2.5,
-                                ),
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.door_front_door_rounded,
-                                    color: Color(0xFF8F01AF),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                    ),
-                                    width:
-                                        MediaQuery.of(context).size.width *
-                                        (.276),
-                                    child: DropdownButtonHideUnderline(
-                                      child: DropdownButton(
-                                        elevation: 1,
-                                        alignment: AlignmentGeometry.centerLeft,
-                                        value: valorArea,
-                                        icon: Icon(
-                                          Icons.arrow_drop_down,
-                                          color: Colors.white,
-                                        ),
-                                        dropdownColor: Colors.white,
-                                        items: listaArea.map<DropdownMenuItem>((
-                                          String value,
-                                        ) {
-                                          return DropdownMenuItem(
-                                            value: value,
-                                            child: Text(
-                                              value,
-                                              style: TextStyle(
-                                                color: Color(0xFF8F01AF),
-                                              ),
-                                            ),
-                                          );
-                                        }).toList(),
-                                        onChanged: (value) {
-                                          setState(() {
-                                            valorArea = value;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  Icon(
-                                    Icons.warning_rounded,
-                                    color: Color(colorCampo[2]),
-                                  ),
-                                ],
-                              ),
+                            Textos.textoBlanco("Área", 15),
+                            CampoTexto.inputDropdown(
+                              MediaQuery.of(context).size.width,
+                              Icons.door_front_door_rounded,
+                              valorArea,
+                              listaArea,
+                              colorCampo[2],
+                              (value) {
+                                setState(() {
+                                  valorArea = value;
+                                });
+                              },
                             ),
                           ],
                         ),
                       ],
                     ),
-                    TextButton.icon(
-                      onPressed: () async => {
-                        setState(() {
-                          colorCampo[3] = 0x00FFFFFF;
-                          colorCampo[1] = 0x00FFFFFF;
-                          colorCampo[0] = 0x00FFFFFF;
-                          colorCampo[2] = 0x00FFFFFF;
-                        }),
-                        if (nombreControl.text.isEmpty)
-                          {
-                            setState(() {
-                              colorCampo[0] = 0xFFFF0000;
-                            }),
-                          },
-                        if (cantidadControl.text.isEmpty)
-                          {
-                            setState(() {
-                              colorCampo[3] = 0xFFFF0000;
-                            }),
-                          },
-                        if (valorArea == "Área")
-                          {
-                            setState(() {
-                              colorCampo[2] = 0xFFFF0000;
-                            }),
-                          },
-                        if (valorTipo == "Tipo")
-                          {
-                            setState(() {
-                              colorCampo[1] = 0xFFFF0000;
-                            }),
-                          },
-                        if (nombreControl.text.isNotEmpty &&
-                            cantidadControl.text.isNotEmpty &&
-                            valorTipo != "Tipo" &&
-                            valorArea != "Área")
-                          {
-                            setState(() {
-                              carga = !carga;
-                            }),
-                            respuesta = await ProductoModel.addProducto(
-                              nombreControl.text,
-                              int.parse(cantidadControl.text),
-                              valorTipo,
-                              valorArea,
-                              LocalStorage.local('usuario'),
-                              LocalStorage.local('locación'),
-                            ),
-                            if (respuesta.toString().split(": ")[0] != "Error")
-                              {
-                                setState(() {
-                                  nombreControl.text = "";
-                                  cantidadControl.text = "";
-                                  cantidad = false;
-                                  valorTipo = listaTipo.last;
-                                  valorArea = listaArea.last;
-                                }),
-                                ToastText.toast(
-                                  "Se guardo $respuesta correctamente.",
-                                  true,
-                                ),
-                                setState(() {
-                                  carga = !carga;
-                                }),
-                              }
-                            else
-                              {
-                                setState(() {
-                                  carga = !carga;
-                                }),
-                                ToastText.toast(
-                                  respuesta.toString().split(": ")[1],
-                                  true,
-                                ),
-                              },
-                          },
-                      },
-                      style: IconButton.styleFrom(
-                        padding: EdgeInsets.all(15),
-                        backgroundColor: Color(0xFF8F01AF),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
+                    CampoTexto.inputTexto(
+                      MediaQuery.of(context).size.width * .75,
+                      Icons.numbers_rounded,
+                      "Cantidad por unidades",
+                      cantidadControl,
+                      colorCampo[3],
+                      cantidad,
+                      false,
+                      () => registrarProducto(context),
+                      formato: FilteringTextInputFormatter.allow(
+                        RegExp(r'(^\d*\.?\d{0,10})'),
+                      ),
+                      inputType: TextInputType.numberWithOptions(decimal: true),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .75 * .925,
+                          Icons.barcode_reader,
+                          "Codigo de barras",
+                          barrasControl,
+                          Color(0x00FFFFFF),
+                          false,
+                          false,
+                          () => {},
                         ),
-                      ),
-                      icon: Icon(Icons.add_circle_rounded, color: Colors.white),
-                      label: Text(
-                        "Añadir",
-                        style: TextStyle(color: Colors.white),
-                      ),
+                        SizedBox(
+                          width:
+                              MediaQuery.of(context).size.width * (.75 * .075),
+                          child: Botones.btnSimple(
+                            "Escanear código",
+                            _iconoScan,
+                            () async => {
+                              iconoScan(),
+                              if (barrasControl.text.isEmpty)
+                                {
+                                  barrasControl.text = await Textos.scan(
+                                    context,
+                                  ),
+                                }
+                              else
+                                {barrasControl.text = ""},
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    Botones.iconoTexto(
+                      "Añadir",
+                      Icons.add_circle_rounded,
+                      () => registrarProducto(context),
                     ),
                   ],
                 ),
               ),
             ),
-            Carga.ventanaCarga(carga),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              child: Botones.btnRctMor(
+                "Volver",
+                35,
+                Icons.arrow_back_rounded,
+                false,
+                () => {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => Inventario()),
+                  ),
+                },
+              ),
+            ),
+            Consumer<Carga>(
+              builder: (context, carga, child) {
+                return Carga.ventanaCarga();
+              },
+            ),
           ],
-        ),
-      ),
-    );
-  }
-
-  SizedBox campoDeTexto(
-    TextEditingController control,
-    int color,
-    String texto,
-    Icon icono,
-    TextInputType input,
-    TextInputFormatter filtro,
-    bool enabled,
-  ) {
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * .75,
-      child: TextField(
-        controller: control,
-        inputFormatters: [filtro],
-        keyboardType: input,
-        enabled: enabled,
-        onTapOutside: (event) {
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        cursorColor: Color(0xFF8F01AF),
-        style: TextStyle(color: Color(0xFF8F01AF)),
-        decoration: InputDecoration(
-          filled: true,
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Color(0xFFFDC930), width: 2.5),
-          ),
-          disabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Color(0x80FDC930), width: 1.5),
-          ),
-          prefixIcon: icono,
-          suffixIcon: Icon(Icons.warning_rounded),
-          suffixIconColor: Color(color),
-          fillColor: Colors.white,
-          label: Text(texto, style: TextStyle(color: Color(0xFF8F01AF))),
         ),
       ),
     );

@@ -8,6 +8,7 @@ class OrdenModel {
   int id;
   List articulos;
   List cantidades;
+  List cantidadesCubiertas;
   String estado;
   String remitente;
   String ultimaModificacion;
@@ -17,6 +18,7 @@ class OrdenModel {
     required this.id,
     required this.articulos,
     required this.cantidades,
+    required this.cantidadesCubiertas,
     required this.estado,
     required this.remitente,
     required this.ultimaModificacion,
@@ -31,6 +33,7 @@ class OrdenModel {
         id: 1,
         articulos: ["Articulo1", "Articulo2"],
         cantidades: [1, 2],
+        cantidadesCubiertas: [0, 0],
         estado: "En proceso",
         remitente: "Usuario",
         ultimaModificacion: "28/10/2025 16:11:32",
@@ -43,6 +46,7 @@ class OrdenModel {
         id: 2,
         articulos: ["Articulo3"],
         cantidades: [3],
+        cantidadesCubiertas: [3],
         estado: "Finalizado",
         remitente: "Frank",
         ultimaModificacion: "28/10/2025 16:11:32",
@@ -71,13 +75,13 @@ class OrdenModel {
     try {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
-
         for (var item in datos) {
           ordenesFuture.add(
             OrdenModel(
               id: item["id"],
               articulos: item['Artículos'],
               cantidades: item['Cantidades'],
+              cantidadesCubiertas: item['CantidadesCubiertas'],
               estado: item["Estado"],
               remitente: item["Remitente"],
               ultimaModificacion: item["UltimaModificación"],
@@ -91,6 +95,7 @@ class OrdenModel {
             id: 0,
             articulos: ["Error"],
             cantidades: [0],
+            cantidadesCubiertas: [0],
             estado: "Error",
             remitente: res.body,
             ultimaModificacion: res.body,
@@ -104,6 +109,7 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
           ultimaModificacion: e.message.toString(),
@@ -116,6 +122,20 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          cantidadesCubiertas: [0],
+          estado: "Error",
+          remitente: e.message.toString(),
+          ultimaModificacion: e.message.toString(),
+          destino: e.message.toString(),
+        ),
+      );
+    } on http.ClientException catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ["Error"],
+          cantidades: [0],
+          cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
           ultimaModificacion: e.message.toString(),
@@ -128,6 +148,7 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.toString(),
           ultimaModificacion: e.toString(),
@@ -160,6 +181,7 @@ class OrdenModel {
               id: item["id"],
               articulos: item['Artículos'],
               cantidades: item['Cantidades'],
+              cantidadesCubiertas: item['CantidadesCubiertas'],
               estado: item["Estado"],
               remitente: item["Remitente"],
               ultimaModificacion: item["UltimaModificación"],
@@ -173,6 +195,7 @@ class OrdenModel {
             id: 0,
             articulos: ["Error"],
             cantidades: [0],
+            cantidadesCubiertas: [0],
             estado: "Error",
             remitente: res.body,
             ultimaModificacion: res.body,
@@ -186,6 +209,7 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
           ultimaModificacion: e.message.toString(),
@@ -198,6 +222,20 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          cantidadesCubiertas: [0],
+          estado: "Error",
+          remitente: e.message.toString(),
+          ultimaModificacion: e.message.toString(),
+          destino: e.message.toString(),
+        ),
+      );
+    } on http.ClientException catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ["Error"],
+          cantidades: [0],
+          cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
           ultimaModificacion: e.message.toString(),
@@ -210,6 +248,7 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.toString(),
           ultimaModificacion: e.toString(),
@@ -261,9 +300,48 @@ class OrdenModel {
       productoFuture = "Error: ${e.message.toString()}";
     } on SocketException catch (e) {
       productoFuture = "Error: ${e.message.toString()}";
+    } on http.ClientException catch (e) {
+      productoFuture = "Error: ${e.message.toString()}";
     } on Error catch (e) {
       productoFuture = "Error: ${e.toString()}";
     }
     return productoFuture;
+  }
+
+  static Future<String> editarOrden(
+    String id,
+    String columna,
+    String dato,
+  ) async {
+    String respuesta;
+    if (dato == "finalizar") {
+      dato = "Finalizado";
+    } else if (dato == "denegar") {
+      dato = "Denegado";
+    }
+    try {
+      final res = await http.put(
+        Uri.parse("${LocalStorage.local('conexion')}/ordenes/$id/$columna"),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+        body: jsonEncode({'dato': dato}),
+      );
+      if (res.statusCode == 200) {
+        respuesta = "Se modificó la orden.";
+      } else {
+        respuesta = res.reasonPhrase.toString();
+      }
+    } on TimeoutException catch (e) {
+      respuesta = e.message.toString();
+    } on SocketException catch (e) {
+      respuesta = e.message.toString();
+    } on http.ClientException catch (e) {
+      respuesta = "Error: ${e.message.toString()}";
+    } on Error catch (e) {
+      respuesta = e.toString();
+    }
+    return respuesta;
   }
 }

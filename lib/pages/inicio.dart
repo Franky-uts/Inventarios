@@ -1,11 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
-import 'package:inventarios/components/toast_text.dart';
+import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/ordenes.dart';
 import 'package:inventarios/services/local_storage.dart';
+import 'package:provider/provider.dart';
 
 class Inicio extends StatefulWidget {
   const Inicio({super.key});
@@ -15,20 +18,20 @@ class Inicio extends StatefulWidget {
 }
 
 class _InicioState extends State<Inicio> {
-  final usuarioContr = TextEditingController();
-  final contr = TextEditingController();
-  late int colorUsu, colorCont;
+  final usuarioContr = TextEditingController(),
+      contr = TextEditingController(),
+      usuFocus = FocusNode(),
+      contFocus = FocusNode();
+  late Color colorUsu, colorCont;
   late UsuarioModel usuarioMod;
-  late bool carga;
   late bool verContr;
   late IconData iconoContr;
 
   @override
   void initState() {
-    colorUsu = 0x00FFFFFF;
-    colorCont = 0x00FFFFFF;
+    colorUsu = Color(0x00FFFFFF);
+    colorCont = Color(0x00FFFFFF);
     verContr = true;
-    carga = false;
     iconoContr = Icons.remove_red_eye_rounded;
     super.initState();
   }
@@ -37,14 +40,14 @@ class _InicioState extends State<Inicio> {
   void dispose() {
     contr.dispose();
     usuarioContr.dispose();
+    usuFocus.dispose();
+    contFocus.dispose();
     super.dispose();
   }
 
   void verificar(BuildContext ctx) async {
     if (usuarioContr.text.isNotEmpty && contr.text.isNotEmpty) {
-      setState(() {
-        carga = !carga;
-      });
+      context.read<Carga>().cargaBool(true);
       usuarioMod = await UsuarioModel.getUsuario(usuarioContr.text, contr.text);
       if (usuarioMod.nombre != "error") {
         //await LocalStorage.set('conexion', "http://189.187.144.139:3000");
@@ -52,7 +55,6 @@ class _InicioState extends State<Inicio> {
         await LocalStorage.set('usuario', usuarioMod.nombre);
         await LocalStorage.set('puesto', usuarioMod.puesto);
         await LocalStorage.set('locación', usuarioMod.locacion);
-        await LocalStorage.set('busqueda', "");
         if (ctx.mounted) {
           if (usuarioMod.puesto == "Proveedor") {
             Navigator.pushReplacement(
@@ -69,32 +71,32 @@ class _InicioState extends State<Inicio> {
       } else {
         if (usuarioMod.puesto == "El usuario no existe") {
           setState(() {
-            carga = !carga;
-            colorUsu = 0xFFFF0000;
+            colorUsu = Color(0xFFFF0000);
           });
         } else if (usuarioMod.puesto == "Contraseña incorrecta") {
           setState(() {
-            carga = !carga;
-            colorCont = 0xFFFF0000;
+            colorCont = Color(0xFFFF0000);
           });
         } else {
-          ToastText.toast(usuarioMod.puesto, false);
+          Textos.toast(usuarioMod.puesto, false);
           setState(() {
-            carga = !carga;
-            colorUsu = 0x00FFFFFF;
-            colorCont = 0x00FFFFFF;
+            colorUsu = Color(0x00FFFFFF);
+            colorCont = Color(0x00FFFFFF);
           });
         }
+      }
+      if (ctx.mounted) {
+        ctx.read<Carga>().cargaBool(false);
       }
     }
     if (usuarioContr.text.isEmpty) {
       setState(() {
-        colorUsu = 0xFFFF0000;
+        colorUsu = Color(0xFFFF0000);
       });
     }
     if (contr.text.isEmpty) {
       setState(() {
-        colorCont = 0xFFFF0000;
+        colorCont = Color(0xFFFF0000);
       });
     }
   }
@@ -109,13 +111,16 @@ class _InicioState extends State<Inicio> {
           children: [
             Container(
               alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width * .125,
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  spacing: 20,
                   children: [
-                    Container(
-                      margin: EdgeInsets.only(bottom: 10),
+                    SizedBox(
                       child: Image.asset(
                         'assets/logo.jpg',
                         height: 100,
@@ -123,158 +128,81 @@ class _InicioState extends State<Inicio> {
                         fit: BoxFit.contain,
                       ),
                     ),
-                    Container(
-                      width: MediaQuery.of(context).size.width * .75,
-                      margin: EdgeInsets.symmetric(vertical: 10),
-                      child: TextField(
-                        controller: usuarioContr,
-                        onTapOutside: (event) {
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
-                        cursorColor: Color(0xFF8F01AF),
-                        style: TextStyle(color: Color(0xFF8F01AF)),
-                        decoration: InputDecoration(
-                          filled: true,
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide(
-                              color: Color(0xFFFDC930),
-                              width: 3.5,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(30),
-                            borderSide: BorderSide(
-                              color: Color(0xFFFDC930),
-                              width: 3.5,
-                            ),
-                          ),
-                          prefixIcon: Icon(Icons.person_rounded),
-                          prefixIconColor: Color(0xFF8F01AF),
-                          suffixIcon: Icon(Icons.warning_rounded),
-                          suffixIconColor: Color(colorUsu),
-                          fillColor: Colors.white,
-                          label: Text(
-                            "Usuario",
-                            style: TextStyle(color: Color(0xFF8F01AF)),
-                          ),
-                        ),
-                      ),
+                    CampoTexto.inputTexto(
+                      MediaQuery.of(context).size.width * .75,
+                      Icons.person_rounded,
+                      "Usuario",
+                      usuarioContr,
+                      colorUsu,
+                      true,
+                      false,
+                      () => contFocus.requestFocus(),
                     ),
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      mainAxisSize: MainAxisSize.max,
                       children: [
-                        Container(
-                          width: MediaQuery.of(context).size.width * .69,
-                          margin: EdgeInsets.symmetric(
-                            vertical: 20,
-                            horizontal: 0,
-                          ),
-                          alignment: Alignment.center,
-                          child: TextField(
-                            obscureText: verContr,
-                            controller: contr,
-                            onTapOutside: (event) {
-                              FocusManager.instance.primaryFocus?.unfocus();
-                            },
-                            cursorColor: Color(0xFF8F01AF),
-                            style: TextStyle(color: Color(0xFF8F01AF)),
-                            decoration: InputDecoration(
-                              filled: true,
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                  color: Color(0xFFFDC930),
-                                  width: 3.5,
-                                ),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(30),
-                                borderSide: BorderSide(
-                                  color: Color(0xFFFDC930),
-                                  width: 3.5,
-                                ),
-                              ),
-                              prefixIcon: Icon(Icons.lock_rounded),
-                              prefixIconColor: Color(0xFF8F01AF),
-                              suffixIcon: Icon(Icons.warning_rounded),
-                              suffixIconColor: Color(colorCont),
-                              fillColor: Colors.white,
-                              label: Text(
-                                "Contraseña",
-                                style: TextStyle(color: Color(0xFF8F01AF)),
-                              ),
-                            ),
-                          ),
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * (.75 * .925),
+                          Icons.lock_rounded,
+                          "Contraseña",
+                          contr,
+                          colorCont,
+                          true,
+                          verContr,
+                          () => verificar(context),
+                          focus: contFocus,
                         ),
-                        Container(
-                          width: MediaQuery.of(context).size.width * .057,
-                          alignment: Alignment.center,
-                          child: IconButton(
-                            tooltip: "Ver/Ocultar Contraseña",
-                            onPressed: () {
+                        SizedBox(
+                          width:
+                              MediaQuery.of(context).size.width * (.75 * .075),
+                          child: Botones.btnSimple(
+                            "Ver/Ocultar Contraseña",
+                            iconoContr,
+                            () => {
                               setState(() {
                                 verContr = !verContr;
+                                iconoContr = Icons.remove_red_eye_outlined;
                                 if (verContr) {
                                   iconoContr = Icons.remove_red_eye_rounded;
-                                } else {
-                                  iconoContr = Icons.remove_red_eye_outlined;
                                 }
-                              });
+                              }),
                             },
-                            icon: Icon(
-                              iconoContr,
-                              color: Color(0xFFFFFFFF),
-                              size: 25,
-                            ),
                           ),
                         ),
                       ],
                     ),
-                    TextButton.icon(
-                      onPressed: () async => {
+                    Botones.iconoTexto(
+                      "Ingresar",
+                      Icons.login_rounded,
+                      () async => {
                         setState(() {
-                          colorCont = 0x00FFFFFF;
-                          colorUsu = 0x00FFFFFF;
+                          colorCont = Color(0x00FFFFFF);
+                          colorUsu = Color(0x00FFFFFF);
                         }),
                         verificar(context),
                       },
-                      style: IconButton.styleFrom(
-                        padding: EdgeInsets.all(15),
-                        backgroundColor: Color(0xFF8A03A9),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      icon: Icon(Icons.login_rounded, color: Colors.white),
-                      label: Text(
-                        "Ingresar",
-                        style: TextStyle(color: Colors.white),
-                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            Carga.ventanaCarga(carga),
+            Consumer<Carga>(
+              builder: (context, carga, child) {
+                return Carga.ventanaCarga();
+              },
+            ),
             Visibility(
               visible: !kIsWeb,
               child: Container(
                 margin: EdgeInsets.all(10),
                 alignment: Alignment.topLeft,
-                child: IconButton.filled(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.settings,
-                    size: 35,
-                    color: Color(0xFFFFFFFF),
-                  ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Color(0xFF8F01AF),
-                    shape: ContinuousRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
+                child: Botones.btnRctMor(
+                  "Ajustes",
+                  35,
+                  Icons.settings,
+                  false,
+                  () => {},
                 ),
               ),
             ),

@@ -60,6 +60,12 @@ class UsuarioModel {
         puesto: e.message.toString(),
         locacion: e.message.toString(),
       );
+    } on http.ClientException catch (e) {
+      usuarioFuture = UsuarioModel(
+        nombre: "error",
+        puesto: e.message.toString(),
+        locacion: e.message.toString(),
+      );
     } on Error catch (e) {
       usuarioFuture = UsuarioModel(
         nombre: "error",

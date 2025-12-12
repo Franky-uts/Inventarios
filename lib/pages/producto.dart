@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
-import 'package:inventarios/components/toast_text.dart';
+import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/inventario.dart';
+import 'package:provider/provider.dart';
 
 class Producto extends StatefulWidget {
   final ProductoModel productoInfo;
@@ -18,13 +20,11 @@ class _ProductoState extends State<Producto> {
   late int cajasEntrantes = widget.productoInfo.entrada,
       cajasSalida = widget.productoInfo.salida,
       productosPerdido = widget.productoInfo.perdida;
-  late bool carga;
   Timer? timer;
-  final List<int> color = [0xFF8F01AF, 0xFF8F01AF, 0xFF8F01AF];
+  final List<int> color = [0xFF8A03A9, 0xFF8A03A9, 0xFF8A03A9];
 
   @override
   void initState() {
-    carga = false;
     super.initState();
   }
 
@@ -35,7 +35,7 @@ class _ProductoState extends State<Producto> {
     super.dispose();
   }
 
-  Future enviarDatos(int valor) async {
+  Future enviarDatos(int valor, BuildContext ctx) async {
     String texto = "";
     switch (valor) {
       case 1:
@@ -51,7 +51,7 @@ class _ProductoState extends State<Producto> {
           );
           if (texto.split(": ")[0] != "Error") {
             setState(() {
-              color[0] = 0xFF8F01AF;
+              color[0] = 0xFF8A03A9;
               widget.productoInfo.unidades = unidades;
               widget.productoInfo.entrada = cajasEntrantes;
             });
@@ -74,7 +74,7 @@ class _ProductoState extends State<Producto> {
           );
           if (texto.split(": ")[0] != "Error") {
             setState(() {
-              color[1] = 0xFF8F01AF;
+              color[1] = 0xFF8A03A9;
               widget.productoInfo.unidades = unidades;
               widget.productoInfo.salida = cajasSalida;
             });
@@ -94,7 +94,7 @@ class _ProductoState extends State<Producto> {
           );
           if (texto.split(": ")[0] != "Error") {
             setState(() {
-              color[2] = 0xFF8F01AF;
+              color[2] = 0xFF8A03A9;
               widget.productoInfo.perdida = productosPerdido;
             });
             texto = "Perdidas registradas";
@@ -104,10 +104,10 @@ class _ProductoState extends State<Producto> {
         }
         break;
     }
-    ToastText.toast(texto, false);
-    setState(() {
-      carga = false;
-    });
+    Textos.toast(texto, false);
+    if (ctx.mounted) {
+      ctx.read<Carga>().cargaBool(false);
+    }
   }
 
   void cambioValor(int tipo, int valor) {
@@ -119,7 +119,7 @@ class _ProductoState extends State<Producto> {
             if (cajasEntrantes != widget.productoInfo.entrada) {
               color[0] = 0xFF00be00;
             } else {
-              color[0] = 0xFF8F01AF;
+              color[0] = 0xFF8A03A9;
             }
           });
         } else {
@@ -144,7 +144,7 @@ class _ProductoState extends State<Producto> {
                 if (cajasSalida != widget.productoInfo.salida) {
                   color[1] = 0xFF00be00;
                 } else {
-                  color[1] = 0xFF8F01AF;
+                  color[1] = 0xFF8A03A9;
                 }
               });
             } else {
@@ -158,7 +158,7 @@ class _ProductoState extends State<Producto> {
             });
           }
         } else {
-          ToastText.toast("Ya son todos los productos.", false);
+          Textos.toast("Ya son todos los productos.", false);
         }
         break;
       case 3:
@@ -168,7 +168,7 @@ class _ProductoState extends State<Producto> {
             if (productosPerdido != widget.productoInfo.perdida) {
               color[2] = 0xFF00be00;
             } else {
-              color[2] = 0xFF8F01AF;
+              color[2] = 0xFF8A03A9;
             }
           });
         } else {
@@ -190,22 +190,6 @@ class _ProductoState extends State<Producto> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButtonLocation: FloatingActionButtonLocation.miniStartTop,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (carga == false) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Inventario()),
-            );
-          }
-        },
-        elevation: 0,
-        backgroundColor: Color(0xFF8F01AF),
-        tooltip: "Volver",
-        child: Icon(Icons.arrow_back_rounded, color: Colors.white),
-      ),
       body: PopScope(
         canPop: false,
         child: Stack(
@@ -217,12 +201,9 @@ class _ProductoState extends State<Producto> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  Text(
-                    widget.productoInfo.nombre,
-                    style: TextStyle(color: Color(0xFF8F01AF), fontSize: 30),
-                  ),
+                  Textos.textoTilulo(widget.productoInfo.nombre, 30),
                   SizedBox(
-                    width: MediaQuery.of(context).size.width * .5,
+                    width: MediaQuery.of(context).size.width * .525,
                     height: 50,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -238,26 +219,10 @@ class _ProductoState extends State<Producto> {
                             ),
                           ),
                         ),
-                        Container(
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Color(0xFF8F01AF),
-                              width: 2.5,
-                            ),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 2.5,
-                          ),
-                          margin: EdgeInsets.symmetric(horizontal: 5),
-                          child: Text(
-                            widget.productoInfo.unidades.toString(),
-                            style: TextStyle(
-                              color: Color(0xFF8F01AF),
-                              fontSize: 20,
-                            ),
-                          ),
+                        Textos.recuadroCantidad(
+                          widget.productoInfo.unidades.toString(),
+                          Color(0xFF8A03A9),
+                          20,
                         ),
                       ],
                     ),
@@ -281,19 +246,17 @@ class _ProductoState extends State<Producto> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
+                            Textos.textoGeneral(
                               "Ultima modificación:",
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Color(0xFFF6AFCF),
-                              ),
+                              15,
+                              false,
+                              false,
                             ),
-                            Text(
+                            Textos.textoGeneral(
                               widget.productoInfo.ultimaModificacion,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Color(0xFFF6AFCF),
-                              ),
+                              15,
+                              false,
+                              false,
                             ),
                           ],
                         ),
@@ -305,19 +268,17 @@ class _ProductoState extends State<Producto> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Text(
+                            Textos.textoGeneral(
                               "Modificada por:",
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Color(0xFFF6AFCF),
-                              ),
+                              15,
+                              false,
+                              false,
                             ),
-                            Text(
+                            Textos.textoGeneral(
                               widget.productoInfo.ultimoUsuario,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Color(0xFFF6AFCF),
-                              ),
+                              15,
+                              false,
+                              false,
                             ),
                           ],
                         ),
@@ -327,7 +288,26 @@ class _ProductoState extends State<Producto> {
                 ],
               ),
             ),
-            Carga.ventanaCarga(carga),
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+              child: Botones.btnRctMor(
+                "Volver",
+                35,
+                Icons.arrow_back_rounded,
+                false,
+                () => {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => Inventario()),
+                  ),
+                },
+              ),
+            ),
+            Consumer<Carga>(
+              builder: (context, carga, child) {
+                return Carga.ventanaCarga();
+              },
+            ),
           ],
         ),
       ),
@@ -335,92 +315,65 @@ class _ProductoState extends State<Producto> {
   }
 
   Widget tipoTexto(String tipo) {
-    if (tipo == "Kilo" || tipo == "Costal") {
+    if (tipo == "Granel" || tipo == "Costal") {
       return Column(
         children: [
-          Text(
-            "Unidades:",
-            style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-          ),
-          Text(
+          Textos.textoGeneral("Unidades:", 20, true, false),
+          Textos.textoGeneral(
             "Kilos por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}",
-            style: TextStyle(fontSize: 15, color: Color(0xFFF6AFCF)),
+            15,
+            false,
+            true,
           ),
         ],
       );
     } else if (tipo == "Bote") {
       return Column(
         children: [
-          Text(
-            "Unidades:",
-            style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-          ),
-          Text(
+          Textos.textoGeneral("Unidades:", 20, true, false),
+          Textos.textoGeneral(
             "Kilos/Piezas por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}",
-            style: TextStyle(fontSize: 15, color: Color(0xFFF6AFCF)),
+            15,
+            false,
+            true,
           ),
         ],
       );
     } else if (tipo == "Caja" || tipo == "Bulto" || tipo == "Paquete") {
       return Column(
         children: [
-          Text(
-            "${tipo}s:",
-            style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-          ),
-          Text(
+          Textos.textoGeneral("${tipo}s:", 20, true, false),
+          Textos.textoGeneral(
             "Productos por $tipo: ${widget.productoInfo.cantidadPorUnidad.toString()}",
-            style: TextStyle(fontSize: 15, color: Color(0xFFF6AFCF)),
+            15,
+            false,
+            true,
           ),
         ],
       );
     } else if (tipo == "Galón") {
-      return Text(
-        "Galones:",
-        style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-      );
+      return Textos.textoGeneral("Galones:", 20, true, false);
     } else {
-      return Text(
-        "${tipo}s:",
-        style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-      );
+      return Textos.textoGeneral("${tipo}s:", 20, true, false);
     }
   }
 
   Text textoTipoContenedorInfo(String textoInfo, String tipo) {
     if (textoInfo != "Productos perdidos:") {
-      if (tipo == "Kilo") {
-        return Text(
-          "Unidades$textoInfo",
-          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-        );
+      if (tipo == "Granel") {
+        return Textos.textoGeneral("Unidades$textoInfo", 20, true, false);
       } else if (tipo == "Galón") {
-        return Text(
-          "Galones$textoInfo",
-          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-        );
+        return Textos.textoGeneral("Galones$textoInfo", 20, true, false);
       } else {
-        return Text(
-          "${tipo}s$textoInfo",
-          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-        );
+        return Textos.textoGeneral("${tipo}s$textoInfo", 20, true, false);
       }
     } else {
-      if (tipo == "Kilo" || tipo == "Costal") {
-        return Text(
-          "Kilos perdidos:",
-          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-        );
+      if (tipo == "Granel" || tipo == "Costal") {
+        return Textos.textoGeneral("Kilos perdidos:", 20, true, false);
       } else if (tipo == "Bote") {
-        return Text(
-          "Kilos/Piezas perdidos:",
-          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-        );
+        return Textos.textoGeneral("Kilos/Piezas perdidos:", 20, true, false);
       } else {
-        return Text(
-          textoInfo,
-          style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-        );
+        return Textos.textoGeneral(textoInfo, 20, true, false);
       }
     }
   }
@@ -466,32 +419,15 @@ class _ProductoState extends State<Producto> {
           onLongPressEnd: (_) => setState(() {
             timer?.cancel();
           }),
-          child: IconButton(
-            onPressed: () {
-              cambioValor(tipo, -1);
-            },
-            icon: Icon(Icons.remove, color: Colors.white),
-            style: IconButton.styleFrom(
-              padding: EdgeInsets.zero,
-              backgroundColor: Color(0xFF8F01AF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
+          child: Botones.btnRctMor(
+            "",
+            0,
+            Icons.remove,
+            false,
+            () => cambioValor(tipo, -1),
           ),
         ),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
-          margin: EdgeInsets.symmetric(horizontal: 5),
-          decoration: BoxDecoration(
-            border: Border.all(color: Color(colorBorde), width: 2.5),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            textoValor.toString(),
-            style: TextStyle(color: Colors.black, fontSize: 20),
-          ),
-        ),
+        Textos.recuadroCantidad(textoValor.toString(), Color(colorBorde), 20),
         GestureDetector(
           onLongPress: () => setState(() {
             timer = Timer.periodic(Duration(milliseconds: 150), (timer) {
@@ -501,36 +437,23 @@ class _ProductoState extends State<Producto> {
           onLongPressEnd: (_) => setState(() {
             timer?.cancel();
           }),
-          child: IconButton(
-            onPressed: () {
-              cambioValor(tipo, 1);
-            },
-            icon: Icon(Icons.add, color: Colors.white),
-            style: IconButton.styleFrom(
-              padding: EdgeInsets.zero,
-              backgroundColor: Color(0xFF8F01AF),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
+          child: Botones.btnRctMor(
+            "",
+            0,
+            Icons.add,
+            false,
+            () => cambioValor(tipo, 1),
           ),
         ),
-        IconButton(
-          onPressed: () {
-            setState(() {
-              carga = true;
-            });
-            enviarDatos(tipo);
+        Botones.btnRctMor(
+          "Guardar datos",
+          0,
+          Icons.save_rounded,
+          false,
+          () => {
+            context.read<Carga>().cargaBool(true),
+            enviarDatos(tipo, context),
           },
-          tooltip: "Guardar datos",
-          icon: Icon(Icons.save_rounded, color: Colors.white),
-          style: IconButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: Color(0xFF8F01AF),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
         ),
       ],
     );

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/carga.dart';
-import 'package:inventarios/components/input_texto.dart';
+import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/textos.dart';
 
-class Tablas {
-  static List<dynamic> datos = [];
-  static late bool valido;
+class Tablas with ChangeNotifier {
+  static List<dynamic> _datos = [];
+  static bool _valido = false;
 
   static Container contenedorInfo(
     double grosor,
@@ -14,9 +15,9 @@ class Tablas {
     List<Widget> lista = [];
     for (int i = 0; i < textos.length; i++) {
       if (grosores[i] > 0.075) {
-        lista.add(_barraSuperior(grosor * grosores[i], textos[i]));
+        lista.add(_barraSuperior(grosor * grosores[i], textos[i], true));
       } else {
-        lista.add(_barraSuperiorS(grosor * grosores[i], textos[i]));
+        lista.add(_barraSuperior(grosor * grosores[i], textos[i], false));
       }
       if (i != textos.length - 1) {
         lista.add(_divider());
@@ -24,7 +25,7 @@ class Tablas {
     }
     return Container(
       width: grosor,
-      decoration: BoxDecoration(color: Color(0xFF8F01AF)),
+      decoration: BoxDecoration(color: Color(0xFF8A03A9)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -44,28 +45,23 @@ class Tablas {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
-            valido = true;
-            datos = snapshot.data;
-            if (datos.isNotEmpty) {
-              if (datos[0].id == 0) {
-                return Center(
-                  child: Text(
-                    datos[0].ultimaModificacion,
-                    style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
-                  ),
-                );
+            _valido = true;
+            _datos = snapshot.data;
+            if (_datos.isNotEmpty) {
+              if (_datos[0].id == 0) {
+                return Textos.textoError(_datos[0].ultimaModificacion);
               } else {
-                return lista(datos);
+                return lista(_datos);
               }
             } else {
-              return textoError(textoListaVacia);
+              return Textos.textoError(textoListaVacia);
             }
           } else if (snapshot.hasError) {
-            valido = false;
-            return textoError("Error:\n${snapshot.error.toString()}");
+            _valido = false;
+            return Textos.textoError("Error:\n${snapshot.error.toString()}");
           } else {
             if (CampoTexto.busquedaTexto.text.isNotEmpty) {
-              return textoError(errorTexto);
+              return Textos.textoError(errorTexto);
             }
           }
         }
@@ -74,26 +70,14 @@ class Tablas {
     );
   }
 
-  static SizedBox _barraSuperior(double grosor, String texto) {
-    return SizedBox(
-      width: grosor,
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: 15),
-      ),
-    );
-  }
-
-  static SizedBox _barraSuperiorS(double grosor, String texto) {
-    return SizedBox(
-      width: grosor,
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: 12),
-      ),
-    );
+  static SizedBox _barraSuperior(double grosor, String texto, bool grande) {
+    double size;
+    if (grande) {
+      size = 15;
+    } else {
+      size = 12;
+    }
+    return SizedBox(width: grosor, child: Textos.textoBlanco(texto, size));
   }
 
   static Widget _barraDato(double grosor, String texto, Color color) {
@@ -103,12 +87,7 @@ class Tablas {
         color: color,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        maxLines: 1,
-        style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-      ),
+      child: Textos.textoGeneral(texto, 20, true, true),
     );
   }
 
@@ -138,40 +117,30 @@ class Tablas {
       }
     }
     if (boton) {
-      return Container(
-        width: grosor,
-        height: 40,
-        decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-        child: TextButton(
-          onPressed: () => extra(),
-          style: TextButton.styleFrom(
-            padding: EdgeInsets.all(0),
-            shape: ContinuousRectangleBorder(),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: lista,
-          ),
+      return TextButton(
+        onPressed: () => extra(),
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.all(0),
+          shape: ContinuousRectangleBorder(),
         ),
-      );
-    } else {
-      return Container(
-        width: grosor,
-        height: 40,
-        decoration: BoxDecoration(color: Colors.white),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: lista,
         ),
       );
+    } else {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: lista,
+      );
     }
   }
 
   static VerticalDivider _divider() {
     return VerticalDivider(
-      thickness: 1,
+      thickness: 2,
       width: 0,
       color: Color(0xFFFDC930),
       indent: 5,
@@ -179,13 +148,17 @@ class Tablas {
     );
   }
 
-  static Center textoError(String texto) {
-    return Center(
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
-      ),
-    );
+  void datos(List<dynamic> lista) {
+    _datos = lista;
+    notifyListeners();
+  }
+
+  void valido(bool boolean) {
+    boolean = _valido;
+    notifyListeners();
+  }
+
+  static bool getValido(){
+    return _valido;
   }
 }

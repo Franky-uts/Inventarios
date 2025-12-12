@@ -2,12 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
-import 'package:inventarios/components/input_texto.dart';
+import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/tablas.dart';
-import 'package:inventarios/components/toast_text.dart';
+import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/pages/historial_ordenes.dart';
 import 'package:inventarios/pages/inventario.dart';
+import 'package:provider/provider.dart';
 import '../models/producto_model.dart';
 import '../services/local_storage.dart';
 
@@ -21,21 +23,14 @@ class OrdenSalida extends StatefulWidget {
 }
 
 class _OrdenSalidaState extends State<OrdenSalida> {
-  List<ProductoModel> productos = [];
   List<ProductoModel> listaProd = [];
   late String respuesta;
-  late bool carga;
-  late bool ventanaCarga;
+  late int cantArticulos;
   late bool lista;
   List<int> cantidad = [];
-  List<int> color = [];
 
   @override
   void initState() {
-    CampoTexto.busquedaTexto.text = LocalStorage.local('busqueda');
-    carga = false;
-    ventanaCarga = false;
-    Tablas.valido = false;
     lista = true;
     listas();
     super.initState();
@@ -44,16 +39,24 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   @override
   void dispose() {
     listaProd.clear();
-    productos.clear();
     cantidad.clear();
-    color.clear();
     super.dispose();
   }
 
-  Future<void> _getProductos() async {
-    productos = await ProductoModel.getProductos(
-      CampoTexto.filtroTexto(),
-      CampoTexto.busquedaTexto.text,
+  Future<void> addOrden() async {
+    List<String> articulos = [];
+    List<int> cantidades = [];
+    for (int i = 0; i < listaProd.length; i++) {
+      articulos.add(listaProd[i].nombre);
+      cantidades.add(cantidad[listaProd[i].id - 1]);
+    }
+    cantArticulos = articulos.length;
+    respuesta = await OrdenModel.postOrden(
+      articulos,
+      cantidades,
+      "En proceso",
+      LocalStorage.local('usuario'),
+      LocalStorage.local('locación'),
     );
   }
 
@@ -61,7 +64,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     if (lista) {
       for (int i = 0; i < widget.productosPorId.length; i++) {
         cantidad.add(0);
-        color.add(0xFFFDC930);
       }
       lista = false;
     }
@@ -83,35 +85,123 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     barraDeBusqueda(context),
                     Tablas.contenedorInfo(
                       MediaQuery.sizeOf(context).width,
-                      [.05, 0.25, 0.175, 0.175, 0.08, 0.2],
+                      [.05, .25, .175, .175, .08, .2],
                       ["id", "Nombre", "Tipo", "Área", "Unidades", "Acciones"],
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
                       height: MediaQuery.of(context).size.height - 97,
-                      child: Tablas.listaFutura(
-                        listaPrincipal,
-                        "No hay productos registrados.",
-                        "No hay coincidencias.",
-                        () => ProductoModel.getProductos(
-                          CampoTexto.filtroTexto(),
-                          CampoTexto.busquedaTexto.text,
-                        ),
+                      child: Consumer<Tablas>(
+                        builder: (context, tablas, child) {
+                          return Tablas.listaFutura(
+                            listaPrincipal,
+                            "No hay productos registrados.",
+                            "No hay coincidencias.",
+                            () => ProductoModel.getProductos(
+                              CampoTexto.filtroTexto(),
+                              CampoTexto.busquedaTexto.text,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-            Visibility(
-              visible: ventanaCarga,
-              child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 89, vertical: 15),
-                decoration: BoxDecoration(color: Colors.black38),
-                child: Center(child: contenidoVentana()),
-              ),
+            Consumer2<Ventanas, Carga>(
+              builder: (context, ventana, carga, child) {
+                return Ventanas.ventanaTabla(
+                  MediaQuery.of(context).size.height,
+                  MediaQuery.of(context).size.width,
+                  ["Productos seleccionados:"],
+                  ["Enviar orden:"],
+                  Tablas.contenedorInfo(
+                    MediaQuery.sizeOf(context).width,
+                    [.1, 0.25, 0.2, 0.075, 0.075, 0.075],
+                    [
+                      "id",
+                      "Nombre",
+                      "Área",
+                      "Ordenar",
+                      "Prod./Caja",
+                      "Prod. Total",
+                    ],
+                  ),
+                  ListView.separated(
+                    itemCount: listaProd.length,
+                    scrollDirection: Axis.vertical,
+                    separatorBuilder: (context, index) => Container(
+                      height: 2,
+                      decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                    ),
+                    itemBuilder: (context, index) {
+                      return Consumer<Tablas>(
+                        builder: (context, tablas, child) {
+                          return Container(
+                            width: MediaQuery.sizeOf(context).width,
+                            height: 40,
+                            decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+                            child: Tablas.barraDatos(
+                              MediaQuery.sizeOf(context).width,
+                              [.1, .25, .2, .075, .075, .075],
+                              [
+                                listaProd[index].id.toString(),
+                                listaProd[index].nombre,
+                                listaProd[index].area,
+                                cantidad[listaProd[index].id - 1].toString(),
+                                listaProd[index].cantidadPorUnidad.toString(),
+                                (cantidad[listaProd[index].id - 1] *
+                                        listaProd[index].cantidadPorUnidad)
+                                    .toString(),
+                              ],
+                              [],
+                              false,
+                              null,
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  [
+                    Botones.btnCirRos(
+                      "No",
+                      () => {listaProd.clear(), ventana.tabla(false)},
+                    ),
+                    Botones.btnCirRos(
+                      "Si",
+                      () async => {
+                        carga.cargaBool(true),
+                        await addOrden(),
+                        if (respuesta.split(": ")[0] != "Error")
+                          {
+                            Textos.toast(
+                              "Se guardo la orden $respuesta correctamente con $cantArticulos artículos.",
+                              true,
+                            ),
+                            if (context.mounted)
+                              {carga.cargaBool(false), ventana.tabla(false)},
+                            for (int i = 0; i < listaProd.length; i++)
+                              {cantidad[listaProd[i].id - 1] = 0},
+                            listaProd.clear(),
+                          }
+                        else
+                          {
+                            if (context.mounted) {carga.cargaBool(false)},
+                            Textos.toast(respuesta, false),
+                          },
+                      },
+                    ),
+                  ],
+                );
+              },
             ),
-            Carga.ventanaCarga(carga),
+            Consumer<Carga>(
+              builder: (context, carga, child) {
+                return Carga.ventanaCarga();
+              },
+            ),
           ],
         ),
       ),
@@ -125,23 +215,24 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       children: [
         Botones.btnRctMor(
           "Regresar",
-          Icon(Icons.arrow_back_rounded, size: 35),
-          accion: () async => {
-            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
-            if (context.mounted)
-              {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => Inventario()),
-                ),
-              },
+          35,
+          Icons.arrow_back_rounded,
+          false,
+          () => {
+            Textos.limpiarLista(),
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Inventario()),
+            ),
           },
         ),
         Botones.btnRctMor(
           "Regresar",
-          Icon(Icons.task_rounded, size: 35),
-          accion: () => {
-            if (Tablas.valido)
+          35,
+          Icons.task_rounded,
+          false,
+          () => {
+            if (Tablas.getValido())
               {
                 for (int i = 0; i < cantidad.length; i++)
                   {
@@ -149,23 +240,21 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       {listaProd.add(widget.productosPorId[i])},
                   },
                 if (listaProd.isEmpty)
-                  {ToastText.toast("No hay productos seleccionados.", false)}
+                  {Textos.toast("No hay productos seleccionados.", false)}
                 else
-                  {
-                    setState(() {
-                      ventanaCarga = true;
-                    }),
-                  },
+                  {context.read<Ventanas>().tabla(true)},
               }
             else
-              {ToastText.toast("Espera a que los datos carguen.", false)},
+              {Textos.toast("Espera a que los datos carguen.", false)},
           },
         ),
         Botones.btnRctMor(
           "Historial de ordenes",
-          Icon(Icons.history_rounded, size: 35),
-          accion: () async => {
-            if (Tablas.valido)
+          35,
+          Icons.history_rounded,
+          false,
+          () async => {
+            if (Tablas.getValido())
               {
                 await LocalStorage.set(
                   'busqueda',
@@ -181,17 +270,30 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         ),
                       ),
                     ),
+                    context.read<Ventanas>().emergente(false),
+                    context.read<Ventanas>().tabla(false),
+                    context.read<Carga>().cargaBool(false),
                   },
               }
             else
-              {ToastText.toast("Espera a que los datos carguen.", false)},
+              {Textos.toast("Espera a que los datos carguen.", false)},
           },
         ),
-        CampoTexto.barraBusqueda(
-          MediaQuery.of(context).size.width * .7,
-          accion: () => setState(() {
-            _getProductos();
-          }),
+        Container(
+          width: MediaQuery.of(context).size.width * .7,
+          margin: EdgeInsets.symmetric(vertical: 10),
+          child: Consumer<Tablas>(
+            builder: (context, tablas, child) {
+              return CampoTexto.barraBusqueda(
+                () async => tablas.datos(
+                  await ProductoModel.getProductos(
+                    CampoTexto.filtroTexto(),
+                    CampoTexto.busquedaTexto.text,
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -206,229 +308,51 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        return Tablas.barraDatos(
-          MediaQuery.sizeOf(context).width,
-          [.05, .25, .175, .175, .08, .2],
-          [
-            lista[index].id.toString(),
-            lista[index].nombre,
-            lista[index].tipo,
-            lista[index].area,
-            lista[index].unidades.toString(),
-            "",
-          ],
-          [],
-          false,
-          botones(
-            cantidad[lista[index].id - 1],
-            color[lista[index].id - 1],
-            lista[index].id,
+        return Container(
+          width: MediaQuery.sizeOf(context).width,
+          height: 40,
+          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+          child: Tablas.barraDatos(
+            MediaQuery.sizeOf(context).width,
+            [.05, .25, .175, .175, .08, .2],
+            [
+              lista[index].id.toString(),
+              lista[index].nombre,
+              lista[index].tipo,
+              lista[index].area,
+              lista[index].unidades.toString(),
+              "",
+            ],
+            [],
+            false,
+            SizedBox(
+              width: MediaQuery.sizeOf(context).width * .2,
+              child: Consumer<Textos>(
+                builder: (context, textos, child) {
+                  return Botones.botonesSumaResta(
+                    lista[index].nombre,
+                    cantidad[lista[index].id - 1],
+                    Textos.getColor(lista[index].id - 1),
+                    () => {
+                      if ((cantidad[lista[index].id - 1] - 1) > -1)
+                        {
+                          textos.setColor(lista[index].id - 1, 0xFFFDC930),
+                          cantidad[lista[index].id - 1] -= 1,
+                        }
+                      else
+                        {textos.setColor(lista[index].id - 1, 0xFFFF0000)},
+                    },
+                    () => {
+                      textos.setColor(lista[index].id - 1, 0xFFFDC930),
+                      cantidad[lista[index].id - 1] += 1,
+                    },
+                  );
+                },
+              ),
+            ),
           ),
         );
       },
-    );
-  }
-
-  Row botones(int textoValor, int colorBorde, int id) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        IconButton(
-          onPressed: () {
-            if ((cantidad[id - 1] - 1) > -1) {
-              setState(() {
-                color[id - 1] = 0xFFFDC930;
-                cantidad[id - 1] -= 1;
-              });
-            } else {
-              setState(() {
-                color[id - 1] = 0xFFFF0000;
-              });
-            }
-          },
-          icon: Icon(Icons.remove, color: Colors.white),
-          style: IconButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: Color(0xFF8F01AF),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
-          margin: EdgeInsets.symmetric(horizontal: 5),
-          decoration: BoxDecoration(
-            border: Border.all(color: Color(colorBorde), width: 2.5),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            textoValor.toString(),
-            style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-          ),
-        ),
-        IconButton(
-          onPressed: () {
-            setState(() {
-              color[id - 1] = 0xFFFDC930;
-              cantidad[id - 1] += 1;
-            });
-          },
-          icon: Icon(Icons.add, color: Colors.white),
-          style: IconButton.styleFrom(
-            padding: EdgeInsets.zero,
-            backgroundColor: Color(0xFF8F01AF),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Container contenidoVentana() {
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      padding: EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadiusGeometry.circular(25),
-        border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        spacing: 0,
-        children: [
-          Text(
-            "Productos seleccionados:",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Color(0xFF8F01AF),
-              fontSize: 20,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          Tablas.contenedorInfo(
-            MediaQuery.sizeOf(context).width,
-            [.1, 0.25, 0.2, 0.075, 0.075, 0.075],
-            ["id", "Nombre", "Área", "Ordenar", "Prod./Caja", "Prod. Total"],
-          ),
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.height - 153,
-            margin: EdgeInsets.zero,
-            child: ListView.separated(
-              itemCount: listaProd.length,
-              scrollDirection: Axis.vertical,
-              separatorBuilder: (context, index) => Container(
-                height: 2,
-                decoration: BoxDecoration(color: Color(0xFFFDC930)),
-              ),
-              itemBuilder: (context, index) {
-                return Tablas.barraDatos(
-                  MediaQuery.sizeOf(context).width,
-                  [.1, .25, .2, .075, .075, .075],
-                  [
-                    listaProd[index].id.toString(),
-                    listaProd[index].nombre,
-                    listaProd[index].area,
-                    cantidad[listaProd[index].id - 1].toString(),
-                    listaProd[index].cantidadPorUnidad.toString(),
-                    listaProd[index].cantidadPorUnidad.toString(),
-                  ],
-                  [],
-                  false,
-                  null,
-                );
-              },
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Text(
-                "Enviar orden:",
-                style: TextStyle(color: Color(0xFF8F01AF), fontSize: 20),
-              ),
-              Row(
-                spacing: 10,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton(
-                    onPressed: () {
-                      setState(() {
-                        ventanaCarga = false;
-                        listaProd.clear();
-                      });
-                    },
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Color(0xFF8F01AF),
-                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2),
-                    ),
-                    child: Text(
-                      "No",
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                  ),
-                  OutlinedButton(
-                    onPressed: () async {
-                      setState(() {
-                        carga = true;
-                      });
-                      List<String> articulos = [];
-                      List<int> cantidades = [];
-                      for (int i = 0; i < listaProd.length; i++) {
-                        articulos.add(listaProd[i].nombre);
-                        cantidades.add(cantidad[listaProd[i].id - 1]);
-                      }
-                      respuesta = await OrdenModel.postOrden(
-                        articulos,
-                        cantidades,
-                        "En proceso",
-                        LocalStorage.local('usuario'),
-                        LocalStorage.local('locación'),
-                      );
-                      if (respuesta.toString().split(": ")[0] != "Error") {
-                        ToastText.toast(
-                          "Se guardo la orden ${respuesta.toString()} correctamente con ${articulos.length} artículos.",
-                          true,
-                        );
-                        setState(() {
-                          for (int i = 0; i < listaProd.length; i++) {
-                            cantidad[listaProd[i].id - 1] = 0;
-                          }
-                          listaProd.clear();
-                          ventanaCarga = false;
-                          carga = false;
-                        });
-                      } else {
-                        setState(() {
-                          carga = !carga;
-                        });
-                        ToastText.toast(
-                          respuesta.toString().split(": ")[1],
-                          false,
-                        );
-                      }
-                    },
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Color(0xFF8F01AF),
-                      side: BorderSide(color: Color(0xFFF6AFCF), width: 2),
-                    ),
-                    child: Text(
-                      "Si",
-                      style: TextStyle(fontSize: 20, color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
     );
   }
 }
