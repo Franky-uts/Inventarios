@@ -253,15 +253,17 @@ class _AddproductoState extends State<Addproducto> {
                             "Escanear código",
                             _iconoScan,
                             () async => {
-                              iconoScan(),
                               if (barrasControl.text.isEmpty)
                                 {
                                   barrasControl.text = await Textos.scan(
                                     context,
                                   ),
+                                  if (barrasControl.text == "-1")
+                                    {barrasControl.text = ""},
                                 }
                               else
                                 {barrasControl.text = ""},
+                              iconoScan(),
                             },
                           ),
                         ),

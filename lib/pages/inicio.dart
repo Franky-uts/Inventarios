@@ -50,8 +50,8 @@ class _InicioState extends State<Inicio> {
       context.read<Carga>().cargaBool(true);
       usuarioMod = await UsuarioModel.getUsuario(usuarioContr.text, contr.text);
       if (usuarioMod.nombre != "error") {
-        //await LocalStorage.set('conexion', "http://189.187.144.139:3000");
-        await LocalStorage.set('conexion', "http://192.168.1.130:3000");
+        await LocalStorage.set('conexion', "http://189.187.144.139:3000");
+        //await LocalStorage.set('conexion', "http://192.168.1.130:3000");
         await LocalStorage.set('usuario', usuarioMod.nombre);
         await LocalStorage.set('puesto', usuarioMod.puesto);
         await LocalStorage.set('locación', usuarioMod.locacion);
