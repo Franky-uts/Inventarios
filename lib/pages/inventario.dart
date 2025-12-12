@@ -82,7 +82,6 @@ class _InventarioState extends State<Inventario> {
       await getProductos();
     }
     for (int i = 0; i < productos.length; i++) {
-      print(productos[i].codigoBarras);
       if (productos[i].codigoBarras == prod) {
         flag = false;
         if (ctx.mounted) {
