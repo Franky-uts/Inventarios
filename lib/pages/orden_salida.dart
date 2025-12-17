@@ -329,7 +329,17 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               lista[index].unidades.toString(),
               "",
             ],
-            [],
+            [
+              Colors.transparent,
+              Colors.transparent,
+              Colors.transparent,
+              Colors.transparent,
+              Textos.colorLimite(
+                lista[index].limiteProd,
+                lista[index].unidades,
+              ),
+              Colors.transparent,
+            ],
             false,
             SizedBox(
               width: MediaQuery.sizeOf(context).width * .2,
