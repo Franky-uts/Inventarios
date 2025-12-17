@@ -314,6 +314,14 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
+        List<Color> colores = [];
+        for (int i = 0; i < 6; i++) {
+          colores.add(Colors.transparent);
+        }
+        colores[4] = Textos.colorLimite(
+          lista[index].limiteProd,
+          lista[index].unidades,
+        );
         return Container(
           width: MediaQuery.sizeOf(context).width,
           height: 40,
@@ -329,17 +337,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               lista[index].unidades.toString(),
               "",
             ],
-            [
-              Colors.transparent,
-              Colors.transparent,
-              Colors.transparent,
-              Colors.transparent,
-              Textos.colorLimite(
-                lista[index].limiteProd,
-                lista[index].unidades,
-              ),
-              Colors.transparent,
-            ],
+            colores,
             false,
             SizedBox(
               width: MediaQuery.sizeOf(context).width * .2,

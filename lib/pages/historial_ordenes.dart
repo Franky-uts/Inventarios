@@ -74,25 +74,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     }
   }
 
-  Color colorEstado(String estado) {
-    late Color color;
-    switch (estado) {
-      case ('En proceso'):
-        color = Colors.blue.shade200;
-        break;
-      case ('Finalizado'):
-        color = Colors.green.shade200;
-        break;
-      case ('Cancelado'):
-        color = Colors.red.shade200;
-        break;
-      case ('Denegado'):
-        color = Colors.red.shade400;
-        break;
-    }
-    return color;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -285,6 +266,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
+        List<Color> coloresLista = [];
+        for (int i = 0; i < 5; i++) {
+          coloresLista.add(Colors.transparent);
+        }
+        coloresLista[2] = Textos.colorEstado(lista[index].estado);
         return Container(
           width: MediaQuery.sizeOf(context).width,
           height: 40,
@@ -299,14 +285,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               lista[index].remitente,
               lista[index].ultimaModificacion,
             ],
-            [
-              Colors.transparent,
-              Colors.transparent,
-              colorEstado(lista[index].estado),
-              Colors.transparent,
-              Colors.transparent,
-              Colors.transparent,
-            ],
+            coloresLista,
             true,
             () => {
               context.read<VenDatos>().setDatos(

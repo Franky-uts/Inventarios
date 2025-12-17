@@ -408,6 +408,14 @@ class _InventarioState extends State<Inventario> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
+        List<Color> colores = [];
+        for (int i = 0; i < 8; i++) {
+          colores.add(Colors.transparent);
+        }
+        colores[3] = Textos.colorLimite(
+          lista[index].limiteProd,
+          lista[index].unidades,
+        );
         return Container(
           width: MediaQuery.sizeOf(context).width,
           height: 40,
@@ -425,19 +433,7 @@ class _InventarioState extends State<Inventario> {
               lista[index].salida.toString(),
               lista[index].perdida.toString(),
             ],
-            [
-              Colors.transparent,
-              Colors.transparent,
-              Colors.transparent,
-              Textos.colorLimite(
-                lista[index].limiteProd,
-                lista[index].unidades,
-              ),
-              Colors.transparent,
-              Colors.transparent,
-              Colors.transparent,
-              Colors.transparent,
-            ],
+            colores,
             true,
             () async => {
               await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),

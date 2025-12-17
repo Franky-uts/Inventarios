@@ -370,6 +370,11 @@ class _OrdenesState extends State<Ordenes> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
+        List<Color> coloresLista = [];
+        for (int i = 0; i < 6; i++) {
+          coloresLista.add(Colors.transparent);
+        }
+        coloresLista[2] = Textos.colorEstado(lista[index].estado);
         return Consumer3<Textos, VenDatos, Ventanas>(
           builder: (context, textos, venDatos, ventanas, child) {
             return Container(
@@ -387,14 +392,7 @@ class _OrdenesState extends State<Ordenes> {
                   lista[index].destino,
                   lista[index].ultimaModificacion,
                 ],
-                [
-                  Colors.transparent,
-                  Colors.transparent,
-                  Textos.colorEstado(lista[index].estado),
-                  Colors.transparent,
-                  Colors.transparent,
-                  Colors.transparent,
-                ],
+                coloresLista,
                 true,
                 () => {
                   Textos.limpiarLista(),
