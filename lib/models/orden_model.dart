@@ -8,6 +8,8 @@ class OrdenModel {
   int id;
   List articulos;
   List cantidades;
+  List tipos;
+  List areas;
   List cantidadesCubiertas;
   String estado;
   String remitente;
@@ -18,6 +20,8 @@ class OrdenModel {
     required this.id,
     required this.articulos,
     required this.cantidades,
+    required this.tipos,
+    required this.areas,
     required this.cantidadesCubiertas,
     required this.estado,
     required this.remitente,
@@ -33,6 +37,8 @@ class OrdenModel {
         id: 1,
         articulos: ["Articulo1", "Articulo2"],
         cantidades: [1, 2],
+        tipos: ["Tipo1", "Tipo2"],
+        areas: ["Area", "Area"],
         cantidadesCubiertas: [0, 0],
         estado: "En proceso",
         remitente: "Usuario",
@@ -46,6 +52,8 @@ class OrdenModel {
         id: 2,
         articulos: ["Articulo3"],
         cantidades: [3],
+        tipos: ["Tipo"],
+        areas: ["Area"],
         cantidadesCubiertas: [3],
         estado: "Finalizado",
         remitente: "Frank",
@@ -81,6 +89,8 @@ class OrdenModel {
               id: item["id"],
               articulos: item['Artículos'],
               cantidades: item['Cantidades'],
+              tipos: item['Tipos'],
+              areas: item['Areas'],
               cantidadesCubiertas: item['CantidadesCubiertas'],
               estado: item["Estado"],
               remitente: item["Remitente"],
@@ -95,6 +105,8 @@ class OrdenModel {
             id: 0,
             articulos: ["Error"],
             cantidades: [0],
+            tipos: ['Error'],
+            areas: ['Error'],
             cantidadesCubiertas: [0],
             estado: "Error",
             remitente: res.body,
@@ -109,6 +121,8 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          tipos: ['Error'],
+          areas: ['Error'],
           cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
@@ -122,6 +136,8 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          tipos: ['Error'],
+          areas: ['Error'],
           cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
@@ -135,6 +151,8 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          tipos: ['Error'],
+          areas: ['Error'],
           cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
@@ -148,6 +166,8 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          tipos: ['Error'],
+          areas: ['Error'],
           cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.toString(),
@@ -181,6 +201,8 @@ class OrdenModel {
               id: item["id"],
               articulos: item['Artículos'],
               cantidades: item['Cantidades'],
+              tipos: item['Tipos'],
+              areas: item['Areas'],
               cantidadesCubiertas: item['CantidadesCubiertas'],
               estado: item["Estado"],
               remitente: item["Remitente"],
@@ -195,6 +217,8 @@ class OrdenModel {
             id: 0,
             articulos: ["Error"],
             cantidades: [0],
+            tipos: ['Error'],
+            areas: ['Error'],
             cantidadesCubiertas: [0],
             estado: "Error",
             remitente: res.body,
@@ -209,6 +233,8 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          tipos: ['Error'],
+          areas: ['Error'],
           cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
@@ -222,6 +248,8 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          tipos: ['Error'],
+          areas: ['Error'],
           cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
@@ -235,6 +263,8 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          tipos: ['Error'],
+          areas: ['Error'],
           cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.message.toString(),
@@ -248,6 +278,8 @@ class OrdenModel {
           id: 0,
           articulos: ["Error"],
           cantidades: [0],
+          tipos: ['Error'],
+          areas: ['Error'],
           cantidadesCubiertas: [0],
           estado: "Error",
           remitente: e.toString(),
@@ -262,6 +294,8 @@ class OrdenModel {
   static Future<String> postOrden(
     List<String> articulos,
     List<int> cantidades,
+    List<String> tipos,
+    List<String> areas,
     String estado,
     String remitente,
     String destino,
@@ -283,18 +317,19 @@ class OrdenModel {
               .toString()
               .replaceAll("[", "{")
               .replaceAll("]", "}"),
+          'tipos': tipos.toString().replaceAll("[", "{").replaceAll("]", "}"),
+          'areas': areas.toString().replaceAll("[", "{").replaceAll("]", "}"),
           'estado': estado,
           'remitente': remitente,
           'destino': destino,
         }),
       );
+      productoFuture = res.body.toString();
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
           productoFuture = item["id"].toString();
         }
-      } else {
-        productoFuture = res.body.toString();
       }
     } on TimeoutException catch (e) {
       productoFuture = "Error: ${e.message.toString()}";
@@ -328,19 +363,18 @@ class OrdenModel {
         },
         body: jsonEncode({'dato': dato}),
       );
+      respuesta = res.reasonPhrase.toString();
       if (res.statusCode == 200) {
         respuesta = "Se modificó la orden.";
-      } else {
-        respuesta = res.reasonPhrase.toString();
       }
     } on TimeoutException catch (e) {
-      respuesta = e.message.toString();
+      respuesta = "Error: ${e.message.toString()}";
     } on SocketException catch (e) {
-      respuesta = e.message.toString();
+      respuesta = "Error: ${e.message.toString()}";
     } on http.ClientException catch (e) {
       respuesta = "Error: ${e.message.toString()}";
     } on Error catch (e) {
-      respuesta = e.toString();
+      respuesta = "Error: ${e.toString()}";
     }
     return respuesta;
   }

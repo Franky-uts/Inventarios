@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
 class Textos with ChangeNotifier {
-  static List<int> color = [];
+  static List<Color> color = [];
 
   static void toast(String texto, bool longLength) {
     Toast length;
@@ -22,7 +22,7 @@ class Textos with ChangeNotifier {
     );
   }
 
-  static Future<String> scan(BuildContext ctx)async{
+  static Future<String> scan(BuildContext ctx) async {
     String? scan = await SimpleBarcodeScanner.scanBarcode(
       ctx,
       lineColor: "#8A03A9",
@@ -33,7 +33,6 @@ class Textos with ChangeNotifier {
     );
     return scan!;
   }
-
 
   static Text textoGeneral(
     String texto,
@@ -92,10 +91,17 @@ class Textos with ChangeNotifier {
 
   static Center textoError(String texto) {
     return Center(
-      child: Text(
-        texto,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
+      child: Container(
+        padding: EdgeInsets.all(5),
+        decoration: BoxDecoration(
+          color: Color(0x808A03A9),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          texto,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Color(0xFFF6AFCF), fontSize: 20),
+        ),
       ),
     );
   }
@@ -116,21 +122,53 @@ class Textos with ChangeNotifier {
     );
   }
 
-  static void crearLista(int length, int colorInt) {
+  static Color colorLimite(int limite, int cantidad) {
+    Color color = Color(0xff32c864);
+    if (cantidad < limite) {
+      color = Color(0xFFFDC930);
+      if (cantidad < limite / 2) {
+        color = Color(0xFFFF4B4B);
+      }
+    }
+    return color;
+  }
+
+  static Color colorEstado(String estado) {
+    late Color color;
+    switch (estado) {
+      case ('En proceso'):
+        color = Colors.blue.shade200;
+        break;
+      case ('Finalizado'):
+        color = Colors.green.shade200;
+        break;
+      case ('Cancelado'):
+        color = Colors.red.shade200;
+        break;
+      case ('Denegado'):
+        color = Colors.red.shade300;
+        break;
+    }
+    return color;
+  }
+
+  static void crearLista(int length, Color color_) {
     for (int i = 0; i < length; i++) {
-      color.add(colorInt);
+      color.add(color_);
     }
   }
 
   static void limpiarLista() {
-    color.clear();
+    if (color.isNotEmpty) {
+      color.clear();
+    }
   }
 
-  static int getColor(int i) {
+  static Color getColor(int i) {
     return color[i];
   }
 
-  void setColor(int i, int colorInt) {
+  void setColor(int i, Color colorInt) {
     color[i] = colorInt;
     notifyListeners();
   }

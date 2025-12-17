@@ -17,6 +17,7 @@ class ProductoModel {
   int perdida;
   String ultimoUsuario;
   String codigoBarras;
+  int limiteProd;
 
   ProductoModel({
     required this.id,
@@ -31,6 +32,7 @@ class ProductoModel {
     required this.perdida,
     required this.ultimoUsuario,
     required this.codigoBarras,
+    required this.limiteProd,
   });
 
   static List<ProductoModel> listaProvicional() {
@@ -50,6 +52,7 @@ class ProductoModel {
         perdida: 0,
         ultimoUsuario: "usuario",
         codigoBarras: "12345",
+        limiteProd: 6,
       ),
     );
 
@@ -67,6 +70,7 @@ class ProductoModel {
         perdida: 0,
         ultimoUsuario: "usuario",
         codigoBarras: "12345",
+        limiteProd: 6,
       ),
     );
 
@@ -77,14 +81,8 @@ class ProductoModel {
     String filtro,
     String busqueda,
   ) async {
-    late String url;
     String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
-    if (busqueda.isEmpty) {
-      url = "$conexion/inventario/$locacion/$filtro";
-    } else {
-      url = "$conexion/inventario/$locacion/$filtro/$busqueda";
-    }
     late List<ProductoModel> productosFuture = [];
     if (locacion.isEmpty || locacion == "null") {
       productosFuture.add(
@@ -101,12 +99,13 @@ class ProductoModel {
           perdida: 0,
           ultimoUsuario: "No hay locación establecida",
           codigoBarras: "No hay locación establecida",
+          limiteProd: 0,
         ),
       );
     } else {
       try {
         var res = await http.get(
-          Uri.parse(url),
+          Uri.parse("$conexion/inventario/$locacion/$filtro/$busqueda"),
           headers: {
             "Accept": "application/json",
             "content-type": "application/json; charset=UTF-8",
@@ -129,6 +128,7 @@ class ProductoModel {
                 perdida: item["Perdida"],
                 ultimoUsuario: item["UltimoUsuario"],
                 codigoBarras: item["CodigoBarras"],
+                limiteProd: item["LimiteProd"],
               ),
             );
           }
@@ -147,6 +147,7 @@ class ProductoModel {
               perdida: 0,
               ultimoUsuario: res.body,
               codigoBarras: res.body,
+              limiteProd: 0,
             ),
           );
         }
@@ -165,6 +166,7 @@ class ProductoModel {
             perdida: 0,
             ultimoUsuario: e.message.toString(),
             codigoBarras: e.message.toString(),
+            limiteProd: 0,
           ),
         );
       } on SocketException catch (e) {
@@ -182,6 +184,7 @@ class ProductoModel {
             perdida: 0,
             ultimoUsuario: e.message.toString(),
             codigoBarras: e.message.toString(),
+            limiteProd: 0,
           ),
         );
       } on http.ClientException catch (e) {
@@ -199,6 +202,7 @@ class ProductoModel {
             perdida: 0,
             ultimoUsuario: e.message.toString(),
             codigoBarras: e.message.toString(),
+            limiteProd: 0,
           ),
         );
       } on Error catch (e) {
@@ -216,6 +220,7 @@ class ProductoModel {
             perdida: 0,
             ultimoUsuario: e.toString(),
             codigoBarras: e.toString(),
+            limiteProd: 0,
           ),
         );
       }
@@ -231,6 +236,7 @@ class ProductoModel {
     String usuario,
     String locacion,
     String barras,
+    int limite,
   ) async {
     late String productoFuture;
     try {
@@ -246,16 +252,16 @@ class ProductoModel {
           'tipo': tipo,
           'area': area,
           'usuario': usuario,
-          'barras' : barras
+          'barras': barras,
+          'limite': limite,
         }),
       );
+      productoFuture = res.body.toString();
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
           productoFuture = item["Nombre"];
         }
-      } else {
-        productoFuture = res.body.toString();
       }
     } on TimeoutException catch (e) {
       productoFuture = "Error: ${e.message.toString()}";
@@ -291,13 +297,12 @@ class ProductoModel {
           'usuario': LocalStorage.local('usuario'),
         }),
       );
+      mensaje = "Error:${res.body}";
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
           mensaje = item['Nombre'];
         }
-      } else {
-        mensaje = "Error:${res.body}";
       }
     } on TimeoutException catch (e) {
       mensaje = "Error: ${e.message.toString()}";
@@ -323,10 +328,9 @@ class ProductoModel {
           "content-type": "application/json; charset=UTF-8",
         },
       );
+      texto = "${res.reasonPhrase}";
       if (res.statusCode == 200) {
         texto = "Reinicio exitoso.";
-      } else {
-        texto = "${res.reasonPhrase}";
       }
     } on TimeoutException catch (e) {
       texto = "Error: ${e.message.toString()}";

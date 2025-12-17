@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 class VenDatos with ChangeNotifier {
   static List _artVen = [];
   static List _canVen = [];
+  static List _areVen = [];
+  static List _tipVen = [];
   static List _canCubVen = [];
   static String _idVen = "";
   static String _remVen = "";
@@ -13,6 +15,8 @@ class VenDatos with ChangeNotifier {
   void setDatos(
     List artVen,
     List canVen,
+    List areVen,
+    List tipVen,
     List canCubVen,
     String idVen,
     String remVen,
@@ -22,6 +26,8 @@ class VenDatos with ChangeNotifier {
   ) {
     _artVen = artVen;
     _canVen = canVen;
+    _areVen = areVen;
+    _tipVen = tipVen;
     _canCubVen = canCubVen;
     _idVen = idVen;
     _remVen = remVen;
@@ -41,6 +47,14 @@ class VenDatos with ChangeNotifier {
 
   int canVen(int i) {
     return _canVen[i];
+  }
+
+  String areVen(int i) {
+    return _areVen[i];
+  }
+
+  String tipVen(int i) {
+    return _tipVen[i];
   }
 
   int canCubVen(int i) {

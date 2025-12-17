@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventarios/components/textos.dart';
 
-enum Filtros { id, nombre, tipo, area }
+enum Filtros { id, nombre, unidades, tipo, area }
 
 class CampoTexto with ChangeNotifier {
   static Filtros? seleccionFiltro;
@@ -11,19 +11,26 @@ class CampoTexto with ChangeNotifier {
 
   static Widget inputTexto(
     double size,
-    IconData icono,
+    IconData? icono,
     String texto,
     TextEditingController controller,
     Color errorColor,
     bool enabled,
     bool password,
     Function accion, {
-        FocusNode? focus,
-    FilteringTextInputFormatter? formato,
+    EdgeInsets? margin,
+    FocusNode? focus,
+    TextInputFormatter? formato,
     TextInputType? inputType,
   }) {
-    return SizedBox(
+    Icon? icon;
+    if (icono != null) {
+      icon = Icon(icono);
+    }
+
+    return Container(
       width: size,
+      margin: margin,
       child: TextField(
         controller: controller,
         inputFormatters: [?formato],
@@ -51,7 +58,7 @@ class CampoTexto with ChangeNotifier {
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(color: Color(0xBFFFBD00), width: 2.5),
           ),
-          prefixIcon: Icon(icono),
+          prefixIcon: icon,
           prefixIconColor: Color(0xFF8A03A9),
           suffixIcon: Icon(Icons.warning_rounded),
           suffixIconColor: errorColor,
@@ -115,8 +122,8 @@ class CampoTexto with ChangeNotifier {
       cursorColor: Color(0xFF8A03A9),
       onSubmitted: (event) => {accion()},
       onTapOutside: (event) => {
-        FocusManager.instance.primaryFocus?.unfocus(),
         if (busquedaTexto.text.isNotEmpty) {accion()},
+        FocusManager.instance.primaryFocus?.unfocus(),
       },
       style: TextStyle(color: Color(0xFF8A03A9)),
       decoration: InputDecoration(
@@ -150,6 +157,10 @@ class CampoTexto with ChangeNotifier {
             PopupMenuItem<Filtros>(
               value: Filtros.nombre,
               child: Textos.textoGeneral("Nombre", 17.5, true, true),
+            ),
+            PopupMenuItem<Filtros>(
+              value: Filtros.unidades,
+              child: Textos.textoGeneral("Unidades", 17.5, true, true),
             ),
             PopupMenuItem<Filtros>(
               value: Filtros.tipo,
@@ -213,6 +224,9 @@ class CampoTexto with ChangeNotifier {
         break;
       case (Filtros.nombre):
         filtro = "Nombre";
+        break;
+      case (Filtros.unidades):
+        filtro = "Unidades";
         break;
       case (Filtros.tipo):
         filtro = "Tipo";

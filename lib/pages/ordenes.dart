@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/components/carga.dart';
@@ -7,7 +8,6 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:provider/provider.dart';
 import '../models/orden_model.dart';
-import '../services/local_storage.dart';
 
 class Ordenes extends StatefulWidget {
   const Ordenes({super.key});
@@ -17,8 +17,12 @@ class Ordenes extends StatefulWidget {
 }
 
 class _OrdenesState extends State<Ordenes> {
-  static List<OrdenModel> ordenes = [];
-  List<int> colores = [0xFF8A03A9, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF];
+  List<Color> colores = [
+    Color(0xFF8A03A9),
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFFF),
+  ];
   List canCubVenOrg = [];
   String cerrarGuardar = "";
   String filtro = "id";
@@ -31,19 +35,24 @@ class _OrdenesState extends State<Ordenes> {
 
   @override
   void dispose() {
-    ordenes.clear();
     colores.clear();
     super.dispose();
   }
 
+  Future<List<OrdenModel>> getOrdenes() async =>
+      await OrdenModel.getAllOrdenes(filtro);
+
   void cambiarEstado(String accion, String estado) {
+    String mensaje = "La orden esta finalizada.";
     if (estado == "En proceso") {
       this.accion = accion;
+      mensaje = "";
       context.read<Ventanas>().emergente(true);
     } else if (estado == "Cancelado" || estado == "Denegado") {
-      Textos.toast("La orden ya esta cencelada.", false);
-    } else {
-      Textos.toast("La orden esta finalizada.", false);
+      mensaje = "La orden ya esta cencelada.";
+    }
+    if (mensaje.isNotEmpty) {
+      Textos.toast(mensaje, false);
     }
   }
 
@@ -56,53 +65,66 @@ class _OrdenesState extends State<Ordenes> {
     }
   }
 
-  void filtroTexto(int valor) {
-    colores[1] = 0xFFFFFFFF;
-    colores[0] = 0xFFFFFFFF;
-    colores[2] = 0xFFFFFFFF;
-    colores[3] = 0xFFFFFFFF;
-    switch (valor) {
-      case (1):
-        filtro = "id";
-        colores[0] = 0xFF8A03A9;
-        break;
-      case (2):
-        filtro = "Estado";
-        colores[1] = 0xFF8A03A9;
-        break;
-      case (3):
-        filtro = "Remitente";
-        colores[2] = 0xFF8A03A9;
-        break;
-      case (4):
-        filtro = "Destino";
-        colores[3] = 0xFF8A03A9;
-        break;
+  Future<String> guardarDatos(BuildContext ctx) async {
+    String columna = "Estado";
+    String datos = accion;
+    if (accion == "guardar") {
+      columna = "CantidadesCubiertas";
+      datos = context
+          .read<VenDatos>()
+          .canCubVenLista()
+          .toString()
+          .replaceAll("[", "{")
+          .replaceAll("]", "}");
     }
+    datos = await OrdenModel.editarOrden(
+      context.read<VenDatos>().idVen(),
+      columna,
+      datos,
+    );
+    if (accion == "guardar" && datos.split(": ")[0] != "Error") {
+      canCubVenOrg.clear();
+      if (ctx.mounted) {
+        for (int i = 0; i < ctx.read<VenDatos>().canCubVenLista().length; i++) {
+          canCubVenOrg.add(ctx.read<VenDatos>().canCubVen(i));
+        }
+        _cerrarGuardar(ctx.read<VenDatos>().canCubVenLista());
+      }
+    }
+    if (datos.split(": ")[0] == "Error") {
+      datos = datos.split(": ")[1];
+    }
+    return datos;
   }
 
-  Color colorEstado(String estado) {
-    late Color color;
-    switch (estado) {
-      case ('En proceso'):
-        color = Colors.blue.shade200;
+  void filtroTexto(int valor) async {
+    for (int i = 0; i < colores.length; i++) {
+      colores[i] = Color(0xFFFFFFFF);
+      if (i == valor) {
+        colores[i] = Color(0xFF8A03A9);
+      }
+    }
+    switch (valor) {
+      case (0):
+        filtro = "id";
         break;
-      case ('Finalizado'):
-        color = Colors.green.shade200;
+      case (1):
+        filtro = "Estado";
         break;
-      case ('Cancelado'):
-        color = Colors.red.shade200;
+      case (2):
+        filtro = "Remitente";
         break;
-      case ('Denegado'):
-        color = Colors.red.shade300;
+      case (3):
+        filtro = "Destino";
         break;
     }
-    return color;
+    context.read<Tablas>().datos(await getOrdenes());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: RecDrawer.drawer(context, []),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
@@ -134,7 +156,9 @@ class _OrdenesState extends State<Ordenes> {
                           listaPrincipal,
                           "Todo está en orden, no hay órdenes entrantes.",
                           "No se recuperaron órdenes.",
-                          () => OrdenModel.getAllOrdenes(filtro),
+                          () => getOrdenes(),
+                          accionRefresh: () async =>
+                              tablas.datos(await getOrdenes()),
                         );
                       },
                     ),
@@ -158,11 +182,13 @@ class _OrdenesState extends State<Ordenes> {
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.35, .175, .2],
+                    [.25, .1, .125, .1, .2],
                     [
                       "Nombre del articulo",
-                      "Cantidad ordenada",
-                      "Cantidad cubierta",
+                      "Tipo",
+                      "Área",
+                      "Cant. orden",
+                      "Cant. cubierta",
                     ],
                   ),
                   ListView.separated(
@@ -179,9 +205,11 @@ class _OrdenesState extends State<Ordenes> {
                         decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
                         child: Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.35, .175, .2],
+                          [.25, .1, .125, .1, .2],
                           [
                             venDatos.artVen(index).toString(),
+                            venDatos.tipVen(index),
+                            venDatos.areVen(index),
                             venDatos.canVen(index).toString(),
                             "",
                           ],
@@ -210,7 +238,12 @@ class _OrdenesState extends State<Ordenes> {
                                             ),
                                           }
                                         else
-                                          {textos.setColor(index, 0xFFFF0000)},
+                                          {
+                                            textos.setColor(
+                                              index,
+                                              Color(0xFFFF0000),
+                                            ),
+                                          },
                                       },
                                   },
                                   () => {
@@ -218,7 +251,10 @@ class _OrdenesState extends State<Ordenes> {
                                             venDatos.canVen(index) &&
                                         venDatos.estVen() == "En proceso")
                                       {
-                                        textos.setColor(index, 0xFF8A03A9),
+                                        textos.setColor(
+                                          index,
+                                          Color(0xFF8A03A9),
+                                        ),
                                         venDatos.canCubVenAdd(index),
                                         _cerrarGuardar(
                                           venDatos.canCubVenLista(),
@@ -237,9 +273,10 @@ class _OrdenesState extends State<Ordenes> {
                     Botones.btnCirRos(
                       cerrarGuardar,
                       () => {
-                        if (cerrarGuardar == "Cerrar")
-                          {context.read<Ventanas>().tabla(false)}
-                        else
+                        context.read<Ventanas>().tabla(
+                          cerrarGuardar != "Cerrar",
+                        ),
+                        if (cerrarGuardar != "Cerrar")
                           {cambiarEstado("guardar", venDatos.estVen())},
                       },
                     ),
@@ -265,47 +302,15 @@ class _OrdenesState extends State<Ordenes> {
                   () async => {
                     carga.cargaBool(true),
                     ventana.emergente(false),
-                    if (accion == "guardar")
-                      {
-                        Textos.toast(
-                          await OrdenModel.editarOrden(
-                            venDatos.idVen(),
-                            "CantidadesCubiertas",
-                            venDatos
-                                .canCubVenLista()
-                                .toString()
-                                .replaceAll("[", "{")
-                                .replaceAll("]", "}"),
-                          ),
-                          false,
-                        ),
-                      }
-                    else
-                      {
-                        Textos.toast(
-                          await OrdenModel.editarOrden(
-                            venDatos.idVen(),
-                            "Estado",
-                            accion,
-                          ),
-                          false,
-                        ),
-                      },
-                    if (context.mounted)
-                      {
-                        tablas.datos(await OrdenModel.getAllOrdenes(filtro)),
-                        carga.cargaBool(false),
-                        ventana.tabla(false),
-                      },
+                    Textos.toast(await guardarDatos(context), false),
+                    carga.cargaBool(false),
+                    tablas.datos(await OrdenModel.getAllOrdenes(filtro)),
+                    ventana.tabla(accion == "guardar"),
                   },
                 );
               },
             ),
-            Consumer<Carga>(
-              builder: (context, carga, child) {
-                return Carga.ventanaCarga();
-              },
-            ),
+            Carga.ventanaCarga(),
           ],
         ),
       ),
@@ -317,71 +322,39 @@ class _OrdenesState extends State<Ordenes> {
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 25),
       child: Consumer2<Tablas, Carga>(
         builder: (context, tablas, carga, child) {
+          List<Widget> filtroList = [];
+          filtroList.add(
+            Botones.btnRctMor(
+              "Abrir menú",
+              35,
+              Icons.menu_rounded,
+              false,
+              () => Scaffold.of(context).openDrawer(),
+            ),
+          );
+          List<String> txt = ["id", "Estado", "Remitente", "Destino"];
+          List<IconData> icono = [
+            Icons.numbers_rounded,
+            Icons.query_builder_rounded,
+            Icons.perm_identity_rounded,
+            Icons.place_rounded,
+          ];
+          for (int i = 0; i < txt.length; i++) {
+            filtroList.add(
+              Botones.icoRctBor(
+                txt[i],
+                icono[i],
+                colores[i],
+                () async => {
+                  if (filtro != txt[i]) {filtroTexto(i)},
+                },
+              ),
+            );
+          }
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Botones.btnRctMor(
-                "Cerrar sesión",
-                35,
-                Icons.logout_rounded,
-                false,
-                () => {
-                  Textos.limpiarLista(),
-                  carga.cargaBool(true),
-                  LocalStorage.logout(context),
-                  carga.cargaBool(false),
-                },
-              ),
-              Botones.icoRctBor(
-                "ID",
-                Icons.numbers_rounded,
-                Color(colores[0]),
-                () async => {
-                  if (filtro != "id")
-                    {
-                      filtroTexto(1),
-                      tablas.datos(await OrdenModel.getAllOrdenes(filtro)),
-                    },
-                },
-              ),
-              Botones.icoRctBor(
-                "Estado",
-                Icons.query_builder_rounded,
-                Color(colores[1]),
-                () async => {
-                  if (filtro != "Estado")
-                    {
-                      filtroTexto(2),
-                      tablas.datos(await OrdenModel.getAllOrdenes(filtro)),
-                    },
-                },
-              ),
-              Botones.icoRctBor(
-                "Remitente",
-                Icons.perm_identity_outlined,
-                Color(colores[2]),
-                () async => {
-                  if (filtro != "Remitente")
-                    {
-                      filtroTexto(3),
-                      tablas.datos(await OrdenModel.getAllOrdenes(filtro)),
-                    },
-                },
-              ),
-              Botones.icoRctBor(
-                "Destino",
-                Icons.place_rounded,
-                Color(colores[3]),
-                () async => {
-                  if (filtro != "Destino")
-                    {
-                      filtroTexto(4),
-                      tablas.datos(await OrdenModel.getAllOrdenes(filtro)),
-                    },
-                },
-              ),
-            ],
+            children: filtroList,
           );
         },
       ),
@@ -417,7 +390,7 @@ class _OrdenesState extends State<Ordenes> {
                 [
                   Colors.transparent,
                   Colors.transparent,
-                  colorEstado(lista[index].estado),
+                  Textos.colorEstado(lista[index].estado),
                   Colors.transparent,
                   Colors.transparent,
                   Colors.transparent,
@@ -429,6 +402,8 @@ class _OrdenesState extends State<Ordenes> {
                   venDatos.setDatos(
                     lista[index].articulos,
                     lista[index].cantidades,
+                    lista[index].areas,
+                    lista[index].tipos,
                     lista[index].cantidadesCubiertas,
                     lista[index].id.toString(),
                     lista[index].remitente,
@@ -436,7 +411,10 @@ class _OrdenesState extends State<Ordenes> {
                     lista[index].ultimaModificacion,
                     lista[index].destino,
                   ),
-                  Textos.crearLista(lista[index].articulos.length, 0xFF8A03A9),
+                  Textos.crearLista(
+                    lista[index].articulos.length,
+                    Color(0xFF8A03A9),
+                  ),
                   for (int i = 0; i < lista[index].articulos.length; i++)
                     {canCubVenOrg.add(venDatos.canCubVen(i))},
                   _cerrarGuardar(venDatos.canCubVenLista()),

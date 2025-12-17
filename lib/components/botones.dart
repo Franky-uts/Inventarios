@@ -134,7 +134,7 @@ class Botones {
   static Widget botonesSumaResta(
     String nombre,
     int textoValor,
-    int colorBorde,
+    Color colorBorde,
     Function resta,
     Function suma,
   ) {
@@ -149,9 +149,22 @@ class Botones {
           false,
           () => resta(),
         ),
-        Textos.recuadroCantidad(textoValor.toString(), Color(colorBorde), 20),
+        Textos.recuadroCantidad(textoValor.toString(), colorBorde, 20),
         Botones.btnRctMor("Sumar $nombre", 0, Icons.add, false, () => suma()),
       ],
+    );
+  }
+
+  static Container layerButton(Function accion) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      child: Botones.btnRctMor(
+        "Volver",
+        35,
+        Icons.arrow_back_rounded,
+        false,
+        () => accion(),
+      ),
     );
   }
 }

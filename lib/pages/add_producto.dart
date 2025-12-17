@@ -27,28 +27,29 @@ class _AddproductoState extends State<Addproducto> {
   late List<String> listaArea = [];
   late List<String> listaTipo = [];
   late String valorArea, respuesta, valorTipo;
-  late bool cantidad;
+  late bool cantidad, cantidadLimite;
   IconData _iconoScan = Icons.document_scanner_rounded;
   final nombreControl = TextEditingController(),
       cantidadControl = TextEditingController(),
-      barrasControl = TextEditingController();
-  late List<Color> colorCampo = [
-    Color(0x00FFFFFF),
-    Color(0x00FFFFFF),
-    Color(0x00FFFFFF),
-    Color(0x00FFFFFF),
-  ];
+      cantidadLimiteControl = TextEditingController(),
+      barrasControl = TextEditingController(),
+      limiteFocus = FocusNode();
+  late List<Color> colorCampo = [];
   String? res;
 
   @override
   void initState() {
     cantidad = false;
+    cantidadLimite = false;
     listaTipo.add("Tipo");
     listaArea.add("Área");
     listaTipo.addAll(widget.listaTipo.map((item) => item as String).toList());
     listaArea.addAll(widget.listaArea.map((item) => item as String).toList());
     valorArea = listaArea.first;
     valorTipo = listaTipo.first;
+    for (int i = 0; i < 5; i++) {
+      colorCampo.add(Color(0x00FFFFFF));
+    }
     super.initState();
   }
 
@@ -58,12 +59,17 @@ class _AddproductoState extends State<Addproducto> {
     nombreControl.dispose();
     cantidadControl.dispose();
     barrasControl.dispose();
+    limiteFocus.dispose();
+    cantidadLimiteControl.dispose();
     listaArea.clear();
     listaTipo.clear();
     super.dispose();
   }
 
   void cantidadValido(String value) {
+    cantidad = false;
+    cantidadLimite = true;
+    cantidadControl.text = "1";
     if (value == "Bulto" ||
         value == "Caja" ||
         value == "Costal" ||
@@ -71,48 +77,43 @@ class _AddproductoState extends State<Addproducto> {
         value == "Bote" ||
         value == "Granel") {
       cantidad = true;
+      cantidadLimite = true;
       cantidadControl.clear();
     } else if (value == "Tipo") {
       cantidad = false;
+      cantidadLimite = false;
       cantidadControl.clear();
-    } else {
-      cantidad = false;
-      cantidadControl.text = "1";
+      cantidadLimiteControl.clear();
     }
   }
 
   void registrarProducto(BuildContext ctx) async {
     setState(() {
-      colorCampo[3] = Color(0x00FFFFFF);
-      colorCampo[1] = Color(0x00FFFFFF);
-      colorCampo[0] = Color(0x00FFFFFF);
-      colorCampo[2] = Color(0x00FFFFFF);
+      context.read<Carga>().cargaBool(true);
     });
+    for (int i = 0; i < colorCampo.length; i++) {
+      colorCampo[i] = Color(0x00FFFFFF);
+    }
     if (nombreControl.text.isEmpty) {
-      setState(() {
-        colorCampo[0] = Color(0xFFFF0000);
-      });
+      colorCampo[0] = Color(0xFFFF0000);
     }
     if (cantidadControl.text.isEmpty) {
-      setState(() {
-        colorCampo[3] = Color(0xFFFF0000);
-      });
+      colorCampo[3] = Color(0xFFFF0000);
+    }
+    if (cantidadLimiteControl.text.isEmpty) {
+      colorCampo[4] = Color(0xFFFF0000);
     }
     if (valorArea == "Área") {
-      setState(() {
-        colorCampo[2] = Color(0xFFFF0000);
-      });
+      colorCampo[2] = Color(0xFFFF0000);
     }
     if (valorTipo == "Tipo") {
-      setState(() {
-        colorCampo[1] = Color(0xFFFF0000);
-      });
+      colorCampo[1] = Color(0xFFFF0000);
     }
     if (nombreControl.text.isNotEmpty &&
         cantidadControl.text.isNotEmpty &&
+        cantidadLimiteControl.text.isNotEmpty &&
         valorTipo != "Tipo" &&
         valorArea != "Área") {
-      context.read<Carga>().cargaBool(true);
       respuesta = await ProductoModel.addProducto(
         nombreControl.text,
         int.parse(cantidadControl.text),
@@ -121,26 +122,24 @@ class _AddproductoState extends State<Addproducto> {
         LocalStorage.local('usuario'),
         LocalStorage.local('locación'),
         barrasControl.text,
+        int.parse(cantidadLimiteControl.text),
       );
+      String res = respuesta.toString().split(": ")[1];
       if (respuesta.toString().split(": ")[0] != "Error") {
-        setState(() {
-          nombreControl.text = "";
-          cantidadControl.text = "";
-          cantidad = false;
-          valorTipo = listaTipo.first;
-          valorArea = listaArea.first;
-        });
-        Textos.toast("Se guardo $respuesta correctamente.", true);
-        if (ctx.mounted) {
-          ctx.read<Carga>().cargaBool(false);
-        }
-      } else {
-        if (ctx.mounted) {
-          ctx.read<Carga>().cargaBool(false);
-        }
-        Textos.toast(respuesta.toString().split(": ")[1], true);
+        nombreControl.text = "";
+        cantidadControl.text = "";
+        cantidadLimiteControl.text = "";
+        cantidad = false;
+        cantidadLimite = false;
+        valorTipo = listaTipo.first;
+        valorArea = listaArea.first;
+        res = "Se guardo $respuesta correctamente.";
       }
+      Textos.toast(res, true);
     }
+    setState(() {
+      context.read<Carga>().cargaBool(false);
+    });
   }
 
   void iconoScan() {
@@ -164,7 +163,7 @@ class _AddproductoState extends State<Addproducto> {
               alignment: Alignment.center,
               child: SingleChildScrollView(
                 child: Column(
-                  spacing: 20,
+                  spacing: 15,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -218,19 +217,40 @@ class _AddproductoState extends State<Addproducto> {
                         ),
                       ],
                     ),
-                    CampoTexto.inputTexto(
-                      MediaQuery.of(context).size.width * .75,
-                      Icons.numbers_rounded,
-                      "Cantidad por unidades",
-                      cantidadControl,
-                      colorCampo[3],
-                      cantidad,
-                      false,
-                      () => registrarProducto(context),
-                      formato: FilteringTextInputFormatter.allow(
-                        RegExp(r'(^\d*\.?\d{0,10})'),
-                      ),
-                      inputType: TextInputType.numberWithOptions(decimal: true),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .365,
+                          Icons.numbers_rounded,
+                          "Cantidad por unidades",
+                          cantidadControl,
+                          colorCampo[3],
+                          cantidad,
+                          false,
+                          () => limiteFocus.requestFocus(),
+                          margin: EdgeInsets.symmetric(horizontal: 10),
+                          formato: FilteringTextInputFormatter.allow(
+                            RegExp(r'(^\d*\.?\d{0,10})'),
+                          ),
+                          inputType: TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                        ),
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .365,
+                          Icons.production_quantity_limits_rounded,
+                          "Limite de unidades",
+                          cantidadLimiteControl,
+                          colorCampo[4],
+                          cantidadLimite,
+                          false,
+                          () => registrarProducto(context),
+                          margin: EdgeInsets.symmetric(horizontal: 10),
+                          focus: limiteFocus,
+                          inputType: TextInputType.numberWithOptions(),
+                        ),
+                      ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -278,26 +298,13 @@ class _AddproductoState extends State<Addproducto> {
                 ),
               ),
             ),
-            Container(
-              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child: Botones.btnRctMor(
-                "Volver",
-                35,
-                Icons.arrow_back_rounded,
-                false,
-                () => {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => Inventario()),
-                  ),
-                },
+            Botones.layerButton(
+              () => Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Inventario()),
               ),
             ),
-            Consumer<Carga>(
-              builder: (context, carga, child) {
-                return Carga.ventanaCarga();
-              },
-            ),
+            Carga.ventanaCarga(),
           ],
         ),
       ),

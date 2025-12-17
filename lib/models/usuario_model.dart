@@ -23,16 +23,24 @@ class UsuarioModel {
     return usuario;
   }
 
-  static Future<UsuarioModel> getUsuario(String usuario, String contr) async {
+  static Future<UsuarioModel> getUsuario(
+    String usuario,
+    String contr,
+    String ip,
+  ) async {
     late UsuarioModel usuarioFuture;
     try {
       final res = await http.get(
-        //Uri.parse("http://192.168.1.130:3000/usuarios/$usuario/$contr"),
-        Uri.parse("http://189.187.144.139:3000/usuarios/$usuario/$contr"),
+        Uri.parse("http://$ip:3000/usuarios/$usuario/$contr"),
         headers: {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
         },
+      );
+      usuarioFuture = UsuarioModel(
+        nombre: "error",
+        puesto: res.body,
+        locacion: res.body,
       );
       if (res.statusCode == 200 && res.reasonPhrase == 'OK') {
         final datos = json.decode(res.body);
@@ -40,12 +48,6 @@ class UsuarioModel {
           nombre: datos[0]["Nombre"],
           puesto: datos[0]["Puesto"],
           locacion: datos[0]["Locacion"],
-        );
-      } else {
-        usuarioFuture = UsuarioModel(
-          nombre: "error",
-          puesto: res.body,
-          locacion: res.body,
         );
       }
     } on TimeoutException catch (e) {

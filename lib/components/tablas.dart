@@ -38,34 +38,36 @@ class Tablas with ChangeNotifier {
     ListView Function(List<dynamic>) lista,
     String textoListaVacia,
     String errorTexto,
-    Function modelo,
-  ) {
+    Function modelo, {
+    Function? accionRefresh,
+  }) {
     return FutureBuilder(
       future: modelo(),
       builder: (context, snapshot) {
+        Widget wid = Carga.carga();
+        _valido = false;
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
-            _valido = true;
             _datos = snapshot.data;
+            wid = Textos.textoError(textoListaVacia);
             if (_datos.isNotEmpty) {
-              if (_datos[0].id == 0) {
-                return Textos.textoError(_datos[0].ultimaModificacion);
-              } else {
-                return lista(_datos);
+              wid = Textos.textoError(_datos[0].ultimaModificacion);
+              if (CampoTexto.busquedaTexto.text.isNotEmpty) {
+                wid = Textos.textoError(errorTexto);
               }
-            } else {
-              return Textos.textoError(textoListaVacia);
+              if (_datos[0].id != 0) {
+                _valido = true;
+                wid = lista(_datos);
+              }
             }
           } else if (snapshot.hasError) {
-            _valido = false;
-            return Textos.textoError("Error:\n${snapshot.error.toString()}");
-          } else {
-            if (CampoTexto.busquedaTexto.text.isNotEmpty) {
-              return Textos.textoError(errorTexto);
-            }
+            wid = Textos.textoError("Error:\n${snapshot.error.toString()}");
           }
         }
-        return Carga.carga();
+        return RefreshIndicator(
+          child: wid,
+          onRefresh: () async => accionRefresh!(),
+        );
       },
     );
   }
@@ -158,7 +160,7 @@ class Tablas with ChangeNotifier {
     notifyListeners();
   }
 
-  static bool getValido(){
+  static bool getValido() {
     return _valido;
   }
 }

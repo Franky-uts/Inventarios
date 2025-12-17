@@ -6,23 +6,24 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
-import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/orden_salida.dart';
 import 'package:provider/provider.dart';
 import '../services/local_storage.dart';
 
 class HistorialOrdenes extends StatefulWidget {
-  final List<ProductoModel> productosPorId;
-
-  const HistorialOrdenes({super.key, required this.productosPorId});
+  const HistorialOrdenes({super.key});
 
   @override
   State<HistorialOrdenes> createState() => _HistorialOrdenesState();
 }
 
 class _HistorialOrdenesState extends State<HistorialOrdenes> {
-  List<int> colores = [0xFF8A03A9, 0xFFFFFFFF, 0xFFFFFFFF];
   String filtro = "id";
+  List<Color> colores = [
+    Color(0xFF8A03A9),
+    Color(0xFFFFFFFF),
+    Color(0xFFFFFFFF),
+  ];
 
   @override
   void initState() {
@@ -31,28 +32,45 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
 
   @override
   void dispose() {
-    colores.clear();
-    colores.clear();
     super.dispose();
   }
 
-  void filtroTexto(int valor) {
-    colores[1] = 0xFFFFFFFF;
-    colores[0] = 0xFFFFFFFF;
-    colores[2] = 0xFFFFFFFF;
+  Future<List<OrdenModel>> getOrdenes() async =>
+      await OrdenModel.getOrdenes(filtro, LocalStorage.local('locación'));
+
+  Future<void> filtroTexto(int valor) async {
+    for (int i = 0; i < colores.length; i++) {
+      colores[i] = Color(0xFFFFFFFF);
+      if (i == valor) {
+        colores[i] = Color(0xFF8A03A9);
+      }
+    }
     switch (valor) {
-      case (1):
+      case (0):
         filtro = "id";
-        colores[0] = 0xFF8A03A9;
+        break;
+      case (1):
+        filtro = "Estado";
         break;
       case (2):
-        filtro = "Estado";
-        colores[1] = 0xFF8A03A9;
-        break;
-      case (3):
         filtro = "Remitente";
-        colores[2] = 0xFF8A03A9;
         break;
+    }
+    context.read<Tablas>().datos(await getOrdenes());
+  }
+
+  void cambiarEstado() {
+    String mensaje;
+    mensaje = "La orden no se puede cancelar.";
+    if (context.read<VenDatos>().estVen() == "En proceso") {
+      mensaje = "";
+      context.read<Ventanas>().emergente(true);
+    } else if (context.read<VenDatos>().estVen() == "Cancelado" ||
+        context.read<VenDatos>().estVen() == "Denegado") {
+      mensaje = "La orden ya esta cencelada.";
+    }
+    if (mensaje.isNotEmpty) {
+      Textos.toast(mensaje, false);
     }
   }
 
@@ -108,10 +126,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                           listaPrincipal,
                           "Todo está en orden, no hay órdenes entrantes.",
                           "No se recuperaron órdenes.",
-                          () => OrdenModel.getOrdenes(
-                            filtro,
-                            LocalStorage.local('locación'),
-                          ),
+                          () => getOrdenes(),
                         );
                       },
                     ),
@@ -135,11 +150,13 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.3, .17, .17],
+                    [.25, .125, .175, .125, .125],
                     [
                       "Nombre del articulo",
-                      "Cantidad ordenada",
-                      "Cantidad cubierta",
+                      "Tipo",
+                      "Área",
+                      "Cant. ordenada",
+                      "Cant. cubierta",
                     ],
                   ),
                   ListView.separated(
@@ -156,9 +173,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
                         child: Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.3, .17, .17],
+                          [.25, .125, .175, .125, .125],
                           [
                             venDatos.artVen(index),
+                            venDatos.tipVen(index),
+                            venDatos.areVen(index),
                             venDatos.canVen(index).toString(),
                             venDatos.canCubVen(index).toString(),
                           ],
@@ -171,23 +190,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ),
                   [
                     Botones.btnCirRos("Cerrar", () => ventana.tabla(false)),
-                    Botones.btnCirRos(
-                      "Cancelar",
-                      () => {
-                        if (venDatos.estVen() == "En proceso")
-                          {ventana.emergente(true)}
-                        else if (venDatos.estVen() == "Cancelado" ||
-                            venDatos.estVen() == "Denegado")
-                          {Textos.toast("La orden ya esta cencelada.", false)}
-                        else
-                          {
-                            Textos.toast(
-                              "La orden no se puede cancelar.",
-                              false,
-                            ),
-                          },
-                      },
-                    ),
+                    Botones.btnCirRos("Cancelar", () => cambiarEstado()),
                   ],
                 );
               },
@@ -216,97 +219,57 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 );
               },
             ),
-            Consumer<Carga>(
-              builder: (context, carga, child) {
-                return Carga.ventanaCarga();
-              },
-            ),
+            Carga.ventanaCarga(),
           ],
         ),
       ),
     );
   }
 
-  Widget opciones(BuildContext context) {
+  Widget opciones(BuildContext ctx) {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 25),
-      child: Consumer3<Tablas, Carga, Ventanas>(
-        builder: (context, tablas, carga, ventanas, child) {
+      child: Consumer2<Tablas, Carga>(
+        builder: (ctx, tablas, carga, child) {
+          List<Widget> filtroList = [];
+          filtroList.add(
+            Botones.btnRctMor(
+              "Regresar",
+              35,
+              Icons.arrow_back_rounded,
+              false,
+              () => {
+                carga.cargaBool(true),
+                Navigator.pushReplacement(
+                  ctx,
+                  MaterialPageRoute(builder: (context) => OrdenSalida()),
+                ),
+                carga.cargaBool(false),
+              },
+            ),
+          );
+          List<String> txt = ["id", "Estado", "Remitente"];
+          List<IconData> icono = [
+            Icons.numbers_rounded,
+            Icons.query_builder_rounded,
+            Icons.perm_identity_rounded,
+          ];
+          for (int i = 0; i < txt.length; i++) {
+            filtroList.add(
+              Botones.icoRctBor(
+                txt[i],
+                icono[i],
+                colores[i],
+                () async => {
+                  if (filtro != txt[i]) {filtroTexto(i)},
+                },
+              ),
+            );
+          }
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Botones.btnRctMor(
-                "Regresar",
-                35,
-                Icons.arrow_back_rounded,
-                false,
-                () => {
-                  carga.cargaBool(true),
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          OrdenSalida(productosPorId: widget.productosPorId),
-                    ),
-                  ),
-                  ventanas.emergente(false),
-                  ventanas.tabla(false),
-                  carga.cargaBool(false),
-                },
-              ),
-              Botones.icoRctBor(
-                "ID",
-                Icons.numbers_rounded,
-                Color(colores[0]),
-                () async => {
-                  if (filtro != "id")
-                    {
-                      filtroTexto(1),
-                      tablas.datos(
-                        await OrdenModel.getOrdenes(
-                          filtro,
-                          LocalStorage.local('locación'),
-                        ),
-                      ),
-                    },
-                },
-              ),
-              Botones.icoRctBor(
-                "Estado",
-                Icons.query_builder_rounded,
-                Color(colores[1]),
-                () async => {
-                  if (filtro != "Estado")
-                    {
-                      filtroTexto(2),
-                      tablas.datos(
-                        await OrdenModel.getOrdenes(
-                          filtro,
-                          LocalStorage.local('locación'),
-                        ),
-                      ),
-                    },
-                },
-              ),
-              Botones.icoRctBor(
-                "Remitente",
-                Icons.perm_identity_outlined,
-                Color(colores[2]),
-                () async => {
-                  if (filtro != "Remitente")
-                    {
-                      filtroTexto(3),
-                      tablas.datos(
-                        await OrdenModel.getOrdenes(
-                          filtro,
-                          LocalStorage.local('locación'),
-                        ),
-                      ),
-                    },
-                },
-              ),
-            ],
+            children: filtroList,
           );
         },
       ),
@@ -349,6 +312,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               context.read<VenDatos>().setDatos(
                 lista[index].articulos,
                 lista[index].cantidades,
+                lista[index].areas,
+                lista[index].tipos,
                 lista[index].cantidadesCubiertas,
                 lista[index].id.toString(),
                 lista[index].remitente,

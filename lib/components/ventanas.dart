@@ -3,7 +3,7 @@ import 'package:inventarios/components/textos.dart';
 
 import 'botones.dart';
 
-class Ventanas with ChangeNotifier{
+class Ventanas with ChangeNotifier {
   static bool _emergente = false;
   static bool _tabla = false;
 
@@ -12,8 +12,9 @@ class Ventanas with ChangeNotifier{
     String no,
     String si,
     Function btnNo,
-    Function btnSi,
-  ) {
+    Function btnSi, {
+    Widget? widget,
+  }) {
     return Visibility(
       visible: _emergente,
       child: Container(
@@ -27,21 +28,24 @@ class Ventanas with ChangeNotifier{
               borderRadius: BorderRadiusGeometry.circular(25),
               border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 5,
-              children: [
-                Textos.textoTilulo(texto, 25),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  spacing: 15,
-                  children: [
-                    Botones.btnCirRos(no, () => btnNo()),
-                    Botones.btnCirRos(si, () => btnSi()),
-                  ],
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 5,
+                children: [
+                  Textos.textoTilulo(texto, 25),
+                  ?widget,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    spacing: 15,
+                    children: [
+                      Botones.btnCirRos(no, () => btnNo()),
+                      Botones.btnCirRos(si, () => btnSi()),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -125,12 +129,12 @@ class Ventanas with ChangeNotifier{
     );
   }
 
-  void tabla(bool booleano){
+  void tabla(bool booleano) {
     _tabla = booleano;
     notifyListeners();
   }
 
-  void emergente(bool booleano){
+  void emergente(bool booleano) {
     _emergente = booleano;
     notifyListeners();
   }

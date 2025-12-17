@@ -28,7 +28,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => Tablas()),
         ChangeNotifierProvider(create: (_) => CampoTexto()),
         ChangeNotifierProvider(create: (_) => Textos()),
-        ChangeNotifierProvider(create: (_) => VenDatos())
+        ChangeNotifierProvider(create: (_) => VenDatos()),
       ],
       child: MyApp(),
     ),
@@ -44,14 +44,13 @@ class MyApp extends StatelessWidget {
   }
 
   Widget ruta() {
+    StatefulWidget ruta = Inicio();
     if (LocalStorage.preferencias.getString('usuario') != null) {
+      ruta = Inventario();
       if (LocalStorage.preferencias.getString('puesto') == 'Proveedor') {
-        return Ordenes();
-      } else {
-        return Inventario();
+        ruta = Ordenes();
       }
-    } else {
-      return Inicio();
     }
+    return ruta;
   }
 }

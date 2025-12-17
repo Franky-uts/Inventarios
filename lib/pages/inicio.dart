@@ -1,9 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/ordenes.dart';
@@ -18,87 +19,168 @@ class Inicio extends StatefulWidget {
 }
 
 class _InicioState extends State<Inicio> {
-  final usuarioContr = TextEditingController(),
-      contr = TextEditingController(),
-      usuFocus = FocusNode(),
-      contFocus = FocusNode();
-  late Color colorUsu, colorCont;
   late UsuarioModel usuarioMod;
   late bool verContr;
   late IconData iconoContr;
+  late List<TextEditingController> controller = [];
+  late List<FocusNode> focus = [];
+  late List<Color> color = [];
+  String ip = "189.187.180.76";
 
   @override
   void initState() {
-    colorUsu = Color(0x00FFFFFF);
-    colorCont = Color(0x00FFFFFF);
     verContr = true;
+    for (int i = 0; i < 6; i++) {
+      controller.add(TextEditingController());
+      focus.add(FocusNode());
+      color.add(Color(0x00FFFFFF));
+    }
+    setIp();
     iconoContr = Icons.remove_red_eye_rounded;
     super.initState();
   }
 
   @override
   void dispose() {
-    contr.dispose();
-    usuarioContr.dispose();
-    usuFocus.dispose();
-    contFocus.dispose();
+    controller.clear();
+    focus.clear();
+    color.clear();
     super.dispose();
   }
 
   void verificar(BuildContext ctx) async {
-    if (usuarioContr.text.isNotEmpty && contr.text.isNotEmpty) {
+    bool valido = true;
+    String mensaje = "";
+    for (int i = 0; i < 2; i++) {
+      setState(() {
+        color[i] = Color(0x00FFFFFF);
+      });
+      if (controller[i].text.isEmpty) {
+        valido = false;
+        setState(() {
+          color[i] = Color(0xFFFF0000);
+        });
+      }
+    }
+    if (valido) {
       context.read<Carga>().cargaBool(true);
-      usuarioMod = await UsuarioModel.getUsuario(usuarioContr.text, contr.text);
+      usuarioMod = await UsuarioModel.getUsuario(
+        controller[0].text,
+        controller[1].text,
+        ip,
+      );
+      mensaje = usuarioMod.puesto;
       if (usuarioMod.nombre != "error") {
-        await LocalStorage.set('conexion', "http://189.187.144.139:3000");
+        await LocalStorage.set('conexion', "http://$ip:3000");
         //await LocalStorage.set('conexion', "http://192.168.1.130:3000");
         await LocalStorage.set('usuario', usuarioMod.nombre);
         await LocalStorage.set('puesto', usuarioMod.puesto);
         await LocalStorage.set('locación', usuarioMod.locacion);
-        if (ctx.mounted) {
-          if (usuarioMod.puesto == "Proveedor") {
-            Navigator.pushReplacement(
-              ctx,
-              MaterialPageRoute(builder: (ctx) => Ordenes()),
-            );
-          } else {
-            Navigator.pushReplacement(
-              ctx,
-              MaterialPageRoute(builder: (ctx) => Inventario()),
-            );
-          }
-        }
-      } else {
+        mensaje = "";
         if (usuarioMod.puesto == "El usuario no existe") {
           setState(() {
-            colorUsu = Color(0xFFFF0000);
+            color[0] = Color(0xFFFF0000);
           });
         } else if (usuarioMod.puesto == "Contraseña incorrecta") {
           setState(() {
-            colorCont = Color(0xFFFF0000);
+            color[1] = Color(0xFFFF0000);
           });
         } else {
-          Textos.toast(usuarioMod.puesto, false);
-          setState(() {
-            colorUsu = Color(0x00FFFFFF);
-            colorCont = Color(0x00FFFFFF);
-          });
+          mensaje = "";
+          StatefulWidget ruta = Inventario();
+          if (usuarioMod.puesto == "Proveedor") {
+            ruta = Ordenes();
+          }
+          if (ctx.mounted) {
+            Navigator.pushReplacement(
+              ctx,
+              MaterialPageRoute(builder: (ctx) => ruta),
+            );
+          }
         }
+      }
+      if (mensaje.isNotEmpty) {
+        Textos.toast(mensaje, false);
       }
       if (ctx.mounted) {
         ctx.read<Carga>().cargaBool(false);
       }
     }
-    if (usuarioContr.text.isEmpty) {
+  }
+
+  void setIp() {
+    List<String> texto = ip.split(".");
+    for (int i = 0; i < 4; i++) {
+      controller[i + 2].text = texto[i];
+    }
+  }
+
+  void clearColoresIp() {
+    for (int i = 0; i < 4; i++) {
       setState(() {
-        colorUsu = Color(0xFFFF0000);
+        color[i + 2] = Color(0x00FFFFFF);
       });
     }
-    if (contr.text.isEmpty) {
-      setState(() {
-        colorCont = Color(0xFFFF0000);
-      });
+  }
+
+  void cambiarIp() {
+    bool valido = true;
+    String texto = "";
+    clearColoresIp();
+    for (int i = 0; i < 4; i++) {
+      texto = "$texto${controller[i + 2].text}.";
+      if (controller[i + 2].text.isEmpty ||
+          int.parse(controller[i + 2].text) > 255) {
+        valido = false;
+        setState(() {
+          color[i + 2] = Color(0xFFFF0000);
+        });
+      }
     }
+    if (valido) {
+      ip = texto.substring(0, texto.length - 1);
+      Textos.toast("Se cambio la ip a: $ip", true);
+      setIp();
+      context.read<Ventanas>().emergente(false);
+    }
+  }
+
+  List<Widget> ipCampos() {
+    List<Widget> lista = [];
+    for (int i = 0; i < 3; i++) {
+      lista.add(
+        CampoTexto.inputTexto(
+          MediaQuery.of(context).size.width * .125,
+          null,
+          "",
+          controller[i + 2],
+          color[i + 2],
+          true,
+          false,
+          () => focus[i + 3].requestFocus(),
+          focus: focus[i + 2],
+          formato: LengthLimitingTextInputFormatter(3),
+          inputType: TextInputType.numberWithOptions(),
+        ),
+      );
+      lista.add(Textos.textoTilulo(".", 20));
+    }
+    lista.add(
+      CampoTexto.inputTexto(
+        MediaQuery.of(context).size.width * .125,
+        null,
+        "",
+        controller[5],
+        color[5],
+        true,
+        false,
+        () => cambiarIp(),
+        focus: focus[5],
+        formato: LengthLimitingTextInputFormatter(3),
+        inputType: TextInputType.numberWithOptions(),
+      ),
+    );
+    return lista;
   }
 
   @override
@@ -132,11 +214,11 @@ class _InicioState extends State<Inicio> {
                       MediaQuery.of(context).size.width * .75,
                       Icons.person_rounded,
                       "Usuario",
-                      usuarioContr,
-                      colorUsu,
+                      controller[0],
+                      color[0],
                       true,
                       false,
-                      () => contFocus.requestFocus(),
+                      () => focus[1].requestFocus(),
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -146,12 +228,12 @@ class _InicioState extends State<Inicio> {
                           MediaQuery.of(context).size.width * (.75 * .925),
                           Icons.lock_rounded,
                           "Contraseña",
-                          contr,
-                          colorCont,
+                          controller[1],
+                          color[1],
                           true,
                           verContr,
                           () => verificar(context),
-                          focus: contFocus,
+                          focus: focus[1],
                         ),
                         SizedBox(
                           width:
@@ -175,37 +257,42 @@ class _InicioState extends State<Inicio> {
                     Botones.iconoTexto(
                       "Ingresar",
                       Icons.login_rounded,
-                      () async => {
-                        setState(() {
-                          colorCont = Color(0x00FFFFFF);
-                          colorUsu = Color(0x00FFFFFF);
-                        }),
-                        verificar(context),
-                      },
+                      () => verificar(context),
                     ),
                   ],
                 ),
               ),
             ),
-            Consumer<Carga>(
-              builder: (context, carga, child) {
-                return Carga.ventanaCarga();
-              },
-            ),
-            Visibility(
-              visible: !kIsWeb,
-              child: Container(
-                margin: EdgeInsets.all(10),
-                alignment: Alignment.topLeft,
-                child: Botones.btnRctMor(
-                  "Ajustes",
-                  35,
-                  Icons.settings,
-                  false,
-                  () => {},
-                ),
+            Container(
+              margin: EdgeInsets.all(10),
+              alignment: Alignment.topLeft,
+              child: Botones.btnRctMor(
+                "Ajustes",
+                35,
+                Icons.settings,
+                false,
+                () => setState(() {
+                  context.read<Ventanas>().emergente(true);
+                }),
               ),
             ),
+            Ventanas.ventanaEmergente(
+              "Cambio de dirección ip",
+              "Cancelar",
+              "Guardar",
+              () => setState(() {
+                clearColoresIp();
+                setIp();
+                context.read<Ventanas>().emergente(false);
+              }),
+              () => cambiarIp(),
+              widget: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 5,
+                children: ipCampos(),
+              ),
+            ),
+            Carga.ventanaCarga(),
           ],
         ),
       ),
