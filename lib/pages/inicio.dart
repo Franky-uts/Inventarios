@@ -29,7 +29,7 @@ class _InicioState extends State<Inicio> {
 
   @override
   void initState() {
-    if (LocalStorage.local('conexion').isNotEmpty) {
+    if (LocalStorage.preferencias.getString('conexion')!=null) {
       ip = LocalStorage.local(
         'conexion',
       ).substring(7, LocalStorage.local('conexion').length - 5);
