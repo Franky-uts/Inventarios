@@ -475,7 +475,7 @@ class _ProductoState extends State<Producto> {
       ],
     );
     return SizedBox(
-      width: MediaQuery.of(context).size.width * .325,
+      width: MediaQuery.of(context).size.width * .5,
       height: 90,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

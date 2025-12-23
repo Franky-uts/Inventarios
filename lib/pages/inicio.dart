@@ -25,7 +25,7 @@ class _InicioState extends State<Inicio> {
   late List<TextEditingController> controller = [];
   late List<FocusNode> focus = [];
   late List<Color> color = [];
-  String ip = "189.187.180.76";
+  String ip = "189.187.152.236";
 
   @override
   void initState() {
