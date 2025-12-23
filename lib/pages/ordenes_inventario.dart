@@ -1,35 +1,26 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:inventarios/components/rec_drawer.dart';
-import 'package:inventarios/components/ventanas.dart';
-import 'package:inventarios/components/carga.dart';
-import 'package:inventarios/components/input.dart';
-import 'package:inventarios/components/tablas.dart';
-import 'package:inventarios/components/textos.dart';
-import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/producto.dart';
-import 'package:inventarios/services/local_storage.dart';
-import 'package:inventarios/components/botones.dart';
-import 'package:provider/provider.dart';
+import "package:flutter/material.dart";
+import "package:inventarios/components/botones.dart";
+import "package:inventarios/components/carga.dart";
+import "package:inventarios/components/input.dart";
+import "package:inventarios/components/rec_drawer.dart";
+import "package:inventarios/components/tablas.dart";
+import "package:inventarios/components/textos.dart";
+import "package:inventarios/components/ventanas.dart";
+import "package:inventarios/models/producto_model.dart";
+import "package:inventarios/pages/articulos.dart";
+import "package:inventarios/pages/ordenes.dart";
+import "package:inventarios/pages/producto.dart";
+import "package:inventarios/services/local_storage.dart";
+import "package:provider/provider.dart";
 
-class Inventario extends StatefulWidget {
-  const Inventario({super.key});
+class OrdenesInventario extends StatefulWidget {
+  const OrdenesInventario({super.key});
 
   @override
-  State<Inventario> createState() => _InventarioState();
+  State<OrdenesInventario> createState() => _OrdenesInventarioState();
 }
 
-class _InventarioState extends State<Inventario> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
+class _OrdenesInventarioState extends State<OrdenesInventario> {
   Future<List<ProductoModel>> getProductos(
     String filtro,
     String busqueda,
@@ -47,7 +38,7 @@ class _InventarioState extends State<Inventario> {
             if (Tablas.getValido())
               {
                 context.read<Carga>().cargaBool(true),
-                await RecDrawer.getListas(context, Inventario()),
+                await RecDrawer.getListas(context, OrdenesInventario()),
               }
             else
               {Textos.toast("Espera a que los datos carguen.", false)},
@@ -65,6 +56,12 @@ class _InventarioState extends State<Inventario> {
           },
         ),
         Botones.icoCirMor(
+          "Escanear producto",
+          Icons.barcode_reader,
+          false,
+          () => RecDrawer.scanProducto(context, OrdenesInventario()),
+        ),
+        Botones.icoCirMor(
           "Reiniciar movimientos",
           Icons.refresh_rounded,
           false,
@@ -79,23 +76,29 @@ class _InventarioState extends State<Inventario> {
           },
         ),
         Botones.icoCirMor(
-          "Escanear codigo",
-          Icons.barcode_reader,
+          "Ver artículos",
+          Icons.list,
           false,
-          () => RecDrawer.scanProducto(context, Inventario()),
+          () => {
+            context.read<Carga>().cargaBool(true),
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Articulos()),
+            ),
+            context.read<Carga>().cargaBool(false),
+          },
         ),
         Botones.icoCirMor(
-          "Nueva orden",
-          Icons.add_shopping_cart_rounded,
+          "Ordenes",
+          Icons.border_color_rounded,
           true,
-          () async => {
-            if (Tablas.getValido())
-              {
-                context.read<Carga>().cargaBool(true),
-                await RecDrawer.salidaOrdenes(context),
-              }
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+          () => {
+            context.read<Carga>().cargaBool(true),
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Ordenes()),
+            ),
+            context.read<Carga>().cargaBool(false),
           },
         ),
       ]),
@@ -119,9 +122,9 @@ class _InventarioState extends State<Inventario> {
                         "Unidades",
                         "Área",
                         "Tipo",
-                        "Entrada",
-                        "Salida",
-                        "Perdida",
+                        "Entradas",
+                        "Salidas",
+                        "Perdidas",
                       ],
                     ),
                     SizedBox(
@@ -244,7 +247,7 @@ class _InventarioState extends State<Inventario> {
             MediaQuery.sizeOf(context).width,
             [.1, .25, .08, .175, .15, .075, .075, .075],
             [
-              lista[index].id.toString(),
+              lista[index].id,
               lista[index].nombre,
               lista[index].unidades.toString().split(".")[0],
               lista[index].area,
@@ -264,7 +267,7 @@ class _InventarioState extends State<Inventario> {
                     MaterialPageRoute(
                       builder: (context) => Producto(
                         productoInfo: lista[index],
-                        ruta: Inventario(),
+                        ruta: OrdenesInventario(),
                       ),
                     ),
                   ),

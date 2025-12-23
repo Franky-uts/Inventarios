@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
+import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/orden_salida.dart';
 import 'package:provider/provider.dart';
 import '../services/local_storage.dart';
@@ -78,6 +80,36 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
+      drawer: RecDrawer.drawer(context, [
+        Botones.icoCirMor(
+          "Nueva orden",
+          Icons.add_shopping_cart_rounded,
+          false,
+          () async => {
+            if (Tablas.getValido())
+              {
+                context.read<Carga>().cargaBool(true),
+                await RecDrawer.salidaOrdenes(context),
+              }
+            else
+              {Textos.toast("Espera a que los datos carguen.", false)},
+          },
+        ),
+        Botones.icoCirMor(
+          "Ver almacen",
+          Icons.inventory_rounded,
+          true,
+          () => {
+            context.read<Carga>().cargaBool(true),
+            Textos.limpiarLista(),
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Inventario()),
+            ),
+            context.read<Carga>().cargaBool(false),
+          },
+        ),
+      ]),
       body: PopScope(
         canPop: false,
         child: Stack(
@@ -131,11 +163,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.25, .125, .175, .125, .125],
+                    [.25, .175, .125, .125, .125],
                     [
                       "Nombre del articulo",
-                      "Tipo",
                       "Área",
+                      "Tipo",
                       "Cant. ordenada",
                       "Cant. cubierta",
                     ],
@@ -154,17 +186,16 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
                         child: Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.25, .125, .175, .125, .125],
+                          [.25, .175, .125, .125, .125],
                           [
                             venDatos.artVen(index),
-                            venDatos.tipVen(index),
                             venDatos.areVen(index),
+                            venDatos.tipVen(index),
                             venDatos.canVen(index).toString(),
                             venDatos.canCubVen(index).toString(),
                           ],
                           [],
                           false,
-                          null,
                         ),
                       );
                     },
@@ -287,7 +318,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
             ],
             coloresLista,
             true,
-            () => {
+            extra: () => {
               context.read<VenDatos>().setDatos(
                 lista[index].articulos,
                 lista[index].cantidades,

@@ -4,150 +4,101 @@ import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/inventario.dart';
 import 'package:provider/provider.dart';
-import '../services/local_storage.dart';
 
-class Addproducto extends StatefulWidget {
-  final List listaArea;
-  final List listaTipo;
+class AddProducto extends StatefulWidget {
+  final List<ArticulosModel> listaArticulos;
+  final List areas;
+  final StatefulWidget ruta;
 
-  const Addproducto({
+  const AddProducto({
     super.key,
-    required this.listaArea,
-    required this.listaTipo,
+    required this.listaArticulos,
+    required this.areas,
+    required this.ruta,
   });
 
   @override
-  State<Addproducto> createState() => _AddproductoState();
+  State<AddProducto> createState() => _AddproductoState();
 }
 
-class _AddproductoState extends State<Addproducto> {
-  late List<String> listaArea = [];
-  late List<String> listaTipo = [];
-  late String valorArea, respuesta, valorTipo;
-  late bool cantidad, cantidadLimite;
-  IconData _iconoScan = Icons.document_scanner_rounded;
-  final nombreControl = TextEditingController(),
-      cantidadControl = TextEditingController(),
-      cantidadLimiteControl = TextEditingController(),
-      barrasControl = TextEditingController(),
-      limiteFocus = FocusNode();
-  late List<Color> colorCampo = [];
+class _AddproductoState extends State<AddProducto> {
+  late List<String> articuloLista = [];
+  late List<String> areasLista = [];
+  late String articuloValor;
+  late String areaValor;
+  late int id;
+  final List<TextEditingController> control = [
+    TextEditingController(),
+    TextEditingController(),
+    TextEditingController(),
+  ];
+  late List<Color> colorCampo = [
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+  ];
   String? res;
 
   @override
   void initState() {
-    cantidad = false;
-    cantidadLimite = false;
-    listaTipo.add("Tipo");
-    listaArea.add("Área");
-    listaTipo.addAll(widget.listaTipo.map((item) => item as String).toList());
-    listaArea.addAll(widget.listaArea.map((item) => item as String).toList());
-    valorArea = listaArea.first;
-    valorTipo = listaTipo.first;
-    for (int i = 0; i < 5; i++) {
-      colorCampo.add(Color(0x00FFFFFF));
-    }
+    articuloLista.add("Artículos");
+    areasLista.add("Áreas");
+    articuloValor = articuloLista.first;
+    areaValor = areasLista.first;
+    areasLista.addAll(widget.areas.map((item) => item as String).toList());
     super.initState();
   }
 
   @override
   void dispose() {
     colorCampo.clear();
-    nombreControl.dispose();
-    cantidadControl.dispose();
-    barrasControl.dispose();
-    limiteFocus.dispose();
-    cantidadLimiteControl.dispose();
-    listaArea.clear();
-    listaTipo.clear();
+    articuloLista.clear();
+    areasLista.clear();
+    control.clear();
     super.dispose();
-  }
-
-  void cantidadValido(String value) {
-    cantidad = false;
-    cantidadLimite = true;
-    cantidadControl.text = "1";
-    if (value == "Bulto" ||
-        value == "Caja" ||
-        value == "Costal" ||
-        value == "Paquete" ||
-        value == "Bote" ||
-        value == "Granel") {
-      cantidad = true;
-      cantidadLimite = true;
-      cantidadControl.clear();
-    } else if (value == "Tipo") {
-      cantidad = false;
-      cantidadLimite = false;
-      cantidadControl.clear();
-      cantidadLimiteControl.clear();
-    }
   }
 
   void registrarProducto(BuildContext ctx) async {
     setState(() {
       context.read<Carga>().cargaBool(true);
     });
-    for (int i = 0; i < colorCampo.length; i++) {
-      colorCampo[i] = Color(0x00FFFFFF);
-    }
-    if (nombreControl.text.isEmpty) {
-      colorCampo[0] = Color(0xFFFF0000);
-    }
-    if (cantidadControl.text.isEmpty) {
-      colorCampo[3] = Color(0xFFFF0000);
-    }
-    if (cantidadLimiteControl.text.isEmpty) {
-      colorCampo[4] = Color(0xFFFF0000);
-    }
-    if (valorArea == "Área") {
+    colorCampo[0] = Color(0x00FFFFFF);
+    colorCampo[1] = Color(0x00FFFFFF);
+    colorCampo[2] = Color(0x00FFFFFF);
+    if (control[0].text.isEmpty) {
       colorCampo[2] = Color(0xFFFF0000);
     }
-    if (valorTipo == "Tipo") {
+    if (articuloValor == "Artículos") {
       colorCampo[1] = Color(0xFFFF0000);
     }
-    if (nombreControl.text.isNotEmpty &&
-        cantidadControl.text.isNotEmpty &&
-        cantidadLimiteControl.text.isNotEmpty &&
-        valorTipo != "Tipo" &&
-        valorArea != "Área") {
-      respuesta = await ProductoModel.addProducto(
-        nombreControl.text,
-        int.parse(cantidadControl.text),
-        valorTipo,
-        valorArea,
-        LocalStorage.local('usuario'),
-        LocalStorage.local('locación'),
-        barrasControl.text,
-        int.parse(cantidadLimiteControl.text),
+    if (areaValor == "Áreas") {
+      colorCampo[0] = Color(0xFFFF0000);
+    }
+    if (control[0].text.isNotEmpty &&
+        articuloValor != "Artículos" &&
+        areaValor != "Áreas") {
+      String respuesta = await ProductoModel.addProducto(
+        id,
+        int.parse(control[0].text),
       );
-      String res = respuesta.toString().split(": ")[1];
-      if (respuesta.toString().split(": ")[0] != "Error") {
-        nombreControl.text = "";
-        cantidadControl.text = "";
-        cantidadLimiteControl.text = "";
-        cantidad = false;
-        cantidadLimite = false;
-        valorTipo = listaTipo.first;
-        valorArea = listaArea.first;
-        res = "Se guardo $respuesta correctamente.";
+      if (respuesta.split(": ")[0] != "Error") {
+        /*id = 0;
+        limite.text = "";
+        tipo.text = "";
+        cantidad.text = "";
+        articuloValor = articuloLista.first;
+        areaValor = areasLista.first;*/
+        respuesta = "Se guardo producto con id $respuesta correctamente.";
+      } else {
+        respuesta = respuesta.split(": ")[1];
       }
-      Textos.toast(res, true);
+      Textos.toast(respuesta, true);
     }
     setState(() {
       context.read<Carga>().cargaBool(false);
-    });
-  }
-
-  void iconoScan() {
-    setState(() {
-      _iconoScan = Icons.document_scanner_rounded;
-      if (barrasControl.text.isEmpty) {
-        _iconoScan = Icons.refresh_rounded;
-      }
     });
   }
 
@@ -167,51 +118,32 @@ class _AddproductoState extends State<Addproducto> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CampoTexto.inputTexto(
-                      MediaQuery.of(context).size.width * .75,
-                      Icons.file_copy_rounded,
-                      "Nombre",
-                      nombreControl,
-                      colorCampo[0],
-                      true,
-                      false,
-                      () => FocusManager.instance.primaryFocus?.unfocus(),
-                    ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Column(
                           children: [
-                            Textos.textoBlanco("Tipo", 15),
-                            CampoTexto.inputDropdown(
-                              MediaQuery.of(context).size.width,
-                              Icons.settings_suggest,
-                              valorTipo,
-                              listaTipo,
-                              colorCampo[1],
-                              (value) {
-                                cantidadValido(value);
-                                setState(() {
-                                  valorTipo = value;
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Textos.textoBlanco("Área", 15),
+                            Textos.textoBlanco("Áreas", 15),
                             CampoTexto.inputDropdown(
                               MediaQuery.of(context).size.width,
                               Icons.door_front_door_rounded,
-                              valorArea,
-                              listaArea,
-                              colorCampo[2],
-                              (value) {
-                                setState(() {
-                                  valorArea = value;
-                                });
-                              },
+                              areaValor,
+                              areasLista,
+                              colorCampo[0],
+                              (value) => setArea(value),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Textos.textoBlanco("Artículo", 15),
+                            CampoTexto.inputDropdown(
+                              MediaQuery.of(context).size.width,
+                              Icons.door_front_door_rounded,
+                              articuloValor,
+                              articuloLista,
+                              colorCampo[1],
+                              (value) => setArticulo(value),
                             ),
                           ],
                         ),
@@ -219,75 +151,41 @@ class _AddproductoState extends State<Addproducto> {
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 20,
                       children: [
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .365,
-                          Icons.numbers_rounded,
-                          "Cantidad por unidades",
-                          cantidadControl,
-                          colorCampo[3],
-                          cantidad,
-                          false,
-                          () => limiteFocus.requestFocus(),
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          formato: FilteringTextInputFormatter.allow(
-                            RegExp(r'(^\d*\.?\d{0,10})'),
-                          ),
-                          inputType: TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                        ),
-                        CampoTexto.inputTexto(
-                          MediaQuery.of(context).size.width * .365,
-                          Icons.production_quantity_limits_rounded,
-                          "Limite de unidades",
-                          cantidadLimiteControl,
-                          colorCampo[4],
-                          cantidadLimite,
-                          false,
-                          () => registrarProducto(context),
-                          margin: EdgeInsets.symmetric(horizontal: 10),
-                          focus: limiteFocus,
-                          inputType: TextInputType.numberWithOptions(),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CampoTexto.inputTexto(
-                          MediaQuery.of(context).size.width * .75 * .925,
-                          Icons.barcode_reader,
-                          "Codigo de barras",
-                          barrasControl,
+                          Icons.file_copy_rounded,
+                          "Tipo",
+                          control[1],
                           Color(0x00FFFFFF),
                           false,
                           false,
-                          () => {},
+                          () => FocusManager.instance.primaryFocus?.unfocus(),
                         ),
-                        SizedBox(
-                          width:
-                              MediaQuery.of(context).size.width * (.75 * .075),
-                          child: Botones.btnSimple(
-                            "Escanear código",
-                            _iconoScan,
-                            () async => {
-                              if (barrasControl.text.isEmpty)
-                                {
-                                  barrasControl.text = await Textos.scan(
-                                    context,
-                                  ),
-                                  if (barrasControl.text == "-1")
-                                    {barrasControl.text = ""},
-                                }
-                              else
-                                {barrasControl.text = ""},
-                              iconoScan(),
-                            },
-                          ),
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .365,
+                          Icons.file_copy_rounded,
+                          "Cantidad por unidad",
+                          control[2],
+                          Color(0x00FFFFFF),
+                          false,
+                          false,
+                          () => FocusManager.instance.primaryFocus?.unfocus(),
                         ),
                       ],
+                    ),
+                    CampoTexto.inputTexto(
+                      MediaQuery.of(context).size.width * .75,
+                      Icons.file_copy_rounded,
+                      "Limite minimo de productos",
+                      control[0],
+                      colorCampo[2],
+                      true,
+                      false,
+                      () => registrarProducto(context),
+                      inputType: TextInputType.number,
+                      formato: FilteringTextInputFormatter.digitsOnly,
                     ),
                     Botones.iconoTexto(
                       "Añadir",
@@ -301,7 +199,7 @@ class _AddproductoState extends State<Addproducto> {
             Botones.layerButton(
               () => Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => Inventario()),
+                MaterialPageRoute(builder: (context) => widget.ruta),
               ),
             ),
             Carga.ventanaCarga(),
@@ -309,5 +207,45 @@ class _AddproductoState extends State<Addproducto> {
         ),
       ),
     );
+  }
+
+  void setArea(String areaNombre) {
+    articuloLista = ["Artículos"];
+    articuloValor = articuloLista.first;
+    if (areaNombre != 'Áreas') {
+      for (int i = 0; i < widget.listaArticulos.length; i++) {
+        if (widget.listaArticulos[i].area == areaNombre) {
+          articuloLista.add(widget.listaArticulos[i].nombre);
+        }
+      }
+    }
+    id = 0;
+    setState(() {
+      control[1].text = "";
+      control[2].text = "";
+      areaValor = areaNombre;
+    });
+  }
+
+  void setArticulo(String articuloNombre) {
+    int id = 0;
+    String tipo = "";
+    String cantidad = "";
+    if (articuloNombre != "Artículos") {
+      for (int i = 0; i < widget.listaArticulos.length; i++) {
+        if (widget.listaArticulos[i].nombre == articuloNombre &&
+            widget.listaArticulos[i].area == areaValor) {
+          id = widget.listaArticulos[i].id;
+          tipo = widget.listaArticulos[i].tipo;
+          cantidad = widget.listaArticulos[i].cantidadPorUnidad.toString();
+        }
+      }
+    }
+    this.id = id;
+    setState(() {
+      control[1].text = tipo;
+      control[2].text = cantidad;
+      articuloValor = articuloNombre;
+    });
   }
 }

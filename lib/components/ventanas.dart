@@ -59,7 +59,7 @@ class Ventanas with ChangeNotifier {
     List<String> tituloTexto,
     List<String> footerTexto,
     Widget tablaInfo,
-    ListView tablaListView,
+    Widget tablaListView,
     List<Widget> botones,
   ) {
     List<Widget> titulos = [];
@@ -75,7 +75,17 @@ class Ventanas with ChangeNotifier {
       }
     } else {
       tam = 153;
-      footer.add(Textos.textoGeneral(footerTexto[0], 20, true, false));
+      if (footerTexto.isNotEmpty) {
+        footer.add(Textos.textoGeneral(footerTexto[0], 20, true, false));
+      }
+    }
+    if (tablaListView.runtimeType == ListView) {
+      tablaListView = Container(
+        width: ancho,
+        height: alto - tam,
+        margin: EdgeInsets.zero,
+        child: tablaListView,
+      );
     }
     return Visibility(
       visible: _tabla,
@@ -101,12 +111,7 @@ class Ventanas with ChangeNotifier {
                   children: titulos,
                 ),
                 tablaInfo,
-                Container(
-                  width: ancho,
-                  height: alto - tam,
-                  margin: EdgeInsets.zero,
-                  child: tablaListView,
-                ),
+                tablaListView,
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [

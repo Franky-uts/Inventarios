@@ -110,11 +110,11 @@ class Botones {
     );
   }
 
-  static IconButton btnSimple(String tip, IconData icono, Function accion) {
+  static IconButton btnSimple(String tip, IconData icono, Color color, Function accion) {
     return IconButton(
       tooltip: tip,
       onPressed: () => accion(),
-      icon: Icon(icono, color: Color(0xFFFFFFFF), size: 25),
+      icon: Icon(icono, color: color, size: 25),
     );
   }
 

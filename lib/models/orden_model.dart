@@ -15,6 +15,7 @@ class OrdenModel {
   String remitente;
   String ultimaModificacion;
   String destino;
+  String mensaje;
 
   OrdenModel({
     required this.id,
@@ -27,43 +28,8 @@ class OrdenModel {
     required this.remitente,
     required this.ultimaModificacion,
     required this.destino,
+    required this.mensaje,
   });
-
-  static List<OrdenModel> listaProvicional() {
-    List<OrdenModel> productos = [];
-
-    productos.add(
-      OrdenModel(
-        id: 1,
-        articulos: ["Articulo1", "Articulo2"],
-        cantidades: [1, 2],
-        tipos: ["Tipo1", "Tipo2"],
-        areas: ["Area", "Area"],
-        cantidadesCubiertas: [0, 0],
-        estado: "En proceso",
-        remitente: "Usuario",
-        ultimaModificacion: "28/10/2025 16:11:32",
-        destino: 'Almacen',
-      ),
-    );
-
-    productos.add(
-      OrdenModel(
-        id: 2,
-        articulos: ["Articulo3"],
-        cantidades: [3],
-        tipos: ["Tipo"],
-        areas: ["Area"],
-        cantidadesCubiertas: [3],
-        estado: "Finalizado",
-        remitente: "Frank",
-        ultimaModificacion: "28/10/2025 16:11:32",
-        destino: 'Almacen',
-      ),
-    );
-
-    return productos;
-  }
 
   static Future<List<OrdenModel>> getOrdenes(
     String filtro,
@@ -96,6 +62,7 @@ class OrdenModel {
               remitente: item["Remitente"],
               ultimaModificacion: item["UltimaModificación"],
               destino: item["Destino"],
+              mensaje: "",
             ),
           );
         }
@@ -104,14 +71,15 @@ class OrdenModel {
           OrdenModel(
             id: 0,
             articulos: ["Error"],
-            cantidades: [0],
-            tipos: ['Error'],
-            areas: ['Error'],
+            cantidades: [],
+            tipos: [],
+            areas: [],
             cantidadesCubiertas: [0],
-            estado: "Error",
-            remitente: res.body,
-            ultimaModificacion: res.body,
-            destino: res.body,
+            estado: "",
+            remitente: "",
+            ultimaModificacion: "",
+            destino: "",
+            mensaje: res.body,
           ),
         );
       }
@@ -120,14 +88,15 @@ class OrdenModel {
         OrdenModel(
           id: 0,
           articulos: ["Error"],
-          cantidades: [0],
-          tipos: ['Error'],
-          areas: ['Error'],
+          cantidades: [],
+          tipos: [],
+          areas: [],
           cantidadesCubiertas: [0],
-          estado: "Error",
-          remitente: e.message.toString(),
-          ultimaModificacion: e.message.toString(),
-          destino: e.message.toString(),
+          estado: "",
+          remitente: "",
+          ultimaModificacion: "",
+          destino: "",
+          mensaje: e.message.toString(),
         ),
       );
     } on SocketException catch (e) {
@@ -135,14 +104,15 @@ class OrdenModel {
         OrdenModel(
           id: 0,
           articulos: ["Error"],
-          cantidades: [0],
-          tipos: ['Error'],
-          areas: ['Error'],
+          cantidades: [],
+          tipos: [],
+          areas: [],
           cantidadesCubiertas: [0],
-          estado: "Error",
-          remitente: e.message.toString(),
-          ultimaModificacion: e.message.toString(),
-          destino: e.message.toString(),
+          estado: "",
+          remitente: "",
+          ultimaModificacion: "",
+          destino: "",
+          mensaje: e.message.toString(),
         ),
       );
     } on http.ClientException catch (e) {
@@ -150,14 +120,15 @@ class OrdenModel {
         OrdenModel(
           id: 0,
           articulos: ["Error"],
-          cantidades: [0],
-          tipos: ['Error'],
-          areas: ['Error'],
-          cantidadesCubiertas: [0],
-          estado: "Error",
-          remitente: e.message.toString(),
-          ultimaModificacion: e.message.toString(),
-          destino: e.message.toString(),
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          estado: "",
+          remitente: "",
+          ultimaModificacion: "",
+          destino: "",
+          mensaje: e.message.toString(),
         ),
       );
     } on Error catch (e) {
@@ -165,14 +136,15 @@ class OrdenModel {
         OrdenModel(
           id: 0,
           articulos: ["Error"],
-          cantidades: [0],
-          tipos: ['Error'],
-          areas: ['Error'],
-          cantidadesCubiertas: [0],
-          estado: "Error",
-          remitente: e.toString(),
-          ultimaModificacion: e.toString(),
-          destino: e.toString(),
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          estado: "",
+          remitente: "",
+          ultimaModificacion: "",
+          destino: "",
+          mensaje: e.toString(),
         ),
       );
     }
@@ -194,7 +166,6 @@ class OrdenModel {
     try {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
-
         for (var item in datos) {
           ordenesFuture.add(
             OrdenModel(
@@ -208,6 +179,7 @@ class OrdenModel {
               remitente: item["Remitente"],
               ultimaModificacion: item["UltimaModificación"],
               destino: item["Destino"],
+              mensaje: "",
             ),
           );
         }
@@ -215,15 +187,16 @@ class OrdenModel {
         ordenesFuture.add(
           OrdenModel(
             id: 0,
-            articulos: ["Error"],
-            cantidades: [0],
-            tipos: ['Error'],
-            areas: ['Error'],
-            cantidadesCubiertas: [0],
-            estado: "Error",
-            remitente: res.body,
-            ultimaModificacion: res.body,
-            destino: res.body,
+            articulos: [],
+            cantidades: [],
+            tipos: [],
+            areas: [],
+            cantidadesCubiertas: [],
+            estado: "",
+            remitente: "",
+            ultimaModificacion: "",
+            destino: "",
+            mensaje: res.body
           ),
         );
       }
@@ -231,15 +204,16 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ["Error"],
-          cantidades: [0],
-          tipos: ['Error'],
-          areas: ['Error'],
-          cantidadesCubiertas: [0],
-          estado: "Error",
-          remitente: e.message.toString(),
-          ultimaModificacion: e.message.toString(),
-          destino: e.message.toString(),
+          articulos: ['Error'],
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          estado: "",
+          remitente: "",
+          ultimaModificacion: "",
+          destino: "",
+          mensaje: e.message.toString()
         ),
       );
     } on SocketException catch (e) {
@@ -247,14 +221,15 @@ class OrdenModel {
         OrdenModel(
           id: 0,
           articulos: ["Error"],
-          cantidades: [0],
-          tipos: ['Error'],
-          areas: ['Error'],
-          cantidadesCubiertas: [0],
-          estado: "Error",
-          remitente: e.message.toString(),
-          ultimaModificacion: e.message.toString(),
-          destino: e.message.toString(),
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          estado: "",
+          remitente: "",
+          ultimaModificacion: "",
+          destino: "",
+          mensaje: e.message.toString()
         ),
       );
     } on http.ClientException catch (e) {
@@ -262,14 +237,15 @@ class OrdenModel {
         OrdenModel(
           id: 0,
           articulos: ["Error"],
-          cantidades: [0],
-          tipos: ['Error'],
-          areas: ['Error'],
-          cantidadesCubiertas: [0],
-          estado: "Error",
-          remitente: e.message.toString(),
-          ultimaModificacion: e.message.toString(),
-          destino: e.message.toString(),
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          estado: "",
+          remitente: "",
+          ultimaModificacion: "",
+          destino: "",
+          mensaje: e.message.toString()
         ),
       );
     } on Error catch (e) {
@@ -277,14 +253,15 @@ class OrdenModel {
         OrdenModel(
           id: 0,
           articulos: ["Error"],
-          cantidades: [0],
-          tipos: ['Error'],
-          areas: ['Error'],
-          cantidadesCubiertas: [0],
-          estado: "Error",
-          remitente: e.toString(),
-          ultimaModificacion: e.toString(),
-          destino: e.toString(),
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          estado: "",
+          remitente: "",
+          ultimaModificacion: "",
+          destino: "",
+          mensaje: e.toString()
         ),
       );
     }
@@ -324,7 +301,7 @@ class OrdenModel {
           'destino': destino,
         }),
       );
-      productoFuture = res.body.toString();
+      productoFuture = res.body;
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {

@@ -51,11 +51,11 @@ class Tablas with ChangeNotifier {
             _datos = snapshot.data;
             wid = Textos.textoError(textoListaVacia);
             if (_datos.isNotEmpty) {
-              wid = Textos.textoError(_datos[0].ultimaModificacion);
+              wid = Textos.textoError(_datos[0].mensaje);
               if (CampoTexto.busquedaTexto.text.isNotEmpty) {
                 wid = Textos.textoError(errorTexto);
               }
-              if (_datos[0].id != 0) {
+              if (_datos[0].mensaje=="") {
                 _valido = true;
                 wid = lista(_datos);
               }
@@ -98,13 +98,14 @@ class Tablas with ChangeNotifier {
     List<double> grosores,
     List<String> textos,
     List<Color> colores,
-    bool boton,
-    var extra,
-  ) {
+    bool boton, {
+    Function? extra,
+    Widget? extraWid,
+  }) {
     List<Widget> lista = [];
     for (int i = 0; i < textos.length; i++) {
       if (textos[i].isEmpty) {
-        lista.add(extra);
+        lista.add(extraWid!);
       } else {
         if (colores.isEmpty) {
           lista.add(
@@ -120,7 +121,7 @@ class Tablas with ChangeNotifier {
     }
     if (boton) {
       return TextButton(
-        onPressed: () => extra(),
+        onPressed: () => extra!(),
         style: TextButton.styleFrom(
           padding: EdgeInsets.all(0),
           shape: ContinuousRectangleBorder(),

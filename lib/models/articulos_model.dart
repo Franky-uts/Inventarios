@@ -1,0 +1,212 @@
+import 'dart:async';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../services/local_storage.dart';
+
+class ArticulosModel {
+  int id;
+  String nombre;
+  String area;
+  String tipo;
+  String codigoBarras;
+  double cantidadPorUnidad;
+  String mensaje;
+
+  ArticulosModel({
+    required this.id,
+    required this.nombre,
+    required this.area,
+    required this.tipo,
+    required this.codigoBarras,
+    required this.cantidadPorUnidad,
+    required this.mensaje,
+  });
+
+  static Future<List<ArticulosModel>> getArticulos(
+    String filtro,
+    String busqueda,
+  ) async {
+    String conexion = LocalStorage.local('conexion');
+    String locacion = LocalStorage.local('locación');
+    late List<ArticulosModel> articulosFuture = [];
+    if (locacion.isEmpty || locacion == "null") {
+      articulosFuture.add(
+        ArticulosModel(
+          id: 0,
+          nombre: "Error",
+          tipo: "",
+          cantidadPorUnidad: 0,
+          area: "",
+          codigoBarras: "",
+          mensaje: "No hay locación establecida",
+        ),
+      );
+    } else {
+      try {
+        var res = await http.get(
+          Uri.parse("$conexion/articulos/$filtro/$busqueda"),
+          headers: {
+            "Accept": "application/json",
+            "content-type": "application/json; charset=UTF-8",
+          },
+        );
+        if (res.statusCode == 200) {
+          final datos = json.decode(res.body);
+          for (var item in datos) {
+            articulosFuture.add(
+              ArticulosModel(
+                id: item["id"],
+                nombre: item["Nombre"].toString(),
+                tipo: item["Tipo"].toString(),
+                cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
+                area: item["Area"].toString(),
+                codigoBarras: item["CodigoBarras"],
+                mensaje: "",
+              ),
+            );
+          }
+        } else {
+          articulosFuture.add(
+            ArticulosModel(
+              id: 0,
+              nombre: "Error",
+              tipo: "",
+              cantidadPorUnidad: 0,
+              area: "",
+              codigoBarras: "",
+              mensaje: res.body,
+            ),
+          );
+        }
+      } on TimeoutException catch (e) {
+        articulosFuture.add(
+          ArticulosModel(
+            id: 0,
+            nombre: "Error",
+            tipo: "",
+            cantidadPorUnidad: 0,
+            area: "",
+            codigoBarras: "",
+            mensaje: e.message.toString(),
+          ),
+        );
+      } on SocketException catch (e) {
+        articulosFuture.add(
+          ArticulosModel(
+            id: 0,
+            nombre: "Error",
+            tipo: "",
+            cantidadPorUnidad: 0,
+            area: "",
+            codigoBarras: "",
+            mensaje: e.message.toString(),
+          ),
+        );
+      } on http.ClientException catch (e) {
+        articulosFuture.add(
+          ArticulosModel(
+            id: 0,
+            nombre: "Error",
+            tipo: "",
+            cantidadPorUnidad: 0,
+            area: "",
+            codigoBarras: "",
+            mensaje: e.message.toString(),
+          ),
+        );
+      } on Error catch (e) {
+        articulosFuture.add(
+          ArticulosModel(
+            id: 0,
+            nombre: "Error",
+            tipo: "",
+            cantidadPorUnidad: 0,
+            area: "",
+            codigoBarras: "",
+            mensaje: e.toString(),
+          ),
+        );
+      }
+    }
+    return articulosFuture;
+  }
+
+  static Future<String> addArticulo(
+    String nombre,
+    String tipo,
+    String area,
+    double cantidad,
+    String barras,
+  ) async {
+    late String articulosFuture;
+    try {
+      final res = await http.post(
+        Uri.parse("${LocalStorage.local('conexion')}/articulos"),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+        body: jsonEncode({
+          'nombre': nombre,
+          'tipo': tipo,
+          'area': area,
+          'cantidad': cantidad,
+          'barras': barras,
+        }),
+      );
+      articulosFuture = res.body;
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          articulosFuture = item["Nombre"];
+        }
+      }
+    } on TimeoutException catch (e) {
+      articulosFuture = "Error: ${e.message.toString()}";
+    } on SocketException catch (e) {
+      articulosFuture = "Error: ${e.message.toString()}";
+    } on http.ClientException catch (e) {
+      articulosFuture = "Error: ${e.message.toString()}";
+    } on Error catch (e) {
+      articulosFuture = "Error: ${e.toString()}";
+    }
+    return articulosFuture;
+  }
+
+  static Future<String> editarArticulo(
+    int id,
+    String dato,
+    String columna,
+  ) async {
+    late String articulosFuture;
+    try {
+      final res = await http.put(
+        Uri.parse("${LocalStorage.local('conexion')}/articulos/$id/$columna"),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+        body: jsonEncode({
+          'dato': dato,
+        }),
+      );
+      articulosFuture = res.body;
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          articulosFuture = item["Nombre"];
+        }
+      }
+    } on TimeoutException catch (e) {
+      articulosFuture = "Error: ${e.message.toString()}";
+    } on SocketException catch (e) {
+      articulosFuture = "Error: ${e.message.toString()}";
+    } on http.ClientException catch (e) {
+      articulosFuture = "Error: ${e.message.toString()}";
+    } on Error catch (e) {
+      articulosFuture = "Error: ${e.toString()}";
+    }
+    return articulosFuture;
+  }
+}

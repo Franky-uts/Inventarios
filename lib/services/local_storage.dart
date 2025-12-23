@@ -27,7 +27,6 @@ class LocalStorage {
     await LocalStorage.eliminar('usuario');
     await LocalStorage.eliminar('puesto');
     await LocalStorage.eliminar('locación');
-    await LocalStorage.eliminar('conexion');
     if (ctx.mounted) {
       Navigator.pushReplacement(
         ctx,

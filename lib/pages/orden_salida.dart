@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
@@ -50,7 +51,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     List<String> areas = [];
     for (int i = 0; i < listaProd.length; i++) {
       articulos.add(listaProd[i].nombre);
-      cantidades.add(cantidad[listaProd[i].id - 1]);
+      cantidades.add(
+        cantidad[int.parse(
+              listaProd[i].id.substring(0, listaProd[i].id.length - 3),
+            ) -
+            1],
+      );
       tipos.add(listaProd[i].tipo);
       areas.add(listaProd[i].area);
     }
@@ -66,8 +72,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     if (respuesta.split(": ")[0] != "Error") {
       respuesta =
           "Se guardo la orden $respuesta correctamente con ${articulos.length} artículos.";
-      for (int i = 0; i < listaProd.length; i++) {
-        cantidad[listaProd[i].id - 1] = 0;
+      for (int i = 0; i < cantidad.length; i++) {
+        cantidad[i] = 0;
       }
       listaProd.clear();
     }
@@ -105,6 +111,48 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: RecDrawer.drawer(context, [
+        Botones.icoCirMor(
+          "Historial de ordenes",
+          Icons.history_rounded,
+          false,
+          () async => {
+            if (Tablas.getValido())
+              {
+                await LocalStorage.set(
+                  'busqueda',
+                  CampoTexto.busquedaTexto.text,
+                ),
+                if (context.mounted)
+                  {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HistorialOrdenes(),
+                      ),
+                    ),
+                    context.read<Ventanas>().emergente(false),
+                    context.read<Ventanas>().tabla(false),
+                    context.read<Carga>().cargaBool(false),
+                  },
+              }
+            else
+              {Textos.toast("Espera a que los datos carguen.", false)},
+          },
+        ),
+        Botones.icoCirMor(
+          "Ver almacen",
+          Icons.inventory_rounded,
+          true,
+          () => {
+            Textos.limpiarLista(),
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Inventario()),
+            ),
+          },
+        ),
+      ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
@@ -118,8 +166,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     barraDeBusqueda(context),
                     Tablas.contenedorInfo(
                       MediaQuery.sizeOf(context).width,
-                      [.05, .25, .175, .175, .08, .2],
-                      ["id", "Nombre", "Tipo", "Área", "Unidades", "Acciones"],
+                      [.1, .25, .175, .175, .08, .2],
+                      ["id", "Nombre", "Área", "Tipo", "Unidades", "Acciones"],
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -131,12 +179,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                             "No hay productos registrados.",
                             "No hay coincidencias.",
                             () => getProductos(
-                              CampoTexto.filtroTexto(),
+                              CampoTexto.filtroTexto(false),
                               CampoTexto.busquedaTexto.text,
                             ),
                             accionRefresh: () async => tablas.datos(
                               await getProductos(
-                                CampoTexto.filtroTexto(),
+                                CampoTexto.filtroTexto(false),
                                 CampoTexto.busquedaTexto.text,
                               ),
                             ),
@@ -157,12 +205,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                   ["Enviar orden:"],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.05, .225, .125, .175, .075, .075, .075],
+                    [.075, .225, .15, .125, .075, .075, .075],
                     [
                       "id",
                       "Nombre",
-                      "Tipo",
                       "Área",
+                      "Tipo",
                       "Ordenar",
                       "Prod./Caja",
                       "Prod. Total",
@@ -178,27 +226,32 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     itemBuilder: (context, index) {
                       return Consumer<Tablas>(
                         builder: (context, tablas, child) {
+                          int id = int.parse(
+                            listaProd[index].id.substring(
+                              0,
+                              listaProd[index].id.length - 3,
+                            ),
+                          );
                           return Container(
                             width: MediaQuery.sizeOf(context).width,
                             height: 40,
                             decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
                             child: Tablas.barraDatos(
                               MediaQuery.sizeOf(context).width,
-                              [.05, .225, .125, .175, .075, .075, .075],
+                              [.075, .225, .15, .125, .075, .075, .075],
                               [
                                 listaProd[index].id.toString(),
                                 listaProd[index].nombre,
-                                listaProd[index].tipo,
                                 listaProd[index].area,
-                                cantidad[listaProd[index].id - 1].toString(),
+                                listaProd[index].tipo,
+                                cantidad[id - 1].toString(),
                                 listaProd[index].cantidadPorUnidad.toString(),
-                                (cantidad[listaProd[index].id - 1] *
+                                (cantidad[id - 1] *
                                         listaProd[index].cantidadPorUnidad)
                                     .toString(),
                               ],
                               [],
                               false,
-                              null,
                             ),
                           );
                         },
@@ -238,15 +291,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         Botones.btnRctMor(
           "Regresar",
           35,
-          Icons.arrow_back_rounded,
+          Icons.menu_rounded,
           false,
-          () => {
-            Textos.limpiarLista(),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Inventario()),
-            ),
-          },
+          () => Scaffold.of(context).openDrawer(),
         ),
         Botones.btnRctMor(
           "Revisar orden",
@@ -255,47 +302,19 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           false,
           () async => generarTabla(await getProductos("id", "")),
         ),
-        Botones.btnRctMor(
-          "Historial de ordenes",
-          35,
-          Icons.history_rounded,
-          false,
-          () async => {
-            if (Tablas.getValido())
-              {
-                await LocalStorage.set(
-                  'busqueda',
-                  CampoTexto.busquedaTexto.text,
-                ),
-                if (context.mounted)
-                  {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HistorialOrdenes(),
-                      ),
-                    ),
-                    context.read<Ventanas>().emergente(false),
-                    context.read<Ventanas>().tabla(false),
-                    context.read<Carga>().cargaBool(false),
-                  },
-              }
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
-          },
-        ),
         Container(
-          width: MediaQuery.of(context).size.width * .7,
+          width: MediaQuery.of(context).size.width * .775,
           margin: EdgeInsets.symmetric(vertical: 10),
           child: Consumer<Tablas>(
             builder: (context, tablas, child) {
               return CampoTexto.barraBusqueda(
                 () async => tablas.datos(
                   await getProductos(
-                    CampoTexto.filtroTexto(),
+                    CampoTexto.filtroTexto(false),
                     CampoTexto.busquedaTexto.text,
                   ),
                 ),
+                true,
               );
             },
           ),
@@ -305,7 +324,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   }
 
   ListView listaPrincipal(List lista) {
-    listas(lista.length);
+    String length = lista.last.id.substring(0, lista.last.id.length - 3);
+    listas(int.parse(length));
     return ListView.separated(
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
@@ -320,7 +340,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         }
         colores[4] = Textos.colorLimite(
           lista[index].limiteProd,
-          lista[index].unidades,
+          lista[index].unidades.floor(),
         );
         return Container(
           width: MediaQuery.sizeOf(context).width,
@@ -328,39 +348,39 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.05, .25, .175, .175, .08, .2],
+            [.1, .25, .175, .175, .08, .2],
             [
               lista[index].id.toString(),
               lista[index].nombre,
-              lista[index].tipo,
               lista[index].area,
-              lista[index].unidades.toString(),
+              lista[index].tipo,
+              lista[index].unidades.toString().split(".")[0],
               "",
             ],
             colores,
             false,
-            SizedBox(
+            extraWid: SizedBox(
               width: MediaQuery.sizeOf(context).width * .2,
               child: Consumer<Textos>(
                 builder: (context, textos, child) {
+                  int id = int.parse(
+                    lista[index].id.substring(0, lista[index].id.length - 3),
+                  );
                   return Botones.botonesSumaResta(
                     lista[index].nombre,
-                    cantidad[lista[index].id - 1],
-                    Textos.getColor(lista[index].id - 1),
+                    cantidad[id - 1],
+                    Textos.getColor(id - 1),
                     () => {
-                      textos.setColor(lista[index].id - 1, Color(0xFFFF0000)),
-                      if ((cantidad[lista[index].id - 1] - 1) > -1)
+                      textos.setColor(id - 1, Color(0xFFFF0000)),
+                      if ((cantidad[id - 1] - 1) > -1)
                         {
-                          textos.setColor(
-                            lista[index].id - 1,
-                            Color(0xFFFDC930),
-                          ),
-                          cantidad[lista[index].id - 1] -= 1,
+                          textos.setColor(id - 1, Color(0xFFFDC930)),
+                          cantidad[id - 1] -= 1,
                         },
                     },
                     () => {
-                      textos.setColor(lista[index].id - 1, Color(0xFFFDC930)),
-                      cantidad[lista[index].id - 1] += 1,
+                      textos.setColor(id - 1, Color(0xFFFDC930)),
+                      cantidad[id - 1] += 1,
                     },
                   );
                 },

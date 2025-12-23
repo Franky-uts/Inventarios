@@ -6,6 +6,8 @@ import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/botones.dart';
+import 'package:inventarios/pages/articulos.dart';
+import 'package:inventarios/pages/ordenes_inventario.dart';
 import 'package:provider/provider.dart';
 import '../models/orden_model.dart';
 
@@ -124,7 +126,34 @@ class _OrdenesState extends State<Ordenes> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: RecDrawer.drawer(context, []),
+      drawer: RecDrawer.drawer(context, [
+        Botones.icoCirMor(
+          "Ver artículos",
+          Icons.list,
+          false,
+              () => {
+            context.read<Carga>().cargaBool(true),
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Articulos()),
+            ),
+            context.read<Carga>().cargaBool(false),
+          },
+        ),
+        Botones.icoCirMor(
+          "Ver almacen",
+          Icons.inventory_rounded,
+          true,
+          () => {
+            context.read<Carga>().cargaBool(true),
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => OrdenesInventario()),
+            ),
+            context.read<Carga>().cargaBool(false),
+          },
+        ),
+      ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
@@ -215,7 +244,7 @@ class _OrdenesState extends State<Ordenes> {
                           ],
                           [],
                           false,
-                          SizedBox(
+                          extraWid: SizedBox(
                             width: MediaQuery.sizeOf(context).width * .2,
                             child: Consumer<Textos>(
                               builder: (context, textos, child) {
@@ -394,7 +423,7 @@ class _OrdenesState extends State<Ordenes> {
                 ],
                 coloresLista,
                 true,
-                () => {
+                extra: () => {
                   Textos.limpiarLista(),
                   canCubVenOrg.clear(),
                   venDatos.setDatos(

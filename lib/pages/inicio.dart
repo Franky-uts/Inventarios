@@ -29,6 +29,11 @@ class _InicioState extends State<Inicio> {
 
   @override
   void initState() {
+    if (LocalStorage.local('conexion').isNotEmpty) {
+      ip = LocalStorage.local(
+        'conexion',
+      ).substring(7, LocalStorage.local('conexion').length - 5);
+    }
     verContr = true;
     for (int i = 0; i < 6; i++) {
       controller.add(TextEditingController());
@@ -241,6 +246,7 @@ class _InicioState extends State<Inicio> {
                           child: Botones.btnSimple(
                             "Ver/Ocultar Contraseña",
                             iconoContr,
+                            Color(0xFFFFFFFF),
                             () => {
                               setState(() {
                                 verContr = !verContr;

@@ -5,7 +5,7 @@ import 'package:inventarios/components/textos.dart';
 enum Filtros { id, nombre, unidades, tipo, area }
 
 class CampoTexto with ChangeNotifier {
-  static Filtros? seleccionFiltro;
+  static Filtros? seleccionFiltro = Filtros.id;
   static final focusBusqueda = FocusNode();
   static final busquedaTexto = TextEditingController();
 
@@ -102,7 +102,10 @@ class CampoTexto with ChangeNotifier {
                 items: lista.map<DropdownMenuItem>((String value) {
                   return DropdownMenuItem(
                     value: value,
-                    child: Textos.textoGeneral(value, 0, true, false),
+                    child: SizedBox(
+                      width: sizeTotal * .223,
+                      child: Textos.textoGeneral(value, 0, true, false),
+                    ),
                   );
                 }).toList(),
                 onChanged: (value) => {accion(value)},
@@ -115,7 +118,33 @@ class CampoTexto with ChangeNotifier {
     );
   }
 
-  static Widget barraBusqueda(Function accion) {
+  static Widget barraBusqueda(Function accion, bool unidades) {
+    List<PopupMenuEntry<Filtros>> lista = <PopupMenuEntry<Filtros>>[
+      PopupMenuItem<Filtros>(
+        value: Filtros.id,
+        child: Textos.textoGeneral("ID", 17.5, true, true),
+      ),
+      PopupMenuItem<Filtros>(
+        value: Filtros.nombre,
+        child: Textos.textoGeneral("Nombre", 17.5, true, true),
+      ),
+      PopupMenuItem<Filtros>(
+        value: Filtros.tipo,
+        child: Textos.textoGeneral("Tipo", 17.5, true, true),
+      ),
+      PopupMenuItem<Filtros>(
+        value: Filtros.area,
+        child: Textos.textoGeneral("Área", 17.5, true, true),
+      ),
+    ];
+    if (unidades) {
+      lista.add(
+        PopupMenuItem<Filtros>(
+          value: Filtros.unidades,
+          child: Textos.textoGeneral("Unidades", 17.5, true, true),
+        ),
+      );
+    }
     return TextField(
       controller: busquedaTexto,
       focusNode: focusBusqueda,
@@ -149,28 +178,7 @@ class CampoTexto with ChangeNotifier {
             if (filtro != seleccionFiltro) {seleccionFiltro = filtro, accion()},
           },
           tooltip: "Filtros",
-          itemBuilder: (BuildContext context) => <PopupMenuEntry<Filtros>>[
-            PopupMenuItem<Filtros>(
-              value: Filtros.id,
-              child: Textos.textoGeneral("ID", 17.5, true, true),
-            ),
-            PopupMenuItem<Filtros>(
-              value: Filtros.nombre,
-              child: Textos.textoGeneral("Nombre", 17.5, true, true),
-            ),
-            PopupMenuItem<Filtros>(
-              value: Filtros.unidades,
-              child: Textos.textoGeneral("Unidades", 17.5, true, true),
-            ),
-            PopupMenuItem<Filtros>(
-              value: Filtros.tipo,
-              child: Textos.textoGeneral("Tipo", 17.5, true, true),
-            ),
-            PopupMenuItem<Filtros>(
-              value: Filtros.area,
-              child: Textos.textoGeneral("Área", 17.5, true, true),
-            ),
-          ],
+          itemBuilder: (BuildContext context) => lista,
         ),
         hintText: "Buscar",
         hintStyle: TextStyle(color: Color(0xFFF6AFCF)),
@@ -216,11 +224,14 @@ class CampoTexto with ChangeNotifier {
     busquedaTexto.text = busqueda;
   }
 
-  static String filtroTexto() {
+  static String filtroTexto(bool idProducto) {
     String filtro;
     switch (seleccionFiltro) {
       case (Filtros.id):
         filtro = "id";
+        if (idProducto) {
+          filtro = "idProducto";
+        }
         break;
       case (Filtros.nombre):
         filtro = "Nombre";
