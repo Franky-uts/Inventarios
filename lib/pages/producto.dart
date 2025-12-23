@@ -240,44 +240,52 @@ class _ProductoState extends State<Producto> {
         canPop: false,
         child: Stack(
           children: [
-            SingleChildScrollView(
-              child: SizedBox(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Textos.textoTilulo(widget.productoInfo.nombre, 30),
-                    tipoTexto(widget.productoInfo.tipo),
-                    contenedorInfo(
-                      " que entraron:",
-                      cajasEntrantes.toString(),
-                      0,
-                    ),
-                    contenedorInfo(" que salieron:", cajasSalida.toString(), 1),
-                    contenedorInfo(
-                      "Productos perdidos:",
-                      productosPerdido.toString(),
-                      2,
-                    ),
-                    Row(
+            Consumer<Carga>(
+              builder: (context, carga, child) {
+                return SingleChildScrollView(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    height: MediaQuery.of(context).size.height,
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        footer([
-                          "Ultima modificación:",
-                          widget.productoInfo.ultimaModificacion,
-                        ]),
-                        footer([
-                          "Modificada por:",
-                          widget.productoInfo.ultimoUsuario,
-                        ]),
+                        Textos.textoTilulo(widget.productoInfo.nombre, 30),
+                        tipoTexto(widget.productoInfo.tipo),
+                        contenedorInfo(
+                          " que entraron:",
+                          cajasEntrantes.toString(),
+                          0,
+                        ),
+                        contenedorInfo(
+                          " que salieron:",
+                          cajasSalida.toString(),
+                          1,
+                        ),
+                        contenedorInfo(
+                          "Productos perdidos:",
+                          productosPerdido.toString(),
+                          2,
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            footer([
+                              "Ultima modificación:",
+                              widget.productoInfo.ultimaModificacion,
+                            ]),
+                            footer([
+                              "Modificada por:",
+                              widget.productoInfo.ultimoUsuario,
+                            ]),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
             Botones.layerButton(
               () => Navigator.pushReplacement(

@@ -62,9 +62,6 @@ class _AddproductoState extends State<AddProducto> {
   }
 
   void registrarProducto(BuildContext ctx) async {
-    setState(() {
-      context.read<Carga>().cargaBool(true);
-    });
     colorCampo[0] = Color(0x00FFFFFF);
     colorCampo[1] = Color(0x00FFFFFF);
     colorCampo[2] = Color(0x00FFFFFF);
@@ -85,21 +82,12 @@ class _AddproductoState extends State<AddProducto> {
         int.parse(control[0].text),
       );
       if (respuesta.split(": ")[0] != "Error") {
-        /*id = 0;
-        limite.text = "";
-        tipo.text = "";
-        cantidad.text = "";
-        articuloValor = articuloLista.first;
-        areaValor = areasLista.first;*/
         respuesta = "Se guardo producto con id $respuesta correctamente.";
       } else {
         respuesta = respuesta.split(": ")[1];
       }
       Textos.toast(respuesta, true);
     }
-    setState(() {
-      context.read<Carga>().cargaBool(false);
-    });
   }
 
   @override
@@ -110,91 +98,105 @@ class _AddproductoState extends State<AddProducto> {
         canPop: false,
         child: Stack(
           children: [
-            Container(
-              alignment: Alignment.center,
-              child: SingleChildScrollView(
-                child: Column(
-                  spacing: 15,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
+            Consumer<Carga>(
+              builder: (context, carga, child) {
+                return Container(
+                  alignment: Alignment.center,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      spacing: 15,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Column(
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Textos.textoBlanco("Áreas", 15),
-                            CampoTexto.inputDropdown(
-                              MediaQuery.of(context).size.width,
-                              Icons.door_front_door_rounded,
-                              areaValor,
-                              areasLista,
-                              colorCampo[0],
-                              (value) => setArea(value),
+                            Column(
+                              children: [
+                                Textos.textoBlanco("Áreas", 15),
+                                CampoTexto.inputDropdown(
+                                  MediaQuery.of(context).size.width,
+                                  Icons.door_front_door_rounded,
+                                  areaValor,
+                                  areasLista,
+                                  colorCampo[0],
+                                  (value) => setArea(value),
+                                ),
+                              ],
+                            ),
+                            Column(
+                              children: [
+                                Textos.textoBlanco("Artículo", 15),
+                                CampoTexto.inputDropdown(
+                                  MediaQuery.of(context).size.width,
+                                  Icons.door_front_door_rounded,
+                                  articuloValor,
+                                  articuloLista,
+                                  colorCampo[1],
+                                  (value) => setArticulo(value),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                        Column(
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: 20,
                           children: [
-                            Textos.textoBlanco("Artículo", 15),
-                            CampoTexto.inputDropdown(
-                              MediaQuery.of(context).size.width,
-                              Icons.door_front_door_rounded,
-                              articuloValor,
-                              articuloLista,
-                              colorCampo[1],
-                              (value) => setArticulo(value),
+                            CampoTexto.inputTexto(
+                              MediaQuery.of(context).size.width * .365,
+                              Icons.file_copy_rounded,
+                              "Tipo",
+                              control[1],
+                              Color(0x00FFFFFF),
+                              false,
+                              false,
+                              () =>
+                                  FocusManager.instance.primaryFocus?.unfocus(),
+                            ),
+                            CampoTexto.inputTexto(
+                              MediaQuery.of(context).size.width * .365,
+                              Icons.file_copy_rounded,
+                              "Cantidad por unidad",
+                              control[2],
+                              Color(0x00FFFFFF),
+                              false,
+                              false,
+                              () =>
+                                  FocusManager.instance.primaryFocus?.unfocus(),
                             ),
                           ],
                         ),
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .75,
+                          Icons.file_copy_rounded,
+                          "Limite minimo de productos",
+                          control[0],
+                          colorCampo[2],
+                          true,
+                          false,
+                          () => {
+                            carga.cargaBool(true),
+                            registrarProducto(context),
+                            carga.cargaBool(false),
+                          },
+                          inputType: TextInputType.number,
+                          formato: FilteringTextInputFormatter.digitsOnly,
+                        ),
+                        Botones.iconoTexto(
+                          "Añadir",
+                          Icons.add_circle_rounded,
+                          () => {
+                            carga.cargaBool(true),
+                            registrarProducto(context),
+                            carga.cargaBool(false),
+                          },
+                        ),
                       ],
                     ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 20,
-                      children: [
-                        CampoTexto.inputTexto(
-                          MediaQuery.of(context).size.width * .365,
-                          Icons.file_copy_rounded,
-                          "Tipo",
-                          control[1],
-                          Color(0x00FFFFFF),
-                          false,
-                          false,
-                          () => FocusManager.instance.primaryFocus?.unfocus(),
-                        ),
-                        CampoTexto.inputTexto(
-                          MediaQuery.of(context).size.width * .365,
-                          Icons.file_copy_rounded,
-                          "Cantidad por unidad",
-                          control[2],
-                          Color(0x00FFFFFF),
-                          false,
-                          false,
-                          () => FocusManager.instance.primaryFocus?.unfocus(),
-                        ),
-                      ],
-                    ),
-                    CampoTexto.inputTexto(
-                      MediaQuery.of(context).size.width * .75,
-                      Icons.file_copy_rounded,
-                      "Limite minimo de productos",
-                      control[0],
-                      colorCampo[2],
-                      true,
-                      false,
-                      () => registrarProducto(context),
-                      inputType: TextInputType.number,
-                      formato: FilteringTextInputFormatter.digitsOnly,
-                    ),
-                    Botones.iconoTexto(
-                      "Añadir",
-                      Icons.add_circle_rounded,
-                      () => registrarProducto(context),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
             Botones.layerButton(
               () => Navigator.pushReplacement(
