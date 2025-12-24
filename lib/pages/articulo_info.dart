@@ -300,7 +300,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
 
   Container rectanguloContainer(String texto) {
     return Container(
-      padding: EdgeInsets.all(10),
+      padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: Color(0x40FF5600),
         borderRadius: BorderRadius.circular(10),
