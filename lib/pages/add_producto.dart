@@ -82,6 +82,12 @@ class _AddproductoState extends State<AddProducto> {
         int.parse(control[0].text),
       );
       if (respuesta.split(": ")[0] != "Error") {
+        id = 0;
+        control[0].text = "";
+        control[1].text = "";
+        control[2].text = "";
+        articuloValor = articuloLista.first;
+        areaValor = areasLista.first;
         respuesta = "Se guardo producto con id $respuesta correctamente.";
       } else {
         respuesta = respuesta.split(": ")[1];

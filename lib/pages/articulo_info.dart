@@ -72,7 +72,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
         setState(() {
           color = Color(0x00000000);
           if (columna == "CodigoBarras") {
-            codigoTexto(barras);
+            widget.articulo.codigoBarras = barras;
             mensaje = "Se actualizó el código de barras de $mensaje.";
           } else {
             widget.articulo.cantidadPorUnidad = double.parse(controller.text);
@@ -131,28 +131,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                             true,
                             true,
                           ),
-                          Row(
-                            children: [
-                              Textos.textoGeneral(
-                                "Cantidad por unidad: ${widget.articulo.cantidadPorUnidad}",
-                                20,
-                                true,
-                                true,
-                              ),
-                              Botones.btnSimple(
-                                "Cambiar cantidad por unidad",
-                                Icons.edit_rounded,
-                                Color(0xFF8A03A9),
-                                () => {
-                                  tituloVen = "Editar cantidad por unidad",
-                                  texto = "Cantidad por unidad",
-                                  columna = "CantidadPorUnidad",
-                                  controller.text = "",
-                                  context.read<Ventanas>().emergente(true),
-                                },
-                              ),
-                            ],
-                          ),
+                          rowBoton(),
                         ],
                       ),
                     ),
@@ -244,7 +223,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                     color,
                     texto != "Código de barras",
                     false,
-                    () => FocusManager.instance.primaryFocus!.unfocus(),
+                    () => cambioColumna(context),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),
                     ),
@@ -301,5 +280,35 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
         );
       },
     );
+  }
+
+  Row rowBoton() {
+    List<Widget> children = [
+      Textos.textoGeneral(
+        "Cantidad por unidad: ${widget.articulo.cantidadPorUnidad}",
+        20,
+        true,
+        true,
+      ),
+      Botones.btnSimple(
+        "Cambiar cantidad por unidad",
+        Icons.edit_rounded,
+        Color(0xFF8A03A9),
+        () => {
+          tituloVen = "Editar cantidad por unidad",
+          texto = "Cantidad por unidad",
+          columna = "CantidadPorUnidad",
+          controller.text = widget.articulo.cantidadPorUnidad.toString(),
+          context.read<Ventanas>().emergente(true),
+        },
+      ),
+    ];
+    if (widget.articulo.tipo == "Galón" ||
+        widget.articulo.tipo == "Litro" ||
+        widget.articulo.tipo == "Pieza" ||
+        widget.articulo.tipo == "Garrafa") {
+      children.removeLast();
+    }
+    return Row(children: children);
   }
 }
