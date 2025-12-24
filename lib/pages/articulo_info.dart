@@ -119,18 +119,8 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         spacing: 20,
                         children: [
-                          Textos.textoGeneral(
-                            "Área: ${widget.articulo.area}",
-                            20,
-                            true,
-                            true,
-                          ),
-                          Textos.textoGeneral(
-                            "Tipo: ${widget.articulo.tipo}",
-                            20,
-                            true,
-                            true,
-                          ),
+                          rectanguloContainer("Área: ${widget.articulo.area}"),
+                          rectanguloContainer("Tipo: ${widget.articulo.tipo}"),
                           rowBoton(),
                         ],
                       ),
@@ -140,11 +130,8 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Textos.textoGeneral(
+                          rectanguloContainer(
                             codigoTexto(widget.articulo.codigoBarras),
-                            20,
-                            true,
-                            true,
                           ),
                           Botones.btnSimple(
                             "Cambiar Código de barras",
@@ -283,13 +270,12 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
   }
 
   Row rowBoton() {
+    String texto = "${widget.articulo.cantidadPorUnidad}";
+    if (texto.split(".0").length > 1) {
+      texto = texto.split(".0")[0];
+    }
     List<Widget> children = [
-      Textos.textoGeneral(
-        "Cantidad por unidad: ${widget.articulo.cantidadPorUnidad}",
-        20,
-        true,
-        true,
-      ),
+      rectanguloContainer("Cantidad por unidad: $texto"),
       Botones.btnSimple(
         "Cambiar cantidad por unidad",
         Icons.edit_rounded,
@@ -298,7 +284,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
           tituloVen = "Editar cantidad por unidad",
           texto = "Cantidad por unidad",
           columna = "CantidadPorUnidad",
-          controller.text = widget.articulo.cantidadPorUnidad.toString(),
+          controller.text = texto,
           context.read<Ventanas>().emergente(true),
         },
       ),
@@ -310,5 +296,16 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
       children.removeLast();
     }
     return Row(children: children);
+  }
+
+  Container rectanguloContainer(String texto) {
+    return Container(
+      padding: EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Color(0x40FF5600),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Textos.textoGeneral(texto, 20, true, true),
+    );
   }
 }

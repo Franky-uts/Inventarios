@@ -410,8 +410,6 @@ class _ProductoState extends State<Producto> {
                   () => {
                     ventana.emergente(false),
                     setState(() {
-                      controller[0].text = "";
-                      controller[1].text = "";
                       color[3] = Color(0x00000000);
                       color[4] = Color(0x00000000);
                     }),
@@ -473,7 +471,7 @@ class _ProductoState extends State<Producto> {
             () => {
               context.read<Ventanas>().emergente(true),
               setState(() {
-                controller[0].text = "";
+                controller[0].text = widget.productoInfo.limiteProd.toString();
                 color[3] = Color(0x00000000);
                 texto = "Confirma el nuevo límite de productos.";
               }),
