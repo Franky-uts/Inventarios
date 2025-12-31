@@ -51,28 +51,33 @@ class Botones {
     IconData icono,
     bool borde,
     Function accion,
+    Function accionNull,
+    bool enabled,
   ) {
     ButtonStyle estilo;
     Color colorLetra;
     if (borde) {
-      colorLetra = Color(0xFF8A03A9);
+      colorLetra = enabled ? Color(0xFF8A03A9) : Color(0xFF8C78AA);
       estilo = FilledButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(25),
-          side: BorderSide(color: Color(0xFF8A03A9), width: 5),
+          side: BorderSide(
+            color: enabled ? Color(0xFF8A03A9) : Color(0xFF8C78AA),
+            width: 5,
+          ),
         ),
       );
     } else {
       colorLetra = Color(0xFFFFFFFF);
       estilo = TextButton.styleFrom(
         padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
-        backgroundColor: Color(0xFF8A03A9),
+        backgroundColor: enabled ? Color(0xFF8A03A9) : Color(0xFF8C78AA),
       );
     }
     return TextButton.icon(
-      onPressed: () => accion(),
+      onPressed: enabled ? () => accion() : () => accionNull(),
       style: estilo,
       icon: Icon(icono, color: colorLetra, size: 25),
       label: Text(texto, style: TextStyle(fontSize: 20, color: colorLetra)),
@@ -87,7 +92,7 @@ class Botones {
   ) {
     return TextButton.icon(
       onPressed: () => accion(),
-      label: Textos.textoGeneral(texto, 0, true, true),
+      label: Textos.textoGeneral(texto, 0, true, true, 1),
       icon: Icon(icono, size: 25, color: Color(0xFF8A03A9)),
       style: IconButton.styleFrom(
         side: BorderSide(color: colorBorde, width: 2),
@@ -110,7 +115,12 @@ class Botones {
     );
   }
 
-  static IconButton btnSimple(String tip, IconData icono, Color color, Function accion) {
+  static IconButton btnSimple(
+    String tip,
+    IconData icono,
+    Color color,
+    Function accion,
+  ) {
     return IconButton(
       tooltip: tip,
       onPressed: () => accion(),
@@ -149,7 +159,7 @@ class Botones {
           false,
           () => resta(),
         ),
-        Textos.recuadroCantidad(textoValor.toString(), colorBorde, 20),
+        Textos.recuadroCantidad(textoValor.toString(), colorBorde, 20, 1),
         Botones.btnRctMor("Sumar $nombre", 0, Icons.add, false, () => suma()),
       ],
     );

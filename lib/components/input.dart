@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventarios/components/textos.dart';
 
-enum Filtros { id, nombre, unidades, tipo, area }
+enum Filtros { id, nombre, unidades, tipo, area, fecha }
 
 class CampoTexto with ChangeNotifier {
   static Filtros? seleccionFiltro = Filtros.id;
@@ -104,7 +104,7 @@ class CampoTexto with ChangeNotifier {
                     value: value,
                     child: SizedBox(
                       width: sizeTotal * .223,
-                      child: Textos.textoGeneral(value, 0, true, false),
+                      child: Textos.textoGeneral(value, 0, true, false, 1),
                     ),
                   );
                 }).toList(),
@@ -118,30 +118,38 @@ class CampoTexto with ChangeNotifier {
     );
   }
 
-  static Widget barraBusqueda(Function accion, bool unidades) {
+  static Widget barraBusqueda(Function accion, bool unidades, bool fecha) {
     List<PopupMenuEntry<Filtros>> lista = <PopupMenuEntry<Filtros>>[
       PopupMenuItem<Filtros>(
         value: Filtros.id,
-        child: Textos.textoGeneral("ID", 17.5, true, true),
+        child: Textos.textoGeneral("ID", 17.5, true, true, 1),
       ),
       PopupMenuItem<Filtros>(
         value: Filtros.nombre,
-        child: Textos.textoGeneral("Nombre", 17.5, true, true),
+        child: Textos.textoGeneral("Nombre", 17.5, true, true, 1),
       ),
       PopupMenuItem<Filtros>(
         value: Filtros.tipo,
-        child: Textos.textoGeneral("Tipo", 17.5, true, true),
+        child: Textos.textoGeneral("Tipo", 17.5, true, true, 1),
       ),
       PopupMenuItem<Filtros>(
         value: Filtros.area,
-        child: Textos.textoGeneral("Área", 17.5, true, true),
+        child: Textos.textoGeneral("Área", 17.5, true, true, 1),
       ),
     ];
     if (unidades) {
       lista.add(
         PopupMenuItem<Filtros>(
           value: Filtros.unidades,
-          child: Textos.textoGeneral("Unidades", 17.5, true, true),
+          child: Textos.textoGeneral("Unidades", 17.5, true, true, 1),
+        ),
+      );
+    }
+    if (fecha) {
+      lista.add(
+        PopupMenuItem<Filtros>(
+          value: Filtros.fecha,
+          child: Textos.textoGeneral("Fecha", 17.5, true, true, 1),
         ),
       );
     }
@@ -244,6 +252,9 @@ class CampoTexto with ChangeNotifier {
         break;
       case (Filtros.area):
         filtro = "Area";
+        break;
+      case (Filtros.fecha):
+        filtro = "Fecha";
         break;
       default:
         filtro = "id";

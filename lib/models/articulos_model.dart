@@ -11,6 +11,7 @@ class ArticulosModel {
   String tipo;
   String codigoBarras;
   double cantidadPorUnidad;
+  double precio;
   String mensaje;
 
   ArticulosModel({
@@ -20,6 +21,7 @@ class ArticulosModel {
     required this.tipo,
     required this.codigoBarras,
     required this.cantidadPorUnidad,
+    required this.precio,
     required this.mensaje,
   });
 
@@ -29,7 +31,7 @@ class ArticulosModel {
   ) async {
     String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
-    late List<ArticulosModel> articulosFuture = [];
+    List<ArticulosModel> articulosFuture = [];
     if (locacion.isEmpty || locacion == "null") {
       articulosFuture.add(
         ArticulosModel(
@@ -39,6 +41,7 @@ class ArticulosModel {
           cantidadPorUnidad: 0,
           area: "",
           codigoBarras: "",
+          precio: 0,
           mensaje: "No hay locación establecida",
         ),
       );
@@ -62,6 +65,7 @@ class ArticulosModel {
                 cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
                 area: item["Area"].toString(),
                 codigoBarras: item["CodigoBarras"],
+                precio: item["Precio"].toDouble(),
                 mensaje: "",
               ),
             );
@@ -75,6 +79,7 @@ class ArticulosModel {
               cantidadPorUnidad: 0,
               area: "",
               codigoBarras: "",
+              precio: 0,
               mensaje: res.body,
             ),
           );
@@ -88,6 +93,7 @@ class ArticulosModel {
             cantidadPorUnidad: 0,
             area: "",
             codigoBarras: "",
+            precio: 0,
             mensaje: e.message.toString(),
           ),
         );
@@ -100,6 +106,7 @@ class ArticulosModel {
             cantidadPorUnidad: 0,
             area: "",
             codigoBarras: "",
+            precio: 0,
             mensaje: e.message.toString(),
           ),
         );
@@ -112,6 +119,7 @@ class ArticulosModel {
             cantidadPorUnidad: 0,
             area: "",
             codigoBarras: "",
+            precio: 0,
             mensaje: e.message.toString(),
           ),
         );
@@ -124,6 +132,7 @@ class ArticulosModel {
             cantidadPorUnidad: 0,
             area: "",
             codigoBarras: "",
+            precio: 0,
             mensaje: e.toString(),
           ),
         );
@@ -138,6 +147,7 @@ class ArticulosModel {
     String area,
     double cantidad,
     String barras,
+    double precio,
   ) async {
     late String articulosFuture;
     try {
@@ -153,6 +163,7 @@ class ArticulosModel {
           'area': area,
           'cantidad': cantidad,
           'barras': barras,
+          'precio': precio,
         }),
       );
       articulosFuture = res.body;
@@ -187,9 +198,7 @@ class ArticulosModel {
           "Accept": "application/json",
           "content-type": "application/json; charset=UTF-8",
         },
-        body: jsonEncode({
-          'dato': dato,
-        }),
+        body: jsonEncode({'dato': dato}),
       );
       articulosFuture = res.body;
       if (res.statusCode == 200) {

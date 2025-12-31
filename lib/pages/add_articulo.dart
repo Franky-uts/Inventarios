@@ -31,9 +31,12 @@ class _AddproductoState extends State<Addarticulo> {
   late String valorArea, valorTipo;
   late bool cantidad;
   IconData _iconoScan = Icons.document_scanner_rounded;
-  final nombreControl = TextEditingController(),
-      cantidadControl = TextEditingController(),
-      barrasControl = TextEditingController();
+  final List<TextEditingController> controller = [
+    TextEditingController(),
+    TextEditingController(),
+    TextEditingController(),
+    TextEditingController(),
+  ];
   late List<Color> colorCampo = [];
   String? res;
 
@@ -46,7 +49,7 @@ class _AddproductoState extends State<Addarticulo> {
     listaArea.addAll(widget.listaArea.map((item) => item as String).toList());
     valorArea = listaArea.first;
     valorTipo = listaTipo.first;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 5; i++) {
       colorCampo.add(Color(0x00FFFFFF));
     }
     super.initState();
@@ -55,9 +58,7 @@ class _AddproductoState extends State<Addarticulo> {
   @override
   void dispose() {
     colorCampo.clear();
-    nombreControl.dispose();
-    cantidadControl.dispose();
-    barrasControl.dispose();
+    controller.clear();
     listaArea.clear();
     listaTipo.clear();
     super.dispose();
@@ -65,7 +66,7 @@ class _AddproductoState extends State<Addarticulo> {
 
   void cantidadValido(String value) {
     cantidad = false;
-    cantidadControl.text = "1";
+    controller[1].text = "1";
     if (value == "Bulto" ||
         value == "Caja" ||
         value == "Costal" ||
@@ -73,10 +74,10 @@ class _AddproductoState extends State<Addarticulo> {
         value == "Bote" ||
         value == "Granel") {
       cantidad = true;
-      cantidadControl.clear();
+      controller[1].clear();
     } else if (value == "Tipo") {
       cantidad = false;
-      cantidadControl.clear();
+      controller[1].clear();
     }
   }
 
@@ -87,11 +88,14 @@ class _AddproductoState extends State<Addarticulo> {
     for (int i = 0; i < colorCampo.length; i++) {
       colorCampo[i] = Color(0x00FFFFFF);
     }
-    if (nombreControl.text.isEmpty) {
+    if (controller[0].text.isEmpty) {
       colorCampo[0] = Color(0xFFFF0000);
     }
-    if (cantidadControl.text.isEmpty) {
+    if (controller[1].text.isEmpty) {
       colorCampo[3] = Color(0xFFFF0000);
+    }
+    if (controller[3].text.isEmpty) {
+      colorCampo[4] = Color(0xFFFF0000);
     }
     if (valorArea == "Área") {
       colorCampo[2] = Color(0xFFFF0000);
@@ -99,21 +103,25 @@ class _AddproductoState extends State<Addarticulo> {
     if (valorTipo == "Tipo") {
       colorCampo[1] = Color(0xFFFF0000);
     }
-    if (nombreControl.text.isNotEmpty &&
-        cantidadControl.text.isNotEmpty &&
+    if (controller[0].text.isNotEmpty &&
+        controller[1].text.isNotEmpty &&
+        controller[3].text.isNotEmpty &&
         valorTipo != "Tipo" &&
         valorArea != "Área") {
       String respuesta = await ArticulosModel.addArticulo(
-        nombreControl.text,
+        controller[0].text,
         valorTipo,
         valorArea,
-        double.parse(cantidadControl.text),
-        barrasControl.text,
+        double.parse(controller[1].text),
+        controller[2].text,
+        double.parse(controller[3].text),
       );
       respuesta = respuesta.toString();
       if (respuesta.split(": ")[0] != "Error") {
-        nombreControl.text = "";
-        cantidadControl.text = "";
+        controller[0].text = "";
+        controller[1].text = "";
+        controller[2].text = "";
+        controller[3].text = "";
         cantidad = false;
         valorTipo = listaTipo.first;
         valorArea = listaArea.first;
@@ -129,7 +137,7 @@ class _AddproductoState extends State<Addarticulo> {
   void iconoScan() {
     setState(() {
       _iconoScan = Icons.document_scanner_rounded;
-      if (barrasControl.text.isEmpty) {
+      if (controller[2].text.isEmpty) {
         _iconoScan = Icons.refresh_rounded;
       }
     });
@@ -140,43 +148,61 @@ class _AddproductoState extends State<Addarticulo> {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
       drawer: RecDrawer.drawer(context, [
-        Botones.icoCirMor(
-          "Ver artículos",
-          Icons.list,
-          false,
-          () => {
-            context.read<Carga>().cargaBool(true),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Articulos()),
-            ),
-            context.read<Carga>().cargaBool(false),
+        Consumer<Carga>(
+          builder: (context, carga, child) {
+            return Botones.icoCirMor(
+              "Ver artículos",
+              Icons.list,
+              false,
+              () => {
+                carga.cargaBool(true),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Articulos()),
+                ),
+                carga.cargaBool(false),
+              },
+              () => {},
+              true,
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Ver almacen",
-          Icons.inventory_rounded,
-          false,
-          () => {
-            context.read<Carga>().cargaBool(true),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => OrdenesInventario()),
-            ),
-            context.read<Carga>().cargaBool(false),
+        Consumer<Carga>(
+          builder: (context, carga, child) {
+            return Botones.icoCirMor(
+              "Ver almacen",
+              Icons.inventory_rounded,
+              false,
+              () => {
+                carga.cargaBool(true),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrdenesInventario()),
+                ),
+                carga.cargaBool(false),
+              },
+              () => {},
+              true,
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Ordenes",
-          Icons.border_color_rounded,
-          true,
-          () => {
-            context.read<Carga>().cargaBool(true),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Ordenes()),
-            ),
-            context.read<Carga>().cargaBool(false),
+        Consumer<Carga>(
+          builder: (context, carga, child) {
+            return Botones.icoCirMor(
+              "Ordenes",
+              Icons.border_color_rounded,
+              true,
+              () => {
+                context.read<Carga>().cargaBool(true),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Ordenes()),
+                ),
+                context.read<Carga>().cargaBool(false),
+              },
+              () => {},
+              true,
+            );
           },
         ),
       ]),
@@ -196,7 +222,7 @@ class _AddproductoState extends State<Addarticulo> {
                       MediaQuery.of(context).size.width * .75,
                       Icons.file_copy_rounded,
                       "Nombre",
-                      nombreControl,
+                      controller[0],
                       colorCampo[0],
                       true,
                       false,
@@ -242,20 +268,45 @@ class _AddproductoState extends State<Addarticulo> {
                         ),
                       ],
                     ),
-                    CampoTexto.inputTexto(
-                      MediaQuery.of(context).size.width * .75,
-                      Icons.numbers_rounded,
-                      "Cantidad por unidades",
-                      cantidadControl,
-                      colorCampo[3],
-                      cantidad,
-                      false,
-                      () => FocusManager.instance.primaryFocus?.unfocus(),
-                      margin: EdgeInsets.symmetric(horizontal: 10),
-                      formato: FilteringTextInputFormatter.allow(
-                        RegExp(r'(^\d*\.?\d{0,3})'),
-                      ),
-                      inputType: TextInputType.numberWithOptions(decimal: true),
+                    Row(
+                      spacing: 5,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .365,
+                          Icons.numbers_rounded,
+                          "Cantidad por unidades",
+                          controller[1],
+                          colorCampo[3],
+                          cantidad,
+                          false,
+                          () => FocusManager.instance.primaryFocus?.unfocus(),
+                          margin: EdgeInsets.symmetric(horizontal: 10),
+                          formato: FilteringTextInputFormatter.allow(
+                            RegExp(r'(^\d*\.?\d{0,3})'),
+                          ),
+                          inputType: TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                        ),
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .365,
+                          Icons.numbers_rounded,
+                          "Precio",
+                          controller[3],
+                          colorCampo[4],
+                          true,
+                          false,
+                          () => FocusManager.instance.primaryFocus?.unfocus(),
+                          margin: EdgeInsets.symmetric(horizontal: 10),
+                          formato: FilteringTextInputFormatter.allow(
+                            RegExp(r'(^\d*\.?\d{0,3})'),
+                          ),
+                          inputType: TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                        ),
+                      ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -265,7 +316,7 @@ class _AddproductoState extends State<Addarticulo> {
                           MediaQuery.of(context).size.width * .75 * .925,
                           Icons.barcode_reader,
                           "Codigo de barras",
-                          barrasControl,
+                          controller[2],
                           Color(0x00FFFFFF),
                           false,
                           false,
@@ -279,16 +330,16 @@ class _AddproductoState extends State<Addarticulo> {
                             _iconoScan,
                             Color(0xFFFFFFFF),
                             () async => {
-                              if (barrasControl.text.isEmpty)
+                              if (controller[2].text.isEmpty)
                                 {
-                                  barrasControl.text = await Textos.scan(
+                                  controller[2].text = await Textos.scan(
                                     context,
                                   ),
-                                  if (barrasControl.text == "-1")
-                                    {barrasControl.text = ""},
+                                  if (controller[2].text == "-1")
+                                    {controller[2].text = ""},
                                 }
                               else
-                                {barrasControl.text = ""},
+                                {controller[2].text = ""},
                               iconoScan(),
                             },
                           ),

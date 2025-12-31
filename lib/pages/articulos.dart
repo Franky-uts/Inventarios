@@ -64,47 +64,66 @@ class _ArticulosState extends State<Articulos> {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
       drawer: RecDrawer.drawer(context, [
-        Botones.icoCirMor(
-          "Añadir un artículo",
-          Icons.edit_note_rounded,
-          false,
-          () async => {
-            if (Tablas.getValido())
-              {context.read<Carga>().cargaBool(true), await _getListas(context)}
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Añadir un artículo",
+              Icons.edit_note_rounded,
+              false,
+              () async => {carga.cargaBool(true), await _getListas(context)},
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Escanear artículo",
-          Icons.barcode_reader,
-          false,
-          () async => RecDrawer.scanArticulo(context),
-        ),
-        Botones.icoCirMor(
-          "Ver almacen",
-          Icons.inventory_rounded,
-          false,
-          () => {
-            context.read<Carga>().cargaBool(true),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => OrdenesInventario()),
-            ),
-            context.read<Carga>().cargaBool(false),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Escanear artículo",
+              Icons.barcode_reader,
+              false,
+              () async => RecDrawer.scanArticulo(context),
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Ordenes",
-          Icons.border_color_rounded,
-          true,
-          () => {
-            context.read<Carga>().cargaBool(true),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Ordenes()),
-            ),
-            context.read<Carga>().cargaBool(false),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Ver almacen",
+              Icons.inventory_rounded,
+              false,
+              () => {
+                carga.cargaBool(true),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => OrdenesInventario()),
+                ),
+                carga.cargaBool(false),
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
+          },
+        ),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Ordenes",
+              Icons.border_color_rounded,
+              true,
+              () => {
+                carga.cargaBool(true),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Ordenes()),
+                ),
+                carga.cargaBool(false),
+              },
+              () => {},
+              true,
+            );
           },
         ),
       ]),
@@ -176,7 +195,7 @@ class _ArticulosState extends State<Articulos> {
             builder: (context, tablas, campoTexto, child) {
               return CampoTexto.barraBusqueda(
                 () async => {
-                  tablas.valido(CampoTexto.busquedaTexto.text.isNotEmpty),
+                  //tablas.valido(false),
                   tablas.datos(
                     await getArticulos(
                       CampoTexto.filtroTexto(false),
@@ -184,6 +203,7 @@ class _ArticulosState extends State<Articulos> {
                     ),
                   ),
                 },
+                false,
                 false,
               );
             },
@@ -204,7 +224,6 @@ class _ArticulosState extends State<Articulos> {
       itemBuilder: (context, index) {
         return Container(
           width: MediaQuery.sizeOf(context).width,
-          height: 40,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
@@ -216,6 +235,7 @@ class _ArticulosState extends State<Articulos> {
               lista[index].tipo,
             ],
             [],
+            2,
             true,
             extra: () async => {
               await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),

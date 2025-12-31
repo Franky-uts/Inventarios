@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 class Carga with ChangeNotifier {
   static bool _cargaBool = false;
+  static bool _valido = false;
 
   static Center carga() {
     return Center(child: CircularProgressIndicator(color: Color(0xFFF6AFCF)));
@@ -27,5 +28,14 @@ class Carga with ChangeNotifier {
   void cargaBool(bool boolean) {
     _cargaBool = boolean;
     notifyListeners();
+  }
+
+  void valido(bool boolean) {
+    _valido = boolean;
+    notifyListeners();
+  }
+
+  static bool getValido() {
+    return _valido;
   }
 }

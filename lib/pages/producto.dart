@@ -22,8 +22,9 @@ class Producto extends StatefulWidget {
 }
 
 class _ProductoState extends State<Producto> {
-  late int cajasEntrantes = widget.productoInfo.entrada,
-      cajasSalida = widget.productoInfo.salida;
+  late int entrantes = widget.productoInfo.entrada,
+      salidas = widget.productoInfo.salida;
+  late double unidades = widget.productoInfo.unidades;
   double productosPerdido = 0;
   Timer? timer;
   String texto = "";
@@ -58,100 +59,74 @@ class _ProductoState extends State<Producto> {
     super.dispose();
   }
 
-  Future enviarDatos(int valor, BuildContext ctx) async {
+  Future enviarDatos(BuildContext ctx) async {
     setState(() {
       ctx.read<Carga>().cargaBool(true);
     });
-    String texto = "No hay cambios";
-    bool error = true;
-    switch (valor) {
-      case 0:
-        if (cajasEntrantes > widget.productoInfo.entrada) {
-          final double unidades =
-              ((cajasEntrantes - widget.productoInfo.entrada) +
-                      widget.productoInfo.unidades)
-                  .toDouble();
-          texto = await ProductoModel.guardarDatos(
-            "Entradas",
-            unidades,
-            cajasEntrantes,
-            widget.productoInfo.id,
-          );
-          if (texto.split(": ")[0] != "Error") {
-            widget.productoInfo.unidades = unidades;
-            widget.productoInfo.entrada = cajasEntrantes;
-            error = false;
-            texto = "Entradas registradas";
-          }
-        }
-        break;
-      case 1:
-        if (cajasSalida > widget.productoInfo.salida) {
-          final double unidades =
-              (widget.productoInfo.unidades -
-                      (cajasSalida - widget.productoInfo.salida))
-                  .toDouble();
-          texto = await ProductoModel.guardarDatos(
-            "Salidas",
-            unidades,
-            cajasSalida,
-            widget.productoInfo.id,
-          );
-          if (texto.split(": ")[0] != "Error") {
-            widget.productoInfo.unidades = unidades;
-            widget.productoInfo.salida = cajasSalida;
-            error = false;
-            texto = "Salidas registradas";
-          }
-        }
-        break;
+    String texto = await ProductoModel.guardarESP(
+      entrantes,
+      salidas,
+      widget.productoInfo.perdidaRazones,
+      widget.productoInfo.perdidaCantidad,
+      unidades,
+      widget.productoInfo.id,
+    );
+    if (texto.split(": ")[0] != "Error") {
+      setState(() {
+        widget.productoInfo.unidades = unidades;
+        widget.productoInfo.entrada = entrantes;
+        widget.productoInfo.salida = salidas;
+        color[0] = Color(0xFF8A03A9);
+        color[1] = Color(0xFF8A03A9);
+      });
+    } else {
+      texto = texto.split(": ")[1];
     }
     if (ctx.mounted) {
       setState(() {
         ctx.read<Carga>().cargaBool(false);
       });
     }
-    setState(() {
-      if (error) {
-        color[valor] = Color(0xFF8A03A9);
-      }
-    });
-    if (texto.isNotEmpty) {
-      Textos.toast(texto, false);
-    }
+    Textos.toast(texto, texto.isEmpty);
   }
 
   void cambioValor(int tipo, int valor) {
-    int color = 0xFFFF0000;
+    Color color = Color(0xFFFF0000);
     switch (tipo) {
       case 0:
-        if ((cajasEntrantes + valor) >= widget.productoInfo.entrada) {
-          color = 0xFF8A03A9;
-          cajasEntrantes += valor;
+        if ((entrantes + valor) >= widget.productoInfo.entrada) {
+          color = Color(0xFF8A03A9);
+          entrantes += valor;
+          unidades += valor;
         }
-        if (cajasEntrantes != widget.productoInfo.entrada) {
-          color = 0xFF00be00;
+        if (salidas > entrantes) {
+          salidas = entrantes;
+          unidades += -valor;
+        }
+        if (entrantes != widget.productoInfo.entrada) {
+          color = Color(0xFF00be00);
         }
         break;
       case 1:
-        if ((cajasSalida + valor) >= widget.productoInfo.salida) {
-          color = 0xFF8A03A9;
-          if ((cajasSalida + valor - widget.productoInfo.salida) <=
-              widget.productoInfo.unidades) {
-            cajasSalida += valor;
+        if ((salidas + valor) >= widget.productoInfo.salida) {
+          color = Color(0xFF8A03A9);
+          if ((salidas + valor - widget.productoInfo.salida) <= entrantes &&
+              (unidades - valor) > 0) {
+            salidas += valor;
+            unidades += -valor;
           }
-          if (cajasSalida != widget.productoInfo.salida) {
-            color = 0xFF00be00;
+          if (salidas != widget.productoInfo.salida) {
+            color = Color(0xFF00be00);
           }
         }
         break;
     }
     setState(() {
-      this.color[tipo] = Color(color);
+      this.color[tipo] = color;
     });
   }
 
-  void guardarPerdidas(BuildContext ctx) async {
+  void guardarPerdidas(BuildContext ctx) {
     bool valido = true;
     for (int i = 0; i < controller.length; i++) {
       setState(() {
@@ -165,7 +140,6 @@ class _ProductoState extends State<Producto> {
       }
     }
     if (valido) {
-      ctx.read<Carga>().cargaBool(true);
       List<double> listaCantidades = [];
       List<String> listaRazones = [];
       listaCantidades.addAll(widget.productoInfo.perdidaCantidad);
@@ -178,26 +152,17 @@ class _ProductoState extends State<Producto> {
                   widget.productoInfo.unidades) -
               perdidas) /
           widget.productoInfo.cantidadPorUnidad);
-      String mensaje = await ProductoModel.guardarPerdidas(
-        listaRazones,
-        listaCantidades,
-        unidades,
-        widget.productoInfo.id,
-      );
-      if (mensaje.split(": ")[0] != "Error") {
-        setState(() {
-          widget.productoInfo.perdidaRazones = listaRazones;
-          widget.productoInfo.perdidaCantidad = listaCantidades;
-          widget.productoInfo.unidades = unidades;
-          productosPerdido += perdidas;
-        });
+      String mensaje = "Error: Las perdidas exceden la cantidad almacenada";
+      if (unidades >= 0) {
+        mensaje = "Aqui se supone que se gurdan las cosas";
+        widget.productoInfo.perdidaRazones = listaRazones;
+        widget.productoInfo.perdidaCantidad = listaCantidades;
+        this.unidades = unidades;
+        productosPerdido += perdidas;
       }
       Textos.toast(mensaje, true);
-      if (ctx.mounted) {
-        ctx.read<Ventanas>().emergente(mensaje.split(":")[0] == "Error");
-        ctx.read<Ventanas>().tabla(mensaje.split(":")[0] != "Error");
-        ctx.read<Carga>().cargaBool(false);
-      }
+      ctx.read<Ventanas>().emergente(mensaje.split(":")[0] == "Error");
+      ctx.read<Ventanas>().tabla(mensaje.split(":")[0] != "Error");
     }
   }
 
@@ -254,18 +219,24 @@ class _ProductoState extends State<Producto> {
                         tipoTexto(widget.productoInfo.tipo),
                         contenedorInfo(
                           " que entraron:",
-                          cajasEntrantes.toString(),
+                          entrantes.toString(),
                           0,
                         ),
-                        contenedorInfo(
-                          " que salieron:",
-                          cajasSalida.toString(),
-                          1,
-                        ),
+                        contenedorInfo(" que salieron:", salidas.toString(), 1),
                         contenedorInfo(
                           "Productos perdidos:",
-                          productosPerdido.toString(),
+                          productosPerdido.toString().split(".0")[0],
                           2,
+                        ),
+                        Botones.icoCirMor(
+                          "Guardar movimientos",
+                          Icons.save_rounded,
+                          false,
+                          () => enviarDatos(context),
+                          () => Textos.toast("No hay hay cambios.", false),
+                          entrantes != widget.productoInfo.entrada ||
+                              salidas != widget.productoInfo.salida ||
+                              unidades != widget.productoInfo.unidades,
                         ),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -309,8 +280,8 @@ class _ProductoState extends State<Producto> {
                 if (productosPerdido > 0) {
                   wid = Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.2, .6],
-                    ["Razón de perdida", "Cantidad perdida"],
+                    [.05, .15, .6],
+                    ["#", "Cantidad perdida", "Razón de perdida"],
                   );
                   tabla = ListView.separated(
                     itemCount: widget.productoInfo.perdidaCantidad.length,
@@ -326,13 +297,15 @@ class _ProductoState extends State<Producto> {
                         decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
                         child: Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.2, .6],
+                          [.05, .15, .6],
                           [
+                            "${index + 1}",
                             widget.productoInfo.perdidaCantidad[index]
                                 .toString(),
                             widget.productoInfo.perdidaRazones[index],
                           ],
                           [],
+                          1,
                           false,
                         ),
                       );
@@ -451,10 +424,10 @@ class _ProductoState extends State<Producto> {
     } else if (tipo == "Galón") {
       titulo = "Galones:";
     }
-    List<Widget> wid = [Textos.textoGeneral(titulo, 20, true, true)];
+    List<Widget> wid = [Textos.textoGeneral(titulo, 20, true, true, 1)];
     for (int i = 0; i < 2; i++) {
       if (text.isNotEmpty) {
-        wid.add(Textos.textoGeneral(text, 15, false, true));
+        wid.add(Textos.textoGeneral(text, 15, false, true, 1));
       }
       text = "Minimo requerido: ${widget.productoInfo.limiteProd.toString()}";
     }
@@ -493,12 +466,13 @@ class _ProductoState extends State<Producto> {
             children: wid,
           ),
           Textos.recuadroCantidad(
-            widget.productoInfo.unidades.toString(),
+            unidades.toString(),
             Textos.colorLimite(
               widget.productoInfo.limiteProd,
-              widget.productoInfo.unidades.floor(),
+              unidades.floor(),
             ),
             20,
+            1,
           ),
         ],
       ),
@@ -542,7 +516,7 @@ class _ProductoState extends State<Producto> {
         ),
       );
     }
-    botones.add(Textos.recuadroCantidad(textoValor, color[valor], 20));
+    botones.add(Textos.recuadroCantidad(textoValor, color[valor], 20, 1));
     if (textoInfo != "Productos perdidos:") {
       botones.add(
         GestureDetector(
@@ -560,21 +534,6 @@ class _ProductoState extends State<Producto> {
             false,
             () => cambioValor(valor, 1),
           ),
-        ),
-      );
-    }
-    if (textoInfo != "Productos perdidos:") {
-      botones.add(
-        Botones.btnRctMor(
-          "Guardar ${text.split(" ")[0]}",
-          0,
-          Icons.save_rounded,
-          false,
-          () => setState(() {
-            context.read<Carga>().cargaBool(true);
-            enviarDatos(valor, context);
-            context.read<Carga>().cargaBool(false);
-          }),
         ),
       );
     }
@@ -601,7 +560,7 @@ class _ProductoState extends State<Producto> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Textos.textoGeneral(text, 20, true, false),
+          Textos.textoGeneral(text, 20, true, false, 1),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -615,7 +574,7 @@ class _ProductoState extends State<Producto> {
   SizedBox footer(List<String> textos) {
     List<Widget> lista = [];
     for (int i = 0; i < textos.length; i++) {
-      lista.add(Textos.textoGeneral(textos[i], 15, false, false));
+      lista.add(Textos.textoGeneral(textos[i], 15, false, false, 1));
     }
     return SizedBox(
       width: MediaQuery.of(context).size.width * .35,

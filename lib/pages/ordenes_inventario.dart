@@ -8,6 +8,7 @@ import "package:inventarios/components/textos.dart";
 import "package:inventarios/components/ventanas.dart";
 import "package:inventarios/models/producto_model.dart";
 import "package:inventarios/pages/articulos.dart";
+import "package:inventarios/pages/historial.dart";
 import "package:inventarios/pages/ordenes.dart";
 import "package:inventarios/pages/producto.dart";
 import "package:inventarios/services/local_storage.dart";
@@ -30,75 +31,123 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: RecDrawer.drawer(context, [
-        Botones.icoCirMor(
-          "Añadir un producto",
-          Icons.edit_note_rounded,
-          false,
-          () async => {
-            if (Tablas.getValido())
-              {
-                context.read<Carga>().cargaBool(true),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Añadir un producto",
+              Icons.edit_note_rounded,
+              false,
+              () async => {
+                carga.cargaBool(true),
                 await RecDrawer.getListas(context, OrdenesInventario()),
-              }
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Descargar reporte",
-          Icons.download_rounded,
-          false,
-          () async => {
-            if (Tablas.getValido())
-              {await RecDrawer.datosExcel(context)}
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Descargar reporte",
+              Icons.download_rounded,
+              false,
+              () async => {await RecDrawer.datosExcel(context)},
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Escanear producto",
-          Icons.barcode_reader,
-          false,
-          () => RecDrawer.scanProducto(context, OrdenesInventario()),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Escanear producto",
+              Icons.barcode_reader,
+              false,
+              () => RecDrawer.scanProducto(context, OrdenesInventario()),
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
+          },
         ),
-        Botones.icoCirMor(
-          "Reiniciar movimientos",
-          Icons.refresh_rounded,
-          false,
-          () => {
-            if (Tablas.getValido())
-              {
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Historial movimientos",
+              Icons.history_toggle_off_rounded,
+              false,
+              () => {
+                carga.cargaBool(true),
+                if(CampoTexto.seleccionFiltro == Filtros.unidades){
+                  CampoTexto.seleccionFiltro = Filtros.id,
+                },
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Historial(ruta: OrdenesInventario()),
+                  ),
+                ),
+                carga.cargaBool(false),
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
+          },
+        ),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Reiniciar movimientos",
+              Icons.refresh_rounded,
+              false,
+              () => {
                 Navigator.of(context).pop(),
                 context.read<Ventanas>().emergente(true),
-              }
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Ver artículos",
-          Icons.list,
-          false,
-          () => {
-            context.read<Carga>().cargaBool(true),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Articulos()),
-            ),
-            context.read<Carga>().cargaBool(false),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Ver artículos",
+              Icons.list,
+              false,
+              () => {
+                carga.cargaBool(true),
+                if(CampoTexto.seleccionFiltro == Filtros.unidades){
+                  CampoTexto.seleccionFiltro = Filtros.id,
+                },
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Articulos()),
+                ),
+                carga.cargaBool(false),
+              },
+              () => {},
+              true,
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Ordenes",
-          Icons.border_color_rounded,
-          true,
-          () => {
-            context.read<Carga>().cargaBool(true),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Ordenes()),
-            ),
-            context.read<Carga>().cargaBool(false),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Ordenes",
+              Icons.border_color_rounded,
+              true,
+              () => {
+                carga.cargaBool(true),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Ordenes()),
+                ),
+                carga.cargaBool(false),
+              },
+              () => {},
+              true,
+            );
           },
         ),
       ]),
@@ -111,44 +160,49 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               builder: (context) => SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     barraSuperior(context),
-                    Tablas.contenedorInfo(
-                      MediaQuery.sizeOf(context).width,
-                      [.1, .25, .08, .175, .15, .075, .075, .075],
-                      [
-                        "id",
-                        "Nombre",
-                        "Unidades",
-                        "Área",
-                        "Tipo",
-                        "Entradas",
-                        "Salidas",
-                        "Perdidas",
+                    Column(
+                      children: [
+                        Tablas.contenedorInfo(
+                          MediaQuery.sizeOf(context).width,
+                          [.1, .25, .08, .175, .15, .075, .075, .075],
+                          [
+                            "id",
+                            "Nombre",
+                            "Unidades",
+                            "Área",
+                            "Tipo",
+                            "Entradas",
+                            "Salidas",
+                            "Perdidas",
+                          ],
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height - 97,
+                          child: Consumer<Tablas>(
+                            builder: (context, tablas, child) {
+                              return Tablas.listaFutura(
+                                listaPrincipal,
+                                "No hay productos registrados.",
+                                "No hay coincidencias.",
+                                () => getProductos(
+                                  CampoTexto.filtroTexto(true),
+                                  CampoTexto.busquedaTexto.text,
+                                ),
+                                accionRefresh: () async => tablas.datos(
+                                  await getProductos(
+                                    CampoTexto.filtroTexto(true),
+                                    CampoTexto.busquedaTexto.text,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ],
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height - 97,
-                      child: Consumer<Tablas>(
-                        builder: (context, tablas, child) {
-                          return Tablas.listaFutura(
-                            listaPrincipal,
-                            "No hay productos registrados.",
-                            "No hay coincidencias.",
-                            () => getProductos(
-                              CampoTexto.filtroTexto(true),
-                              CampoTexto.busquedaTexto.text,
-                            ),
-                            accionRefresh: () async => tablas.datos(
-                              await getProductos(
-                                CampoTexto.filtroTexto(true),
-                                CampoTexto.busquedaTexto.text,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
                     ),
                   ],
                 ),
@@ -205,7 +259,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             builder: (context, tablas, campoTexto, child) {
               return CampoTexto.barraBusqueda(
                 () async => {
-                  tablas.valido(CampoTexto.busquedaTexto.text.isNotEmpty),
+                  //tablas.valido(false),
                   tablas.datos(
                     await getProductos(
                       CampoTexto.filtroTexto(true),
@@ -214,6 +268,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                   ),
                 },
                 true,
+                false,
               );
             },
           ),
@@ -257,6 +312,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               lista[index].perdidaCantidad.length.toString(),
             ],
             colores,
+            1,
             true,
             extra: () async => {
               await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),

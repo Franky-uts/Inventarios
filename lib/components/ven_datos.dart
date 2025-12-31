@@ -6,6 +6,9 @@ class VenDatos with ChangeNotifier {
   static List _areVen = [];
   static List _tipVen = [];
   static List _canCubVen = [];
+  static List _comProv = [];
+  static List _comTienda = [];
+  static List _comfProd = [];
   static String _idVen = "";
   static String _remVen = "";
   static String _estVen = "";
@@ -18,6 +21,9 @@ class VenDatos with ChangeNotifier {
     List areVen,
     List tipVen,
     List canCubVen,
+    List comprov,
+    List comTienda,
+    List comfProd,
     String idVen,
     String remVen,
     String estVen,
@@ -29,6 +35,9 @@ class VenDatos with ChangeNotifier {
     _areVen = areVen;
     _tipVen = tipVen;
     _canCubVen = canCubVen;
+    _comProv = comprov;
+    _comTienda = comTienda;
+    _comfProd = comfProd;
     _idVen = idVen;
     _remVen = remVen;
     _estVen = estVen;
@@ -73,6 +82,41 @@ class VenDatos with ChangeNotifier {
 
   List canCubVenLista() {
     return _canCubVen;
+  }
+
+  String comTienda(int i) {
+    return _comTienda[i];
+  }
+
+  String comProv(int i) {
+    return _comProv[i];
+  }
+
+  List comProvLista() {
+    return _comProv;
+  }
+
+  void setComProv(int i, String comentario) {
+    _comProv[i] = comentario;
+    notifyListeners();
+  }
+
+  void setComProvLista(List lista) {
+    _comProv = lista;
+    notifyListeners();
+  }
+
+  bool comfProd(int i) {
+    return _comfProd[i];
+  }
+
+  List comfProdLista() {
+    return _comfProd;
+  }
+
+  void setComfProd(int i) {
+    _comfProd[i] = !_comfProd[i];
+    notifyListeners();
   }
 
   String idVen() {

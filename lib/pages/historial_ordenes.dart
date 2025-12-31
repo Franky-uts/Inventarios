@@ -26,6 +26,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     Color(0xFFFFFFFF),
     Color(0xFFFFFFFF),
   ];
+  String titulo = "", btnNo = "", btnSi = "", datos = "";
+  List<Widget> wid = [];
 
   @override
   void initState() {
@@ -34,6 +36,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
 
   @override
   void dispose() {
+    wid.clear();
+    colores.clear();
     super.dispose();
   }
 
@@ -64,16 +68,53 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   void cambiarEstado() {
     String mensaje;
     mensaje = "La orden no se puede cancelar.";
-    if (context.read<VenDatos>().estVen() == "En proceso") {
-      mensaje = "";
-      context.read<Ventanas>().emergente(true);
-    } else if (context.read<VenDatos>().estVen() == "Cancelado" ||
-        context.read<VenDatos>().estVen() == "Denegado") {
-      mensaje = "La orden ya esta cencelada.";
+    switch (context.read<VenDatos>().estVen()) {
+      case ("En proceso"):
+        mensaje = "";
+        titulo = "¿Segur@ que quieres cancelar la orden?";
+        btnNo = "No, volver";
+        btnSi = "Si, cancelalo";
+        datos = "Cancelado";
+        wid = [];
+        context.read<Ventanas>().emergente(true);
+        break;
+      case ("Cancelado"):
+        mensaje = "La orden ya esta cencelada.";
+        break;
+      case ("Denegado"):
+        mensaje = "La orden ya esta denegada.";
+        break;
     }
     if (mensaje.isNotEmpty) {
       Textos.toast(mensaje, false);
     }
+  }
+
+  void confirmarEntragas(List lista) {
+    datos = "Finalizado";
+    for (int i = 0; i < lista.length; i++) {
+      if (!lista[i]) {
+        datos = "Incompleto";
+      }
+    }
+    titulo = "¿Segur@ que ya marcaste todos los productos que recibiste?";
+    btnNo = "No, volver";
+    btnSi = "Si, confirmo";
+    wid = [];
+    context.read<Ventanas>().emergente(true);
+  }
+
+  void verComentarios(String nombre, String comTienda, String comProv) {
+    titulo = "Comentarios de $nombre";
+    btnNo = "Cerrar";
+    btnSi = "Confirmar";
+    wid = [
+      Textos.textoTilulo("Comentarios de la tienda:", 20),
+      Textos.textoGeneral(comTienda, 20, true, true, 5),
+      Textos.textoTilulo("Comentarios del almacenista:", 20),
+      Textos.textoGeneral(comProv, 20, true, true, 5),
+    ];
+    context.read<Ventanas>().emergente(true);
   }
 
   @override
@@ -81,32 +122,39 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
       drawer: RecDrawer.drawer(context, [
-        Botones.icoCirMor(
-          "Nueva orden",
-          Icons.add_shopping_cart_rounded,
-          false,
-          () async => {
-            if (Tablas.getValido())
-              {
-                context.read<Carga>().cargaBool(true),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Nueva orden",
+              Icons.add_shopping_cart_rounded,
+              false,
+              () async => {
+                carga.cargaBool(true),
                 await RecDrawer.salidaOrdenes(context),
-              }
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Ver almacen",
-          Icons.inventory_rounded,
-          true,
-          () => {
-            context.read<Carga>().cargaBool(true),
-            Textos.limpiarLista(),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Inventario()),
-            ),
-            context.read<Carga>().cargaBool(false),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Ver almacen",
+              Icons.inventory_rounded,
+              true,
+              () => {
+                carga.cargaBool(true),
+                Textos.limpiarLista(),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => Inventario()),
+                ),
+                carga.cargaBool(false),
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
       ]),
@@ -140,6 +188,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                           "Todo está en orden, no hay órdenes entrantes.",
                           "No se recuperaron órdenes.",
                           () => getOrdenes(),
+                          accionRefresh: () async =>
+                              tablas.datos(await getOrdenes()),
                         );
                       },
                     ),
@@ -149,6 +199,18 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
             ),
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
+                List<Widget> botones = [
+                  Botones.btnCirRos("Cerrar", () => ventana.tabla(false)),
+                  Botones.btnCirRos("Cancelar", () => cambiarEstado()),
+                ];
+                if (venDatos.estVen() == "Entregado") {
+                  botones.add(
+                    Botones.btnCirRos(
+                      "Confirmar",
+                      () => confirmarEntragas(venDatos.comfProdLista()),
+                    ),
+                  );
+                }
                 return Ventanas.ventanaTabla(
                   MediaQuery.of(context).size.height,
                   MediaQuery.of(context).size.width,
@@ -163,13 +225,15 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.25, .175, .125, .125, .125],
+                    [.25, .15, .1, .125, .115, .065, .065],
                     [
                       "Nombre del articulo",
                       "Área",
                       "Tipo",
                       "Cant. ordenada",
                       "Cant. cubierta",
+                      "💬",
+                      "☑️",
                     ],
                   ),
                   ListView.separated(
@@ -182,52 +246,81 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                     itemBuilder: (context, index) {
                       return Container(
                         width: MediaQuery.sizeOf(context).width,
-                        height: 40,
                         decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
                         child: Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.25, .175, .125, .125, .125],
+                          [.25, .15, .1, .125, .115, .125],
                           [
                             venDatos.artVen(index),
                             venDatos.areVen(index),
                             venDatos.tipVen(index),
                             venDatos.canVen(index).toString(),
                             venDatos.canCubVen(index).toString(),
+                            "",
                           ],
                           [],
+                          1,
                           false,
+                          extraWid: Row(
+                            children: [
+                              Botones.btnRctMor(
+                                "Ver comentarios",
+                                20,
+                                Icons.comment_rounded,
+                                false,
+                                () => verComentarios(
+                                  venDatos.artVen(index),
+                                  venDatos.comTienda(index),
+                                  venDatos.comProv(index),
+                                ),
+                              ),
+                              Botones.btnRctMor(
+                                "Confirmar",
+                                20,
+                                iconoConfirm(venDatos.comfProd(index)),
+                                false,
+                                () => {
+                                  if (venDatos.estVen() == "Entregado")
+                                    {venDatos.setComfProd(index)},
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     },
                   ),
-                  [
-                    Botones.btnCirRos("Cerrar", () => ventana.tabla(false)),
-                    Botones.btnCirRos("Cancelar", () => cambiarEstado()),
-                  ],
+                  botones,
                 );
               },
             ),
             Consumer3<Ventanas, Carga, VenDatos>(
               builder: (context, ventana, carga, venDatos, child) {
                 return Ventanas.ventanaEmergente(
-                  "¿Segur@ que quieres cancelar la orden?",
-                  "No, volver",
-                  "Si, cancelalo",
+                  titulo,
+                  btnNo,
+                  btnSi,
                   () => ventana.emergente(false),
                   () async => {
-                    carga.cargaBool(true),
-                    ventana.tabla(false),
-                    Textos.toast(
-                      await OrdenModel.editarOrden(
-                        venDatos.idVen(),
-                        "Estado",
-                        "Cancelado",
-                      ),
-                      false,
-                    ),
-                    carga.cargaBool(false),
+                    if (btnSi != "Confirmar")
+                      {
+                        carga.cargaBool(true),
+                        ventana.tabla(false),
+                        Textos.toast(
+                          await OrdenModel.editarOrdenConfirmacion(
+                            venDatos.idVen(),
+                            datos,
+                            venDatos.comfProdLista(),
+                          ),
+                          true,
+                        ),
+                        if (context.mounted)
+                          {context.read<Tablas>().datos(await getOrdenes())},
+                        carga.cargaBool(false),
+                      },
                     ventana.emergente(false),
                   },
+                  widget: Column(children: wid),
                 );
               },
             ),
@@ -236,6 +329,14 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         ),
       ),
     );
+  }
+
+  IconData iconoConfirm(bool valor) {
+    IconData icono = Icons.check_box_outline_blank_rounded;
+    if (valor) {
+      icono = Icons.check_box_rounded;
+    }
+    return icono;
   }
 
   Widget opciones(BuildContext ctx) {
@@ -303,8 +404,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         }
         coloresLista[2] = Textos.colorEstado(lista[index].estado);
         return Container(
-          width: MediaQuery.sizeOf(context).width,
           height: 40,
+          width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Colors.white),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
@@ -317,6 +418,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               lista[index].ultimaModificacion,
             ],
             coloresLista,
+            1,
             true,
             extra: () => {
               context.read<VenDatos>().setDatos(
@@ -325,6 +427,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 lista[index].areas,
                 lista[index].tipos,
                 lista[index].cantidadesCubiertas,
+                lista[index].comentariosProveedor,
+                lista[index].comentariosTienda,
+                lista[index].confirmacion,
                 lista[index].id.toString(),
                 lista[index].remitente,
                 lista[index].estado,

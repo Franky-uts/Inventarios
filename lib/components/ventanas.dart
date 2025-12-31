@@ -71,12 +71,12 @@ class Ventanas with ChangeNotifier {
     if (footerTexto.length > 1) {
       tam = 168;
       for (int i = 0; i < footerTexto.length; i++) {
-        footer.add(Textos.textoGeneral(footerTexto[i], 15, false, false));
+        footer.add(Textos.textoGeneral(footerTexto[i], 15, false, false, 1));
       }
     } else {
       tam = 153;
       if (footerTexto.isNotEmpty) {
-        footer.add(Textos.textoGeneral(footerTexto[0], 20, true, false));
+        footer.add(Textos.textoGeneral(footerTexto[0], 20, true, false, 1));
       }
     }
     if (tablaListView.runtimeType == ListView) {
@@ -90,7 +90,7 @@ class Ventanas with ChangeNotifier {
     return Visibility(
       visible: _tabla,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
         decoration: BoxDecoration(color: Colors.black38),
         child: Center(
           child: Container(
@@ -101,32 +101,33 @@ class Ventanas with ChangeNotifier {
               borderRadius: BorderRadiusGeometry.circular(25),
               border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              spacing: 0,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: titulos,
-                ),
-                tablaInfo,
-                tablaListView,
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: footer,
-                    ),
-                    Row(
-                      spacing: 7.5,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: botones,
-                    ),
-                  ],
-                ),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 0,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: titulos,
+                  ),
+                  Column(children: [tablaInfo, tablaListView]),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: footer,
+                      ),
+                      Row(
+                        spacing: 7.5,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: botones,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

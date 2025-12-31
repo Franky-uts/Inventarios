@@ -6,11 +6,14 @@ import '../services/local_storage.dart';
 
 class OrdenModel {
   int id;
-  List articulos;
-  List cantidades;
-  List tipos;
-  List areas;
-  List cantidadesCubiertas;
+  List<String> articulos;
+  List<int> cantidades;
+  List<String> tipos;
+  List<String> areas;
+  List<int> cantidadesCubiertas;
+  List<String> comentariosTienda;
+  List<String> comentariosProveedor;
+  List<bool> confirmacion;
   String estado;
   String remitente;
   String ultimaModificacion;
@@ -24,6 +27,9 @@ class OrdenModel {
     required this.tipos,
     required this.areas,
     required this.cantidadesCubiertas,
+    required this.comentariosProveedor,
+    required this.comentariosTienda,
+    required this.confirmacion,
     required this.estado,
     required this.remitente,
     required this.ultimaModificacion,
@@ -53,11 +59,16 @@ class OrdenModel {
           ordenesFuture.add(
             OrdenModel(
               id: item["id"],
-              articulos: item['Artículos'],
-              cantidades: item['Cantidades'],
-              tipos: item['Tipos'],
-              areas: item['Areas'],
-              cantidadesCubiertas: item['CantidadesCubiertas'],
+              articulos: List<String>.from(item['Artículos']),
+              cantidades: List<int>.from(item['Cantidades']),
+              tipos: List<String>.from(item['Tipos']),
+              areas: List<String>.from(item['Areas']),
+              cantidadesCubiertas: List<int>.from(item['CantidadesCubiertas']),
+              comentariosProveedor: List<String>.from(
+                item['ComentariosProveedor'],
+              ),
+              comentariosTienda: List<String>.from(item['ComentariosTienda']),
+              confirmacion: List<bool>.from(item['Confirmacion']),
               estado: item["Estado"],
               remitente: item["Remitente"],
               ultimaModificacion: item["UltimaModificación"],
@@ -74,7 +85,10 @@ class OrdenModel {
             cantidades: [],
             tipos: [],
             areas: [],
-            cantidadesCubiertas: [0],
+            cantidadesCubiertas: [],
+            comentariosProveedor: [],
+            comentariosTienda: [],
+            confirmacion: [],
             estado: "",
             remitente: "",
             ultimaModificacion: "",
@@ -91,7 +105,10 @@ class OrdenModel {
           cantidades: [],
           tipos: [],
           areas: [],
-          cantidadesCubiertas: [0],
+          cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
           estado: "",
           remitente: "",
           ultimaModificacion: "",
@@ -107,7 +124,10 @@ class OrdenModel {
           cantidades: [],
           tipos: [],
           areas: [],
-          cantidadesCubiertas: [0],
+          cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
           estado: "",
           remitente: "",
           ultimaModificacion: "",
@@ -124,6 +144,9 @@ class OrdenModel {
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
           estado: "",
           remitente: "",
           ultimaModificacion: "",
@@ -140,6 +163,9 @@ class OrdenModel {
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
           estado: "",
           remitente: "",
           ultimaModificacion: "",
@@ -170,11 +196,16 @@ class OrdenModel {
           ordenesFuture.add(
             OrdenModel(
               id: item["id"],
-              articulos: item['Artículos'],
-              cantidades: item['Cantidades'],
-              tipos: item['Tipos'],
-              areas: item['Areas'],
-              cantidadesCubiertas: item['CantidadesCubiertas'],
+              articulos: List<String>.from(item['Artículos']),
+              cantidades: List<int>.from(item['Cantidades']),
+              tipos: List<String>.from(item['Tipos']),
+              areas: List<String>.from(item['Areas']),
+              cantidadesCubiertas: List<int>.from(item['CantidadesCubiertas']),
+              comentariosProveedor: List<String>.from(
+                item['ComentariosProveedor'],
+              ),
+              comentariosTienda: List<String>.from(item['ComentariosTienda']),
+              confirmacion: List<bool>.from(item['Confirmacion']),
               estado: item["Estado"],
               remitente: item["Remitente"],
               ultimaModificacion: item["UltimaModificación"],
@@ -192,11 +223,14 @@ class OrdenModel {
             tipos: [],
             areas: [],
             cantidadesCubiertas: [],
+            comentariosProveedor: [],
+            comentariosTienda: [],
+            confirmacion: [],
             estado: "",
             remitente: "",
             ultimaModificacion: "",
             destino: "",
-            mensaje: res.body
+            mensaje: res.body,
           ),
         );
       }
@@ -209,11 +243,14 @@ class OrdenModel {
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
           estado: "",
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString()
+          mensaje: e.message.toString(),
         ),
       );
     } on SocketException catch (e) {
@@ -225,11 +262,14 @@ class OrdenModel {
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
           estado: "",
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString()
+          mensaje: e.message.toString(),
         ),
       );
     } on http.ClientException catch (e) {
@@ -241,11 +281,14 @@ class OrdenModel {
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
           estado: "",
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString()
+          mensaje: e.message.toString(),
         ),
       );
     } on Error catch (e) {
@@ -257,11 +300,14 @@ class OrdenModel {
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
           estado: "",
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.toString()
+          mensaje: e.toString(),
         ),
       );
     }
@@ -273,10 +319,11 @@ class OrdenModel {
     List<int> cantidades,
     List<String> tipos,
     List<String> areas,
+    List<String> comentarios,
     String estado,
-    String remitente,
-    String destino,
   ) async {
+    String remitente = LocalStorage.local('usuario');
+    String destino = LocalStorage.local('locación');
     late String productoFuture;
     try {
       final res = await http.post(
@@ -294,6 +341,7 @@ class OrdenModel {
               .toString()
               .replaceAll("[", "{")
               .replaceAll("]", "}"),
+          'comentarios': comentarios,
           'tipos': tipos.toString().replaceAll("[", "{").replaceAll("]", "}"),
           'areas': areas.toString().replaceAll("[", "{").replaceAll("]", "}"),
           'estado': estado,
@@ -326,10 +374,8 @@ class OrdenModel {
     String dato,
   ) async {
     String respuesta;
-    if (dato == "finalizar") {
-      dato = "Finalizado";
-    } else if (dato == "denegar") {
-      dato = "Denegado";
+    if (columna == "Estado") {
+      dato = "${dato[0].toUpperCase()}${dato.substring(1, dato.length)}";
     }
     try {
       final res = await http.put(
@@ -339,6 +385,44 @@ class OrdenModel {
           "content-type": "application/json; charset=UTF-8",
         },
         body: jsonEncode({'dato': dato}),
+      );
+      respuesta = res.reasonPhrase.toString();
+      if (res.statusCode == 200) {
+        respuesta = "Se modificó la orden.";
+      }
+    } on TimeoutException catch (e) {
+      respuesta = "Error: ${e.message.toString()}";
+    } on SocketException catch (e) {
+      respuesta = "Error: ${e.message.toString()}";
+    } on http.ClientException catch (e) {
+      respuesta = "Error: ${e.message.toString()}";
+    } on Error catch (e) {
+      respuesta = "Error: ${e.toString()}";
+    }
+    return respuesta;
+  }
+
+  static Future<String> editarOrdenConfirmacion(
+    String id,
+    String estado,
+    List confirmaciones,
+  ) async {
+    String respuesta;
+    print("$estado $confirmaciones");
+    try {
+      final res = await http.put(
+        Uri.parse("${LocalStorage.local('conexion')}/ordenes/$id/confirmacion"),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+        body: jsonEncode({
+          'estado': estado,
+          'confirmacion': confirmaciones
+              .toString()
+              .replaceAll("[", "{")
+              .replaceAll("]", "}"),
+        }),
       );
       respuesta = res.reasonPhrase.toString();
       if (res.statusCode == 200) {

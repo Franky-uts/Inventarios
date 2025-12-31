@@ -7,6 +7,7 @@ import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
+import 'package:inventarios/pages/historial.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:inventarios/components/botones.dart';
@@ -39,63 +40,97 @@ class _InventarioState extends State<Inventario> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: RecDrawer.drawer(context, [
-        Botones.icoCirMor(
-          "Añadir un producto",
-          Icons.edit_note_rounded,
-          false,
-          () async => {
-            if (Tablas.getValido())
-              {
-                context.read<Carga>().cargaBool(true),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Añadir un producto",
+              Icons.edit_note_rounded,
+              false,
+              () async => {
+                carga.cargaBool(true),
                 await RecDrawer.getListas(context, Inventario()),
-              }
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Descargar reporte",
-          Icons.download_rounded,
-          false,
-          () async => {
-            if (Tablas.getValido())
-              {await RecDrawer.datosExcel(context)}
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Descargar reporte",
+              Icons.download_rounded,
+              false,
+              () async => await RecDrawer.datosExcel(context),
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Reiniciar movimientos",
-          Icons.refresh_rounded,
-          false,
-          () => {
-            if (Tablas.getValido())
-              {
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Historial movimientos",
+              Icons.history_toggle_off_rounded,
+              false,
+              () => {
+                carga.cargaBool(true),
+                if(CampoTexto.seleccionFiltro==Filtros.unidades){
+                  CampoTexto.seleccionFiltro = Filtros.id,
+                },
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Historial(ruta: Inventario()),
+                  ),
+                ),
+                carga.cargaBool(false),
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
+          },
+        ),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Reiniciar movimientos",
+              Icons.refresh_rounded,
+              false,
+              () => {
                 Navigator.of(context).pop(),
                 context.read<Ventanas>().emergente(true),
-              }
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
-        Botones.icoCirMor(
-          "Escanear codigo",
-          Icons.barcode_reader,
-          false,
-          () => RecDrawer.scanProducto(context, Inventario()),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Escanear codigo",
+              Icons.barcode_reader,
+              false,
+              () => RecDrawer.scanProducto(context, Inventario()),
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
+          },
         ),
-        Botones.icoCirMor(
-          "Nueva orden",
-          Icons.add_shopping_cart_rounded,
-          true,
-          () async => {
-            if (Tablas.getValido())
-              {
-                context.read<Carga>().cargaBool(true),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Nueva orden",
+              Icons.add_shopping_cart_rounded,
+              true,
+              () async => {
+                carga.cargaBool(true),
                 await RecDrawer.salidaOrdenes(context),
-              }
-            else
-              {Textos.toast("Espera a que los datos carguen.", false)},
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
         ),
       ]),
@@ -108,44 +143,49 @@ class _InventarioState extends State<Inventario> {
               builder: (context) => SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     barraSuperior(context),
-                    Tablas.contenedorInfo(
-                      MediaQuery.sizeOf(context).width,
-                      [.1, .25, .08, .175, .15, .075, .075, .075],
-                      [
-                        "id",
-                        "Nombre",
-                        "Unidades",
-                        "Área",
-                        "Tipo",
-                        "Entrada",
-                        "Salida",
-                        "Perdida",
+                    Column(
+                      children: [
+                        Tablas.contenedorInfo(
+                          MediaQuery.sizeOf(context).width,
+                          [.1, .25, .08, .175, .15, .075, .075, .075],
+                          [
+                            "id",
+                            "Nombre",
+                            "Unidades",
+                            "Área",
+                            "Tipo",
+                            "Entrada",
+                            "Salida",
+                            "Perdida",
+                          ],
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height - 97,
+                          child: Consumer<Tablas>(
+                            builder: (context, tablas, child) {
+                              return Tablas.listaFutura(
+                                listaPrincipal,
+                                "No hay productos registrados.",
+                                "No hay coincidencias.",
+                                () => getProductos(
+                                  CampoTexto.filtroTexto(true),
+                                  CampoTexto.busquedaTexto.text,
+                                ),
+                                accionRefresh: () async => tablas.datos(
+                                  await getProductos(
+                                    CampoTexto.filtroTexto(true),
+                                    CampoTexto.busquedaTexto.text,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ],
-                    ),
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height - 97,
-                      child: Consumer<Tablas>(
-                        builder: (context, tablas, child) {
-                          return Tablas.listaFutura(
-                            listaPrincipal,
-                            "No hay productos registrados.",
-                            "No hay coincidencias.",
-                            () => getProductos(
-                              CampoTexto.filtroTexto(true),
-                              CampoTexto.busquedaTexto.text,
-                            ),
-                            accionRefresh: () async => tablas.datos(
-                              await getProductos(
-                                CampoTexto.filtroTexto(true),
-                                CampoTexto.busquedaTexto.text,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
                     ),
                   ],
                 ),
@@ -202,7 +242,7 @@ class _InventarioState extends State<Inventario> {
             builder: (context, tablas, campoTexto, child) {
               return CampoTexto.barraBusqueda(
                 () async => {
-                  tablas.valido(CampoTexto.busquedaTexto.text.isNotEmpty),
+                  //tablas.valido(false),
                   tablas.datos(
                     await getProductos(
                       CampoTexto.filtroTexto(true),
@@ -211,6 +251,7 @@ class _InventarioState extends State<Inventario> {
                   ),
                 },
                 true,
+                false,
               );
             },
           ),
@@ -238,7 +279,6 @@ class _InventarioState extends State<Inventario> {
         );
         return Container(
           width: MediaQuery.sizeOf(context).width,
-          height: 40,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
@@ -254,6 +294,7 @@ class _InventarioState extends State<Inventario> {
               lista[index].perdidaCantidad.length.toString(),
             ],
             colores,
+            2,
             true,
             extra: () async => {
               await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),

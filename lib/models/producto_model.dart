@@ -215,7 +215,6 @@ class ProductoModel {
   static Future<List<ProductoModel>> getDatosArticulo(int id) async {
     String conexion = LocalStorage.local('conexion');
     late List<ProductoModel> productoModel = [];
-
     try {
       var res = await http.get(
         Uri.parse("$conexion/articulos/almacen/$id"),
@@ -229,13 +228,11 @@ class ProductoModel {
         for (var item in datos) {
           List<double> doublelist = [];
           for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
-            if (item["PerdidaCantidad"].toString().split(".")[1] != "0") {
-              String dob = "${item["PerdidaCantidad"][i]}.0";
-              if (dob.split(".").length > 2) {
-                dob = "${dob.split(".")[0]}.${dob.split(".")[1]}";
-              }
-              doublelist.add(double.parse(dob));
+            String dob = "${item["PerdidaCantidad"][i]}";
+            if (dob.split(".").length < 2) {
+              dob = "${item["PerdidaCantidad"][i]}.0";
             }
+            doublelist.add(double.parse(dob));
           }
           productoModel.add(
             ProductoModel(
@@ -438,44 +435,54 @@ class ProductoModel {
     return texto;
   }
 
-  static Future<String> guardarDatos(
-    String columna,
+  static Future<String> guardarESP(
+      int entradas,
+    int salidas,
+    List<String> razones,
+    List<double> cantidades,
     double unidades,
-    int dato,
     String id,
   ) async {
-    String mensaje;
-    String conexion = LocalStorage.local('conexion');
-    try {
-      final res = await http.put(
-        Uri.parse("$conexion/almacen/$id/$columna/ESP"),
-        headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
-        },
-        body: jsonEncode({
-          'dato': dato,
-          'unidades': unidades,
-          'usuario': LocalStorage.local('usuario'),
-        }),
-      );
-      mensaje = res.body;
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          mensaje = item['id'];
+    String texto = "Error: No se guardo la información.";
+    if (unidades >= 0) {
+      try {
+        final res = await http.put(
+          Uri.parse("${LocalStorage.local('conexion')}/almacen/$id/ESP"),
+          headers: {
+            "Accept": "application/json",
+            "content-type": "application/json; charset=UTF-8",
+          },
+          body: jsonEncode({
+            'entradas': entradas,
+            'salidas': salidas,
+            'perdidas': razones.length,
+            'cantidades': cantidades
+                .toString()
+                .replaceAll("[", "{")
+                .replaceAll("]", "}"),
+            'razones': razones
+                .toString()
+                .replaceAll("[", "{")
+                .replaceAll("]", "}"),
+            'unidades': unidades,
+            'usuario': LocalStorage.local('usuario'),
+          }),
+        );
+        texto = "${res.reasonPhrase}";
+        if (res.statusCode == 200) {
+          texto = "Se guardaron los movimientos.";
         }
+      } on TimeoutException catch (e) {
+        texto = "Error: ${e.message.toString()}";
+      } on SocketException catch (e) {
+        texto = "Error: ${e.message.toString()}";
+      } on http.ClientException catch (e) {
+        texto = "Error: ${e.message.toString()}";
+      } on Error catch (e) {
+        texto = "Error: ${e.toString()}";
       }
-    } on TimeoutException catch (e) {
-      mensaje = "Error: ${e.message.toString()}";
-    } on SocketException catch (e) {
-      mensaje = "Error: ${e.message.toString()}";
-    } on http.ClientException catch (e) {
-      mensaje = "Error: ${e.message.toString()}";
-    } on Error catch (e) {
-      mensaje = "Error: ${e.toString()}";
     }
-    return mensaje;
+    return texto;
   }
 
   static Future<String> reiniciarESP() async {
@@ -503,53 +510,6 @@ class ProductoModel {
       texto = "Error: ${e.message.toString()}";
     } on Error catch (e) {
       texto = "Error: ${e.toString()}";
-    }
-    return texto;
-  }
-
-  static Future<String> guardarPerdidas(
-    List<String> razones,
-    List<double> cantidades,
-    double unidades,
-    String id,
-  ) async {
-    String texto = "Error: Las perdidas exceden la cantidad almacenada.";
-    if (unidades >= 0) {
-      try {
-        final res = await http.put(
-          Uri.parse(
-            "${LocalStorage.local('conexion')}/almacen/$id/Perdidas/ESP",
-          ),
-          headers: {
-            "Accept": "application/json",
-            "content-type": "application/json; charset=UTF-8",
-          },
-          body: jsonEncode({
-            'cantidades': cantidades
-                .toString()
-                .replaceAll("[", "{")
-                .replaceAll("]", "}"),
-            'razones': razones
-                .toString()
-                .replaceAll("[", "{")
-                .replaceAll("]", "}"),
-            'unidades': unidades,
-            'usuario': LocalStorage.local('usuario'),
-          }),
-        );
-        texto = "${res.reasonPhrase}";
-        if (res.statusCode == 200) {
-          texto = "Se guardaron las perdidas.";
-        }
-      } on TimeoutException catch (e) {
-        texto = "Error: ${e.message.toString()}";
-      } on SocketException catch (e) {
-        texto = "Error: ${e.message.toString()}";
-      } on http.ClientException catch (e) {
-        texto = "Error: ${e.message.toString()}";
-      } on Error catch (e) {
-        texto = "Error: ${e.toString()}";
-      }
     }
     return texto;
   }

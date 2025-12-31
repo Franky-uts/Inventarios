@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:provider/provider.dart';
 
 class Tablas with ChangeNotifier {
   static List<dynamic> _datos = [];
-  static bool _valido = false;
 
   static Container contenedorInfo(
     double grosor,
@@ -45,7 +45,9 @@ class Tablas with ChangeNotifier {
       future: modelo(),
       builder: (context, snapshot) {
         Widget wid = Carga.carga();
-        _valido = false;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          context.read<Carga>().valido(false);
+        });
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
             _datos = snapshot.data;
@@ -55,8 +57,10 @@ class Tablas with ChangeNotifier {
               if (CampoTexto.busquedaTexto.text.isNotEmpty) {
                 wid = Textos.textoError(errorTexto);
               }
-              if (_datos[0].mensaje=="") {
-                _valido = true;
+              if (_datos[0].mensaje == "") {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  context.read<Carga>().valido(true);
+                });
                 wid = lista(_datos);
               }
             }
@@ -82,14 +86,19 @@ class Tablas with ChangeNotifier {
     return SizedBox(width: grosor, child: Textos.textoBlanco(texto, size));
   }
 
-  static Widget _barraDato(double grosor, String texto, Color color) {
+  static Widget _barraDato(
+    double grosor,
+    String texto,
+    Color color,
+    int maxLines,
+  ) {
     return Container(
       width: grosor,
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Textos.textoGeneral(texto, 20, true, true),
+      child: Textos.textoGeneral(texto, 20, true, true, maxLines),
     );
   }
 
@@ -98,6 +107,7 @@ class Tablas with ChangeNotifier {
     List<double> grosores,
     List<String> textos,
     List<Color> colores,
+    int maxLines,
     bool boton, {
     Function? extra,
     Widget? extraWid,
@@ -105,14 +115,21 @@ class Tablas with ChangeNotifier {
     List<Widget> lista = [];
     for (int i = 0; i < textos.length; i++) {
       if (textos[i].isEmpty) {
-        lista.add(extraWid!);
+        lista.add(SizedBox(width: grosor * grosores[i], child: extraWid!));
       } else {
         if (colores.isEmpty) {
           lista.add(
-            _barraDato(grosor * grosores[i], textos[i], Colors.transparent),
+            _barraDato(
+              grosor * grosores[i],
+              textos[i],
+              Colors.transparent,
+              maxLines,
+            ),
           );
         } else {
-          lista.add(_barraDato(grosor * grosores[i], textos[i], colores[i]));
+          lista.add(
+            _barraDato(grosor * grosores[i], textos[i], colores[i], maxLines),
+          );
         }
       }
       if (i != textos.length - 1) {
@@ -154,14 +171,5 @@ class Tablas with ChangeNotifier {
   void datos(List<dynamic> lista) {
     _datos = lista;
     notifyListeners();
-  }
-
-  void valido(bool boolean) {
-    boolean = _valido;
-    notifyListeners();
-  }
-
-  static bool getValido() {
-    return _valido;
   }
 }

@@ -35,7 +35,7 @@ class RecDrawer {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Textos.textoGeneral("Bienvenido, ", 15, true, false),
+                    Textos.textoGeneral("Bienvenido, ", 15, true, false, 1),
                     Botones.btnRctMor(
                       "Cerrar sesión",
                       0,
@@ -55,18 +55,21 @@ class RecDrawer {
                   30,
                   true,
                   false,
+                  1,
                 ),
                 Textos.textoGeneral(
                   LocalStorage.local('puesto'),
                   15,
                   true,
                   false,
+                  1,
                 ),
                 Textos.textoGeneral(
                   "Mostrando: ${LocalStorage.local('locación')}",
                   20,
                   true,
                   false,
+                  1,
                 ),
               ],
             ),
@@ -240,7 +243,10 @@ class RecDrawer {
     Navigator.of(ctx).pop();
     prod = await Textos.scan(ctx);
     bool flag = true;
-    List<ArticulosModel> articulos = await ArticulosModel.getArticulos("id", "");
+    List<ArticulosModel> articulos = await ArticulosModel.getArticulos(
+      "id",
+      "",
+    );
     for (int i = 0; i < articulos.length; i++) {
       if (articulos[i].codigoBarras == prod) {
         flag = false;
@@ -248,8 +254,7 @@ class RecDrawer {
           Navigator.pushReplacement(
             ctx,
             MaterialPageRoute(
-              builder: (cxt) =>
-                  ArticuloInfo(articulo: articulos[i]),
+              builder: (cxt) => ArticuloInfo(articulo: articulos[i]),
             ),
           );
         }
@@ -303,10 +308,19 @@ class RecDrawer {
   static Future<void> salidaOrdenes(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
     Navigator.of(ctx).pop();
-    List<ProductoModel> productos = await ProductoModel.getProductos("id", "");
+    CampoTexto.seleccionFiltro = Filtros.id;
+    List<ProductoModel> productos = await ProductoModel.getProductos(
+      "idProducto",
+      "",
+    );
     if (productos[0].nombre != "Error") {
       if (ctx.mounted) {
-        Textos.crearLista(productos.length, Color(0xFFFDC930));
+        Textos.crearLista(
+          int.parse(
+            productos.last.id.substring(0, productos.last.id.length - 3),
+          ),
+          Color(0xFFFDC930),
+        );
         Navigator.pushReplacement(
           ctx,
           MaterialPageRoute(builder: (context) => OrdenSalida()),

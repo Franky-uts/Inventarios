@@ -39,6 +39,7 @@ class Textos with ChangeNotifier {
     double size,
     bool principal,
     bool centro,
+    int maxLines,
   ) {
     TextStyle estilo;
     Color color;
@@ -61,7 +62,7 @@ class Textos with ChangeNotifier {
     return Text(
       texto,
       textAlign: alineamiento,
-      maxLines: 1,
+      maxLines: maxLines,
       overflow: TextOverflow.ellipsis,
       style: estilo,
     );
@@ -110,6 +111,7 @@ class Textos with ChangeNotifier {
     String textoValor,
     Color colorBorde,
     double size,
+    int maxLines,
   ) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
@@ -118,7 +120,7 @@ class Textos with ChangeNotifier {
         border: Border.all(color: colorBorde, width: 2.5),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: textoGeneral(textoValor.toString(), size, true, true),
+      child: textoGeneral(textoValor.toString(), size, true, true, maxLines),
     );
   }
 
@@ -139,8 +141,14 @@ class Textos with ChangeNotifier {
       case ('En proceso'):
         color = Colors.blue.shade200;
         break;
+      case ('Entregado'):
+        color = Colors.green.shade100;
+        break;
+      case ('Incompleto'):
+        color = Colors.yellow.shade300;
+        break;
       case ('Finalizado'):
-        color = Colors.green.shade200;
+        color = Colors.green.shade300;
         break;
       case ('Cancelado'):
         color = Colors.red.shade200;

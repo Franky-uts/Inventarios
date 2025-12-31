@@ -71,13 +71,20 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
       if (mensaje.split(": ")[0] != "Error") {
         setState(() {
           color = Color(0x00000000);
-          if (columna == "CodigoBarras") {
-            widget.articulo.codigoBarras = barras;
-            mensaje = "Se actualizó el código de barras de $mensaje.";
-          } else {
-            widget.articulo.cantidadPorUnidad = double.parse(controller.text);
-            mensaje =
-                "Se actualizó la cantidad de productos por unidad de $mensaje.";
+          switch (columna) {
+            case "CodigoBarras":
+              widget.articulo.codigoBarras = barras;
+              mensaje = "Se actualizó el código de barras de $mensaje.";
+              break;
+            case "CantidadPorUnidad":
+              widget.articulo.cantidadPorUnidad = double.parse(controller.text);
+              mensaje =
+                  "Se actualizó la cantidad de productos por unidad de $mensaje.";
+              break;
+            case "Precio":
+              widget.articulo.precio = double.parse(controller.text);
+              mensaje = "Se actualizó el precio de $mensaje.";
+              break;
           }
         });
       }
@@ -126,18 +133,43 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                       ),
                     ),
                     SizedBox(
-                      width: MediaQuery.of(context).size.width * .75,
+                      width: MediaQuery.of(context).size.width * .9,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          rectanguloContainer(
-                            codigoTexto(widget.articulo.codigoBarras),
+                          Row(
+                            children: [
+                              rectanguloContainer(
+                                codigoTexto(widget.articulo.codigoBarras),
+                              ),
+                              Botones.btnSimple(
+                                "Cambiar Código de barras",
+                                Icons.edit_note_rounded,
+                                Color(0xFF8A03A9),
+                                () => scanCod(context),
+                              ),
+                            ],
                           ),
-                          Botones.btnSimple(
-                            "Cambiar Código de barras",
-                            Icons.edit_note_rounded,
-                            Color(0xFF8A03A9),
-                            () => scanCod(context),
+                          Row(
+                            children: [
+                              rectanguloContainer(
+                                "Precio: ${widget.articulo.precio}".split(".0")[0],
+                              ),
+                              Botones.btnSimple(
+                                "Cambiar precio",
+                                Icons.price_change_rounded,
+                                Color(0xFF8A03A9),
+                                () => {
+                                  tituloVen = "Editar precio",
+                                  texto = "${widget.articulo.precio}".split(
+                                    ".0",
+                                  )[0],
+                                  columna = "Precio",
+                                  controller.text = texto,
+                                  context.read<Ventanas>().emergente(true),
+                                },
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -245,7 +277,6 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
         );
         return Container(
           width: MediaQuery.sizeOf(context).width,
-          height: 40,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
@@ -260,9 +291,10 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
               lista[index].ultimaModificacion,
             ],
             colores,
+            2,
             true,
             extra: () => {},
-            extraWid: Text(lista[index].unidades.runtimeType.toString()),
+            extraWid: Text(lista[index].mensaje),
           ),
         );
       },
@@ -305,7 +337,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
         color: Color(0x40FF5600),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Textos.textoGeneral(texto, 20, true, true),
+      child: Textos.textoGeneral(texto, 20, true, true, 1),
     );
   }
 }
