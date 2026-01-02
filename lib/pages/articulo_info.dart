@@ -153,7 +153,9 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                           Row(
                             children: [
                               rectanguloContainer(
-                                "Precio: ${widget.articulo.precio}".split(".0")[0],
+                                "Precio: ${widget.articulo.precio}".split(
+                                  ".0",
+                                )[0],
                               ),
                               Botones.btnSimple(
                                 "Cambiar precio",
@@ -316,7 +318,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
           tituloVen = "Editar cantidad por unidad",
           texto = "Cantidad por unidad",
           columna = "CantidadPorUnidad",
-          controller.text = texto,
+          controller.text = "${widget.articulo.cantidadPorUnidad}",
           context.read<Ventanas>().emergente(true),
         },
       ),

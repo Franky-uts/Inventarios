@@ -408,7 +408,6 @@ class OrdenModel {
     List confirmaciones,
   ) async {
     String respuesta;
-    print("$estado $confirmaciones");
     try {
       final res = await http.put(
         Uri.parse("${LocalStorage.local('conexion')}/ordenes/$id/confirmacion"),
