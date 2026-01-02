@@ -78,9 +78,8 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               false,
               () => {
                 carga.cargaBool(true),
-                if(CampoTexto.seleccionFiltro == Filtros.unidades){
-                  CampoTexto.seleccionFiltro = Filtros.id,
-                },
+                if (CampoTexto.seleccionFiltro == Filtros.unidades)
+                  {CampoTexto.seleccionFiltro = Filtros.id},
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -117,9 +116,8 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               false,
               () => {
                 carga.cargaBool(true),
-                if(CampoTexto.seleccionFiltro == Filtros.unidades){
-                  CampoTexto.seleccionFiltro = Filtros.id,
-                },
+                if (CampoTexto.seleccionFiltro == Filtros.unidades)
+                  {CampoTexto.seleccionFiltro = Filtros.id},
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => Articulos()),
@@ -304,12 +302,12 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             [
               lista[index].id,
               lista[index].nombre,
-              lista[index].unidades.toString().split(".")[0],
+              "${lista[index].unidades}".split(".0")[0],
               lista[index].area,
               lista[index].tipo,
-              lista[index].entrada.toString(),
-              lista[index].salida.toString(),
-              lista[index].perdidaCantidad.length.toString(),
+              "${lista[index].entrada}".split(".0")[0],
+              "${lista[index].salida}".split(".0")[0],
+              "${lista[index].perdidaCantidad.length}",
             ],
             colores,
             1,

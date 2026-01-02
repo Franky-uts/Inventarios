@@ -113,7 +113,7 @@ class OrdenModel {
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString(),
+          mensaje: "${e.message}",
         ),
       );
     } on SocketException catch (e) {
@@ -132,7 +132,7 @@ class OrdenModel {
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString(),
+          mensaje: e.message,
         ),
       );
     } on http.ClientException catch (e) {
@@ -151,7 +151,7 @@ class OrdenModel {
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString(),
+          mensaje: e.message,
         ),
       );
     } on Error catch (e) {
@@ -170,7 +170,7 @@ class OrdenModel {
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.toString(),
+          mensaje: "$e",
         ),
       );
     }
@@ -250,7 +250,7 @@ class OrdenModel {
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString(),
+          mensaje: "${e.message}",
         ),
       );
     } on SocketException catch (e) {
@@ -269,7 +269,7 @@ class OrdenModel {
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString(),
+          mensaje: e.message,
         ),
       );
     } on http.ClientException catch (e) {
@@ -288,7 +288,7 @@ class OrdenModel {
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.message.toString(),
+          mensaje: e.message,
         ),
       );
     } on Error catch (e) {
@@ -307,7 +307,7 @@ class OrdenModel {
           remitente: "",
           ultimaModificacion: "",
           destino: "",
-          mensaje: e.toString(),
+          mensaje: "$e",
         ),
       );
     }
@@ -333,17 +333,11 @@ class OrdenModel {
           "content-type": "application/json; charset=UTF-8",
         },
         body: jsonEncode({
-          'articulos': articulos
-              .toString()
-              .replaceAll("[", "{")
-              .replaceAll("]", "}"),
-          'cantidades': cantidades
-              .toString()
-              .replaceAll("[", "{")
-              .replaceAll("]", "}"),
+          'articulos': "$articulos".replaceAll("[", "{").replaceAll("]", "}"),
+          'cantidades': "$cantidades".replaceAll("[", "{").replaceAll("]", "}"),
           'comentarios': comentarios,
-          'tipos': tipos.toString().replaceAll("[", "{").replaceAll("]", "}"),
-          'areas': areas.toString().replaceAll("[", "{").replaceAll("]", "}"),
+          'tipos': "$tipos".replaceAll("[", "{").replaceAll("]", "}"),
+          'areas': "$areas".replaceAll("[", "{").replaceAll("]", "}"),
           'estado': estado,
           'remitente': remitente,
           'destino': destino,
@@ -353,17 +347,17 @@ class OrdenModel {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          productoFuture = item["id"].toString();
+          productoFuture = item["id"];
         }
       }
     } on TimeoutException catch (e) {
-      productoFuture = "Error: ${e.message.toString()}";
+      productoFuture = "Error: ${e.message}";
     } on SocketException catch (e) {
-      productoFuture = "Error: ${e.message.toString()}";
+      productoFuture = "Error: ${e.message}";
     } on http.ClientException catch (e) {
-      productoFuture = "Error: ${e.message.toString()}";
+      productoFuture = "Error: ${e.message}";
     } on Error catch (e) {
-      productoFuture = "Error: ${e.toString()}";
+      productoFuture = "Error: $e";
     }
     return productoFuture;
   }
@@ -386,18 +380,18 @@ class OrdenModel {
         },
         body: jsonEncode({'dato': dato}),
       );
-      respuesta = res.reasonPhrase.toString();
+      respuesta = "${res.reasonPhrase}";
       if (res.statusCode == 200) {
         respuesta = "Se modificó la orden.";
       }
     } on TimeoutException catch (e) {
-      respuesta = "Error: ${e.message.toString()}";
+      respuesta = "Error: ${e.message}";
     } on SocketException catch (e) {
-      respuesta = "Error: ${e.message.toString()}";
+      respuesta = "Error: ${e.message}";
     } on http.ClientException catch (e) {
-      respuesta = "Error: ${e.message.toString()}";
+      respuesta = "Error: ${e.message}";
     } on Error catch (e) {
-      respuesta = "Error: ${e.toString()}";
+      respuesta = "Error: $e";
     }
     return respuesta;
   }
@@ -417,24 +411,23 @@ class OrdenModel {
         },
         body: jsonEncode({
           'estado': estado,
-          'confirmacion': confirmaciones
-              .toString()
+          'confirmacion': "$confirmaciones"
               .replaceAll("[", "{")
               .replaceAll("]", "}"),
         }),
       );
-      respuesta = res.reasonPhrase.toString();
+      respuesta = "${res.reasonPhrase}";
       if (res.statusCode == 200) {
         respuesta = "Se modificó la orden.";
       }
     } on TimeoutException catch (e) {
-      respuesta = "Error: ${e.message.toString()}";
+      respuesta = "Error: ${e.message}";
     } on SocketException catch (e) {
-      respuesta = "Error: ${e.message.toString()}";
+      respuesta = "Error: ${e.message}";
     } on http.ClientException catch (e) {
-      respuesta = "Error: ${e.message.toString()}";
+      respuesta = "Error: ${e.message}";
     } on Error catch (e) {
-      respuesta = "Error: ${e.toString()}";
+      respuesta = "Error: $e";
     }
     return respuesta;
   }

@@ -132,15 +132,11 @@ class _HistorialInfoState extends State<HistorialInfo> {
                                         widget
                                             .historialInfo
                                             .usuarioModificacion[index],
-                                        widget.historialInfo.unidades[index]
-                                            .toString()
+                                        "${widget.historialInfo.unidades[index]}"
                                             .split(".0")[0],
-                                        widget.historialInfo.entradas[index]
-                                            .toString(),
-                                        widget.historialInfo.salidas[index]
-                                            .toString(),
-                                        widget.historialInfo.perdidas[index]
-                                            .toString(),
+                                        "${widget.historialInfo.entradas[index]}",
+                                        "${widget.historialInfo.salidas[index]}",
+                                        "${widget.historialInfo.perdidas[index]}",
                                       ],
                                       [],
                                       1,
@@ -196,7 +192,7 @@ class _HistorialInfoState extends State<HistorialInfo> {
                           [.05, .15, .6],
                           [
                             "${index + 1}",
-                            widget.historialInfo.cantidades[index].toString(),
+                            "${widget.historialInfo.cantidades[index]}",
                             widget.historialInfo.razones[index],
                           ],
                           [],

@@ -60,10 +60,10 @@ class ArticulosModel {
             articulosFuture.add(
               ArticulosModel(
                 id: item["id"],
-                nombre: item["Nombre"].toString(),
-                tipo: item["Tipo"].toString(),
+                nombre: item["Nombre"],
+                tipo: item["Tipo"],
                 cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
-                area: item["Area"].toString(),
+                area: item["Area"],
                 codigoBarras: item["CodigoBarras"],
                 precio: item["Precio"].toDouble(),
                 mensaje: "",
@@ -94,7 +94,7 @@ class ArticulosModel {
             area: "",
             codigoBarras: "",
             precio: 0,
-            mensaje: e.message.toString(),
+            mensaje: "${e.message}",
           ),
         );
       } on SocketException catch (e) {
@@ -107,7 +107,7 @@ class ArticulosModel {
             area: "",
             codigoBarras: "",
             precio: 0,
-            mensaje: e.message.toString(),
+            mensaje: e.message,
           ),
         );
       } on http.ClientException catch (e) {
@@ -120,7 +120,7 @@ class ArticulosModel {
             area: "",
             codigoBarras: "",
             precio: 0,
-            mensaje: e.message.toString(),
+            mensaje: e.message,
           ),
         );
       } on Error catch (e) {
@@ -133,7 +133,7 @@ class ArticulosModel {
             area: "",
             codigoBarras: "",
             precio: 0,
-            mensaje: e.toString(),
+            mensaje: "$e",
           ),
         );
       }
@@ -174,13 +174,13 @@ class ArticulosModel {
         }
       }
     } on TimeoutException catch (e) {
-      articulosFuture = "Error: ${e.message.toString()}";
+      articulosFuture = "Error: ${e.message}";
     } on SocketException catch (e) {
-      articulosFuture = "Error: ${e.message.toString()}";
+      articulosFuture = "Error: ${e.message}";
     } on http.ClientException catch (e) {
-      articulosFuture = "Error: ${e.message.toString()}";
+      articulosFuture = "Error: ${e.message}";
     } on Error catch (e) {
-      articulosFuture = "Error: ${e.toString()}";
+      articulosFuture = "Error: $e";
     }
     return articulosFuture;
   }
@@ -208,13 +208,13 @@ class ArticulosModel {
         }
       }
     } on TimeoutException catch (e) {
-      articulosFuture = "Error: ${e.message.toString()}";
+      articulosFuture = "Error: ${e.message}";
     } on SocketException catch (e) {
-      articulosFuture = "Error: ${e.message.toString()}";
+      articulosFuture = "Error: ${e.message}";
     } on http.ClientException catch (e) {
-      articulosFuture = "Error: ${e.message.toString()}";
+      articulosFuture = "Error: ${e.message}";
     } on Error catch (e) {
-      articulosFuture = "Error: ${e.toString()}";
+      articulosFuture = "Error: $e";
     }
     return articulosFuture;
   }

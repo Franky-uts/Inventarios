@@ -53,26 +53,26 @@ class UsuarioModel {
     } on TimeoutException catch (e) {
       usuarioFuture = UsuarioModel(
         nombre: "error",
-        puesto: e.message.toString(),
-        locacion: e.message.toString(),
+        puesto: "${e.message}",
+        locacion: "${e.message}",
       );
     } on SocketException catch (e) {
       usuarioFuture = UsuarioModel(
         nombre: "error",
-        puesto: e.message.toString(),
-        locacion: e.message.toString(),
+        puesto: e.message,
+        locacion: e.message,
       );
     } on http.ClientException catch (e) {
       usuarioFuture = UsuarioModel(
         nombre: "error",
-        puesto: e.message.toString(),
-        locacion: e.message.toString(),
+        puesto: e.message,
+        locacion: e.message,
       );
     } on Error catch (e) {
       usuarioFuture = UsuarioModel(
         nombre: "error",
-        puesto: e.toString(),
-        locacion: e.toString(),
+        puesto: "$e",
+        locacion: "$e",
       );
     }
     return usuarioFuture;

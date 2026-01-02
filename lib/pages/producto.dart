@@ -22,13 +22,12 @@ class Producto extends StatefulWidget {
 }
 
 class _ProductoState extends State<Producto> {
-  late int entrantes = widget.productoInfo.entrada,
-      salidas = widget.productoInfo.salida;
-  late double unidades = widget.productoInfo.unidades;
+  late double entrantes = widget.productoInfo.entrada,
+      salidas = widget.productoInfo.salida,
+      unidades = widget.productoInfo.unidades;
   double productosPerdido = 0;
   Timer? timer;
   String texto = "";
-  late Widget wid;
   FocusNode focus = FocusNode();
   final List<Color> color = [];
   List<TextEditingController> controller = [
@@ -111,7 +110,7 @@ class _ProductoState extends State<Producto> {
         if ((salidas + valor) >= widget.productoInfo.salida) {
           color = Color(0xFF8A03A9);
           if ((salidas + valor - widget.productoInfo.salida) <= entrantes &&
-              (unidades - valor) > 0) {
+              (unidades - valor) >= 0) {
             salidas += valor;
             unidades += -valor;
           }
@@ -207,6 +206,49 @@ class _ProductoState extends State<Producto> {
           children: [
             Consumer<Carga>(
               builder: (context, carga, child) {
+                List<Widget> contenido = [
+                  Textos.textoTilulo(widget.productoInfo.nombre, 30),
+                  tipoTexto(widget.productoInfo.tipo),
+                  contenedorInfo(
+                    " que entraron:",
+                    "$entrantes".split(".0")[0],
+                    0,
+                  ),
+                  contenedorInfo(
+                    " que salieron:",
+                    "$salidas".split(".0")[0],
+                    1,
+                  ),
+                  contenedorInfo(
+                    "Productos perdidos:",
+                    "$productosPerdido".split(".0")[0],
+                    2,
+                  ),
+                  Botones.icoCirMor(
+                    "Guardar movimientos",
+                    Icons.save_rounded,
+                    false,
+                    () => enviarDatos(context),
+                    () => Textos.toast("No hay hay cambios.", false),
+                    entrantes != widget.productoInfo.entrada ||
+                        salidas != widget.productoInfo.salida ||
+                        unidades != widget.productoInfo.unidades,
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      footer([
+                        "Ultima modificación:",
+                        widget.productoInfo.ultimaModificacion,
+                      ]),
+                      footer([
+                        "Modificada por:",
+                        widget.productoInfo.ultimoUsuario,
+                      ]),
+                    ],
+                  ),
+                ];
                 return SingleChildScrollView(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
@@ -214,45 +256,7 @@ class _ProductoState extends State<Producto> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        Textos.textoTilulo(widget.productoInfo.nombre, 30),
-                        tipoTexto(widget.productoInfo.tipo),
-                        contenedorInfo(
-                          " que entraron:",
-                          entrantes.toString(),
-                          0,
-                        ),
-                        contenedorInfo(" que salieron:", salidas.toString(), 1),
-                        contenedorInfo(
-                          "Productos perdidos:",
-                          productosPerdido.toString().split(".0")[0],
-                          2,
-                        ),
-                        Botones.icoCirMor(
-                          "Guardar movimientos",
-                          Icons.save_rounded,
-                          false,
-                          () => enviarDatos(context),
-                          () => Textos.toast("No hay hay cambios.", false),
-                          entrantes != widget.productoInfo.entrada ||
-                              salidas != widget.productoInfo.salida ||
-                              unidades != widget.productoInfo.unidades,
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            footer([
-                              "Ultima modificación:",
-                              widget.productoInfo.ultimaModificacion,
-                            ]),
-                            footer([
-                              "Modificada por:",
-                              widget.productoInfo.ultimoUsuario,
-                            ]),
-                          ],
-                        ),
-                      ],
+                      children: contenido,
                     ),
                   ),
                 );
@@ -300,8 +304,7 @@ class _ProductoState extends State<Producto> {
                           [.05, .15, .6],
                           [
                             "${index + 1}",
-                            widget.productoInfo.perdidaCantidad[index]
-                                .toString(),
+                            "${widget.productoInfo.perdidaCantidad[index]}",
                             widget.productoInfo.perdidaRazones[index],
                           ],
                           [],
@@ -412,15 +415,15 @@ class _ProductoState extends State<Producto> {
     String text = "";
     if (tipo == "Granel" || tipo == "Costal") {
       titulo = "Unidades:";
-      text =
-          "Kilos por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}";
+      text = "${widget.productoInfo.cantidadPorUnidad}".split(".0")[0];
+      text = "Kilos por unidad: $text";
     } else if (tipo == "Bote") {
       titulo = "Unidades:";
-      text =
-          "Kilos/Piezas por unidad: ${widget.productoInfo.cantidadPorUnidad.toString()}";
+      text = "${widget.productoInfo.cantidadPorUnidad}".split(".0")[0];
+      text = "Kilos/Piezas por unidad: $text";
     } else if (tipo == "Caja" || tipo == "Bulto" || tipo == "Paquete") {
-      text =
-          "Productos por $tipo: ${widget.productoInfo.cantidadPorUnidad.toString()}";
+      text = "${widget.productoInfo.cantidadPorUnidad}".split(".0")[0];
+      text = "Productos por $tipo: $text";
     } else if (tipo == "Galón") {
       titulo = "Galones:";
     }
@@ -429,7 +432,7 @@ class _ProductoState extends State<Producto> {
       if (text.isNotEmpty) {
         wid.add(Textos.textoGeneral(text, 15, false, true, 1));
       }
-      text = "Minimo requerido: ${widget.productoInfo.limiteProd.toString()}";
+      text = "Minimo requerido: ${widget.productoInfo.limiteProd}";
     }
     wid.last = Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -444,7 +447,7 @@ class _ProductoState extends State<Producto> {
             () => {
               context.read<Ventanas>().emergente(true),
               setState(() {
-                controller[0].text = widget.productoInfo.limiteProd.toString();
+                controller[0].text = "${widget.productoInfo.limiteProd}";
                 color[3] = Color(0x00000000);
                 texto = "Confirma el nuevo límite de productos.";
               }),
@@ -466,7 +469,7 @@ class _ProductoState extends State<Producto> {
             children: wid,
           ),
           Textos.recuadroCantidad(
-            unidades.toString(),
+            "$unidades".split(".0")[0],
             Textos.colorLimite(
               widget.productoInfo.limiteProd,
               unidades.floor(),
@@ -495,50 +498,44 @@ class _ProductoState extends State<Producto> {
         text = "Gramos/Piezas perdidos:";
       }
     }
-    List<Widget> botones = [];
-    if (textoInfo != "Productos perdidos:") {
-      botones.add(
-        GestureDetector(
-          onLongPress: () => timer = Timer.periodic(
-            Duration(milliseconds: 150),
-            (timer) => cambioValor(valor, -1),
-          ),
-          onLongPressEnd: (_) => setState(() {
-            timer?.cancel();
-          }),
-          child: Botones.btnRctMor(
-            "",
-            0,
-            Icons.remove,
-            false,
-            () => cambioValor(valor, -1),
-          ),
+    List<Widget> botones = [
+      GestureDetector(
+        onLongPress: () => timer = Timer.periodic(
+          Duration(milliseconds: 150),
+          (timer) => cambioValor(valor, -1),
         ),
-      );
-    }
-    botones.add(Textos.recuadroCantidad(textoValor, color[valor], 20, 1));
-    if (textoInfo != "Productos perdidos:") {
-      botones.add(
-        GestureDetector(
-          onLongPress: () => timer = Timer.periodic(
-            Duration(milliseconds: 150),
-            (timer) => cambioValor(valor, 1),
-          ),
-          onLongPressEnd: (_) => setState(() {
-            timer?.cancel();
-          }),
-          child: Botones.btnRctMor(
-            "",
-            0,
-            Icons.add,
-            false,
-            () => cambioValor(valor, 1),
-          ),
+        onLongPressEnd: (_) => setState(() {
+          timer?.cancel();
+        }),
+        child: Botones.btnRctMor(
+          "",
+          0,
+          Icons.remove,
+          false,
+          () => cambioValor(valor, -1),
         ),
-      );
-    }
+      ),
+      Textos.recuadroCantidad(textoValor, color[valor], 20, 1),
+      GestureDetector(
+        onLongPress: () => timer = Timer.periodic(
+          Duration(milliseconds: 150),
+          (timer) => cambioValor(valor, 1),
+        ),
+        onLongPressEnd: (_) => setState(() {
+          timer?.cancel();
+        }),
+        child: Botones.btnRctMor(
+          "",
+          0,
+          Icons.add,
+          false,
+          () => cambioValor(valor, 1),
+        ),
+      ),
+    ];
     if (textoInfo == "Productos perdidos:") {
-      botones.add(
+      botones = [
+        botones[1],
         Botones.btnRctMor(
           textoInfo.split(":")[0],
           0,
@@ -551,7 +548,7 @@ class _ProductoState extends State<Producto> {
             }),
           },
         ),
-      );
+      ];
     }
     return SizedBox(
       width: MediaQuery.of(context).size.width * .55,

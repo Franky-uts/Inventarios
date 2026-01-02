@@ -120,7 +120,7 @@ class Textos with ChangeNotifier {
         border: Border.all(color: colorBorde, width: 2.5),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: textoGeneral(textoValor.toString(), size, true, true, maxLines),
+      child: textoGeneral(textoValor, size, true, true, maxLines),
     );
   }
 

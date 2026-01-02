@@ -281,13 +281,11 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                                 listaProd[index].nombre,
                                 listaProd[index].area,
                                 listaProd[index].tipo,
-                                cantidad[id - 1].toString(),
-                                listaProd[index].cantidadPorUnidad
-                                    .toString()
-                                    .split(".0")[0],
-                                (cantidad[id - 1] *
-                                        listaProd[index].cantidadPorUnidad)
-                                    .toString()
+                                "${cantidad[id - 1]}",
+                                "${listaProd[index].cantidadPorUnidad}".split(
+                                  ".0",
+                                )[0],
+                                "${cantidad[id - 1] * listaProd[index].cantidadPorUnidad}"
                                     .split(".0")[0],
                                 "",
                               ],
@@ -445,11 +443,11 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             MediaQuery.sizeOf(context).width,
             [.1, .25, .175, .175, .08, .2],
             [
-              lista[index].id.toString(),
+              "${lista[index].id}",
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,
-              lista[index].unidades.toString().split(".")[0],
+              "${lista[index].unidades}".split(".")[0],
               "",
             ],
             colores,

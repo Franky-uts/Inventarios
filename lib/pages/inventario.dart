@@ -75,9 +75,8 @@ class _InventarioState extends State<Inventario> {
               false,
               () => {
                 carga.cargaBool(true),
-                if(CampoTexto.seleccionFiltro==Filtros.unidades){
-                  CampoTexto.seleccionFiltro = Filtros.id,
-                },
+                if (CampoTexto.seleccionFiltro == Filtros.unidades)
+                  {CampoTexto.seleccionFiltro = Filtros.id},
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -284,14 +283,14 @@ class _InventarioState extends State<Inventario> {
             MediaQuery.sizeOf(context).width,
             [.1, .25, .08, .175, .15, .075, .075, .075],
             [
-              lista[index].id.toString(),
+              "${lista[index].id}",
               lista[index].nombre,
-              lista[index].unidades.toString().split(".")[0],
+              "${lista[index].unidades}".split(".")[0],
               lista[index].area,
               lista[index].tipo,
-              lista[index].entrada.toString(),
-              lista[index].salida.toString(),
-              lista[index].perdidaCantidad.length.toString(),
+              "${lista[index].entrada}",
+              "${lista[index].salida}",
+              "${lista[index].perdidaCantidad.length}",
             ],
             colores,
             2,

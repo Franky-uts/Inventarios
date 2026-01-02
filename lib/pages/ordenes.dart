@@ -135,10 +135,7 @@ class _OrdenesState extends State<Ordenes> {
     switch (datos) {
       case ("guardar"):
         columna = "CantidadesCubiertas";
-        datos = ctx
-            .read<VenDatos>()
-            .canCubVenLista()
-            .toString()
+        datos = "${ctx.read<VenDatos>().canCubVenLista()}"
             .replaceAll("[", "{")
             .replaceAll("]", "}");
         break;
@@ -150,10 +147,7 @@ class _OrdenesState extends State<Ordenes> {
           for (int i = 0; i < ctx.read<VenDatos>().length(); i++) {
             listaDatos.add(ctx.read<VenDatos>().comProv(i));
           }
-          datos = listaDatos
-              .toString()
-              .replaceAll("[", "{")
-              .replaceAll("]", "}");
+          datos = "$listaDatos".replaceAll("[", "{").replaceAll("]", "}");
         }
         break;
     }
@@ -347,10 +341,10 @@ class _OrdenesState extends State<Ordenes> {
                             MediaQuery.sizeOf(context).width,
                             [.25, .1, .125, .1, .285],
                             [
-                              venDatos.artVen(index).toString(),
+                              (venDatos.artVen(index)),
                               venDatos.tipVen(index),
                               venDatos.areVen(index),
-                              venDatos.canVen(index).toString(),
+                              "${venDatos.canVen(index)}",
                               "",
                             ],
                             [],
@@ -466,11 +460,12 @@ class _OrdenesState extends State<Ordenes> {
                   () => ventana.emergente(false),
                   () async => {
                     ventana.emergente(false),
-                    if(venDatos.estVen()=="En proceso"){
-                      carga.cargaBool(true),
-                      Textos.toast(await guardarDatos(context), false),
-                      carga.cargaBool(false),
-                    },
+                    if (venDatos.estVen() == "En proceso")
+                      {
+                        carga.cargaBool(true),
+                        Textos.toast(await guardarDatos(context), false),
+                        carga.cargaBool(false),
+                      },
                     ventana.tabla(accion == "guardar" || accion == "confirmar"),
                   },
                   widget: Column(children: wid),
@@ -551,8 +546,8 @@ class _OrdenesState extends State<Ordenes> {
                 MediaQuery.sizeOf(context).width,
                 [.05, .125, .175, .2, .2, .25],
                 [
-                  lista[index].id.toString(),
-                  lista[index].articulos.length.toString(),
+                  "${lista[index].id}",
+                  "${lista[index].articulos.length}",
                   lista[index].estado,
                   lista[index].remitente,
                   lista[index].destino,
@@ -573,7 +568,7 @@ class _OrdenesState extends State<Ordenes> {
                     lista[index].comentariosProveedor,
                     lista[index].comentariosTienda,
                     lista[index].confirmacion,
-                    lista[index].id.toString(),
+                    "${lista[index].id}",
                     lista[index].remitente,
                     lista[index].estado,
                     lista[index].ultimaModificacion,

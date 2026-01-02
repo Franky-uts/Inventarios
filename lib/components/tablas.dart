@@ -65,7 +65,7 @@ class Tablas with ChangeNotifier {
               }
             }
           } else if (snapshot.hasError) {
-            wid = Textos.textoError("Error:\n${snapshot.error.toString()}");
+            wid = Textos.textoError("Error:\n${snapshot.error}");
           }
         }
         return RefreshIndicator(

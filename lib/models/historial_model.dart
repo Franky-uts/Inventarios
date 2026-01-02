@@ -11,8 +11,8 @@ class HistorialModel {
   String nombre;
   String area;
   List<double> unidades;
-  List<int> entradas;
-  List<int> salidas;
+  List<double> entradas;
+  List<double> salidas;
   List<int> perdidas;
   List<String> razones;
   List<double> cantidades;
@@ -93,8 +93,8 @@ class HistorialModel {
                 nombre: item["Nombre"],
                 area: item["Area"],
                 unidades: unidadeslist,
-                entradas: List<int>.from(item["Entradas"]),
-                salidas: List<int>.from(item["Salidas"]),
+                entradas: List<double>.from(item["Entradas"]),
+                salidas: List<double>.from(item["Salidas"]),
                 perdidas: List<int>.from(item["Perdidas"]),
                 razones: List<String>.from(item["PerdidaRazon"]),
                 cantidades: doublelist,

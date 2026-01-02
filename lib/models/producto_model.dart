@@ -13,8 +13,8 @@ class ProductoModel {
   double cantidadPorUnidad;
   double unidades;
   int limiteProd;
-  int entrada;
-  int salida;
+  double entrada;
+  double salida;
   List<double> perdidaCantidad;
   List<String> perdidaRazones;
   String ultimoUsuario;
@@ -39,10 +39,8 @@ class ProductoModel {
     required this.mensaje,
   });
 
-  static Future<List<ProductoModel>> getProductos(
-    String filtro,
-    String busqueda,
-  ) async {
+  static Future<List<ProductoModel>> getProductos(String filtro,
+      String busqueda,) async {
     String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     late List<ProductoModel> productosFuture = [];
@@ -81,7 +79,9 @@ class ProductoModel {
             List<double> doublelist = [];
             for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
               String dob = "${item["PerdidaCantidad"][i]}.0";
-              if (dob.split(".").length > 2) {
+              if (dob
+                  .split(".")
+                  .length > 2) {
                 dob = "${dob.split(".")[0]}.${dob.split(".")[1]}";
               }
               doublelist.add(double.parse(dob));
@@ -89,14 +89,14 @@ class ProductoModel {
             productosFuture.add(
               ProductoModel(
                 id: item["id"],
-                nombre: item["Nombre"].toString(),
-                tipo: item["Tipo"].toString(),
+                nombre: item["Nombre"],
+                tipo: item["Tipo"],
                 unidades: item["Unidades"].toDouble(),
                 ultimaModificacion: item["UltimaModificación"],
                 cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
-                area: item["Area"].toString(),
-                entrada: item["Entradas"],
-                salida: item["Salidas"],
+                area: item["Area"],
+                entrada: item["Entradas"].toDouble(),
+                salida: item["Salidas"].toDouble(),
                 perdidaCantidad: doublelist,
                 perdidaRazones: List<String>.from(item["PerdidaRazon"]),
                 ultimoUsuario: item["UltimoUsuario"],
@@ -144,7 +144,7 @@ class ProductoModel {
             ultimoUsuario: "",
             codigoBarras: "",
             limiteProd: 0,
-            mensaje: e.message.toString(),
+            mensaje: "${e.message}",
           ),
         );
       } on SocketException catch (e) {
@@ -164,7 +164,7 @@ class ProductoModel {
             ultimoUsuario: " ",
             codigoBarras: "",
             limiteProd: 0,
-            mensaje: e.message.toString(),
+            mensaje: e.message,
           ),
         );
       } on http.ClientException catch (e) {
@@ -184,7 +184,7 @@ class ProductoModel {
             ultimoUsuario: "",
             codigoBarras: "",
             limiteProd: 0,
-            mensaje: e.message.toString(),
+            mensaje: e.message,
           ),
         );
       } on Error catch (e) {
@@ -204,7 +204,7 @@ class ProductoModel {
             ultimoUsuario: "",
             codigoBarras: "",
             limiteProd: 0,
-            mensaje: e.toString(),
+            mensaje: "$e",
           ),
         );
       }
@@ -229,7 +229,9 @@ class ProductoModel {
           List<double> doublelist = [];
           for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
             String dob = "${item["PerdidaCantidad"][i]}";
-            if (dob.split(".").length < 2) {
+            if (dob
+                .split(".")
+                .length < 2) {
               dob = "${item["PerdidaCantidad"][i]}.0";
             }
             doublelist.add(double.parse(dob));
@@ -240,10 +242,10 @@ class ProductoModel {
               nombre: item["inventarioNom"],
               area: "",
               tipo: "",
-              unidades: double.parse(item["Unidades"].toString()),
+              unidades: double.parse("${item["Unidades"]}"),
               cantidadPorUnidad: 0,
-              entrada: item["Entradas"],
-              salida: item["Salidas"],
+              entrada: item["Entradas"].toDouble(),
+              salida: item["Salidas"].toDouble(),
               perdidaCantidad: doublelist,
               perdidaRazones: List<String>.from(item["PerdidaRazon"]),
               ultimoUsuario: item["UltimoUsuario"],
@@ -292,7 +294,7 @@ class ProductoModel {
           ultimoUsuario: "",
           codigoBarras: "",
           limiteProd: 0,
-          mensaje: e.message.toString(),
+          mensaje: "${e.message}",
         ),
       );
     } on SocketException catch (e) {
@@ -312,7 +314,7 @@ class ProductoModel {
           ultimoUsuario: "",
           codigoBarras: "",
           limiteProd: 0,
-          mensaje: e.message.toString(),
+          mensaje: e.message,
         ),
       );
     } on http.ClientException catch (e) {
@@ -332,7 +334,7 @@ class ProductoModel {
           ultimoUsuario: "",
           codigoBarras: "",
           limiteProd: 0,
-          mensaje: e.message.toString(),
+          mensaje: e.message,
         ),
       );
     } on Error catch (e) {
@@ -352,7 +354,7 @@ class ProductoModel {
           ultimoUsuario: "",
           codigoBarras: "",
           limiteProd: 0,
-          mensaje: e.toString(),
+          mensaje: "$e",
         ),
       );
     }
@@ -386,22 +388,21 @@ class ProductoModel {
         }
       }
     } on TimeoutException catch (e) {
-      mensaje = "Error: ${e.message.toString()}";
+      mensaje = "Error: ${e.message}";
     } on SocketException catch (e) {
-      mensaje = "Error: ${e.message.toString()}";
+      mensaje = "Error: ${e.message}";
     } on http.ClientException catch (e) {
-      mensaje = "Error: ${e.message.toString()}";
+      mensaje = "Error: ${e.message}";
     } on Error catch (e) {
-      mensaje = "Error: ${e.toString()}";
+      mensaje = "Error: $e";
     }
-    return mensaje;
+    return
+      mensaje;
   }
 
-  static Future<String> editarProducto(
-    String id,
-    String dato,
-    String columna,
-  ) async {
+  static Future<String> editarProducto(String id,
+      String dato,
+      String columna,) async {
     String texto;
     String conexion = LocalStorage.local('conexion');
     try {
@@ -424,25 +425,24 @@ class ProductoModel {
         }
       }
     } on TimeoutException catch (e) {
-      texto = "Error: ${e.message.toString()}";
+      texto = "Error: ${e.message}";
     } on SocketException catch (e) {
-      texto = "Error: ${e.message.toString()}";
+      texto = "Error: ${e.message}";
     } on http.ClientException catch (e) {
-      texto = "Error: ${e.message.toString()}";
+      texto = "Error: ${e.message}";
     } on Error catch (e) {
-      texto = "Error: ${e.toString()}";
+      texto = "Error: $e";
     }
-    return texto;
+    return
+      texto;
   }
 
-  static Future<String> guardarESP(
-      int entradas,
-    int salidas,
-    List<String> razones,
-    List<double> cantidades,
-    double unidades,
-    String id,
-  ) async {
+  static Future<String> guardarESP(double entradas,
+      double salidas,
+      List<String> razones,
+      List<double> cantidades,
+      double unidades,
+      String id,) async {
     String texto = "Error: No se guardo la información.";
     if (unidades >= 0) {
       try {
@@ -456,15 +456,13 @@ class ProductoModel {
             'entradas': entradas,
             'salidas': salidas,
             'perdidas': razones.length,
-            'cantidades': cantidades
-                .toString()
+            'cantidades': "$cantidades"
                 .replaceAll("[", "{")
                 .replaceAll("]", "}"),
-            'razones': razones
-                .toString()
+            'razones': "$razones"
                 .replaceAll("[", "{")
-                .replaceAll("]", "}"),
-            'unidades': unidades,
+                .replaceAll("]", "}")
+            , 'unidades': unidades,
             'usuario': LocalStorage.local('usuario'),
           }),
         );
@@ -473,16 +471,17 @@ class ProductoModel {
           texto = "Se guardaron los movimientos.";
         }
       } on TimeoutException catch (e) {
-        texto = "Error: ${e.message.toString()}";
+        texto = "Error: ${e.message}";
       } on SocketException catch (e) {
-        texto = "Error: ${e.message.toString()}";
+        texto = "Error: ${e.message}";
       } on http.ClientException catch (e) {
-        texto = "Error: ${e.message.toString()}";
+        texto = "Error: ${e.message}";
       } on Error catch (e) {
-        texto = "Error: ${e.toString()}";
+        texto = "Error: $e";
       }
     }
-    return texto;
+    return
+      texto;
   }
 
   static Future<String> reiniciarESP() async {
@@ -491,7 +490,8 @@ class ProductoModel {
     try {
       final res = await http.put(
         Uri.parse(
-          "$conexion/almacen/${LocalStorage.local('locación')}/reiniciarMovimientos",
+          "$conexion/almacen/${LocalStorage.local(
+              'locación')}/reiniciarMovimientos",
         ),
         headers: {
           "Accept": "application/json",
@@ -503,19 +503,20 @@ class ProductoModel {
         texto = "Reinicio exitoso.";
       }
     } on TimeoutException catch (e) {
-      texto = "Error: ${e.message.toString()}";
+      texto = "Error: ${e.message}";
     } on SocketException catch (e) {
-      texto = "Error: ${e.message.toString()}";
+      texto = "Error: ${e.message}";
     } on http.ClientException catch (e) {
-      texto = "Error: ${e.message.toString()}";
+      texto = "Error: ${e.message}";
     } on Error catch (e) {
-      texto = "Error: ${e.toString()}";
+      texto = "Error: $e";
     }
-    return texto;
+    return
+      texto;
   }
 
-  static Future<List> getTipos() async {
-    late List tipos = [];
+  static Future<List<String>> getTipos() async {
+    late List<String> tipos = [];
     String conexion = LocalStorage.local('conexion');
     try {
       var res = await http.get(
@@ -534,19 +535,19 @@ class ProductoModel {
         tipos.add(res.body);
       }
     } on TimeoutException catch (e) {
-      tipos.add("Error: ${e.message.toString()}");
+      tipos.add("Error: ${e.message}");
     } on SocketException catch (e) {
-      tipos.add("Error: ${e.message.toString()}");
+      tipos.add("Error: ${e.message}");
     } on http.ClientException catch (e) {
-      tipos.add("Error: ${e.message.toString()}");
+      tipos.add("Error: ${e.message}");
     } on Error catch (e) {
-      tipos.add("Error: ${e.toString()}");
+      tipos.add("Error: $e");
     }
     return tipos;
   }
 
-  static Future<List> getAreas() async {
-    late List areas = [];
+  static Future<List<String>> getAreas() async {
+    late List<String> areas = [];
     String conexion = LocalStorage.local('conexion');
     try {
       var res = await http.get(
@@ -565,13 +566,13 @@ class ProductoModel {
         areas.add(res.body);
       }
     } on TimeoutException catch (e) {
-      areas.add("Error: ${e.message.toString()}");
+      areas.add("Error: ${e.message}");
     } on SocketException catch (e) {
-      areas.add("Error: ${e.message.toString()}");
+      areas.add("Error: ${e.message}");
     } on http.ClientException catch (e) {
-      areas.add("Error: ${e.message.toString()}");
+      areas.add("Error: ${e.message}");
     } on Error catch (e) {
-      areas.add("Error: ${e.toString()}");
+      areas.add("Error: $e");
     }
     return areas;
   }

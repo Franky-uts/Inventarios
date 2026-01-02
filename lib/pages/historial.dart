@@ -175,7 +175,7 @@ class _HistorialState extends State<Historial> {
               lista[index].id,
               lista[index].nombre,
               lista[index].area,
-              lista[index].entradas.length.toString(),
+              "${lista[index].entradas.length}",
             ],
             [],
             1,

@@ -245,7 +245,7 @@ class _AddproductoState extends State<AddProducto> {
             widget.listaArticulos[i].area == areaValor) {
           id = widget.listaArticulos[i].id;
           tipo = widget.listaArticulos[i].tipo;
-          cantidad = widget.listaArticulos[i].cantidadPorUnidad.toString();
+          cantidad = "${widget.listaArticulos[i].cantidadPorUnidad}";
         }
       }
     }

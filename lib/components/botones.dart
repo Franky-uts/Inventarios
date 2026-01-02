@@ -159,7 +159,7 @@ class Botones {
           false,
           () => resta(),
         ),
-        Textos.recuadroCantidad(textoValor.toString(), colorBorde, 20, 1),
+        Textos.recuadroCantidad("$textoValor", colorBorde, 20, 1),
         Botones.btnRctMor("Sumar $nombre", 0, Icons.add, false, () => suma()),
       ],
     );

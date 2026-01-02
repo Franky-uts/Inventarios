@@ -30,15 +30,15 @@ class _ArticulosState extends State<Articulos> {
 
   Future<void> _getListas(BuildContext ctx) async {
     String texto = "";
-    context.read<Carga>().cargaBool(true);
-    Navigator.of(context).pop();
+    ctx.read<Carga>().cargaBool(true);
+    Navigator.of(ctx).pop();
     List tipos = await ProductoModel.getTipos();
     List areas = await ProductoModel.getAreas();
-    if (tipos[0].toString().split(": ")[0] == "Error") {
-      texto = tipos[0].toString().split(": ")[1];
+    if (tipos.last.split(": ")[0] == "Error") {
+      texto = tipos.last.split(": ")[1];
     }
-    if (areas[0].toString().split(": ")[0] == "Error") {
-      texto = areas[0].toString().split(": ")[1];
+    if (areas.last.split(": ")[0] == "Error") {
+      texto = areas.last.split(": ")[1];
     }
     if (texto.isNotEmpty) {
       Textos.toast(texto, false);
@@ -195,7 +195,6 @@ class _ArticulosState extends State<Articulos> {
             builder: (context, tablas, campoTexto, child) {
               return CampoTexto.barraBusqueda(
                 () async => {
-                  //tablas.valido(false),
                   tablas.datos(
                     await getArticulos(
                       CampoTexto.filtroTexto(false),
@@ -229,7 +228,7 @@ class _ArticulosState extends State<Articulos> {
             MediaQuery.sizeOf(context).width,
             [.1, .4, .2, .2],
             [
-              lista[index].id.toString(),
+              "${lista[index].id}",
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,

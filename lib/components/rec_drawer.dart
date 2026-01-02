@@ -122,11 +122,11 @@ class RecDrawer {
       String pCant = "No hay perdidas registradas";
       String pRaz = "No hay perdidas registradas";
       if (item.perdidaCantidad.isNotEmpty) {
-        pCant = item.perdidaCantidad[0].toString();
+        pCant = "${item.perdidaCantidad[0]}";
         pRaz = item.perdidaRazones[0];
         if (item.perdidaCantidad.length > 1) {
           for (int i = 1; i < item.perdidaCantidad.length; i++) {
-            pCant = "$pCant, ${item.perdidaCantidad[0].toString()}";
+            pCant = "$pCant, ${item.perdidaCantidad[0]}";
             pRaz = "$pRaz, ${item.perdidaRazones}";
           }
         }
@@ -158,12 +158,12 @@ class RecDrawer {
       );
       sheetObject
           .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1))
-          .value = IntCellValue(
+          .value = DoubleCellValue(
         item.entrada,
       );
       sheetObject
           .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1))
-          .value = IntCellValue(
+          .value = DoubleCellValue(
         item.salida,
       );
       sheetObject
@@ -277,11 +277,11 @@ class RecDrawer {
       "",
     );
     List areas = await ProductoModel.getAreas();
-    if (articulos[0].toString().split(": ")[0] == "Error") {
-      texto = articulos[0].toString().split(": ")[1];
+    if (articulos.last.nombre == "Error") {
+      texto = articulos.last.mensaje;
     }
-    if (areas[0].toString().split(": ")[0] == 'Error') {
-      texto = areas[0].toString().split(": ")[1];
+    if (areas.last.split(": ")[0] == 'Error') {
+      texto = areas.last.split(": ")[1];
     }
     if (texto.isNotEmpty) {
       Textos.toast(texto, false);
