@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
@@ -8,20 +7,21 @@ import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
-import 'package:inventarios/pages/historial_ordenes.dart';
-import 'package:inventarios/pages/inventario.dart';
+import 'package:inventarios/models/producto_model.dart';
+import 'package:inventarios/pages/inventario_prod.dart';
+import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
-import '../models/producto_model.dart';
-import '../services/local_storage.dart';
 
-class OrdenSalida extends StatefulWidget {
-  const OrdenSalida({super.key});
+import 'historial_ordenes.dart';
+
+class OrdenSalidaProd extends StatefulWidget {
+  const OrdenSalidaProd({super.key});
 
   @override
-  State<OrdenSalida> createState() => _OrdenSalidaState();
+  State<OrdenSalidaProd> createState() => _OrdenSalidaProdState();
 }
 
-class _OrdenSalidaState extends State<OrdenSalida> {
+class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
   List<int> cantidad = [];
   List<ProductoModel> listaProd = [];
   List<String> comentarios = [];
@@ -36,6 +36,11 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     super.initState();
   }
 
+  Future<List<ProductoModel>> getProductos(
+    String filtro,
+    String busqueda,
+  ) async => await ProductoModel.getProductosProd(filtro, busqueda);
+
   @override
   void dispose() {
     listaProd.clear();
@@ -44,11 +49,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     controller.dispose();
     super.dispose();
   }
-
-  Future<List<ProductoModel>> getProductos(
-    String filtro,
-    String busqueda,
-  ) async => await ProductoModel.getProductos(filtro, busqueda);
 
   Future<void> addOrden(BuildContext ctx) async {
     List<String> articulos = [];
@@ -144,7 +144,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       context,
                       MaterialPageRoute(
                         builder: (context) =>
-                            HistorialOrdenes(ruta: OrdenSalida()),
+                            HistorialOrdenes(ruta: OrdenSalidaProd()),
                       ),
                     ),
                   },
@@ -154,19 +154,30 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             );
           },
         ),
-        Botones.icoCirMor(
-          "Ver almacen",
-          Icons.inventory_rounded,
-          true,
-          () => {
-            Textos.limpiarLista(),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Inventario()),
-            ),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              "Inventario",
+              Icons.cookie_rounded,
+              true,
+              () async => {
+                await LocalStorage.set(
+                  'busqueda',
+                  CampoTexto.busquedaTexto.text,
+                ),
+                Textos.limpiarLista(),
+                if (context.mounted)
+                  {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => InventarioProd()),
+                    ),
+                  },
+              },
+              () => Textos.toast("Espera a que los datos carguen.", false),
+              Carga.getValido(),
+            );
           },
-          () => {},
-          true,
         ),
       ]),
       backgroundColor: Color(0xFFFF5600),
@@ -381,7 +392,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Botones.btnRctMor(
-          "Regresar",
+          "Abrir menú",
           35,
           Icons.menu_rounded,
           false,

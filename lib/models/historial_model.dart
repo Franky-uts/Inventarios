@@ -36,7 +36,10 @@ class HistorialModel {
     required this.mensaje,
   });
 
-  static Future<List<HistorialModel>> getHistorial(String fecha, String filtro) async {
+  static Future<List<HistorialModel>> getHistorial(
+    String fecha,
+    String filtro,
+  ) async {
     String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación').substring(0, 3);
     List<HistorialModel> historialFuture = [];
@@ -72,19 +75,31 @@ class HistorialModel {
           for (var item in datos) {
             List<double> doublelist = [];
             List<double> unidadeslist = [];
+            List<double> entradaslist = [];
+            List<double> salidaslist = [];
             for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
-              String dob = "${item["PerdidaCantidad"][i]}.0";
-              if (dob.split(".").length > 2) {
-                dob = "${dob.split(".")[0]}.${dob.split(".")[1]}";
+              String dob = "${item["PerdidaCantidad"][i]}";
+              if (dob.split(".").length < 2) {
+                dob = "$dob.0";
               }
               doublelist.add(double.parse(dob));
             }
             for (int i = 0; i < item["Unidades"].length; i++) {
-              String dob = "${item["Unidades"][i]}.0";
-              if (dob.split(".").length > 2) {
-                dob = "${dob.split(".")[0]}.${dob.split(".")[1]}";
+              String uni = "${item["Unidades"][i]}";
+              String ent ="${item["Salidas"][i]}";
+              String sal ="${item["Entradas"][i]}";
+              if (uni.split(".").length < 2) {
+                uni = "$uni.0";
               }
-              unidadeslist.add(double.parse(dob));
+              if (ent.split(".").length < 2) {
+                ent = "$ent.0";
+              }
+              if (sal.split(".").length < 2) {
+                sal = "$sal.0";
+              }
+              unidadeslist.add(double.parse(uni));
+              entradaslist.add(double.parse(ent));
+              salidaslist.add(double.parse(sal));
             }
             historialFuture.add(
               HistorialModel(
@@ -93,8 +108,8 @@ class HistorialModel {
                 nombre: item["Nombre"],
                 area: item["Area"],
                 unidades: unidadeslist,
-                entradas: List<double>.from(item["Entradas"]),
-                salidas: List<double>.from(item["Salidas"]),
+                entradas: entradaslist,
+                salidas: salidaslist,
                 perdidas: List<int>.from(item["Perdidas"]),
                 razones: List<String>.from(item["PerdidaRazon"]),
                 cantidades: doublelist,

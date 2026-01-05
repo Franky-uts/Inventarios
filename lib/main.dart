@@ -8,6 +8,7 @@ import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/pages/inventario.dart';
+import 'package:inventarios/pages/inventario_prod.dart';
 import 'package:inventarios/pages/ordenes.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
@@ -47,8 +48,13 @@ class MyApp extends StatelessWidget {
     StatefulWidget ruta = Inicio();
     if (LocalStorage.preferencias.getString('usuario') != null) {
       ruta = Inventario();
-      if (LocalStorage.preferencias.getString('puesto') == 'Proveedor') {
-        ruta = Ordenes();
+      switch(LocalStorage.preferencias.getString('puesto')){
+        case('Proveedor'):
+          ruta = Ordenes();
+          break;
+        case('Producción'):
+          ruta = InventarioProd();
+          break;
       }
     }
     return ruta;

@@ -7,11 +7,7 @@ class Textos with ChangeNotifier {
 
   static void toast(String texto, bool longLength) {
     Toast length;
-    if (longLength) {
-      length = Toast.LENGTH_LONG;
-    } else {
-      length = Toast.LENGTH_SHORT;
-    }
+    longLength ? length = Toast.LENGTH_LONG : length = Toast.LENGTH_SHORT;
     Fluttertoast.showToast(
       msg: texto,
       toastLength: length,

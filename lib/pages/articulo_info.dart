@@ -304,32 +304,29 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
   }
 
   Row rowBoton() {
-    String texto = "${widget.articulo.cantidadPorUnidad}";
-    if (texto.split(".0").length > 1) {
-      texto = texto.split(".0")[0];
-    }
-    List<Widget> children = [
-      rectanguloContainer("Cantidad por unidad: $texto"),
-      Botones.btnSimple(
-        "Cambiar cantidad por unidad",
-        Icons.edit_rounded,
-        Color(0xFF8A03A9),
-        () => {
-          tituloVen = "Editar cantidad por unidad",
-          texto = "Cantidad por unidad",
-          columna = "CantidadPorUnidad",
-          controller.text = "${widget.articulo.cantidadPorUnidad}",
-          context.read<Ventanas>().emergente(true),
-        },
-      ),
-    ];
-    if (widget.articulo.tipo == "Galón" ||
-        widget.articulo.tipo == "Litro" ||
-        widget.articulo.tipo == "Pieza" ||
-        widget.articulo.tipo == "Garrafa") {
-      children.removeLast();
-    }
-    return Row(children: children);
+    String texto = "${widget.articulo.cantidadPorUnidad}".split(".0")[0];
+    return Row(
+      children: [
+        rectanguloContainer("Cantidad por unidad: $texto"),
+        if (widget.articulo.tipo == "Bote" ||
+            widget.articulo.tipo == "Bulto" ||
+            widget.articulo.tipo == "Caja" ||
+            widget.articulo.tipo == "Costal" ||
+            widget.articulo.tipo == "Paquete")
+          Botones.btnSimple(
+            "Cambiar cantidad por unidad",
+            Icons.edit_rounded,
+            Color(0xFF8A03A9),
+            () => {
+              tituloVen = "Editar cantidad por unidad",
+              texto = "Cantidad por unidad",
+              columna = "CantidadPorUnidad",
+              controller.text = "${widget.articulo.cantidadPorUnidad}",
+              context.read<Ventanas>().emergente(true),
+            },
+          ),
+      ],
+    );
   }
 
   Container rectanguloContainer(String texto) {

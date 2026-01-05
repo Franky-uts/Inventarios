@@ -7,6 +7,7 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/pages/inventario.dart';
+import 'package:inventarios/pages/inventario_prod.dart';
 import 'package:inventarios/pages/ordenes.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
@@ -25,11 +26,11 @@ class _InicioState extends State<Inicio> {
   late List<TextEditingController> controller = [];
   late List<FocusNode> focus = [];
   late List<Color> color = [];
-  String ip = " 189.187.130.27";
+  String ip = "189.187.130.27";
 
   @override
   void initState() {
-    if (LocalStorage.preferencias.getString('conexion')!=null) {
+    if (LocalStorage.preferencias.getString('conexion') != null) {
       ip = LocalStorage.local(
         'conexion',
       ).substring(7, LocalStorage.local('conexion').length - 5);
@@ -93,8 +94,15 @@ class _InicioState extends State<Inicio> {
         } else {
           mensaje = "";
           StatefulWidget ruta = Inventario();
-          if (usuarioMod.puesto == "Proveedor") {
-            ruta = Ordenes();
+          switch (usuarioMod.puesto) {
+            case ("Proveedor"):
+              ruta = Ordenes();
+              break;
+            case ("Producción"):
+              if (ctx.mounted) {
+                ruta = InventarioProd();
+              }
+              break;
           }
           if (ctx.mounted) {
             Navigator.pushReplacement(

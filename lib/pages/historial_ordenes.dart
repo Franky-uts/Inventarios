@@ -8,12 +8,13 @@ import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/pages/inventario.dart';
-import 'package:inventarios/pages/orden_salida.dart';
 import 'package:provider/provider.dart';
 import '../services/local_storage.dart';
 
 class HistorialOrdenes extends StatefulWidget {
-  const HistorialOrdenes({super.key});
+  final StatefulWidget ruta;
+
+  const HistorialOrdenes({super.key, required this.ruta});
 
   @override
   State<HistorialOrdenes> createState() => _HistorialOrdenesState();
@@ -355,7 +356,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 carga.cargaBool(true),
                 Navigator.pushReplacement(
                   ctx,
-                  MaterialPageRoute(builder: (context) => OrdenSalida()),
+                  MaterialPageRoute(builder: (context) => widget.ruta),
                 ),
                 carga.cargaBool(false),
               },

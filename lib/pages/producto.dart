@@ -29,21 +29,28 @@ class _ProductoState extends State<Producto> {
   Timer? timer;
   String texto = "";
   FocusNode focus = FocusNode();
-  final List<Color> color = [];
-  List<TextEditingController> controller = [
+  late final List<Color> color = [
+    widget.productoInfo.tipo == "Granel"
+        ? Color(0x00FFFFFF)
+        : Color(0xFF8A03A9),
+    widget.productoInfo.tipo == "Granel"
+        ? Color(0x00FFFFFF)
+        : Color(0xFF8A03A9),
+    Color(0xFF8A03A9),
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+  ];
+  List<TextEditingController> controllerPerdidas = [
+    TextEditingController(),
+    TextEditingController(),
+  ];
+  List<TextEditingController> controllerGranel = [
     TextEditingController(),
     TextEditingController(),
   ];
 
   @override
   void initState() {
-    for (int i = 0; i < 5; i++) {
-      Color color = Color(0xFF8A03A9);
-      if (i > 2) {
-        color = Color(0x00FFFFFF);
-      }
-      this.color.add(color);
-    }
     for (int i = 0; i < widget.productoInfo.perdidaCantidad.length; i++) {
       productosPerdido += widget.productoInfo.perdidaCantidad[i];
     }
@@ -52,7 +59,8 @@ class _ProductoState extends State<Producto> {
 
   @override
   void dispose() {
-    controller.clear();
+    controllerPerdidas.clear();
+    controllerGranel.clear();
     timer?.cancel();
     color.clear();
     super.dispose();
@@ -87,6 +95,67 @@ class _ProductoState extends State<Producto> {
       });
     }
     Textos.toast(texto, texto.isEmpty);
+  }
+
+  Future enviarDatosGranel(BuildContext ctx) async {
+    setState(() {
+      ctx.read<Carga>().cargaBool(true);
+    });
+    String mensaje = "";
+    double ent, sal, uni;
+    if (controllerGranel[0].text.isEmpty) {
+      ent = 0;
+    } else {
+      ent = double.parse(controllerGranel[0].text);
+    }
+    if (controllerGranel[1].text.isEmpty) {
+      sal = 0;
+    } else {
+      sal = double.parse(controllerGranel[1].text);
+    }
+    if (ent < 0) {
+      color[0] = Color(0xFFFF0000);
+    }
+    if (sal < 0) {
+      color[1] = Color(0xFFFF0000);
+    }
+    uni = unidades + ent - sal;
+    ent = entrantes + ent;
+    sal = salidas + sal;
+    if (ent >= entrantes && sal >= salidas) {
+      mensaje = await ProductoModel.guardarESP(
+        ent,
+        sal,
+        widget.productoInfo.perdidaRazones,
+        widget.productoInfo.perdidaCantidad,
+        uni,
+        widget.productoInfo.id,
+      );
+    }
+    if (mensaje.isNotEmpty) {
+      if (mensaje.split(": ")[0] != "Error") {
+        setState(() {
+          unidades = uni;
+          entrantes = ent;
+          salidas = sal;
+          widget.productoInfo.unidades = unidades;
+          widget.productoInfo.entrada = entrantes;
+          widget.productoInfo.salida = salidas;
+          color[0] = Color(0x00000000);
+          color[1] = Color(0x00000000);
+          controllerGranel[0].text = "";
+          controllerGranel[1].text = "";
+        });
+      } else {
+        mensaje = mensaje.split(": ")[1];
+      }
+      Textos.toast(mensaje, mensaje.isNotEmpty);
+    }
+    if (ctx.mounted) {
+      setState(() {
+        ctx.read<Carga>().cargaBool(false);
+      });
+    }
   }
 
   void cambioValor(int tipo, int valor) {
@@ -126,12 +195,12 @@ class _ProductoState extends State<Producto> {
   }
 
   void guardarPerdidas(BuildContext ctx) {
-    bool valido = true;
-    for (int i = 0; i < controller.length; i++) {
+    bool valido = true, granel = (widget.productoInfo.tipo == "Granel");
+    for (int i = 0; i < controllerPerdidas.length; i++) {
       setState(() {
         color[i + 3] = Color(0x00FFFFFF);
       });
-      if (controller[i].text.isEmpty) {
+      if (controllerPerdidas[i].text.isEmpty) {
         valido = false;
         setState(() {
           color[i + 3] = Color(0xFFFF0000);
@@ -143,17 +212,20 @@ class _ProductoState extends State<Producto> {
       List<String> listaRazones = [];
       listaCantidades.addAll(widget.productoInfo.perdidaCantidad);
       listaRazones.addAll(widget.productoInfo.perdidaRazones);
-      listaCantidades.add(double.parse(controller[0].text));
-      listaRazones.add(controller[1].text);
-      double perdidas = double.parse(controller[0].text);
+      listaCantidades.add(double.parse(controllerPerdidas[0].text));
+      listaRazones.add(controllerPerdidas[1].text);
+      double perdidas = double.parse(controllerPerdidas[0].text);
       double unidades =
           (((widget.productoInfo.cantidadPorUnidad *
                   widget.productoInfo.unidades) -
               perdidas) /
           widget.productoInfo.cantidadPorUnidad);
+      if (granel) double.parse((unidades).toStringAsFixed(3));
       String mensaje = "Error: Las perdidas exceden la cantidad almacenada";
       if (unidades >= 0) {
-        mensaje = "Aqui se supone que se gurdan las cosas";
+        mensaje = granel
+            ? "Se registro la perdida de $unidades kilos"
+            : "Se registro la perdida de $unidades unidades";
         widget.productoInfo.perdidaRazones = listaRazones;
         widget.productoInfo.perdidaCantidad = listaCantidades;
         this.unidades = unidades;
@@ -166,7 +238,7 @@ class _ProductoState extends State<Producto> {
   }
 
   void editarLimite(BuildContext ctx) async {
-    if (controller[0].text.isEmpty) {
+    if (controllerPerdidas[0].text.isEmpty) {
       setState(() {
         color[3] = Color(0xFFFF0000);
       });
@@ -174,16 +246,16 @@ class _ProductoState extends State<Producto> {
       ctx.read<Carga>().cargaBool(true);
       String mensaje = await ProductoModel.editarProducto(
         widget.productoInfo.id,
-        controller[0].text,
+        controllerPerdidas[0].text,
         "LimiteProd",
       );
       if (mensaje.split(": ")[0] != "Error") {
         setState(() {
           color[3] = Color(0x00000000);
           widget.productoInfo.limiteProd = double.parse(
-            controller[0].text,
+            controllerPerdidas[0].text,
           ).floor();
-          controller[0].text = "";
+          controllerPerdidas[0].text = "";
         });
         mensaje =
             "Se actualizó el límite de productos del producto con id $mensaje.";
@@ -206,49 +278,6 @@ class _ProductoState extends State<Producto> {
           children: [
             Consumer<Carga>(
               builder: (context, carga, child) {
-                List<Widget> contenido = [
-                  Textos.textoTilulo(widget.productoInfo.nombre, 30),
-                  tipoTexto(widget.productoInfo.tipo),
-                  contenedorInfo(
-                    " que entraron:",
-                    "$entrantes".split(".0")[0],
-                    0,
-                  ),
-                  contenedorInfo(
-                    " que salieron:",
-                    "$salidas".split(".0")[0],
-                    1,
-                  ),
-                  contenedorInfo(
-                    "Productos perdidos:",
-                    "$productosPerdido".split(".0")[0],
-                    2,
-                  ),
-                  Botones.icoCirMor(
-                    "Guardar movimientos",
-                    Icons.save_rounded,
-                    false,
-                    () => enviarDatos(context),
-                    () => Textos.toast("No hay hay cambios.", false),
-                    entrantes != widget.productoInfo.entrada ||
-                        salidas != widget.productoInfo.salida ||
-                        unidades != widget.productoInfo.unidades,
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      footer([
-                        "Ultima modificación:",
-                        widget.productoInfo.ultimaModificacion,
-                      ]),
-                      footer([
-                        "Modificada por:",
-                        widget.productoInfo.ultimoUsuario,
-                      ]),
-                    ],
-                  ),
-                ];
                 return SingleChildScrollView(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
@@ -256,7 +285,66 @@ class _ProductoState extends State<Producto> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: contenido,
+                      children: [
+                        Textos.textoTilulo(widget.productoInfo.nombre, 30),
+                        tipoTexto(widget.productoInfo.tipo),
+                        widget.productoInfo.tipo != "Granel"
+                            ? contenedorInfo(
+                                " que entraron:",
+                                "$entrantes".split(".0")[0],
+                                0,
+                              )
+                            : contenedorInfoGranel(
+                                " que entraron:",
+                                "$entrantes".split(".0")[0],
+                                0,
+                              ),
+                        widget.productoInfo.tipo != "Granel"
+                            ? contenedorInfo(
+                                " que salieron:",
+                                "$salidas".split(".0")[0],
+                                1,
+                              )
+                            : contenedorInfoGranel(
+                                " que salieron:",
+                                "$salidas".split(".0")[0],
+                                1,
+                              ),
+                        contenedorInfoPerdidas(
+                          "$productosPerdido".split(".0")[0],
+                          2,
+                        ),
+                        Botones.icoCirMor(
+                          "Guardar movimientos",
+                          Icons.save_rounded,
+                          false,
+                          () => widget.productoInfo.tipo != "Granel"
+                              ? enviarDatos(context)
+                              : enviarDatosGranel(context),
+                          () => Textos.toast("No hay hay cambios.", false),
+                          widget.productoInfo.tipo != "Granel"
+                              ? entrantes != widget.productoInfo.entrada ||
+                                    salidas != widget.productoInfo.salida ||
+                                    unidades != widget.productoInfo.unidades
+                              : controllerGranel[0].text.isNotEmpty ||
+                                    controllerGranel[1].text.isNotEmpty ||
+                                    unidades != widget.productoInfo.unidades,
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            footer([
+                              "Ultima modificación:",
+                              widget.productoInfo.ultimaModificacion,
+                            ]),
+                            footer([
+                              "Modificada por:",
+                              widget.productoInfo.ultimoUsuario,
+                            ]),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -270,115 +358,74 @@ class _ProductoState extends State<Producto> {
             ),
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
-                Widget wid = Textos.textoTilulo(
-                  "No hay perdidas registradas.",
-                  30,
-                );
-                Widget tabla = Botones.btnCirRos(
-                  "Agregar perdida",
-                  () => {ventana.emergente(true), ventana.tabla(false)},
-                );
-                List<Widget> botones = [
-                  Botones.btnCirRos("Cerrar", () => ventana.tabla(false)),
-                ];
-                if (productosPerdido > 0) {
-                  wid = Tablas.contenedorInfo(
-                    MediaQuery.sizeOf(context).width,
-                    [.05, .15, .6],
-                    ["#", "Cantidad perdida", "Razón de perdida"],
-                  );
-                  tabla = ListView.separated(
-                    itemCount: widget.productoInfo.perdidaCantidad.length,
-                    scrollDirection: Axis.vertical,
-                    separatorBuilder: (context, index) => Container(
-                      height: 2,
-                      decoration: BoxDecoration(color: Color(0xFFFDC930)),
-                    ),
-                    itemBuilder: (context, index) {
-                      return Container(
-                        width: MediaQuery.sizeOf(context).width,
-                        height: 40,
-                        decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-                        child: Tablas.barraDatos(
-                          MediaQuery.sizeOf(context).width,
-                          [.05, .15, .6],
-                          [
-                            "${index + 1}",
-                            "${widget.productoInfo.perdidaCantidad[index]}",
-                            widget.productoInfo.perdidaRazones[index],
-                          ],
-                          [],
-                          1,
-                          false,
-                        ),
-                      );
-                    },
-                  );
-                  botones.add(
-                    Botones.btnCirRos(
-                      "Agregar perdida",
-                      () => {
-                        setState(() {
-                          controller[0].text = "";
-                          controller[1].text = "";
-                          color[3] = Color(0x00000000);
-                          color[4] = Color(0x00000000);
-                        }),
-                        ventana.emergente(true),
-                        ventana.tabla(false),
-                      },
-                    ),
-                  );
-                }
                 return Ventanas.ventanaTabla(
                   MediaQuery.of(context).size.height,
                   MediaQuery.of(context).size.width,
                   ["Perdidas: $productosPerdido"],
                   [],
-                  wid,
-                  tabla,
-                  botones,
+                  (productosPerdido > 0)
+                      ? Tablas.contenedorInfo(
+                          MediaQuery.sizeOf(context).width,
+                          [.05, .15, .6],
+                          ["#", "Cantidad perdida", "Razón de perdida"],
+                        )
+                      : Textos.textoTilulo("No hay perdidas registradas.", 30),
+                  (productosPerdido > 0)
+                      ? ListView.separated(
+                          itemCount: widget.productoInfo.perdidaCantidad.length,
+                          scrollDirection: Axis.vertical,
+                          separatorBuilder: (context, index) => Container(
+                            height: 2,
+                            decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                          ),
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: MediaQuery.sizeOf(context).width,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFFFFFF),
+                              ),
+                              child: Tablas.barraDatos(
+                                MediaQuery.sizeOf(context).width,
+                                [.05, .15, .6],
+                                [
+                                  "${index + 1}",
+                                  "${widget.productoInfo.perdidaCantidad[index]}",
+                                  widget.productoInfo.perdidaRazones[index],
+                                ],
+                                [],
+                                1,
+                                false,
+                              ),
+                            );
+                          },
+                        )
+                      : Botones.btnCirRos(
+                          "Agregar perdida",
+                          () => {ventana.emergente(true), ventana.tabla(false)},
+                        ),
+                  [
+                    Botones.btnCirRos("Cerrar", () => ventana.tabla(false)),
+                    if (productosPerdido > 0)
+                      Botones.btnCirRos(
+                        "Agregar perdida",
+                        () => {
+                          setState(() {
+                            controllerPerdidas[0].text = "";
+                            controllerPerdidas[1].text = "";
+                            color[3] = Color(0x00000000);
+                            color[4] = Color(0x00000000);
+                          }),
+                          ventana.emergente(true),
+                          ventana.tabla(false),
+                        },
+                      ),
+                  ],
                 );
               },
             ),
             Consumer3<Ventanas, Carga, Tablas>(
               builder: (context, ventana, carga, tablas, child) {
-                List<Widget> wid = [
-                  CampoTexto.inputTexto(
-                    MediaQuery.of(context).size.width * .75,
-                    Icons.numbers_rounded,
-                    "Cantidad",
-                    controller[0],
-                    color[3],
-                    true,
-                    false,
-                    () => {
-                      if (texto == "¿Cuánto se perdió y por qué?")
-                        {focus.requestFocus()}
-                      else
-                        {editarLimite(context)},
-                    },
-                    formato: FilteringTextInputFormatter.allow(
-                      RegExp(r'(^\d*\.?\d{0,3})'),
-                    ),
-                    inputType: TextInputType.numberWithOptions(decimal: true),
-                  ),
-                ];
-                if (texto == "¿Cuánto se perdió y por qué?") {
-                  wid.add(
-                    CampoTexto.inputTexto(
-                      MediaQuery.of(context).size.width * .75,
-                      Icons.message_rounded,
-                      "Razón de la perdida",
-                      controller[1],
-                      color[4],
-                      true,
-                      false,
-                      () => guardarPerdidas(context),
-                      focus: focus,
-                    ),
-                  );
-                }
                 return Ventanas.ventanaEmergente(
                   texto,
                   "Volver",
@@ -398,7 +445,44 @@ class _ProductoState extends State<Producto> {
                       {editarLimite(context)},
                   },
                   widget: SingleChildScrollView(
-                    child: Column(spacing: 10, children: wid),
+                    child: Column(
+                      spacing: 10,
+                      children: [
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .75,
+                          Icons.numbers_rounded,
+                          "Cantidad",
+                          controllerPerdidas[0],
+                          color[3],
+                          true,
+                          false,
+                          () => {
+                            if (texto == "¿Cuánto se perdió y por qué?")
+                              {focus.requestFocus()}
+                            else
+                              {editarLimite(context)},
+                          },
+                          formato: FilteringTextInputFormatter.allow(
+                            RegExp(r'(^\d*\.?\d{0,3})'),
+                          ),
+                          inputType: TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                        ),
+                        if (texto == "¿Cuánto se perdió y por qué?")
+                          CampoTexto.inputTexto(
+                            MediaQuery.of(context).size.width * .75,
+                            Icons.message_rounded,
+                            "Razón de la perdida",
+                            controllerPerdidas[1],
+                            color[4],
+                            true,
+                            false,
+                            () => guardarPerdidas(context),
+                            focus: focus,
+                          ),
+                      ],
+                    ),
                   ),
                 );
               },
@@ -413,7 +497,9 @@ class _ProductoState extends State<Producto> {
   SizedBox tipoTexto(String tipo) {
     String titulo = "${tipo}s:";
     String text = "";
-    if (tipo == "Granel" || tipo == "Costal") {
+    if (tipo == "Granel") {
+      titulo = "Kilos:";
+    } else if (tipo == "Costal") {
       titulo = "Unidades:";
       text = "${widget.productoInfo.cantidadPorUnidad}".split(".0")[0];
       text = "Kilos por unidad: $text";
@@ -447,7 +533,8 @@ class _ProductoState extends State<Producto> {
             () => {
               context.read<Ventanas>().emergente(true),
               setState(() {
-                controller[0].text = "${widget.productoInfo.limiteProd}";
+                controllerPerdidas[0].text =
+                    "${widget.productoInfo.limiteProd}";
                 color[3] = Color(0x00000000);
                 texto = "Confirma el nuevo límite de productos.";
               }),
@@ -489,66 +576,104 @@ class _ProductoState extends State<Producto> {
     } else if (widget.productoInfo.tipo == "Galón") {
       text = "Galones$textoInfo";
     }
-    if (textoInfo == "Productos perdidos:") {
-      text = textoInfo;
-      if (widget.productoInfo.tipo == "Granel" ||
-          widget.productoInfo.tipo == "Costal") {
-        text = "Gramos perdidos:";
-      } else if (widget.productoInfo.tipo == "Bote") {
-        text = "Gramos/Piezas perdidos:";
-      }
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * .55,
+      height: 40,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Textos.textoGeneral(text, 20, true, false, 1),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onLongPress: () => timer = Timer.periodic(
+                  Duration(milliseconds: 150),
+                  (timer) => cambioValor(valor, -1),
+                ),
+                onLongPressEnd: (_) => setState(() {
+                  timer?.cancel();
+                }),
+                child: Botones.btnRctMor(
+                  "",
+                  0,
+                  Icons.remove,
+                  false,
+                  () => cambioValor(valor, -1),
+                ),
+              ),
+              Textos.recuadroCantidad(textoValor, color[valor], 20, 1),
+              GestureDetector(
+                onLongPress: () => timer = Timer.periodic(
+                  Duration(milliseconds: 150),
+                  (timer) => cambioValor(valor, 1),
+                ),
+                onLongPressEnd: (_) => setState(() {
+                  timer?.cancel();
+                }),
+                child: Botones.btnRctMor(
+                  "",
+                  0,
+                  Icons.add,
+                  false,
+                  () => cambioValor(valor, 1),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  SizedBox contenedorInfoGranel(
+    String textoInfo,
+    String textoValor,
+    int valor,
+  ) {
+    String text = "${widget.productoInfo.tipo}s$textoInfo";
+    if (widget.productoInfo.tipo == "Granel") {
+      text = "Kilos$textoInfo";
+    } else if (widget.productoInfo.tipo == "Galón") {
+      text = "Galones$textoInfo";
     }
-    List<Widget> botones = [
-      GestureDetector(
-        onLongPress: () => timer = Timer.periodic(
-          Duration(milliseconds: 150),
-          (timer) => cambioValor(valor, -1),
-        ),
-        onLongPressEnd: (_) => setState(() {
-          timer?.cancel();
-        }),
-        child: Botones.btnRctMor(
-          "",
-          0,
-          Icons.remove,
-          false,
-          () => cambioValor(valor, -1),
-        ),
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * .55,
+      height: 45,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CampoTexto.inputTexto(
+            MediaQuery.sizeOf(context).width * .3575,
+            Icons.info_outline_rounded,
+            text,
+            controllerGranel[valor],
+            color[valor],
+            true,
+            false,
+            () => FocusManager.instance.primaryFocus?.unfocus(),
+            formato: FilteringTextInputFormatter.allow(
+              RegExp(r'(^\d*\.?\d{0,3})'),
+            ),
+            inputType: TextInputType.numberWithOptions(decimal: true),
+            borderColor: Color(0xFF8A03A9),
+          ),
+          Textos.recuadroCantidad(textoValor, Color(0xFF8A03A9), 20, 1),
+        ],
       ),
-      Textos.recuadroCantidad(textoValor, color[valor], 20, 1),
-      GestureDetector(
-        onLongPress: () => timer = Timer.periodic(
-          Duration(milliseconds: 150),
-          (timer) => cambioValor(valor, 1),
-        ),
-        onLongPressEnd: (_) => setState(() {
-          timer?.cancel();
-        }),
-        child: Botones.btnRctMor(
-          "",
-          0,
-          Icons.add,
-          false,
-          () => cambioValor(valor, 1),
-        ),
-      ),
-    ];
-    if (textoInfo == "Productos perdidos:") {
-      botones = [
-        botones[1],
-        Botones.btnRctMor(
-          textoInfo.split(":")[0],
-          0,
-          Icons.info_outline_rounded,
-          false,
-          () => {
-            context.read<Ventanas>().tabla(true),
-            setState(() {
-              texto = "¿Cuánto se perdió y por qué?";
-            }),
-          },
-        ),
-      ];
+    );
+  }
+
+  SizedBox contenedorInfoPerdidas(String textoValor, int valor) {
+    String text = "Productos perdidos:";
+    if (widget.productoInfo.tipo == "Granel" ||
+        widget.productoInfo.tipo == "Costal") {
+      text = "Kilos perdidos:";
+    } else if (widget.productoInfo.tipo == "Bote") {
+      text = "Gramos/Piezas perdidos:";
     }
     return SizedBox(
       width: MediaQuery.of(context).size.width * .55,
@@ -561,7 +686,21 @@ class _ProductoState extends State<Producto> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
-            children: botones,
+            children: [
+              Textos.recuadroCantidad(textoValor, color[valor], 20, 1),
+              Botones.btnRctMor(
+                texto.split(":")[0],
+                0,
+                Icons.info_outline_rounded,
+                false,
+                () => {
+                  context.read<Ventanas>().tabla(true),
+                  setState(() {
+                    texto = "¿Cuánto se perdió y por qué?";
+                  }),
+                },
+              ),
+            ],
           ),
         ],
       ),

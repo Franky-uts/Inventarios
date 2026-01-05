@@ -18,6 +18,7 @@ class CampoTexto with ChangeNotifier {
     bool enabled,
     bool password,
     Function accion, {
+    Color? borderColor,
     EdgeInsets? margin,
     FocusNode? focus,
     TextInputFormatter? formato,
@@ -27,7 +28,6 @@ class CampoTexto with ChangeNotifier {
     if (icono != null) {
       icon = Icon(icono);
     }
-
     return Container(
       width: size,
       margin: margin,
@@ -48,15 +48,24 @@ class CampoTexto with ChangeNotifier {
           filled: true,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Color(0xFFFDC930), width: 3.5),
+            borderSide: BorderSide(
+              color: borderColor ?? Color(0xFFFDC930),
+              width: 3.5,
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Color(0xFFFDC930), width: 3.5),
+            borderSide: BorderSide(
+              color: borderColor ?? Color(0xFFFDC930),
+              width: 3.5,
+            ),
           ),
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
-            borderSide: BorderSide(color: Color(0xBFFFBD00), width: 2.5),
+            borderSide: BorderSide(
+              color: borderColor ?? Color(0xFFFDC930),
+              width: 2.5,
+            ),
           ),
           prefixIcon: icon,
           prefixIconColor: Color(0xFF8A03A9),
@@ -119,40 +128,6 @@ class CampoTexto with ChangeNotifier {
   }
 
   static Widget barraBusqueda(Function accion, bool unidades, bool fecha) {
-    List<PopupMenuEntry<Filtros>> lista = <PopupMenuEntry<Filtros>>[
-      PopupMenuItem<Filtros>(
-        value: Filtros.id,
-        child: Textos.textoGeneral("ID", 17.5, true, true, 1),
-      ),
-      PopupMenuItem<Filtros>(
-        value: Filtros.nombre,
-        child: Textos.textoGeneral("Nombre", 17.5, true, true, 1),
-      ),
-      PopupMenuItem<Filtros>(
-        value: Filtros.tipo,
-        child: Textos.textoGeneral("Tipo", 17.5, true, true, 1),
-      ),
-      PopupMenuItem<Filtros>(
-        value: Filtros.area,
-        child: Textos.textoGeneral("Área", 17.5, true, true, 1),
-      ),
-    ];
-    if (unidades) {
-      lista.add(
-        PopupMenuItem<Filtros>(
-          value: Filtros.unidades,
-          child: Textos.textoGeneral("Unidades", 17.5, true, true, 1),
-        ),
-      );
-    }
-    if (fecha) {
-      lista.add(
-        PopupMenuItem<Filtros>(
-          value: Filtros.fecha,
-          child: Textos.textoGeneral("Fecha", 17.5, true, true, 1),
-        ),
-      );
-    }
     return TextField(
       controller: busquedaTexto,
       focusNode: focusBusqueda,
@@ -186,7 +161,34 @@ class CampoTexto with ChangeNotifier {
             if (filtro != seleccionFiltro) {seleccionFiltro = filtro, accion()},
           },
           tooltip: "Filtros",
-          itemBuilder: (BuildContext context) => lista,
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<Filtros>>[
+            PopupMenuItem<Filtros>(
+              value: Filtros.id,
+              child: Textos.textoGeneral("ID", 17.5, true, true, 1),
+            ),
+            PopupMenuItem<Filtros>(
+              value: Filtros.nombre,
+              child: Textos.textoGeneral("Nombre", 17.5, true, true, 1),
+            ),
+            PopupMenuItem<Filtros>(
+              value: Filtros.tipo,
+              child: Textos.textoGeneral("Tipo", 17.5, true, true, 1),
+            ),
+            PopupMenuItem<Filtros>(
+              value: Filtros.area,
+              child: Textos.textoGeneral("Área", 17.5, true, true, 1),
+            ),
+            if (unidades)
+              PopupMenuItem<Filtros>(
+                value: Filtros.unidades,
+                child: Textos.textoGeneral("Unidades", 17.5, true, true, 1),
+              ),
+            if (fecha)
+              PopupMenuItem<Filtros>(
+                value: Filtros.fecha,
+                child: Textos.textoGeneral("Fecha", 17.5, true, true, 1),
+              ),
+          ],
         ),
         hintText: "Buscar",
         hintStyle: TextStyle(color: Color(0xFFF6AFCF)),

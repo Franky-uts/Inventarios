@@ -165,51 +165,48 @@ class _HistorialInfoState extends State<HistorialInfo> {
             ),
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
-                Widget wid = Textos.textoTilulo("", 30);
-                Widget tabla = Textos.textoTilulo(
-                  "No hay perdidas registradas",
-                  30,
-                );
-                if (widget.historialInfo.perdidas.last > 0) {
-                  wid = Tablas.contenedorInfo(
-                    MediaQuery.sizeOf(context).width,
-                    [.05, .15, .6],
-                    ["#", "Cantidad perdida", "Razón de perdida"],
-                  );
-                  tabla = ListView.separated(
-                    itemCount: widget.historialInfo.perdidas.last,
-                    scrollDirection: Axis.vertical,
-                    separatorBuilder: (context, index) => Container(
-                      height: 2,
-                      decoration: BoxDecoration(color: Color(0xFFFDC930)),
-                    ),
-                    itemBuilder: (context, index) {
-                      return Container(
-                        width: MediaQuery.sizeOf(context).width,
-                        decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-                        child: Tablas.barraDatos(
-                          MediaQuery.sizeOf(context).width,
-                          [.05, .15, .6],
-                          [
-                            "${index + 1}",
-                            "${widget.historialInfo.cantidades[index]}",
-                            widget.historialInfo.razones[index],
-                          ],
-                          [],
-                          1,
-                          false,
-                        ),
-                      );
-                    },
-                  );
-                }
                 return Ventanas.ventanaTabla(
                   MediaQuery.of(context).size.height,
                   MediaQuery.of(context).size.width,
                   ["Perdidas: ${widget.historialInfo.perdidas.last}"],
                   [],
-                  wid,
-                  tabla,
+                  widget.historialInfo.perdidas.last > 0
+                      ? Tablas.contenedorInfo(
+                          MediaQuery.sizeOf(context).width,
+                          [.05, .15, .6],
+                          ["#", "Cantidad perdida", "Razón de perdida"],
+                        )
+                      : Textos.textoTilulo("", 30),
+                  widget.historialInfo.perdidas.last > 0
+                      ? ListView.separated(
+                          itemCount: widget.historialInfo.perdidas.last,
+                          scrollDirection: Axis.vertical,
+                          separatorBuilder: (context, index) => Container(
+                            height: 2,
+                            decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                          ),
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: MediaQuery.sizeOf(context).width,
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFFFFFF),
+                              ),
+                              child: Tablas.barraDatos(
+                                MediaQuery.sizeOf(context).width,
+                                [.05, .15, .6],
+                                [
+                                  "${index + 1}",
+                                  "${widget.historialInfo.cantidades[index]}",
+                                  widget.historialInfo.razones[index],
+                                ],
+                                [],
+                                1,
+                                false,
+                              ),
+                            );
+                          },
+                        )
+                      : Textos.textoTilulo("No hay perdidas registradas", 30),
                   [Botones.btnCirRos("Cerrar", () => ventana.tabla(false))],
                 );
               },

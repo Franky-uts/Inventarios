@@ -39,8 +39,10 @@ class ProductoModel {
     required this.mensaje,
   });
 
-  static Future<List<ProductoModel>> getProductos(String filtro,
-      String busqueda,) async {
+  static Future<List<ProductoModel>> getProductos(
+    String filtro,
+    String busqueda,
+  ) async {
     String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     late List<ProductoModel> productosFuture = [];
@@ -79,9 +81,7 @@ class ProductoModel {
             List<double> doublelist = [];
             for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
               String dob = "${item["PerdidaCantidad"][i]}.0";
-              if (dob
-                  .split(".")
-                  .length > 2) {
+              if (dob.split(".").length > 2) {
                 dob = "${dob.split(".")[0]}.${dob.split(".")[1]}";
               }
               doublelist.add(double.parse(dob));
@@ -212,6 +212,156 @@ class ProductoModel {
     return productosFuture;
   }
 
+  static Future<List<ProductoModel>> getProductosProd(
+    String filtro,
+    String busqueda,
+  ) async {
+    String conexion = LocalStorage.local('conexion');
+    late List<ProductoModel> productosFuture = [];
+    try {
+      var res = await http.get(
+        Uri.parse("$conexion/almacen/Prod/$filtro/$busqueda"),
+        headers: {
+          "Accept": "application/json",
+          "content-type": "application/json; charset=UTF-8",
+        },
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          List<double> doublelist = [];
+          for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
+            String dob = "${item["PerdidaCantidad"][i]}.0";
+            if (dob.split(".").length > 2) {
+              dob = "${dob.split(".")[0]}.${dob.split(".")[1]}";
+            }
+            doublelist.add(double.parse(dob));
+          }
+          productosFuture.add(
+            ProductoModel(
+              id: item["id"],
+              nombre: item["Nombre"],
+              tipo: item["Tipo"],
+              unidades: item["Unidades"].toDouble(),
+              ultimaModificacion: item["UltimaModificación"],
+              cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
+              area: item["Area"],
+              entrada: item["Entradas"].toDouble(),
+              salida: item["Salidas"].toDouble(),
+              perdidaCantidad: doublelist,
+              perdidaRazones: List<String>.from(item["PerdidaRazon"]),
+              ultimoUsuario: item["UltimoUsuario"],
+              codigoBarras: item["CodigoBarras"],
+              limiteProd: item["LimiteProd"],
+              mensaje: "",
+            ),
+          );
+        }
+      } else {
+        productosFuture.add(
+          ProductoModel(
+            id: "",
+            nombre: "Error",
+            tipo: "",
+            unidades: 0,
+            ultimaModificacion: "",
+            cantidadPorUnidad: 0,
+            area: "",
+            entrada: 0,
+            salida: 0,
+            perdidaCantidad: [],
+            perdidaRazones: [],
+            ultimoUsuario: "",
+            codigoBarras: "",
+            limiteProd: 0,
+            mensaje: res.body,
+          ),
+        );
+      }
+    } on TimeoutException catch (e) {
+      productosFuture.add(
+        ProductoModel(
+          id: "",
+          nombre: "Error",
+          tipo: "",
+          unidades: 0,
+          ultimaModificacion: "",
+          cantidadPorUnidad: 0,
+          area: "",
+          entrada: 0,
+          salida: 0,
+          perdidaCantidad: [],
+          perdidaRazones: [],
+          ultimoUsuario: "",
+          codigoBarras: "",
+          limiteProd: 0,
+          mensaje: "${e.message}",
+        ),
+      );
+    } on SocketException catch (e) {
+      productosFuture.add(
+        ProductoModel(
+          id: "",
+          nombre: "Error",
+          tipo: "",
+          unidades: 0,
+          ultimaModificacion: "",
+          cantidadPorUnidad: 0,
+          area: "",
+          entrada: 0,
+          salida: 0,
+          perdidaCantidad: [],
+          perdidaRazones: [],
+          ultimoUsuario: " ",
+          codigoBarras: "",
+          limiteProd: 0,
+          mensaje: e.message,
+        ),
+      );
+    } on http.ClientException catch (e) {
+      productosFuture.add(
+        ProductoModel(
+          id: "",
+          nombre: "Error",
+          tipo: "",
+          unidades: 0,
+          ultimaModificacion: "",
+          cantidadPorUnidad: 0,
+          area: "",
+          entrada: 0,
+          salida: 0,
+          perdidaCantidad: [],
+          perdidaRazones: [],
+          ultimoUsuario: "",
+          codigoBarras: "",
+          limiteProd: 0,
+          mensaje: e.message,
+        ),
+      );
+    } on Error catch (e) {
+      productosFuture.add(
+        ProductoModel(
+          id: "",
+          nombre: "Error",
+          tipo: "",
+          unidades: 0,
+          ultimaModificacion: "",
+          cantidadPorUnidad: 0,
+          area: "",
+          entrada: 0,
+          salida: 0,
+          perdidaCantidad: [],
+          perdidaRazones: [],
+          ultimoUsuario: "",
+          codigoBarras: "",
+          limiteProd: 0,
+          mensaje: "$e",
+        ),
+      );
+    }
+    return productosFuture;
+  }
+
   static Future<List<ProductoModel>> getDatosArticulo(int id) async {
     String conexion = LocalStorage.local('conexion');
     late List<ProductoModel> productoModel = [];
@@ -229,9 +379,7 @@ class ProductoModel {
           List<double> doublelist = [];
           for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
             String dob = "${item["PerdidaCantidad"][i]}";
-            if (dob
-                .split(".")
-                .length < 2) {
+            if (dob.split(".").length < 2) {
               dob = "${item["PerdidaCantidad"][i]}.0";
             }
             doublelist.add(double.parse(dob));
@@ -396,13 +544,14 @@ class ProductoModel {
     } on Error catch (e) {
       mensaje = "Error: $e";
     }
-    return
-      mensaje;
+    return mensaje;
   }
 
-  static Future<String> editarProducto(String id,
-      String dato,
-      String columna,) async {
+  static Future<String> editarProducto(
+    String id,
+    String dato,
+    String columna,
+  ) async {
     String texto;
     String conexion = LocalStorage.local('conexion');
     try {
@@ -433,16 +582,17 @@ class ProductoModel {
     } on Error catch (e) {
       texto = "Error: $e";
     }
-    return
-      texto;
+    return texto;
   }
 
-  static Future<String> guardarESP(double entradas,
-      double salidas,
-      List<String> razones,
-      List<double> cantidades,
-      double unidades,
-      String id,) async {
+  static Future<String> guardarESP(
+    double entradas,
+    double salidas,
+    List<String> razones,
+    List<double> cantidades,
+    double unidades,
+    String id,
+  ) async {
     String texto = "Error: No se guardo la información.";
     if (unidades >= 0) {
       try {
@@ -459,10 +609,8 @@ class ProductoModel {
             'cantidades': "$cantidades"
                 .replaceAll("[", "{")
                 .replaceAll("]", "}"),
-            'razones': "$razones"
-                .replaceAll("[", "{")
-                .replaceAll("]", "}")
-            , 'unidades': unidades,
+            'razones': "$razones".replaceAll("[", "{").replaceAll("]", "}"),
+            'unidades': unidades,
             'usuario': LocalStorage.local('usuario'),
           }),
         );
@@ -480,8 +628,7 @@ class ProductoModel {
         texto = "Error: $e";
       }
     }
-    return
-      texto;
+    return texto;
   }
 
   static Future<String> reiniciarESP() async {
@@ -490,8 +637,7 @@ class ProductoModel {
     try {
       final res = await http.put(
         Uri.parse(
-          "$conexion/almacen/${LocalStorage.local(
-              'locación')}/reiniciarMovimientos",
+          "$conexion/almacen/${LocalStorage.local('locación')}/reiniciarMovimientos",
         ),
         headers: {
           "Accept": "application/json",
@@ -511,8 +657,7 @@ class ProductoModel {
     } on Error catch (e) {
       texto = "Error: $e";
     }
-    return
-      texto;
+    return texto;
   }
 
   static Future<List<String>> getTipos() async {

@@ -9,6 +9,7 @@ import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/add_producto.dart';
 import 'package:inventarios/pages/articulo_info.dart';
 import 'package:inventarios/pages/orden_salida.dart';
+import 'package:inventarios/pages/orden_salida_prod.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -332,5 +333,28 @@ class RecDrawer {
     if (ctx.mounted) {
       ctx.read<Carga>().cargaBool(false);
     }
+  }
+
+  static Future<StatefulWidget> salidaOrdenesProd(BuildContext ctx) async {
+    ctx.read<Carga>().cargaBool(true);
+    CampoTexto.seleccionFiltro = Filtros.id;
+    List<ProductoModel> productos = await ProductoModel.getProductosProd(
+      "idProducto",
+      "",
+    );
+    if (productos[0].nombre != "Error") {
+      if (ctx.mounted) {
+        Textos.crearLista(
+          int.parse(
+            productos.last.id.substring(0, productos.last.id.length - 3),
+          ),
+          Color(0xFFFDC930),
+        );
+      }
+    } else {
+      Textos.toast(productos[0].tipo, false);
+    }
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+    return OrdenSalidaProd();
   }
 }

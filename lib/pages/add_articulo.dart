@@ -74,8 +74,6 @@ class _AddproductoState extends State<Addarticulo> {
         value == "Bote") {
       cantidad = true;
       controller[1].clear();
-    } else if (value == "Granel") {
-      controller[1].text = "0.001";
     } else if (value == "Tipo") {
       cantidad = false;
       controller[1].clear();

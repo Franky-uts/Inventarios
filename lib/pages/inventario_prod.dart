@@ -1,41 +1,35 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:inventarios/components/rec_drawer.dart';
-import 'package:inventarios/components/ventanas.dart';
+import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/historial.dart';
-import 'package:inventarios/pages/producto.dart';
+import 'package:inventarios/pages/perdidas_prov.dart';
 import 'package:inventarios/services/local_storage.dart';
-import 'package:inventarios/components/botones.dart';
 import 'package:provider/provider.dart';
 
-class Inventario extends StatefulWidget {
-  const Inventario({super.key});
+class InventarioProd extends StatefulWidget {
+  const InventarioProd({super.key});
 
   @override
-  State<Inventario> createState() => _InventarioState();
+  State<InventarioProd> createState() => _InventarioProdState();
 }
 
-class _InventarioState extends State<Inventario> {
-  @override
-  void initState() {
-    super.initState();
+Future<List<ProductoModel>> getProductos(
+  String filtro,
+  String busqueda,
+) async => await ProductoModel.getProductosProd(filtro, busqueda);
+
+Future<void> ordenSalida(BuildContext ctx) async {
+  StatefulWidget ruta = await RecDrawer.salidaOrdenesProd(ctx);
+  if (ctx.mounted) {
+    Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => ruta));
   }
+}
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  Future<List<ProductoModel>> getProductos(
-    String filtro,
-    String busqueda,
-  ) async => await ProductoModel.getProductos(filtro, busqueda);
-
+class _InventarioProdState extends State<InventarioProd> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,90 +37,10 @@ class _InventarioState extends State<Inventario> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Añadir un producto",
-              Icons.edit_note_rounded,
-              false,
-              () async => {
-                carga.cargaBool(true),
-                await RecDrawer.getListas(context, Inventario()),
-              },
-              () => Textos.toast("Espera a que los datos carguen.", false),
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              "Descargar reporte",
-              Icons.download_rounded,
-              false,
-              () async => await RecDrawer.datosExcel(context),
-              () => Textos.toast("Espera a que los datos carguen.", false),
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              "Historial movimientos",
-              Icons.history_toggle_off_rounded,
-              false,
-              () => {
-                carga.cargaBool(true),
-                if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                  {CampoTexto.seleccionFiltro = Filtros.id},
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Historial(ruta: Inventario()),
-                  ),
-                ),
-                carga.cargaBool(false),
-              },
-              () => Textos.toast("Espera a que los datos carguen.", false),
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              "Reiniciar movimientos",
-              Icons.refresh_rounded,
-              false,
-              () => {
-                Navigator.of(context).pop(),
-                context.read<Ventanas>().emergente(true),
-              },
-              () => Textos.toast("Espera a que los datos carguen.", false),
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              "Escanear codigo",
-              Icons.barcode_reader,
-              false,
-              () => RecDrawer.scanProducto(context, Inventario()),
-              () => Textos.toast("Espera a que los datos carguen.", false),
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
               "Nueva orden",
               Icons.add_shopping_cart_rounded,
               true,
-              () async => {
-                carga.cargaBool(true),
-                await RecDrawer.salidaOrdenes(context),
-              },
+              () async => await ordenSalida(context),
               () => Textos.toast("Espera a que los datos carguen.", false),
               Carga.getValido(),
             );
@@ -189,31 +103,6 @@ class _InventarioState extends State<Inventario> {
                   ],
                 ),
               ),
-            ),
-            Consumer2<Ventanas, Carga>(
-              builder: (context, ventanas, carga, child) {
-                return Ventanas.ventanaEmergente(
-                  "¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?",
-                  "No, volver",
-                  "Si, continuar",
-                  () => ventanas.emergente(false),
-                  () async => {
-                    ventanas.emergente(false),
-                    carga.cargaBool(true),
-                    Textos.toast(await ProductoModel.reiniciarESP(), true),
-                    if (context.mounted)
-                      {
-                        context.read<Tablas>().datos(
-                          await getProductos(
-                            CampoTexto.filtroTexto(true),
-                            CampoTexto.busquedaTexto.text,
-                          ),
-                        ),
-                        carga.cargaBool(false),
-                      },
-                  },
-                );
-              },
             ),
             Carga.ventanaCarga(),
           ],
@@ -301,10 +190,8 @@ class _InventarioState extends State<Inventario> {
                   Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => Producto(
-                        productoInfo: lista[index],
-                        ruta: Inventario(),
-                      ),
+                      builder: (context) =>
+                          PerdidasProv(productoInfo: lista[index]),
                     ),
                   ),
                 },
