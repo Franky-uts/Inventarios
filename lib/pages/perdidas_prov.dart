@@ -21,6 +21,7 @@ class PerdidasProv extends StatefulWidget {
 
 class _PerdidasProvState extends State<PerdidasProv> {
   double productosPerdido = 0;
+  late double unidades = widget.productoInfo.unidades;
   FocusNode focus = FocusNode();
   List<Color> colores = [Color(0x00000000), Color(0x00000000)];
   List<TextEditingController> controller = [
@@ -75,13 +76,40 @@ class _PerdidasProvState extends State<PerdidasProv> {
             : "Se registro la perdida de $unidades unidades";
         widget.productoInfo.perdidaRazones = listaRazones;
         widget.productoInfo.perdidaCantidad = listaCantidades;
-        widget.productoInfo.unidades = unidades;
+        this.unidades = unidades;
         productosPerdido += perdidas;
       }
       Textos.toast(mensaje, true);
       ctx.read<Ventanas>().emergente(mensaje.split(":")[0] == "Error");
       ctx.read<Ventanas>().tabla(mensaje.split(":")[0] != "Error");
     }
+  }
+
+  Future enviarDatos(BuildContext ctx) async {
+    setState(() {
+      ctx.read<Carga>().cargaBool(true);
+    });
+    String texto = await ProductoModel.guardarESP(
+      widget.productoInfo.entrada,
+      widget.productoInfo.salida,
+      widget.productoInfo.perdidaRazones,
+      widget.productoInfo.perdidaCantidad,
+      unidades,
+      widget.productoInfo.id,
+    );
+    if (texto.split(": ")[0] != "Error") {
+      setState(() {
+        widget.productoInfo.unidades = unidades;
+      });
+    } else {
+      texto = texto.split(": ")[1];
+    }
+    if (ctx.mounted) {
+      setState(() {
+        ctx.read<Carga>().cargaBool(false);
+      });
+    }
+    Textos.toast(texto, texto.isEmpty);
   }
 
   @override
@@ -100,45 +128,77 @@ class _PerdidasProvState extends State<PerdidasProv> {
                     height: MediaQuery.of(context).size.height,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Textos.textoTilulo(widget.productoInfo.nombre, 30),
                         SizedBox(
-                          width: MediaQuery.of(context).size.width * .5,
-                          height: 40,
-                          child: Row(
+                          height: MediaQuery.sizeOf(context).height * .5,
+                          child: Column(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
-                              Textos.textoGeneral(
-                                "Área: ${widget.productoInfo.area}",
-                                20,
-                                true,
-                                true,
-                                1,
+                              Textos.textoTilulo(
+                                widget.productoInfo.nombre,
+                                30,
                               ),
-                              Textos.textoGeneral(
-                                "${widget.productoInfo.tipo}:",
-                                20,
-                                true,
-                                true,
-                                1,
-                              ),
-                              Textos.recuadroCantidad(
-                                "${widget.productoInfo.unidades}".split(
-                                  ".0",
-                                )[0],
-                                Textos.colorLimite(
-                                  widget.productoInfo.limiteProd,
-                                  widget.productoInfo.unidades.floor(),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * .5,
+                                height: 40,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    Textos.textoGeneral(
+                                      "Área: ${widget.productoInfo.area}",
+                                      20,
+                                      true,
+                                      true,
+                                      1,
+                                    ),
+                                    Textos.textoGeneral(
+                                      "${widget.productoInfo.tipo}:",
+                                      20,
+                                      true,
+                                      true,
+                                      1,
+                                    ),
+                                    Textos.recuadroCantidad(
+                                      "$unidades".split(".0")[0],
+                                      Textos.colorLimite(
+                                        widget.productoInfo.limiteProd,
+                                        unidades.floor(),
+                                      ),
+                                      20,
+                                      1,
+                                    ),
+                                  ],
                                 ),
-                                20,
-                                1,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  Botones.btnCirRos(
+                                    "Agregar perdida",
+                                    () => context.read<Ventanas>().emergente(
+                                      true,
+                                    ),
+                                  ),
+                                  Botones.icoCirMor(
+                                    "Guardar movimientos",
+                                    Icons.save_rounded,
+                                    false,
+                                    () => enviarDatos(context),
+                                    () =>
+                                        unidades !=
+                                        widget.productoInfo.unidades,
+                                    unidades != widget.productoInfo.unidades,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ),
                         SizedBox(
-                          height: MediaQuery.sizeOf(context).height*.5,
+                          height: MediaQuery.sizeOf(context).height * .5,
                           child: Column(
                             children: [
                               (productosPerdido > 0)
@@ -156,47 +216,47 @@ class _PerdidasProvState extends State<PerdidasProv> {
                                       20,
                                     ),
                               if (productosPerdido > 0)
-                                ListView.separated(
-                                  itemCount: widget
-                                      .productoInfo
-                                      .perdidaCantidad
-                                      .length,
-                                  scrollDirection: Axis.vertical,
-                                  separatorBuilder: (context, index) =>
-                                      Container(
-                                        height: 2,
-                                        decoration: BoxDecoration(
-                                          color: Color(0xFFFDC930),
+                                SizedBox(
+                                  height:
+                                      MediaQuery.sizeOf(context).height * .475,
+                                  child: ListView.separated(
+                                    itemCount: widget
+                                        .productoInfo
+                                        .perdidaCantidad
+                                        .length,
+                                    scrollDirection: Axis.vertical,
+                                    separatorBuilder: (context, index) =>
+                                        Container(
+                                          height: 2,
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFFDC930),
+                                          ),
                                         ),
-                                      ),
-                                  itemBuilder: (context, index) {
-                                    return Container(
-                                      width: MediaQuery.sizeOf(context).width,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        color: Color(0xFFFFFFFF),
-                                      ),
-                                      child: Tablas.barraDatos(
-                                        MediaQuery.sizeOf(context).width,
-                                        [.05, .15, .6],
-                                        [
-                                          "${index + 1}",
-                                          "${widget.productoInfo.perdidaCantidad[index]}",
-                                          widget
-                                              .productoInfo
-                                              .perdidaRazones[index],
-                                        ],
-                                        [],
-                                        1,
-                                        false,
-                                      ),
-                                    );
-                                  },
+                                    itemBuilder: (context, index) {
+                                      return Container(
+                                        width: MediaQuery.sizeOf(context).width,
+                                        height: 40,
+                                        decoration: BoxDecoration(
+                                          color: Color(0xFFFFFFFF),
+                                        ),
+                                        child: Tablas.barraDatos(
+                                          MediaQuery.sizeOf(context).width,
+                                          [.05, .15, .6],
+                                          [
+                                            "${index + 1}",
+                                            "${widget.productoInfo.perdidaCantidad[index]}",
+                                            widget
+                                                .productoInfo
+                                                .perdidaRazones[index],
+                                          ],
+                                          [],
+                                          1,
+                                          false,
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ),
-                              Botones.btnCirRos(
-                                "Agregar perdida",
-                                () => context.read<Ventanas>().emergente(true),
-                              ),
                             ],
                           ),
                         ),
