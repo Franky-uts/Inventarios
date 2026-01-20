@@ -36,21 +36,59 @@ class _InventarioState extends State<Inventario> {
     String busqueda,
   ) async => await ProductoModel.getProductos(filtro, busqueda);
 
+  Future<void> getProductoInfo(BuildContext ctx, int id) async {
+    ctx.read<Carga>().cargaBool(true);
+    ProductoModel producto = await ProductoModel.getProducto(id);
+    if (producto.mensaje.isEmpty) {
+      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
+      if (ctx.mounted) {
+        Navigator.pushReplacement(
+          ctx,
+          MaterialPageRoute(
+            builder: (ctx) =>
+                Producto(productoInfo: producto, ruta: Inventario()),
+          ),
+        );
+      }
+    } else {
+      Textos.toast(producto.mensaje, true);
+    }
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: RecDrawer.drawer(context, [
+        if (LocalStorage.local('puesto') == 'Administrador')
+          Consumer<Carga>(
+            builder: (ctx, carga, child) {
+              return Botones.icoCirMor(
+                'Cambiar de tienda',
+                Icons.change_circle_rounded,
+                false,
+                () => {
+                  Navigator.of(ctx).pop(),
+                  carga.cargaBool(true),
+                  ctx.read<Ventanas>().cambio(true),
+                  carga.cargaBool(false),
+                },
+                () => Textos.toast('Espera a que los datos carguen.', false),
+                Carga.getValido(),
+              );
+            },
+          ),
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Añadir un producto",
+              'Añadir un producto',
               Icons.edit_note_rounded,
               false,
               () async => {
                 carga.cargaBool(true),
                 await RecDrawer.getListas(context, Inventario()),
               },
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -58,11 +96,11 @@ class _InventarioState extends State<Inventario> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Descargar reporte",
+              'Descargar reporte',
               Icons.download_rounded,
               false,
               () async => await RecDrawer.datosExcel(context),
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -70,7 +108,7 @@ class _InventarioState extends State<Inventario> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Historial movimientos",
+              'Historial movimientos',
               Icons.history_toggle_off_rounded,
               false,
               () => {
@@ -85,7 +123,7 @@ class _InventarioState extends State<Inventario> {
                 ),
                 carga.cargaBool(false),
               },
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -93,14 +131,14 @@ class _InventarioState extends State<Inventario> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Reiniciar movimientos",
+              'Reiniciar movimientos',
               Icons.refresh_rounded,
               false,
               () => {
                 Navigator.of(context).pop(),
                 context.read<Ventanas>().emergente(true),
               },
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -108,11 +146,11 @@ class _InventarioState extends State<Inventario> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Escanear codigo",
+              'Escanear codigo',
               Icons.barcode_reader,
               false,
               () => RecDrawer.scanProducto(context, Inventario()),
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -120,14 +158,14 @@ class _InventarioState extends State<Inventario> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Nueva orden",
+              'Nueva orden',
               Icons.add_shopping_cart_rounded,
               true,
               () async => {
                 carga.cargaBool(true),
                 await RecDrawer.salidaOrdenes(context),
               },
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -151,14 +189,14 @@ class _InventarioState extends State<Inventario> {
                           MediaQuery.sizeOf(context).width,
                           [.1, .25, .08, .175, .15, .075, .075, .075],
                           [
-                            "id",
-                            "Nombre",
-                            "Unidades",
-                            "Área",
-                            "Tipo",
-                            "Entrada",
-                            "Salida",
-                            "Perdida",
+                            'id',
+                            'Nombre',
+                            'Unidades',
+                            'Área',
+                            'Tipo',
+                            'Entrada',
+                            'Salida',
+                            'Perdida',
                           ],
                         ),
                         SizedBox(
@@ -168,15 +206,15 @@ class _InventarioState extends State<Inventario> {
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
                                 listaPrincipal,
-                                "No hay productos registrados.",
-                                "No hay coincidencias.",
+                                'No hay productos registrados.',
+                                'No hay coincidencias.',
                                 () => getProductos(
-                                  CampoTexto.filtroTexto(true),
+                                  CampoTexto.filtroTexto(),
                                   CampoTexto.busquedaTexto.text,
                                 ),
                                 accionRefresh: () async => tablas.datos(
                                   await getProductos(
-                                    CampoTexto.filtroTexto(true),
+                                    CampoTexto.filtroTexto(),
                                     CampoTexto.busquedaTexto.text,
                                   ),
                                 ),
@@ -193,9 +231,9 @@ class _InventarioState extends State<Inventario> {
             Consumer2<Ventanas, Carga>(
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaEmergente(
-                  "¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?",
-                  "No, volver",
-                  "Si, continuar",
+                  '¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?',
+                  'No, volver',
+                  'Si, continuar',
                   () => ventanas.emergente(false),
                   () async => {
                     ventanas.emergente(false),
@@ -205,7 +243,7 @@ class _InventarioState extends State<Inventario> {
                       {
                         context.read<Tablas>().datos(
                           await getProductos(
-                            CampoTexto.filtroTexto(true),
+                            CampoTexto.filtroTexto(),
                             CampoTexto.busquedaTexto.text,
                           ),
                         ),
@@ -215,6 +253,20 @@ class _InventarioState extends State<Inventario> {
                 );
               },
             ),
+            if (LocalStorage.local('puesto') == 'Administrador')
+              Consumer2<Ventanas, Carga>(
+                builder: (context, ventanas, carga, child) {
+                  return Ventanas.cambioDeTienda(
+                    context,
+                    () async => context.read<Tablas>().datos(
+                      await getProductos(
+                        CampoTexto.filtroTexto(),
+                        CampoTexto.busquedaTexto.text,
+                      ),
+                    ),
+                  );
+                },
+              ),
             Carga.ventanaCarga(),
           ],
         ),
@@ -228,7 +280,7 @@ class _InventarioState extends State<Inventario> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Botones.btnRctMor(
-          "Abrir menú",
+          'Abrir menú',
           35,
           Icons.menu_rounded,
           false,
@@ -243,7 +295,7 @@ class _InventarioState extends State<Inventario> {
                 () async => {
                   tablas.datos(
                     await getProductos(
-                      CampoTexto.filtroTexto(true),
+                      CampoTexto.filtroTexto(),
                       CampoTexto.busquedaTexto.text,
                     ),
                   ),
@@ -275,6 +327,9 @@ class _InventarioState extends State<Inventario> {
           lista[index].limiteProd,
           lista[index].unidades.floor(),
         );
+        String unidad = '${lista[index].unidades}';
+        String entrada = '${lista[index].entrada}';
+        String salida = '${lista[index].salida}';
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
@@ -284,31 +339,17 @@ class _InventarioState extends State<Inventario> {
             [
               "${lista[index].id}",
               lista[index].nombre,
-              "${lista[index].unidades}".split(".")[0],
+              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
               lista[index].area,
               lista[index].tipo,
-              "${lista[index].entrada}".split(".")[0],
-              "${lista[index].salida}".split(".")[0],
-              "${lista[index].perdidaCantidad.length}",
+              (entrada.split('.')[1] == '0') ? entrada.split('.')[0] : entrada,
+              (salida.split('.')[1] == '0') ? salida.split('.')[0] : salida,
+              '${lista[index].perdidaCantidad.length}',
             ],
             colores,
             2,
             true,
-            extra: () async => {
-              await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
-              if (context.mounted)
-                {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Producto(
-                        productoInfo: lista[index],
-                        ruta: Inventario(),
-                      ),
-                    ),
-                  ),
-                },
-            },
+            extra: () async => await getProductoInfo(context, lista[index].id),
           ),
         );
       },

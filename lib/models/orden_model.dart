@@ -14,10 +14,12 @@ class OrdenModel {
   List<String> comentariosTienda;
   List<String> comentariosProveedor;
   List<bool> confirmacion;
+  List<int> idProductos;
+  int cantArticulos;
   String estado;
   String remitente;
   String ultimaModificacion;
-  String destino;
+  String locacion;
   String mensaje;
 
   OrdenModel({
@@ -30,10 +32,12 @@ class OrdenModel {
     required this.comentariosProveedor,
     required this.comentariosTienda,
     required this.confirmacion,
+    required this.idProductos,
+    required this.cantArticulos,
     required this.estado,
     required this.remitente,
     required this.ultimaModificacion,
-    required this.destino,
+    required this.locacion,
     required this.mensaje,
   });
 
@@ -41,176 +45,37 @@ class OrdenModel {
     String filtro,
     String locacion,
   ) async {
-    late String url;
     String conexion = LocalStorage.local('conexion');
-    url = "$conexion/ordenes/$filtro/$locacion";
-    late List<OrdenModel> ordenesFuture = [];
-    var res = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Accept": "application/json",
-        "content-type": "application/json; charset=UTF-8",
-      },
-    );
+    List<OrdenModel> ordenesFuture = [];
     try {
+      var res = await http.get(
+        Uri.parse('$conexion/ordenes/$filtro/$locacion'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+      );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
           ordenesFuture.add(
             OrdenModel(
-              id: item["id"],
-              articulos: List<String>.from(item['Artículos']),
-              cantidades: List<int>.from(item['Cantidades']),
-              tipos: List<String>.from(item['Tipos']),
-              areas: List<String>.from(item['Areas']),
-              cantidadesCubiertas: List<int>.from(item['CantidadesCubiertas']),
-              comentariosProveedor: List<String>.from(
-                item['ComentariosProveedor'],
-              ),
-              comentariosTienda: List<String>.from(item['ComentariosTienda']),
-              confirmacion: List<bool>.from(item['Confirmacion']),
-              estado: item["Estado"],
-              remitente: item["Remitente"],
-              ultimaModificacion: item["UltimaModificación"],
-              destino: item["Destino"],
-              mensaje: "",
-            ),
-          );
-        }
-      } else {
-        ordenesFuture.add(
-          OrdenModel(
-            id: 0,
-            articulos: ["Error"],
-            cantidades: [],
-            tipos: [],
-            areas: [],
-            cantidadesCubiertas: [],
-            comentariosProveedor: [],
-            comentariosTienda: [],
-            confirmacion: [],
-            estado: "",
-            remitente: "",
-            ultimaModificacion: "",
-            destino: "",
-            mensaje: res.body,
-          ),
-        );
-      }
-    } on TimeoutException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: ["Error"],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          estado: "",
-          remitente: "",
-          ultimaModificacion: "",
-          destino: "",
-          mensaje: "${e.message}",
-        ),
-      );
-    } on SocketException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: ["Error"],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          estado: "",
-          remitente: "",
-          ultimaModificacion: "",
-          destino: "",
-          mensaje: e.message,
-        ),
-      );
-    } on http.ClientException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: ["Error"],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          estado: "",
-          remitente: "",
-          ultimaModificacion: "",
-          destino: "",
-          mensaje: e.message,
-        ),
-      );
-    } on Error catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: ["Error"],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          estado: "",
-          remitente: "",
-          ultimaModificacion: "",
-          destino: "",
-          mensaje: "$e",
-        ),
-      );
-    }
-    return ordenesFuture;
-  }
-
-  static Future<List<OrdenModel>> getAllOrdenes(String filtro) async {
-    late String url;
-    String conexion = LocalStorage.local('conexion');
-    url = "$conexion/ordenes/$filtro";
-    late List<OrdenModel> ordenesFuture = [];
-    var res = await http.get(
-      Uri.parse(url),
-      headers: {
-        "Accept": "application/json",
-        "content-type": "application/json; charset=UTF-8",
-      },
-    );
-    try {
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          ordenesFuture.add(
-            OrdenModel(
-              id: item["id"],
-              articulos: List<String>.from(item['Artículos']),
-              cantidades: List<int>.from(item['Cantidades']),
-              tipos: List<String>.from(item['Tipos']),
-              areas: List<String>.from(item['Areas']),
-              cantidadesCubiertas: List<int>.from(item['CantidadesCubiertas']),
-              comentariosProveedor: List<String>.from(
-                item['ComentariosProveedor'],
-              ),
-              comentariosTienda: List<String>.from(item['ComentariosTienda']),
-              confirmacion: List<bool>.from(item['Confirmacion']),
-              estado: item["Estado"],
-              remitente: item["Remitente"],
-              ultimaModificacion: item["UltimaModificación"],
-              destino: item["Destino"],
-              mensaje: "",
+              id: item['id'],
+              articulos: [],
+              cantidades: [],
+              tipos: [],
+              areas: [],
+              cantidadesCubiertas: [],
+              comentariosProveedor: [],
+              comentariosTienda: [],
+              confirmacion: [],
+              idProductos: [],
+              cantArticulos: item['CantArticulos'],
+              estado: item['Estado'],
+              remitente: item['Remitente'],
+              ultimaModificacion: item['UltimaModificación'],
+              locacion: '',
+              mensaje: '',
             ),
           );
         }
@@ -226,10 +91,12 @@ class OrdenModel {
             comentariosProveedor: [],
             comentariosTienda: [],
             confirmacion: [],
-            estado: "",
-            remitente: "",
-            ultimaModificacion: "",
-            destino: "",
+            idProductos: [],
+            cantArticulos: 0,
+            estado: '',
+            remitente: '',
+            ultimaModificacion: '',
+            locacion: '',
             mensaje: res.body,
           ),
         );
@@ -246,18 +113,20 @@ class OrdenModel {
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
-          estado: "",
-          remitente: "",
-          ultimaModificacion: "",
-          destino: "",
-          mensaje: "${e.message}",
+          idProductos: [],
+          cantArticulos: 0,
+          estado: '',
+          remitente: '',
+          ultimaModificacion: '',
+          locacion: '',
+          mensaje: '${e.message}',
         ),
       );
     } on SocketException catch (e) {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ["Error"],
+          articulos: ['Error'],
           cantidades: [],
           tipos: [],
           areas: [],
@@ -265,10 +134,12 @@ class OrdenModel {
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
-          estado: "",
-          remitente: "",
-          ultimaModificacion: "",
-          destino: "",
+          idProductos: [],
+          cantArticulos: 0,
+          estado: '',
+          remitente: '',
+          ultimaModificacion: '',
+          locacion: '',
           mensaje: e.message,
         ),
       );
@@ -276,7 +147,7 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ["Error"],
+          articulos: ['Error'],
           cantidades: [],
           tipos: [],
           areas: [],
@@ -284,10 +155,12 @@ class OrdenModel {
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
-          estado: "",
-          remitente: "",
-          ultimaModificacion: "",
-          destino: "",
+          idProductos: [],
+          cantArticulos: 0,
+          estado: '',
+          remitente: '',
+          ultimaModificacion: '',
+          locacion: '',
           mensaje: e.message,
         ),
       );
@@ -295,7 +168,7 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ["Error"],
+          articulos: ['Error'],
           cantidades: [],
           tipos: [],
           areas: [],
@@ -303,61 +176,334 @@ class OrdenModel {
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
-          estado: "",
-          remitente: "",
-          ultimaModificacion: "",
-          destino: "",
-          mensaje: "$e",
+          idProductos: [],
+          cantArticulos: 0,
+          estado: '',
+          remitente: '',
+          ultimaModificacion: '',
+          locacion: '',
+          mensaje: '$e',
         ),
       );
     }
     return ordenesFuture;
   }
 
+  static Future<List<OrdenModel>> getAllOrdenes(String filtro) async {
+    String conexion = LocalStorage.local('conexion');
+    List<OrdenModel> ordenesFuture = [];
+    try {
+      var res = await http.get(
+        Uri.parse('$conexion/ordenes/$filtro'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          ordenesFuture.add(
+            OrdenModel(
+              id: item['id'],
+              articulos: [],
+              cantidades: [],
+              tipos: [],
+              areas: [],
+              cantidadesCubiertas: [],
+              comentariosProveedor: [],
+              comentariosTienda: [],
+              confirmacion: [],
+              idProductos: [],
+              cantArticulos: item['CantArticulos'],
+              estado: item['Estado'],
+              remitente: item['Remitente'],
+              ultimaModificacion: item['UltimaModificación'],
+              locacion: item['Locacion'],
+              mensaje: '',
+            ),
+          );
+        }
+      } else {
+        ordenesFuture.add(
+          OrdenModel(
+            id: 0,
+            articulos: [],
+            cantidades: [],
+            tipos: [],
+            areas: [],
+            cantidadesCubiertas: [],
+            comentariosProveedor: [],
+            comentariosTienda: [],
+            confirmacion: [],
+            idProductos: [],
+            cantArticulos: 0,
+            estado: '',
+            remitente: '',
+            ultimaModificacion: '',
+            locacion: '',
+            mensaje: res.body,
+          ),
+        );
+      }
+    } on TimeoutException catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ['Error'],
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
+          idProductos: [],
+          cantArticulos: 0,
+          estado: '',
+          remitente: '',
+          ultimaModificacion: '',
+          locacion: '',
+          mensaje: '${e.message}',
+        ),
+      );
+    } on SocketException catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ['Error'],
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
+          idProductos: [],
+          cantArticulos: 0,
+          estado: '',
+          remitente: '',
+          ultimaModificacion: '',
+          locacion: '',
+          mensaje: e.message,
+        ),
+      );
+    } on http.ClientException catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ['Error'],
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
+          idProductos: [],
+          cantArticulos: 0,
+          estado: '',
+          remitente: '',
+          ultimaModificacion: '',
+          locacion: '',
+          mensaje: e.message,
+        ),
+      );
+    } on Error catch (e) {
+      ordenesFuture.add(
+        OrdenModel(
+          id: 0,
+          articulos: ['Error'],
+          cantidades: [],
+          tipos: [],
+          areas: [],
+          cantidadesCubiertas: [],
+          comentariosProveedor: [],
+          comentariosTienda: [],
+          confirmacion: [],
+          idProductos: [],
+          cantArticulos: 0,
+          estado: '',
+          remitente: '',
+          ultimaModificacion: '',
+          locacion: '',
+          mensaje: '$e',
+        ),
+      );
+    }
+    return ordenesFuture;
+  }
+
+  static Future<OrdenModel> getOrden(int id) async {
+    String conexion = LocalStorage.local('conexion');
+    OrdenModel orden;
+    try {
+      var res = await http.get(
+        Uri.parse('$conexion/ordenes/Orden/$id'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+      );
+      orden = OrdenModel(
+        id: 0,
+        articulos: [],
+        cantidades: [],
+        tipos: [],
+        areas: [],
+        cantidadesCubiertas: [],
+        comentariosProveedor: [],
+        comentariosTienda: [],
+        confirmacion: [],
+        idProductos: [],
+        cantArticulos: 0,
+        estado: '',
+        remitente: '',
+        ultimaModificacion: '',
+        locacion: '',
+        mensaje: res.body,
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          orden = OrdenModel(
+            id: item['id'],
+            articulos: List<String>.from(item['Articulos']),
+            cantidades: List<int>.from(item['Cantidades']),
+            tipos: List<String>.from(item['Tipos']),
+            areas: List<String>.from(item['Areas']),
+            cantidadesCubiertas: List<int>.from(item['CantidadesCubiertas']),
+            comentariosProveedor: List<String>.from(
+              item['ComentariosProveedor'],
+            ),
+            comentariosTienda: List<String>.from(item['ComentariosTienda']),
+            confirmacion: List<bool>.from(item['Confirmacion']),
+            idProductos: List<int>.from(item['idProductos']),
+            cantArticulos: item['CantArticulos'],
+            estado: item['Estado'],
+            remitente: item['Remitente'],
+            ultimaModificacion: item['UltimaModificación'],
+            locacion: item['Locacion'],
+            mensaje: '',
+          );
+        }
+      }
+    } on TimeoutException catch (e) {
+      orden = OrdenModel(
+        id: 0,
+        articulos: [],
+        cantidades: [],
+        tipos: [],
+        areas: [],
+        cantidadesCubiertas: [],
+        comentariosProveedor: [],
+        comentariosTienda: [],
+        confirmacion: [],
+        idProductos: [],
+        cantArticulos: 0,
+        estado: '',
+        remitente: '',
+        ultimaModificacion: '',
+        locacion: '',
+        mensaje: '${e.message}',
+      );
+    } on SocketException catch (e) {
+      orden = OrdenModel(
+        id: 0,
+        articulos: [],
+        cantidades: [],
+        tipos: [],
+        areas: [],
+        cantidadesCubiertas: [],
+        comentariosProveedor: [],
+        comentariosTienda: [],
+        confirmacion: [],
+        idProductos: [],
+        cantArticulos: 0,
+        estado: '',
+        remitente: '',
+        ultimaModificacion: '',
+        locacion: '',
+        mensaje: e.message,
+      );
+    } on http.ClientException catch (e) {
+      orden = OrdenModel(
+        id: 0,
+        articulos: [],
+        cantidades: [],
+        tipos: [],
+        areas: [],
+        cantidadesCubiertas: [],
+        comentariosProveedor: [],
+        comentariosTienda: [],
+        confirmacion: [],
+        idProductos: [],
+        cantArticulos: 0,
+        estado: '',
+        remitente: '',
+        ultimaModificacion: '',
+        locacion: '',
+        mensaje: e.message,
+      );
+    } on Error catch (e) {
+      orden = OrdenModel(
+        id: 0,
+        articulos: [],
+        cantidades: [],
+        tipos: [],
+        areas: [],
+        cantidadesCubiertas: [],
+        comentariosProveedor: [],
+        comentariosTienda: [],
+        confirmacion: [],
+        idProductos: [],
+        cantArticulos: 0,
+        estado: '',
+        remitente: '',
+        ultimaModificacion: '',
+        locacion: '',
+        mensaje: '$e',
+      );
+    }
+    return orden;
+  }
+
   static Future<String> postOrden(
-    List<String> articulos,
+    List<int> idProductos,
     List<int> cantidades,
-    List<String> tipos,
-    List<String> areas,
     List<String> comentarios,
-    String estado,
   ) async {
     String remitente = LocalStorage.local('usuario');
-    String destino = LocalStorage.local('locación');
-    late String productoFuture;
+    String productoFuture;
     try {
       final res = await http.post(
-        Uri.parse("${LocalStorage.local('conexion')}/ordenes/"),
+        Uri.parse('${LocalStorage.local('conexion')}/ordenes/'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
-          'articulos': "$articulos".replaceAll("[", "{").replaceAll("]", "}"),
-          'cantidades': "$cantidades".replaceAll("[", "{").replaceAll("]", "}"),
+          'cantidades': cantidades,
           'comentarios': comentarios,
-          'tipos': "$tipos".replaceAll("[", "{").replaceAll("]", "}"),
-          'areas': "$areas".replaceAll("[", "{").replaceAll("]", "}"),
-          'estado': estado,
+          'idProductos': idProductos,
           'remitente': remitente,
-          'destino': destino,
         }),
       );
       productoFuture = res.body;
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          productoFuture = item["id"];
+          productoFuture = '${item['id']}';
         }
       }
     } on TimeoutException catch (e) {
-      productoFuture = "Error: ${e.message}";
+      productoFuture = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      productoFuture = "Error: ${e.message}";
+      productoFuture = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      productoFuture = "Error: ${e.message}";
+      productoFuture = 'Error: ${e.message}';
     } on Error catch (e) {
-      productoFuture = "Error: $e";
+      productoFuture = 'Error: $e';
     }
     return productoFuture;
   }
@@ -368,30 +514,30 @@ class OrdenModel {
     String dato,
   ) async {
     String respuesta;
-    if (columna == "Estado") {
-      dato = "${dato[0].toUpperCase()}${dato.substring(1, dato.length)}";
+    if (columna == 'Estado') {
+      dato = '${dato[0].toUpperCase()}${dato.substring(1, dato.length)}';
     }
     try {
       final res = await http.put(
-        Uri.parse("${LocalStorage.local('conexion')}/ordenes/$id/$columna"),
+        Uri.parse('${LocalStorage.local('conexion')}/ordenes/$id/$columna'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({'dato': dato}),
       );
-      respuesta = "${res.reasonPhrase}";
+      respuesta = '${res.reasonPhrase}';
       if (res.statusCode == 200) {
-        respuesta = "Se modificó la orden.";
+        respuesta = 'Se modificó la orden.';
       }
     } on TimeoutException catch (e) {
-      respuesta = "Error: ${e.message}";
+      respuesta = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      respuesta = "Error: ${e.message}";
+      respuesta = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      respuesta = "Error: ${e.message}";
+      respuesta = 'Error: ${e.message}';
     } on Error catch (e) {
-      respuesta = "Error: $e";
+      respuesta = 'Error: $e';
     }
     return respuesta;
   }
@@ -404,30 +550,25 @@ class OrdenModel {
     String respuesta;
     try {
       final res = await http.put(
-        Uri.parse("${LocalStorage.local('conexion')}/ordenes/$id/confirmacion"),
+        Uri.parse('${LocalStorage.local('conexion')}/ordenes/$id/confirmacion'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode({
-          'estado': estado,
-          'confirmacion': "$confirmaciones"
-              .replaceAll("[", "{")
-              .replaceAll("]", "}"),
-        }),
+        body: jsonEncode({'estado': estado, 'confirmacion': confirmaciones}),
       );
-      respuesta = "${res.reasonPhrase}";
+      respuesta = '${res.reasonPhrase}';
       if (res.statusCode == 200) {
-        respuesta = "Se modificó la orden.";
+        respuesta = 'Se modificó la orden.';
       }
     } on TimeoutException catch (e) {
-      respuesta = "Error: ${e.message}";
+      respuesta = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      respuesta = "Error: ${e.message}";
+      respuesta = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      respuesta = "Error: ${e.message}";
+      respuesta = 'Error: ${e.message}';
     } on Error catch (e) {
-      respuesta = "Error: $e";
+      respuesta = 'Error: $e';
     }
     return respuesta;
   }

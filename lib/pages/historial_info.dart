@@ -26,13 +26,27 @@ class HistorialInfo extends StatefulWidget {
 
 class _HistorialInfoState extends State<HistorialInfo> {
   double cantidadPerdida = 0;
+  bool perdidas = true;
 
   @override
   void initState() {
-    for (int i = 0; i < widget.historialInfo.cantidades.length; i++) {
-      cantidadPerdida += widget.historialInfo.cantidades[i];
-    }
+    widget.historialInfo.perdidas = [0];
     super.initState();
+  }
+
+  Future<List<HistorialModel>> getHistorialInfo(String id) async {
+    List<HistorialModel> historial = await HistorialModel.getHistorialInfo(id);
+    if (perdidas) {
+      for (int i = 0; i < historial[0].perdidas.last; i++) {
+        cantidadPerdida += historial[0].cantidades[i];
+      }
+      setState(() {
+        widget.historialInfo.cantidades = historial[0].cantidades;
+        widget.historialInfo.razones = historial[0].razones;
+      });
+      perdidas = false;
+    }
+    return historial;
   }
 
   @override
@@ -43,117 +57,91 @@ class _HistorialInfoState extends State<HistorialInfo> {
         canPop: false,
         child: Stack(
           children: [
-            Consumer<Carga>(
-              builder: (context, carga, child) {
-                return SingleChildScrollView(
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            SingleChildScrollView(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(top: 20),
+                      child: Textos.textoTilulo(
+                        widget.historialInfo.nombre,
+                        30,
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Container(
-                          margin: EdgeInsets.only(top: 20),
-                          child: Textos.textoTilulo(
-                            widget.historialInfo.nombre,
-                            30,
-                          ),
+                        Textos.textoTilulo(
+                          'Fecha: ${widget.historialInfo.fecha}',
+                          20,
+                        ),
+                        Textos.textoTilulo(
+                          'Area: ${widget.historialInfo.nombre}',
+                          20,
                         ),
                         Row(
+                          spacing: 10,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Textos.textoTilulo(
-                              "Fecha: ${widget.historialInfo.fecha}",
+                              ('$cantidadPerdida'.split('.')[1] == '0')
+                                  ? 'Perdidas: $cantidadPerdida'.split('.')[0]
+                                  : 'Perdidas: $cantidadPerdida',
                               20,
                             ),
-                            Textos.textoTilulo(
-                              "Area: ${widget.historialInfo.nombre}",
-                              20,
-                            ),
-                            Row(
-                              spacing: 10,
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                Textos.textoTilulo(
-                                  "Perdidas: $cantidadPerdida".split(".0")[0],
-                                  20,
-                                ),
-                                Botones.btnSimple(
-                                  "Ver perdidas",
-                                  Icons.cookie_rounded,
-                                  Color(0xFF8A03A9),
-                                  () => {context.read<Ventanas>().tabla(true)},
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Tablas.contenedorInfo(
-                              MediaQuery.sizeOf(context).width,
-                              [.2, .2, .1, .1, .1, .1],
-                              [
-                                "Hora",
-                                "Usuario",
-                                "Unidades",
-                                "Entradas",
-                                "Salidas",
-                                "Perdidas",
-                              ],
-                            ),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width,
-                              height: MediaQuery.of(context).size.height - 150,
-                              child: ListView.separated(
-                                itemCount: widget.historialInfo.unidades.length,
-                                scrollDirection: Axis.vertical,
-                                separatorBuilder: (context, index) => Container(
-                                  height: 2,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFFDC930),
-                                  ),
-                                ),
-                                itemBuilder: (context, index) {
-                                  return Container(
-                                    width: MediaQuery.sizeOf(context).width,
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFFFFFFF),
-                                    ),
-                                    child: Tablas.barraDatos(
-                                      MediaQuery.sizeOf(context).width,
-                                      [.2, .2, .1, .1, .1, .1],
-                                      [
-                                        widget
-                                            .historialInfo
-                                            .horasModificacion[index],
-                                        widget
-                                            .historialInfo
-                                            .usuarioModificacion[index],
-                                        "${widget.historialInfo.unidades[index]}"
-                                            .split(".0")[0],
-                                        "${widget.historialInfo.entradas[index]}",
-                                        "${widget.historialInfo.salidas[index]}",
-                                        "${widget.historialInfo.perdidas[index]}",
-                                      ],
-                                      [],
-                                      1,
-                                      true,
-                                      extra: () => {},
-                                    ),
-                                  );
-                                },
-                              ),
+                            Botones.btnSimple(
+                              'Ver perdidas',
+                              Icons.cookie_rounded,
+                              Color(0xFF8A03A9),
+                              () => {context.read<Ventanas>().tabla(true)},
                             ),
                           ],
                         ),
                       ],
                     ),
-                  ),
-                );
-              },
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Tablas.contenedorInfo(
+                          MediaQuery.sizeOf(context).width,
+                          [.2, .2, .1, .1, .1, .1],
+                          [
+                            'Hora',
+                            'Usuario',
+                            'Unidades',
+                            'Entradas',
+                            'Salidas',
+                            'Perdidas',
+                          ],
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height - 150,
+                          child: Consumer<Tablas>(
+                            builder: (context, tablas, child) {
+                              return Tablas.listaFutura(
+                                listaPrincipal,
+                                'No hay datos registrados.',
+                                'No hay datos registrados.',
+                                () => getHistorialInfo(widget.historialInfo.id),
+                                accionRefresh: () async => tablas.datos(
+                                  await getHistorialInfo(
+                                    widget.historialInfo.id,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
             Botones.layerButton(
               () => Navigator.pushReplacement(
@@ -168,24 +156,30 @@ class _HistorialInfoState extends State<HistorialInfo> {
                 return Ventanas.ventanaTabla(
                   MediaQuery.of(context).size.height,
                   MediaQuery.of(context).size.width,
-                  ["Perdidas: ${widget.historialInfo.perdidas.last}"],
+                  [
+                    '$cantidadPerdida'.split('.')[1] == '0'
+                        ? 'Perdidas: $cantidadPerdida'.split('.')[0]
+                        : 'Perdidas: $cantidadPerdida',
+                  ],
                   [],
-                  widget.historialInfo.perdidas.last > 0
+                  cantidadPerdida > 0
                       ? Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
                           [.05, .15, .6],
-                          ["#", "Cantidad perdida", "Razón de perdida"],
+                          ['#', 'Cantidad perdida', 'Razón de perdida'],
                         )
-                      : Textos.textoTilulo("", 30),
-                  widget.historialInfo.perdidas.last > 0
+                      : Textos.textoTilulo('', 30),
+                  cantidadPerdida > 0
                       ? ListView.separated(
-                          itemCount: widget.historialInfo.perdidas.last,
+                          itemCount: widget.historialInfo.cantidades.length,
                           scrollDirection: Axis.vertical,
                           separatorBuilder: (context, index) => Container(
                             height: 2,
                             decoration: BoxDecoration(color: Color(0xFFFDC930)),
                           ),
                           itemBuilder: (context, index) {
+                            String cantidad =
+                                '${widget.historialInfo.cantidades[index]}';
                             return Container(
                               width: MediaQuery.sizeOf(context).width,
                               decoration: BoxDecoration(
@@ -195,19 +189,21 @@ class _HistorialInfoState extends State<HistorialInfo> {
                                 MediaQuery.sizeOf(context).width,
                                 [.05, .15, .6],
                                 [
-                                  "${index + 1}",
-                                  "${widget.historialInfo.cantidades[index]}",
+                                  '${index + 1}',
+                                  (cantidad.split('.')[1] == '0')
+                                      ? cantidad.split('.')[0]
+                                      : cantidad,
                                   widget.historialInfo.razones[index],
                                 ],
                                 [],
-                                1,
+                                2,
                                 false,
                               ),
                             );
                           },
                         )
-                      : Textos.textoTilulo("No hay perdidas registradas", 30),
-                  [Botones.btnCirRos("Cerrar", () => ventana.tabla(false))],
+                      : Textos.textoTilulo('No hay perdidas registradas', 30),
+                  [Botones.btnCirRos('Cerrar', () => ventana.tabla(false))],
                 );
               },
             ),
@@ -215,6 +211,42 @@ class _HistorialInfoState extends State<HistorialInfo> {
           ],
         ),
       ),
+    );
+  }
+
+  ListView listaPrincipal(List lista) {
+    return ListView.separated(
+      itemCount: lista[0].movimientos,
+      scrollDirection: Axis.vertical,
+      separatorBuilder: (context, index) => Container(
+        height: 2,
+        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+      ),
+      itemBuilder: (context, index) {
+        String unidad = '${lista[0].unidades[index]}';
+        String entrada = '${lista[0].entradas[index]}';
+        String salida = '${lista[0].salidas[index]}';
+        return Container(
+          width: MediaQuery.sizeOf(context).width,
+          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+          child: Tablas.barraDatos(
+            MediaQuery.sizeOf(context).width,
+            [.2, .2, .1, .1, .1, .1],
+            [
+              lista[0].horasModificacion[index],
+              lista[0].usuarioModificacion[index],
+              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
+              (entrada.split('.')[1] == '0') ? entrada.split('.')[0] : entrada,
+              (salida.split('.')[1] == '0') ? salida.split('.')[0] : salida,
+              '${lista[0].perdidas[index]}',
+            ],
+            [],
+            1,
+            true,
+            extra: () => {},
+          ),
+        );
+      },
     );
   }
 }

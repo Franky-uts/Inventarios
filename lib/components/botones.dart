@@ -153,27 +153,40 @@ class Botones {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Botones.btnRctMor(
-          "Restar $nombre",
+          'Restar $nombre',
           0,
           Icons.remove,
           false,
           () => resta(),
         ),
-        Textos.recuadroCantidad("$textoValor", colorBorde, 20, 1),
-        Botones.btnRctMor("Sumar $nombre", 0, Icons.add, false, () => suma()),
+        Textos.recuadroCantidad('$textoValor', colorBorde, 20, 1),
+        Botones.btnRctMor('Sumar $nombre', 0, Icons.add, false, () => suma()),
       ],
     );
   }
 
-  static Container layerButton(Function accion) {
+  static Container layerButton(Function accion, {Function? recarga}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      child: Botones.btnRctMor(
-        "Volver",
-        35,
-        Icons.arrow_back_rounded,
-        false,
-        () => accion(),
+      child: Row(
+        spacing: 15,
+        children: [
+          Botones.btnRctMor(
+            'Volver',
+            35,
+            Icons.arrow_back_rounded,
+            false,
+            () => accion(),
+          ),
+          if (recarga != null)
+            Botones.btnRctMor(
+              'Recargar',
+              35,
+              Icons.refresh_rounded,
+              false,
+              () => recarga(),
+            ),
+        ],
       ),
     );
   }

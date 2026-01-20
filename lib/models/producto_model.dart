@@ -5,7 +5,7 @@ import 'dart:convert';
 import '../services/local_storage.dart';
 
 class ProductoModel {
-  String id;
+  int id;
   String nombre;
   String area;
   String tipo;
@@ -46,165 +46,165 @@ class ProductoModel {
     String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     late List<ProductoModel> productosFuture = [];
-    if (locacion.isEmpty || locacion == "null") {
+    if (locacion.isEmpty || locacion == 'null') {
       productosFuture.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: "",
-          codigoBarras: "",
+          ultimoUsuario: '',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: "No hay locación establecida",
+          mensaje: 'Error: No hay locación establecida',
         ),
       );
     } else {
       try {
         var res = await http.get(
-          Uri.parse("$conexion/almacen/$locacion/$filtro/$busqueda"),
+          Uri.parse('$conexion/almacen/$locacion/$filtro/$busqueda'),
           headers: {
-            "Accept": "application/json",
-            "content-type": "application/json; charset=UTF-8",
+            'Accept': 'application/json',
+            'content-type': 'application/json; charset=UTF-8',
           },
         );
         if (res.statusCode == 200) {
           final datos = json.decode(res.body);
           for (var item in datos) {
             List<double> doublelist = [];
-            for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
-              String dob = "${item["PerdidaCantidad"][i]}.0";
-              if (dob.split(".").length > 2) {
-                dob = "${dob.split(".")[0]}.${dob.split(".")[1]}";
+            for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
+              String dob = '${item['PerdidaCantidad'][i]}.0';
+              if (dob.split('.').length > 2) {
+                dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
               }
               doublelist.add(double.parse(dob));
             }
             productosFuture.add(
               ProductoModel(
-                id: item["id"],
-                nombre: item["Nombre"],
-                tipo: item["Tipo"],
-                unidades: item["Unidades"].toDouble(),
-                ultimaModificacion: item["UltimaModificación"],
-                cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
-                area: item["Area"],
-                entrada: item["Entradas"].toDouble(),
-                salida: item["Salidas"].toDouble(),
+                id: item['id'],
+                nombre: item['Nombre'],
+                tipo: item['Tipo'],
+                unidades: item['Unidades'].toDouble(),
+                ultimaModificacion: item['UltimaModificación'],
+                cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+                area: item['Area'],
+                entrada: item['Entradas'].toDouble(),
+                salida: item['Salidas'].toDouble(),
                 perdidaCantidad: doublelist,
-                perdidaRazones: List<String>.from(item["PerdidaRazon"]),
-                ultimoUsuario: item["UltimoUsuario"],
-                codigoBarras: item["CodigoBarras"],
-                limiteProd: item["LimiteProd"],
-                mensaje: "",
+                perdidaRazones: List<String>.from(item['PerdidaRazon']),
+                ultimoUsuario: item['UltimoUsuario'],
+                codigoBarras: item['CodigoBarras'],
+                limiteProd: item['LimiteProd'],
+                mensaje: '',
               ),
             );
           }
         } else {
           productosFuture.add(
             ProductoModel(
-              id: "",
-              nombre: "Error",
-              tipo: "",
+              id: 0,
+              nombre: '',
+              tipo: '',
               unidades: 0,
-              ultimaModificacion: "",
+              ultimaModificacion: '',
               cantidadPorUnidad: 0,
-              area: "",
+              area: '',
               entrada: 0,
               salida: 0,
               perdidaCantidad: [],
               perdidaRazones: [],
-              ultimoUsuario: "",
-              codigoBarras: "",
+              ultimoUsuario: '',
+              codigoBarras: '',
               limiteProd: 0,
-              mensaje: res.body,
+              mensaje: 'Error: ${res.body}',
             ),
           );
         }
       } on TimeoutException catch (e) {
         productosFuture.add(
           ProductoModel(
-            id: "",
-            nombre: "Error",
-            tipo: "",
+            id: 0,
+            nombre: '',
+            tipo: '',
             unidades: 0,
-            ultimaModificacion: "",
+            ultimaModificacion: '',
             cantidadPorUnidad: 0,
-            area: "",
+            area: '',
             entrada: 0,
             salida: 0,
             perdidaCantidad: [],
             perdidaRazones: [],
-            ultimoUsuario: "",
-            codigoBarras: "",
+            ultimoUsuario: '',
+            codigoBarras: '',
             limiteProd: 0,
-            mensaje: "${e.message}",
+            mensaje: 'Error: ${e.message}',
           ),
         );
       } on SocketException catch (e) {
         productosFuture.add(
           ProductoModel(
-            id: "",
-            nombre: "Error",
-            tipo: "",
+            id: 0,
+            nombre: '',
+            tipo: '',
             unidades: 0,
-            ultimaModificacion: "",
+            ultimaModificacion: '',
             cantidadPorUnidad: 0,
-            area: "",
+            area: '',
             entrada: 0,
             salida: 0,
             perdidaCantidad: [],
             perdidaRazones: [],
-            ultimoUsuario: " ",
-            codigoBarras: "",
+            ultimoUsuario: ' ',
+            codigoBarras: '',
             limiteProd: 0,
-            mensaje: e.message,
+            mensaje: 'Error: ${e.message}',
           ),
         );
       } on http.ClientException catch (e) {
         productosFuture.add(
           ProductoModel(
-            id: "",
-            nombre: "Error",
-            tipo: "",
+            id: 0,
+            nombre: '',
+            tipo: '',
             unidades: 0,
-            ultimaModificacion: "",
+            ultimaModificacion: '',
             cantidadPorUnidad: 0,
-            area: "",
+            area: '',
             entrada: 0,
             salida: 0,
             perdidaCantidad: [],
             perdidaRazones: [],
-            ultimoUsuario: "",
-            codigoBarras: "",
+            ultimoUsuario: '',
+            codigoBarras: '',
             limiteProd: 0,
-            mensaje: e.message,
+            mensaje: 'Error: ${e.message}',
           ),
         );
       } on Error catch (e) {
         productosFuture.add(
           ProductoModel(
-            id: "",
-            nombre: "Error",
-            tipo: "",
+            id: 0,
+            nombre: '',
+            tipo: '',
             unidades: 0,
-            ultimaModificacion: "",
+            ultimaModificacion: '',
             cantidadPorUnidad: 0,
-            area: "",
+            area: '',
             entrada: 0,
             salida: 0,
             perdidaCantidad: [],
             perdidaRazones: [],
-            ultimoUsuario: "",
-            codigoBarras: "",
+            ultimoUsuario: '',
+            codigoBarras: '',
             limiteProd: 0,
-            mensaje: "$e",
+            mensaje: 'Error: $e',
           ),
         );
       }
@@ -220,146 +220,281 @@ class ProductoModel {
     late List<ProductoModel> productosFuture = [];
     try {
       var res = await http.get(
-        Uri.parse("$conexion/almacen/Prod/$filtro/$busqueda"),
+        Uri.parse('$conexion/almacen/Prod/$filtro/$busqueda'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
       );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
-            String dob = "${item["PerdidaCantidad"][i]}.0";
-            if (dob.split(".").length > 2) {
-              dob = "${dob.split(".")[0]}.${dob.split(".")[1]}";
+          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
+            String dob = '${item['PerdidaCantidad'][i]}.0';
+            if (dob.split('.').length > 2) {
+              dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
             }
             doublelist.add(double.parse(dob));
           }
           productosFuture.add(
             ProductoModel(
-              id: item["id"],
-              nombre: item["Nombre"],
-              tipo: item["Tipo"],
-              unidades: item["Unidades"].toDouble(),
-              ultimaModificacion: item["UltimaModificación"],
-              cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
-              area: item["Area"],
-              entrada: item["Entradas"].toDouble(),
-              salida: item["Salidas"].toDouble(),
+              id: item['id'],
+              nombre: item['Nombre'],
+              tipo: item['Tipo'],
+              unidades: item['Unidades'].toDouble(),
+              ultimaModificacion: item['UltimaModificación'],
+              cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+              area: item['Area'],
+              entrada: item['Entradas'].toDouble(),
+              salida: item['Salidas'].toDouble(),
               perdidaCantidad: doublelist,
-              perdidaRazones: List<String>.from(item["PerdidaRazon"]),
-              ultimoUsuario: item["UltimoUsuario"],
-              codigoBarras: item["CodigoBarras"],
-              limiteProd: item["LimiteProd"],
-              mensaje: "",
+              perdidaRazones: List<String>.from(item['PerdidaRazon']),
+              ultimoUsuario: item['UltimoUsuario'],
+              codigoBarras: item['CodigoBarras'],
+              limiteProd: item['LimiteProd'],
+              mensaje: '',
             ),
           );
         }
       } else {
         productosFuture.add(
           ProductoModel(
-            id: "",
-            nombre: "Error",
-            tipo: "",
+            id: 0,
+            nombre: '',
+            tipo: '',
             unidades: 0,
-            ultimaModificacion: "",
+            ultimaModificacion: '',
             cantidadPorUnidad: 0,
-            area: "",
+            area: '',
             entrada: 0,
             salida: 0,
             perdidaCantidad: [],
             perdidaRazones: [],
-            ultimoUsuario: "",
-            codigoBarras: "",
+            ultimoUsuario: '',
+            codigoBarras: '',
             limiteProd: 0,
-            mensaje: res.body,
+            mensaje: 'Error: ${res.body}',
           ),
         );
       }
     } on TimeoutException catch (e) {
       productosFuture.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: "",
-          codigoBarras: "",
+          ultimoUsuario: '',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: "${e.message}",
+          mensaje: 'Error: ${e.message}',
         ),
       );
     } on SocketException catch (e) {
       productosFuture.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: " ",
-          codigoBarras: "",
+          ultimoUsuario: ' ',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: e.message,
+          mensaje: 'Error: ${e.message}',
         ),
       );
     } on http.ClientException catch (e) {
       productosFuture.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: "",
-          codigoBarras: "",
+          ultimoUsuario: '',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: e.message,
+          mensaje: 'Error: ${e.message}',
         ),
       );
     } on Error catch (e) {
       productosFuture.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: "",
-          codigoBarras: "",
+          ultimoUsuario: '',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: "$e",
+          mensaje: 'Error: $e',
         ),
       );
     }
     return productosFuture;
+  }
+
+  static Future<ProductoModel> getProducto(int id) async {
+    String conexion = LocalStorage.local('conexion');
+    String locacion = LocalStorage.local('locación');
+    ProductoModel producto;
+    try {
+      var res = await http.get(
+        Uri.parse('$conexion/almacen/Producto/$locacion/$id'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+      );
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        unidades: 0,
+        ultimaModificacion: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        entrada: 0,
+        salida: 0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        codigoBarras: '',
+        limiteProd: 0,
+        mensaje: 'Error: ${res.body}',
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          List<double> doublelist = [];
+          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
+            String dob = '${item['PerdidaCantidad'][i]}.0';
+            if (dob.split('.').length > 2) {
+              dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
+            }
+            doublelist.add(double.parse(dob));
+          }
+          producto = ProductoModel(
+            id: item['id'],
+            nombre: item['Nombre'],
+            tipo: item['Tipo'],
+            unidades: item['Unidades'].toDouble(),
+            ultimaModificacion: item['UltimaModificación'],
+            cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+            area: item['Area'],
+            entrada: item['Entradas'].toDouble(),
+            salida: item['Salidas'].toDouble(),
+            perdidaCantidad: doublelist,
+            perdidaRazones: List<String>.from(item['PerdidaRazon']),
+            ultimoUsuario: item['UltimoUsuario'],
+            codigoBarras: item['CodigoBarras'],
+            limiteProd: item['LimiteProd'],
+            mensaje: '',
+          );
+        }
+      }
+    } on TimeoutException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        unidades: 0,
+        ultimaModificacion: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        entrada: 0,
+        salida: 0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        codigoBarras: '',
+        limiteProd: 0,
+        mensaje: 'Error: ${e.message}',
+      );
+    } on SocketException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        unidades: 0,
+        ultimaModificacion: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        entrada: 0,
+        salida: 0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        codigoBarras: '',
+        limiteProd: 0,
+        mensaje: 'Error: ${e.message}',
+      );
+    } on http.ClientException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        unidades: 0,
+        ultimaModificacion: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        entrada: 0,
+        salida: 0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        codigoBarras: '',
+        limiteProd: 0,
+        mensaje: 'Error: ${e.message}',
+      );
+    } on Error catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        unidades: 0,
+        ultimaModificacion: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        entrada: 0,
+        salida: 0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        codigoBarras: '',
+        limiteProd: 0,
+        mensaje: 'Error: $e',
+      );
+    }
+    return producto;
   }
 
   static Future<List<ProductoModel>> getDatosArticulo(int id) async {
@@ -367,163 +502,161 @@ class ProductoModel {
     late List<ProductoModel> productoModel = [];
     try {
       var res = await http.get(
-        Uri.parse("$conexion/articulos/almacen/$id"),
+        Uri.parse('$conexion/articulos/almacen/$id'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
       );
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          for (int i = 0; i < item["PerdidaCantidad"].length; i++) {
-            String dob = "${item["PerdidaCantidad"][i]}";
-            if (dob.split(".").length < 2) {
-              dob = "${item["PerdidaCantidad"][i]}.0";
+          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
+            String dob = '${item['PerdidaCantidad'][i]}';
+            if (dob.split('.').length < 2) {
+              dob = '${item['PerdidaCantidad'][i]}.0';
             }
             doublelist.add(double.parse(dob));
           }
           productoModel.add(
             ProductoModel(
-              id: "",
-              nombre: item["inventarioNom"],
-              area: "",
-              tipo: "",
-              unidades: double.parse("${item["Unidades"]}"),
+              id: 0,
+              nombre: item['inventarioNom'],
+              area: '',
+              tipo: '',
+              unidades: double.parse('${item['Unidades']}'),
               cantidadPorUnidad: 0,
-              entrada: item["Entradas"].toDouble(),
-              salida: item["Salidas"].toDouble(),
+              entrada: item['Entradas'].toDouble(),
+              salida: item['Salidas'].toDouble(),
               perdidaCantidad: doublelist,
-              perdidaRazones: List<String>.from(item["PerdidaRazon"]),
-              ultimoUsuario: item["UltimoUsuario"],
-              ultimaModificacion: item["UltimaModificación"],
-              codigoBarras: "",
-              limiteProd: item["LimiteProd"],
-              mensaje: "",
+              perdidaRazones: List<String>.from(item['PerdidaRazon']),
+              ultimoUsuario: item['UltimoUsuario'],
+              ultimaModificacion: item['UltimaModificación'],
+              codigoBarras: '',
+              limiteProd: item['LimiteProd'],
+              mensaje: '',
             ),
           );
         }
       } else {
         productoModel.add(
           ProductoModel(
-            id: "",
-            nombre: "Error",
-            tipo: "",
+            id: 0,
+            nombre: '',
+            tipo: '',
             unidades: 0,
-            ultimaModificacion: "",
+            ultimaModificacion: '',
             cantidadPorUnidad: 0,
-            area: "",
+            area: '',
             entrada: 0,
             salida: 0,
             perdidaCantidad: [],
             perdidaRazones: [],
-            ultimoUsuario: "",
-            codigoBarras: "",
+            ultimoUsuario: '',
+            codigoBarras: '',
             limiteProd: 0,
-            mensaje: res.body,
+            mensaje: 'Error: ${res.body}',
           ),
         );
       }
     } on TimeoutException catch (e) {
       productoModel.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: "",
-          codigoBarras: "",
+          ultimoUsuario: '',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: "${e.message}",
+          mensaje: 'Error: ${e.message}',
         ),
       );
     } on SocketException catch (e) {
       productoModel.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: "",
-          codigoBarras: "",
+          ultimoUsuario: '',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: e.message,
+          mensaje: 'Error: ${e.message}',
         ),
       );
     } on http.ClientException catch (e) {
       productoModel.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: "",
-          codigoBarras: "",
+          ultimoUsuario: '',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: e.message,
+          mensaje: 'Error: ${e.message}',
         ),
       );
     } on Error catch (e) {
       productoModel.add(
         ProductoModel(
-          id: "",
-          nombre: "Error",
-          tipo: "",
+          id: 0,
+          nombre: '',
+          tipo: '',
           unidades: 0,
-          ultimaModificacion: "",
+          ultimaModificacion: '',
           cantidadPorUnidad: 0,
-          area: "",
+          area: '',
           entrada: 0,
           salida: 0,
           perdidaCantidad: [],
           perdidaRazones: [],
-          ultimoUsuario: "",
-          codigoBarras: "",
+          ultimoUsuario: '',
+          codigoBarras: '',
           limiteProd: 0,
-          mensaje: "$e",
+          mensaje: 'Error: $e',
         ),
       );
     }
     return productoModel;
   }
 
-  static Future<String> addProducto(int idProducto, int limite) async {
-    String mensaje = "";
+  static Future<String> addProducto(int id, int limite) async {
+    String mensaje = '';
     String conexion = LocalStorage.local('conexion');
-    String locacion = LocalStorage.local('locación');
     try {
       final res = await http.post(
-        Uri.parse("$conexion/almacen/"),
+        Uri.parse('$conexion/almacen/'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
-          'id': "$idProducto${locacion.substring(0, 3)}",
-          'idProducto': idProducto,
-          'locacion': locacion,
+          'id': id,
+          'locacion': LocalStorage.local('locación'),
           'limite': limite,
           'usuario': LocalStorage.local('usuario'),
         }),
@@ -532,34 +665,35 @@ class ProductoModel {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          mensaje = item["id"];
+          mensaje = "${item['idProducto']}";
         }
       }
     } on TimeoutException catch (e) {
-      mensaje = "Error: ${e.message}";
+      mensaje = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      mensaje = "Error: ${e.message}";
+      mensaje = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      mensaje = "Error: ${e.message}";
+      mensaje = 'Error: ${e.message}';
     } on Error catch (e) {
-      mensaje = "Error: $e";
+      mensaje = 'Error: $e';
     }
     return mensaje;
   }
 
   static Future<String> editarProducto(
-    String id,
+    int id,
     String dato,
     String columna,
   ) async {
     String texto;
     String conexion = LocalStorage.local('conexion');
+    String almacen = LocalStorage.local('locación');
     try {
       final res = await http.put(
-        Uri.parse("$conexion/almacen/$id/$columna"),
+        Uri.parse('$conexion/almacen/$almacen/$id/$columna'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
           'dato': dato,
@@ -570,92 +704,369 @@ class ProductoModel {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          texto = item['id'];
+          texto = "${item['idProducto']}";
         }
       }
     } on TimeoutException catch (e) {
-      texto = "Error: ${e.message}";
+      texto = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      texto = "Error: ${e.message}";
+      texto = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      texto = "Error: ${e.message}";
+      texto = 'Error: ${e.message}';
     } on Error catch (e) {
-      texto = "Error: $e";
+      texto = 'Error: $e';
     }
     return texto;
   }
 
-  static Future<String> guardarESP(
+  static Future<ProductoModel> guardarES(
     double entradas,
     double salidas,
-    List<String> razones,
-    List<double> cantidades,
-    double unidades,
-    String id,
+    int id,
   ) async {
-    String texto = "Error: No se guardo la información.";
-    if (unidades >= 0) {
-      try {
-        final res = await http.put(
-          Uri.parse("${LocalStorage.local('conexion')}/almacen/$id/ESP"),
-          headers: {
-            "Accept": "application/json",
-            "content-type": "application/json; charset=UTF-8",
-          },
-          body: jsonEncode({
-            'entradas': entradas,
-            'salidas': salidas,
-            'perdidas': razones.length,
-            'cantidades': "$cantidades"
-                .replaceAll("[", "{")
-                .replaceAll("]", "}"),
-            'razones': "$razones".replaceAll("[", "{").replaceAll("]", "}"),
-            'unidades': unidades,
-            'usuario': LocalStorage.local('usuario'),
-          }),
-        );
-        texto = "${res.reasonPhrase}";
-        if (res.statusCode == 200) {
-          texto = "Se guardaron los movimientos.";
+    ProductoModel producto = ProductoModel(
+      id: 0,
+      nombre: '',
+      area: '',
+      tipo: '',
+      codigoBarras: '',
+      cantidadPorUnidad: 0.0,
+      unidades: 0.0,
+      limiteProd: 0,
+      entrada: 0.0,
+      salida: 0.0,
+      perdidaCantidad: [],
+      perdidaRazones: [],
+      ultimoUsuario: '',
+      ultimaModificacion: '',
+      mensaje: 'Error: No se guardo la información.',
+    );
+    String conexion = LocalStorage.local('conexion');
+    String almacen = LocalStorage.local('locación');
+    try {
+      final res = await http.put(
+        Uri.parse('$conexion/almacen/$almacen/$id/ES'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'entradas': entradas,
+          'salidas': salidas,
+          'usuario': LocalStorage.local('usuario'),
+          'almacen': LocalStorage.local('locación'),
+        }),
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          List<double> doublelist = [];
+          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
+            String dob = '${item['PerdidaCantidad'][i]}.0';
+            if (dob.split('.').length > 2) {
+              dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
+            }
+            doublelist.add(double.parse(dob));
+          }
+          producto = ProductoModel(
+            id: 0,
+            nombre: '',
+            tipo: '',
+            unidades: item['Unidades'].toDouble(),
+            ultimaModificacion: item['UltimaModificación'],
+            cantidadPorUnidad: 0,
+            area: '',
+            entrada: item['Entradas'].toDouble(),
+            salida: item['Salidas'].toDouble(),
+            perdidaCantidad: doublelist,
+            perdidaRazones: List<String>.from(item['PerdidaRazon']),
+            ultimoUsuario: item['UltimoUsuario'],
+            codigoBarras: '',
+            limiteProd: item['LimiteProd'],
+            mensaje: '',
+          );
         }
-      } on TimeoutException catch (e) {
-        texto = "Error: ${e.message}";
-      } on SocketException catch (e) {
-        texto = "Error: ${e.message}";
-      } on http.ClientException catch (e) {
-        texto = "Error: ${e.message}";
-      } on Error catch (e) {
-        texto = "Error: $e";
+      } else {
+        producto = ProductoModel(
+          id: 0,
+          nombre: '',
+          area: '',
+          tipo: '',
+          codigoBarras: '',
+          cantidadPorUnidad: 0.0,
+          unidades: 0.0,
+          limiteProd: 0,
+          entrada: 0.0,
+          salida: 0.0,
+          perdidaCantidad: [],
+          perdidaRazones: [],
+          ultimoUsuario: '',
+          ultimaModificacion: '',
+          mensaje: 'Error: ${res.reasonPhrase}',
+        );
       }
+    } on TimeoutException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        area: '',
+        tipo: '',
+        codigoBarras: '',
+        cantidadPorUnidad: 0.0,
+        unidades: 0.0,
+        limiteProd: 0,
+        entrada: 0.0,
+        salida: 0.0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        ultimaModificacion: '',
+        mensaje: 'Error: ${e.message}',
+      );
+    } on SocketException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        area: '',
+        tipo: '',
+        codigoBarras: '',
+        cantidadPorUnidad: 0.0,
+        unidades: 0.0,
+        limiteProd: 0,
+        entrada: 0.0,
+        salida: 0.0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        ultimaModificacion: '',
+        mensaje: 'Error: ${e.message}',
+      );
+    } on http.ClientException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        area: '',
+        tipo: '',
+        codigoBarras: '',
+        cantidadPorUnidad: 0.0,
+        unidades: 0.0,
+        limiteProd: 0,
+        entrada: 0.0,
+        salida: 0.0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        ultimaModificacion: '',
+        mensaje: 'Error: ${e.message}',
+      );
+    } on Error catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        area: '',
+        tipo: '',
+        codigoBarras: '',
+        cantidadPorUnidad: 0.0,
+        unidades: 0.0,
+        limiteProd: 0,
+        entrada: 0.0,
+        salida: 0.0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        ultimaModificacion: '',
+        mensaje: 'Error: $e',
+      );
     }
-    return texto;
+    return producto;
+  }
+
+  static Future<ProductoModel> guardarPerdidas(
+    String razon,
+    double cantidad,
+    int id,
+  ) async {
+    ProductoModel producto = ProductoModel(
+      id: 0,
+      nombre: '',
+      area: '',
+      tipo: '',
+      codigoBarras: '',
+      cantidadPorUnidad: 0.0,
+      unidades: 0.0,
+      limiteProd: 0,
+      entrada: 0.0,
+      salida: 0.0,
+      perdidaCantidad: [],
+      perdidaRazones: [],
+      ultimoUsuario: '',
+      ultimaModificacion: '',
+      mensaje: 'Error: No se guardo la información.',
+    );
+    String conexion = LocalStorage.local('conexion');
+    String almacen = LocalStorage.local('locación');
+    try {
+      final res = await http.put(
+        Uri.parse('$conexion/almacen/$almacen/$id/Perdidas'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'cantidad': cantidad,
+          'razon': razon,
+          'usuario': LocalStorage.local('usuario'),
+          'almacen': LocalStorage.local('locación'),
+        }),
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          List<double> doublelist = [];
+          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
+            String dob = '${item['PerdidaCantidad'][i]}.0';
+            if (dob.split('.').length > 2) {
+              dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
+            }
+            doublelist.add(double.parse(dob));
+          }
+          producto = ProductoModel(
+            id: 0,
+            nombre: '',
+            tipo: '',
+            unidades: item['Unidades'].toDouble(),
+            ultimaModificacion: item['UltimaModificación'],
+            cantidadPorUnidad: 0,
+            area: '',
+            entrada: item['Entradas'].toDouble(),
+            salida: item['Salidas'].toDouble(),
+            perdidaCantidad: doublelist,
+            perdidaRazones: List<String>.from(item['PerdidaRazon']),
+            ultimoUsuario: item['UltimoUsuario'],
+            codigoBarras: '',
+            limiteProd: item['LimiteProd'],
+            mensaje: '',
+          );
+        }
+      } else {
+        producto = ProductoModel(
+          id: 0,
+          nombre: '',
+          area: '',
+          tipo: '',
+          codigoBarras: '',
+          cantidadPorUnidad: 0.0,
+          unidades: 0.0,
+          limiteProd: 0,
+          entrada: 0.0,
+          salida: 0.0,
+          perdidaCantidad: [],
+          perdidaRazones: [],
+          ultimoUsuario: '',
+          ultimaModificacion: '',
+          mensaje: 'Error: ${res.reasonPhrase}',
+        );
+      }
+    } on TimeoutException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        area: '',
+        tipo: '',
+        codigoBarras: '',
+        cantidadPorUnidad: 0.0,
+        unidades: 0.0,
+        limiteProd: 0,
+        entrada: 0.0,
+        salida: 0.0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        ultimaModificacion: '',
+        mensaje: 'Error: ${e.message}',
+      );
+    } on SocketException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        area: '',
+        tipo: '',
+        codigoBarras: '',
+        cantidadPorUnidad: 0.0,
+        unidades: 0.0,
+        limiteProd: 0,
+        entrada: 0.0,
+        salida: 0.0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        ultimaModificacion: '',
+        mensaje: 'Error: ${e.message}',
+      );
+    } on http.ClientException catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        area: '',
+        tipo: '',
+        codigoBarras: '',
+        cantidadPorUnidad: 0.0,
+        unidades: 0.0,
+        limiteProd: 0,
+        entrada: 0.0,
+        salida: 0.0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        ultimaModificacion: '',
+        mensaje: 'Error: ${e.message}',
+      );
+    } on Error catch (e) {
+      producto = ProductoModel(
+        id: 0,
+        nombre: '',
+        area: '',
+        tipo: '',
+        codigoBarras: '',
+        cantidadPorUnidad: 0.0,
+        unidades: 0.0,
+        limiteProd: 0,
+        entrada: 0.0,
+        salida: 0.0,
+        perdidaCantidad: [],
+        perdidaRazones: [],
+        ultimoUsuario: '',
+        ultimaModificacion: '',
+        mensaje: 'Error: $e',
+      );
+    }
+    return producto;
   }
 
   static Future<String> reiniciarESP() async {
     String texto;
     String conexion = LocalStorage.local('conexion');
+    String almacen = LocalStorage.local('locación');
     try {
       final res = await http.put(
-        Uri.parse(
-          "$conexion/almacen/${LocalStorage.local('locación')}/reiniciarMovimientos",
-        ),
+        Uri.parse('$conexion/almacen/$almacen/reiniciarMovimientos'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
       );
-      texto = "${res.reasonPhrase}";
+      texto = '${res.reasonPhrase}';
       if (res.statusCode == 200) {
-        texto = "Reinicio exitoso.";
+        texto = 'Reinicio exitoso.';
       }
     } on TimeoutException catch (e) {
-      texto = "Error: ${e.message}";
+      texto = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      texto = "Error: ${e.message}";
+      texto = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      texto = "Error: ${e.message}";
+      texto = 'Error: ${e.message}';
     } on Error catch (e) {
-      texto = "Error: $e";
+      texto = 'Error: $e';
     }
     return texto;
   }
@@ -667,8 +1078,8 @@ class ProductoModel {
       var res = await http.get(
         Uri.parse('$conexion/tipos'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
       );
       if (res.statusCode == 200) {
@@ -680,13 +1091,13 @@ class ProductoModel {
         tipos.add(res.body);
       }
     } on TimeoutException catch (e) {
-      tipos.add("Error: ${e.message}");
+      tipos.add('Error: ${e.message}');
     } on SocketException catch (e) {
-      tipos.add("Error: ${e.message}");
+      tipos.add('Error: ${e.message}');
     } on http.ClientException catch (e) {
-      tipos.add("Error: ${e.message}");
+      tipos.add('Error: ${e.message}');
     } on Error catch (e) {
-      tipos.add("Error: $e");
+      tipos.add('Error: $e');
     }
     return tipos;
   }
@@ -698,8 +1109,8 @@ class ProductoModel {
       var res = await http.get(
         Uri.parse('$conexion/areas'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
       );
       if (res.statusCode == 200) {
@@ -711,13 +1122,13 @@ class ProductoModel {
         areas.add(res.body);
       }
     } on TimeoutException catch (e) {
-      areas.add("Error: ${e.message}");
+      areas.add('Error: ${e.message}');
     } on SocketException catch (e) {
-      areas.add("Error: ${e.message}");
+      areas.add('Error: ${e.message}');
     } on http.ClientException catch (e) {
-      areas.add("Error: ${e.message}");
+      areas.add('Error: ${e.message}');
     } on Error catch (e) {
-      areas.add("Error: $e");
+      areas.add('Error: $e');
     }
     return areas;
   }

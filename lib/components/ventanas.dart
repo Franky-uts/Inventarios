@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
-
+import 'package:inventarios/models/articulos_model.dart';
+import 'package:inventarios/models/usuario_model.dart';
+import 'package:inventarios/services/local_storage.dart';
+import 'package:provider/provider.dart';
 import 'botones.dart';
+import 'carga.dart';
 
 class Ventanas with ChangeNotifier {
   static bool _emergente = false;
   static bool _tabla = false;
+  static bool _cambio = false;
+  static String _inventario = LocalStorage.local('locación');
 
   static Widget ventanaEmergente(
     String texto,
@@ -135,6 +142,61 @@ class Ventanas with ChangeNotifier {
     );
   }
 
+  static Widget cambioDeTienda(BuildContext context, Function accion) {
+    return Visibility(
+      visible: _cambio,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
+        decoration: BoxDecoration(color: Colors.black38),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadiusGeometry.circular(25),
+              border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 5,
+                children: [
+                  Textos.textoTilulo('Cambio de tienda:', 20),
+                  CampoTexto.inputDropdown(
+                    MediaQuery.sizeOf(context).width,
+                    Icons.change_circle_rounded,
+                    _inventario,
+                    ArticulosModel.getInventarios(),
+                    Color(0x00000000),
+                    (value) => context.read<Ventanas>().setInventario(value),
+                  ),
+                  Row(
+                    spacing: 7.5,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Botones.btnCirRos(
+                        'Cancelar',
+                        () => {
+                          _inventario = LocalStorage.local('locación'),
+                          context.read<Ventanas>().cambio(false),
+                        },
+                      ),
+                      Botones.btnCirRos(
+                        'Cambiar',
+                        () => cambioDeTiendaAccion(context, () => accion()),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void tabla(bool booleano) {
     _tabla = booleano;
     notifyListeners();
@@ -143,5 +205,37 @@ class Ventanas with ChangeNotifier {
   void emergente(bool booleano) {
     _emergente = booleano;
     notifyListeners();
+  }
+
+  void cambio(bool booleano) {
+    _cambio = booleano;
+    notifyListeners();
+  }
+
+  static String getInventario() {
+    return _inventario;
+  }
+
+  void setInventario(String locacion) {
+    _inventario = locacion;
+    notifyListeners();
+  }
+
+  static void cambioDeTiendaAccion(BuildContext ctx, Function accion) async {
+    ctx.read<Carga>().cargaBool(true);
+    String mensaje;
+    _inventario != LocalStorage.local('locación')
+        ? {mensaje = await UsuarioModel.cambiarInfo('Locacion', _inventario)}
+        : mensaje = 'Error: No hay cambios';
+    mensaje.split(': ')[0] != 'Error'
+        ? {
+            LocalStorage.set('locación', _inventario),
+            if (ctx.mounted) ctx.read<Ventanas>().cambio(false),
+            accion(),
+          }
+        : mensaje = mensaje.split(':')[1];
+
+    Textos.toast(mensaje, true);
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 }

@@ -21,18 +21,19 @@ class ArticuloInfo extends StatefulWidget {
 }
 
 class _ArticuloInfoState extends State<ArticuloInfo> {
-  late String barras = widget.articulo.codigoBarras, texto = "", columna = "";
-  String tituloVen = "";
+  late ArticulosModel articulo = widget.articulo;
+  late String barras = articulo.codigoBarras, texto = '', columna = '';
+  String tituloVen = '';
   TextEditingController controller = TextEditingController();
   Color color = Color(0x00000000);
 
   void scanCod(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
     barras = await Textos.scan(context);
-    if (barras == "-1" || barras.isEmpty) {
-      barras = widget.articulo.codigoBarras;
+    if (barras == '-1' || barras.isEmpty) {
+      barras = articulo.codigoBarras;
     } else {
-      List<ArticulosModel> lista = await ArticulosModel.getArticulos("id", "");
+      List<ArticulosModel> lista = await ArticulosModel.getArticulos('id', '');
       bool flag = true;
       for (int i = 0; i < lista.length; i++) {
         if (lista[i].codigoBarras == barras) {
@@ -40,15 +41,15 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
         }
       }
       if (flag) {
-        tituloVen = "Confirmar Código de barras";
-        texto = "Código de barras";
-        columna = "CodigoBarras";
+        tituloVen = 'Confirmar Código de barras';
+        texto = 'Código de barras';
+        columna = 'CodigoBarras';
         controller.text = barras;
         if (ctx.mounted) {
           ctx.read<Ventanas>().emergente(true);
         }
       } else {
-        Textos.toast("El código ya esta registrado", flag);
+        Textos.toast('El código ya esta registrado', flag);
       }
     }
     if (ctx.mounted) {
@@ -64,26 +65,26 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
     } else {
       ctx.read<Carga>().cargaBool(true);
       String mensaje = await ArticulosModel.editarArticulo(
-        widget.articulo.id,
+        articulo.id,
         controller.text,
         columna,
       );
-      if (mensaje.split(": ")[0] != "Error") {
+      if (mensaje.split(': ')[0] != 'Error') {
         setState(() {
           color = Color(0x00000000);
           switch (columna) {
-            case "CodigoBarras":
-              widget.articulo.codigoBarras = barras;
-              mensaje = "Se actualizó el código de barras de $mensaje.";
+            case 'CodigoBarras':
+              articulo.codigoBarras = barras;
+              mensaje = 'Se actualizó el código de barras de $mensaje.';
               break;
-            case "CantidadPorUnidad":
-              widget.articulo.cantidadPorUnidad = double.parse(controller.text);
+            case 'CantidadPorUnidad':
+              articulo.cantidadPorUnidad = double.parse(controller.text);
               mensaje =
-                  "Se actualizó la cantidad de productos por unidad de $mensaje.";
+                  'Se actualizó la cantidad de productos por unidad de $mensaje.';
               break;
-            case "Precio":
-              widget.articulo.precio = double.parse(controller.text);
-              mensaje = "Se actualizó el precio de $mensaje.";
+            case 'Precio':
+              articulo.precio = double.parse(controller.text);
+              mensaje = 'Se actualizó el precio de $mensaje.';
               break;
           }
         });
@@ -96,11 +97,29 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
     }
   }
 
+  void recarga(BuildContext ctx) async {
+    ctx.read<Carga>().cargaBool(true);
+    String mensaje = 'Se actualizó el articulo.';
+    ArticulosModel articulo = await ArticulosModel.getArticulo(
+      this.articulo.id,
+    );
+    articulo.mensaje.isEmpty
+        ? {
+            setState(() {
+              this.articulo = articulo;
+            }),
+          }
+        : mensaje = articulo.mensaje;
+
+    Textos.toast(mensaje, false);
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+  }
+
   String codigoTexto(String codigo) {
     if (codigo.isEmpty) {
-      codigo = "Sin codigo establecido";
+      codigo = 'Sin codigo establecido';
     }
-    return "Código de barras: $codigo";
+    return 'Código de barras: $codigo';
   }
 
   @override
@@ -119,16 +138,43 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Textos.textoTilulo(widget.articulo.nombre, 30),
+                    Textos.textoTilulo(articulo.nombre, 30),
                     SizedBox(
                       width: MediaQuery.of(context).size.width * .8,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         spacing: 20,
                         children: [
-                          rectanguloContainer("Área: ${widget.articulo.area}"),
-                          rectanguloContainer("Tipo: ${widget.articulo.tipo}"),
+                          rectanguloContainer('Área: ${articulo.area}'),
+                          rectanguloContainer('Tipo: ${articulo.tipo}'),
                           rowBoton(),
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(5),
+                                decoration: BoxDecoration(
+                                  color: Color(0x59F6AFCF),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Textos.textoGeneral(
+                                  'Materia prima:',
+                                  20,
+                                  true,
+                                  true,
+                                  1,
+                                ),
+                              ),
+                              Botones.btnRctMor(
+                                'Materia Prima',
+                                20,
+                                articulo.materia
+                                    ? Icons.check_box_rounded
+                                    : Icons.check_box_outline_blank_rounded,
+                                false,
+                                () => {},
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -140,10 +186,10 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                           Row(
                             children: [
                               rectanguloContainer(
-                                codigoTexto(widget.articulo.codigoBarras),
+                                codigoTexto(articulo.codigoBarras),
                               ),
                               Botones.btnSimple(
-                                "Cambiar Código de barras",
+                                'Cambiar Código de barras',
                                 Icons.edit_note_rounded,
                                 Color(0xFF8A03A9),
                                 () => scanCod(context),
@@ -153,20 +199,29 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                           Row(
                             children: [
                               rectanguloContainer(
-                                "Precio: ${widget.articulo.precio}".split(
-                                  ".0",
-                                )[0],
+                                ('${articulo.precio}'.split('')[1] ==
+                                        '0')
+                                    ? 'Precio: ${articulo.precio}'.split(
+                                        '.',
+                                      )[0]
+                                    : 'Precio: ${articulo.precio}',
                               ),
                               Botones.btnSimple(
-                                "Cambiar precio",
+                                'Cambiar precio',
                                 Icons.price_change_rounded,
                                 Color(0xFF8A03A9),
                                 () => {
-                                  tituloVen = "Editar precio",
-                                  texto = "${widget.articulo.precio}".split(
-                                    ".0",
-                                  )[0],
-                                  columna = "Precio",
+                                  tituloVen = 'Editar precio',
+                                  texto =
+                                      ('${articulo.precio}'.split(
+                                            '',
+                                          )[1] ==
+                                          '0')
+                                      ? '${articulo.precio}'.split(
+                                          '.',
+                                        )[0]
+                                      : '${articulo.precio}',
+                                  columna = 'Precio',
                                   controller.text = texto,
                                   context.read<Ventanas>().emergente(true),
                                 },
@@ -183,13 +238,13 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                           MediaQuery.sizeOf(context).width,
                           [0.2, 0.075, 0.075, 0.075, 0.075, 0.2, 0.25],
                           [
-                            "Tienda",
-                            "Unidades",
-                            "Entradas",
-                            "Salidas",
-                            "Perdidas",
-                            "Ultimo usuario",
-                            "Ultima modificación",
+                            'Tienda',
+                            'Unidades',
+                            'Entradas',
+                            'Salidas',
+                            'Perdidas',
+                            'Ultimo usuario',
+                            'Ultima modificación',
                           ],
                         ),
                         SizedBox(
@@ -199,14 +254,14 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
                                 listaPrincipal,
-                                "No hay productos registrados.",
-                                "No hay coincidencias.",
+                                'No hay productos registrados.',
+                                'No hay coincidencias.',
                                 () => ProductoModel.getDatosArticulo(
-                                  widget.articulo.id,
+                                  articulo.id,
                                 ),
                                 accionRefresh: () async => tablas.datos(
                                   await ProductoModel.getDatosArticulo(
-                                    widget.articulo.id,
+                                    articulo.id,
                                   ),
                                 ),
                               );
@@ -224,13 +279,14 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                 context,
                 MaterialPageRoute(builder: (context) => Articulos()),
               ),
+              recarga: () => recarga(context),
             ),
             Consumer2<Ventanas, Carga>(
               builder: (context, ventana, carga, child) {
                 return Ventanas.ventanaEmergente(
                   tituloVen,
-                  "Cancelar",
-                  "Confirmar",
+                  'Cancelar',
+                  'Confirmar',
                   () => setState(() {
                     color = Color(0x00000000);
                     ventana.emergente(false);
@@ -242,7 +298,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                     texto,
                     controller,
                     color,
-                    texto != "Código de barras",
+                    texto != 'Código de barras',
                     false,
                     () => cambioColumna(context),
                     formato: FilteringTextInputFormatter.allow(
@@ -277,6 +333,9 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
           lista[index].limiteProd,
           lista[index].unidades.floor(),
         );
+        String unidad = '${lista[index].unidades}';
+        String entrada = '${lista[index].entrada}';
+        String salida = '${lista[index].salida}';
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
@@ -285,10 +344,10 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
             [0.2, 0.075, 0.075, 0.075, 0.075, 0.2, 0.25],
             [
               lista[index].nombre,
-              "${lista[index].unidades}".split(".0")[0],
-              "${lista[index].entrada}".split(".0")[0],
-              "${lista[index].salida}".split(".0")[0],
-              "${lista[index].perdidaCantidad.length}",
+              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
+              (entrada.split('.')[1] == '0') ? entrada.split('.')[0] : entrada,
+              (salida.split('.')[1] == '0') ? salida.split('.')[0] : salida,
+              '${lista[index].perdidaCantidad.length}',
               lista[index].ultimoUsuario,
               lista[index].ultimaModificacion,
             ],
@@ -304,24 +363,25 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
   }
 
   Row rowBoton() {
-    String texto = "${widget.articulo.cantidadPorUnidad}".split(".0")[0];
+    String texto = '${articulo.cantidadPorUnidad}';
+    if (texto.split('.')[1] == '0') texto = texto.split('.')[0];
     return Row(
       children: [
-        rectanguloContainer("Cantidad por unidad: $texto"),
-        if (widget.articulo.tipo == "Bote" ||
-            widget.articulo.tipo == "Bulto" ||
-            widget.articulo.tipo == "Caja" ||
-            widget.articulo.tipo == "Costal" ||
-            widget.articulo.tipo == "Paquete")
+        rectanguloContainer('Cantidad por unidad: $texto'),
+        if (articulo.tipo == 'Bote' ||
+            articulo.tipo == 'Bulto' ||
+            articulo.tipo == 'Caja' ||
+            articulo.tipo == 'Costal' ||
+            articulo.tipo == 'Paquete')
           Botones.btnSimple(
-            "Cambiar cantidad por unidad",
+            'Cambiar cantidad por unidad',
             Icons.edit_rounded,
             Color(0xFF8A03A9),
             () => {
-              tituloVen = "Editar cantidad por unidad",
-              texto = "Cantidad por unidad",
-              columna = "CantidadPorUnidad",
-              controller.text = "${widget.articulo.cantidadPorUnidad}",
+              tituloVen = 'Editar cantidad por unidad',
+              texto = 'Cantidad por unidad',
+              columna = 'CantidadPorUnidad',
+              controller.text = '${articulo.cantidadPorUnidad}',
               context.read<Ventanas>().emergente(true),
             },
           ),
@@ -333,7 +393,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
     return Container(
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Color(0x40FF5600),
+        color: Color(0x59F6AFCF),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Textos.textoGeneral(texto, 20, true, true, 1),

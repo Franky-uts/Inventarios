@@ -22,11 +22,10 @@ class Inicio extends StatefulWidget {
 class _InicioState extends State<Inicio> {
   late UsuarioModel usuarioMod;
   late bool verContr;
-  late IconData iconoContr;
   late List<TextEditingController> controller = [];
   late List<FocusNode> focus = [];
   late List<Color> color = [];
-  String ip = "189.187.130.27";
+  String ip = '192.168.1.64';
 
   @override
   void initState() {
@@ -42,7 +41,6 @@ class _InicioState extends State<Inicio> {
       color.add(Color(0x00FFFFFF));
     }
     setIp();
-    iconoContr = Icons.remove_red_eye_rounded;
     super.initState();
   }
 
@@ -56,7 +54,7 @@ class _InicioState extends State<Inicio> {
 
   void verificar(BuildContext ctx) async {
     bool valido = true;
-    String mensaje = "";
+    String mensaje = '';
     for (int i = 0; i < 2; i++) {
       setState(() {
         color[i] = Color(0x00FFFFFF);
@@ -76,29 +74,29 @@ class _InicioState extends State<Inicio> {
         ip,
       );
       mensaje = usuarioMod.puesto;
-      if (usuarioMod.nombre != "error") {
-        await LocalStorage.set('conexion', "http://$ip:3000");
-        //await LocalStorage.set('conexion', "http://192.168.1.130:3000");
+      if (usuarioMod.nombre != 'error') {
+        await LocalStorage.set('conexion', 'http://$ip:3000');
+        //await LocalStorage.set('conexion', 'http://192.168.1.130:3000');
         await LocalStorage.set('usuario', usuarioMod.nombre);
         await LocalStorage.set('puesto', usuarioMod.puesto);
         await LocalStorage.set('locación', usuarioMod.locacion);
-        mensaje = "";
-        if (usuarioMod.puesto == "El usuario no existe") {
+        mensaje = '';
+        if (usuarioMod.puesto == 'El usuario no existe') {
           setState(() {
             color[0] = Color(0xFFFF0000);
           });
-        } else if (usuarioMod.puesto == "Contraseña incorrecta") {
+        } else if (usuarioMod.puesto == 'Contraseña incorrecta') {
           setState(() {
             color[1] = Color(0xFFFF0000);
           });
         } else {
-          mensaje = "";
+          mensaje = '';
           StatefulWidget ruta = Inventario();
           switch (usuarioMod.puesto) {
-            case ("Proveedor"):
+            case ('Proveedor'):
               ruta = Ordenes();
               break;
-            case ("Producción"):
+            case ('Producción'):
               if (ctx.mounted) {
                 ruta = InventarioProd();
               }
@@ -122,7 +120,7 @@ class _InicioState extends State<Inicio> {
   }
 
   void setIp() {
-    List<String> texto = ip.split(".");
+    List<String> texto = ip.split('.');
     for (int i = 0; i < 4; i++) {
       controller[i + 2].text = texto[i];
     }
@@ -138,10 +136,10 @@ class _InicioState extends State<Inicio> {
 
   void cambiarIp() {
     bool valido = true;
-    String texto = "";
+    String texto = '';
     clearColoresIp();
     for (int i = 0; i < 4; i++) {
-      texto = "$texto${controller[i + 2].text}.";
+      texto = '$texto${controller[i + 2].text}.';
       if (controller[i + 2].text.isEmpty ||
           int.parse(controller[i + 2].text) > 255) {
         valido = false;
@@ -152,7 +150,7 @@ class _InicioState extends State<Inicio> {
     }
     if (valido) {
       ip = texto.substring(0, texto.length - 1);
-      Textos.toast("Se cambio la ip a: $ip", true);
+      Textos.toast('Se cambio la ip a: $ip', true);
       setIp();
       context.read<Ventanas>().emergente(false);
     }
@@ -165,7 +163,7 @@ class _InicioState extends State<Inicio> {
         CampoTexto.inputTexto(
           MediaQuery.of(context).size.width * .125,
           null,
-          "",
+          '',
           controller[i + 2],
           color[i + 2],
           true,
@@ -176,13 +174,13 @@ class _InicioState extends State<Inicio> {
           inputType: TextInputType.numberWithOptions(),
         ),
       );
-      lista.add(Textos.textoTilulo(".", 20));
+      lista.add(Textos.textoTilulo('.', 20));
     }
     lista.add(
       CampoTexto.inputTexto(
         MediaQuery.of(context).size.width * .125,
         null,
-        "",
+        '',
         controller[5],
         color[5],
         true,
@@ -226,7 +224,7 @@ class _InicioState extends State<Inicio> {
                     CampoTexto.inputTexto(
                       MediaQuery.of(context).size.width * .75,
                       Icons.person_rounded,
-                      "Usuario",
+                      'Usuario',
                       controller[0],
                       color[0],
                       true,
@@ -240,7 +238,7 @@ class _InicioState extends State<Inicio> {
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * (.75 * .925),
                           Icons.lock_rounded,
-                          "Contraseña",
+                          'Contraseña',
                           controller[1],
                           color[1],
                           true,
@@ -252,16 +250,14 @@ class _InicioState extends State<Inicio> {
                           width:
                               MediaQuery.of(context).size.width * (.75 * .075),
                           child: Botones.btnSimple(
-                            "Ver/Ocultar Contraseña",
-                            iconoContr,
+                            'Ver/Ocultar Contraseña',
+                            verContr
+                                ? Icons.remove_red_eye_rounded
+                                : Icons.remove_red_eye_outlined,
                             Color(0xFFFFFFFF),
                             () => {
                               setState(() {
                                 verContr = !verContr;
-                                iconoContr = Icons.remove_red_eye_outlined;
-                                if (verContr) {
-                                  iconoContr = Icons.remove_red_eye_rounded;
-                                }
                               }),
                             },
                           ),
@@ -269,7 +265,7 @@ class _InicioState extends State<Inicio> {
                       ],
                     ),
                     Botones.iconoTexto(
-                      "Ingresar",
+                      'Ingresar',
                       Icons.login_rounded,
                       () => verificar(context),
                     ),
@@ -281,7 +277,7 @@ class _InicioState extends State<Inicio> {
               margin: EdgeInsets.all(10),
               alignment: Alignment.topLeft,
               child: Botones.btnRctMor(
-                "Ajustes",
+                'Ajustes',
                 35,
                 Icons.settings,
                 false,
@@ -291,9 +287,9 @@ class _InicioState extends State<Inicio> {
               ),
             ),
             Ventanas.ventanaEmergente(
-              "Cambio de dirección ip",
-              "Cancelar",
-              "Guardar",
+              'Cambio de dirección ip',
+              'Cancelar',
+              'Guardar',
               () => setState(() {
                 clearColoresIp();
                 setIp();

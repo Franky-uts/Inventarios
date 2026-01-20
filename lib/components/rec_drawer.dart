@@ -1,10 +1,11 @@
 import 'dart:io';
-
 import 'package:excel/excel.dart';
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/articulos_model.dart';
+import 'package:inventarios/models/historial_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/add_producto.dart';
 import 'package:inventarios/pages/articulo_info.dart';
@@ -14,7 +15,6 @@ import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-
 import 'botones.dart';
 import 'carga.dart';
 
@@ -36,9 +36,9 @@ class RecDrawer {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Textos.textoGeneral("Bienvenido, ", 15, true, false, 1),
+                    Textos.textoGeneral('Bienvenido, ', 15, true, false, 1),
                     Botones.btnRctMor(
-                      "Cerrar sesión",
+                      'Cerrar sesión',
                       0,
                       Icons.logout_rounded,
                       true,
@@ -65,12 +65,16 @@ class RecDrawer {
                   false,
                   1,
                 ),
-                Textos.textoGeneral(
-                  "Mostrando: ${LocalStorage.local('locación')}",
-                  20,
-                  true,
-                  false,
-                  1,
+                Consumer<Ventanas>(
+                  builder: (ctx, ventanas, child) {
+                    return Textos.textoGeneral(
+                      'Mostrando: ${Ventanas.getInventario()}',
+                      20,
+                      true,
+                      false,
+                      1,
+                    );
+                  },
                 ),
               ],
             ),
@@ -96,20 +100,22 @@ class RecDrawer {
   static Future<void> datosExcel(BuildContext context) async {
     context.read<Carga>().cargaBool(true);
     Navigator.of(context).pop();
-    List<ProductoModel> productos = await ProductoModel.getProductos("id", "");
+    List<ProductoModel> productos = await ProductoModel.getProductos('id', '');
     var excel = Excel.createExcel();
     Sheet sheetObject = excel['Inventario'];
     List<String> headers = [
       'id',
       'Nombre',
+      'Area',
       'Tipo',
       'Unidades',
-      'Area',
+      'Cantidad por unidad',
+      'Total',
+      'Mínimo de productos',
       'Entrada',
       'Salida',
-      'PerdidaCantidad',
-      'PerdidaRazones',
-      'UltimaModificación',
+      'Perdidas',
+      'Ultima Modificación',
     ];
     for (int i = 0; i < headers.length; i++) {
       sheetObject
@@ -120,21 +126,19 @@ class RecDrawer {
     }
     for (int i = 0; i < productos.length; i++) {
       ProductoModel item = productos[i];
-      String pCant = "No hay perdidas registradas";
-      String pRaz = "No hay perdidas registradas";
+      String perdidas = 'No hay perdidas registradas';
       if (item.perdidaCantidad.isNotEmpty) {
-        pCant = "${item.perdidaCantidad[0]}";
-        pRaz = item.perdidaRazones[0];
+        perdidas = '${item.perdidaCantidad[0]} ${item.perdidaRazones[0]}';
         if (item.perdidaCantidad.length > 1) {
           for (int i = 1; i < item.perdidaCantidad.length; i++) {
-            pCant = "$pCant, ${item.perdidaCantidad[0]}";
-            pRaz = "$pRaz, ${item.perdidaRazones}";
+            perdidas =
+                '$perdidas, \n${item.perdidaCantidad[i]} ${item.perdidaRazones[i]}';
           }
         }
       }
       sheetObject
           .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 1))
-          .value = TextCellValue(
+          .value = IntCellValue(
         item.id,
       );
       sheetObject
@@ -147,40 +151,51 @@ class RecDrawer {
           .value = TextCellValue(
         item.tipo,
       );
+
       sheetObject
           .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1))
-          .value = DoubleCellValue(
-        item.unidades,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1))
           .value = TextCellValue(
         item.area,
       );
       sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1))
+          .value = DoubleCellValue(
+        item.unidades,
+      );
+      sheetObject
           .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1))
           .value = DoubleCellValue(
-        item.entrada,
+        item.cantidadPorUnidad,
       );
       sheetObject
           .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1))
           .value = DoubleCellValue(
-        item.salida,
+        (item.unidades * item.cantidadPorUnidad),
       );
       sheetObject
           .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1))
-          .value = TextCellValue(
-        pCant,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1))
-          .value = TextCellValue(
-        pRaz,
+          .value = IntCellValue(
+        item.limiteProd,
       );
       sheetObject
           .cell(CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: i + 1))
+          .value = DoubleCellValue(
+        item.entrada,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: i + 1))
+          .value = DoubleCellValue(
+        item.salida,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 10, rowIndex: i + 1))
           .value = TextCellValue(
-        item.ultimaModificacion,
+        perdidas,
+      );
+      sheetObject
+          .cell(CellIndex.indexByColumnRow(columnIndex: 11, rowIndex: i + 1))
+          .value = TextCellValue(
+        '${item.ultimaModificacion}: ${item.ultimaModificacion}',
       );
     }
     var status = await Permission.manageExternalStorage.request();
@@ -190,6 +205,7 @@ class RecDrawer {
     if (status.isPermanentlyDenied) {
       openAppSettings();
     }
+    String mensaje = 'Se aborto el proceso';
     if (status.isGranted) {
       final path = '/storage/emulated/0/Download/Inventarios';
       String fecha =
@@ -199,14 +215,138 @@ class RecDrawer {
         File('$path/$fecha.xlsx')
           ..createSync(recursive: true)
           ..writeAsBytesSync(fileBytes, flush: true);
-        Textos.toast('Archivo guardado en: $path/$fecha.xlsx', true);
+        mensaje = 'Archivo guardado en: $path/$fecha.xlsx';
       }
-    } else {
-      Textos.toast('Se aborto el proceso', false);
+    }
+    Textos.toast(mensaje, true);
+    if (context.mounted) {
+      context.read<Carga>().cargaBool(false);
+    }
+  }
+
+  static Future<String> historialExcel(
+    BuildContext context,
+    String fechaInicial,
+    String fechaFinal,
+  ) async {
+    context.read<Carga>().cargaBool(true);
+    Navigator.of(context).pop();
+    List<HistorialModel> historial = await HistorialModel.getAllHistorial(
+      fechaInicial,
+      fechaFinal,
+    );
+    String mensaje = 'Error:No hay registros en esa fecha.';
+    if (historial.isNotEmpty && historial.last.mensaje.isEmpty) {
+      var excel = Excel.createExcel();
+      int contador = 1;
+      Sheet sheetObject = excel['Historial'];
+      List<String> headers = [
+        'Nombre',
+        'Fecha',
+        'Unidades',
+        'Entradas',
+        'Salidas',
+        'Perdidas',
+        'Hora de modificación',
+        'Usuario que modifico',
+        'Detalle de perdidas',
+      ];
+      for (int i = 0; i < headers.length; i++) {
+        sheetObject
+            .cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
+            .value = TextCellValue(
+          headers[i],
+        );
+      }
+      for (int i = 0; i < historial.length; i++) {
+        int cantidad = contador + historial[i].unidades.length;
+        HistorialModel item = historial[i];
+        String perdidas = 'No hay perdidas registradas';
+        if (item.cantidades.isNotEmpty) {
+          perdidas = '${item.cantidades[0]} ${item.razones[0]}';
+          if (item.cantidades.length > 1) {
+            for (int j = 1; j < item.razones.length; j++) {
+              perdidas =
+                  '$perdidas, \n${item.cantidades[j]} ${item.razones[j]}';
+            }
+          }
+        }
+        sheetObject.merge(
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: contador),
+          CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: cantidad),
+          customValue: TextCellValue(item.nombre),
+        );
+        sheetObject.merge(
+          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: contador),
+          CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: cantidad),
+          customValue: TextCellValue(item.fecha),
+        );
+        for (int j = 1; j < item.unidades.length; j++) {
+          sheetObject
+              .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1))
+              .value = DoubleCellValue(
+            item.unidades[j],
+          );
+          sheetObject
+              .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1))
+              .value = DoubleCellValue(
+            item.entradas[j],
+          );
+
+          sheetObject
+              .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1))
+              .value = DoubleCellValue(
+            item.salidas[j],
+          );
+          sheetObject
+              .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1))
+              .value = IntCellValue(
+            item.perdidas[j],
+          );
+          sheetObject
+              .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1))
+              .value = TextCellValue(
+            item.horasModificacion[j],
+          );
+          sheetObject
+              .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1))
+              .value = TextCellValue(
+            item.usuarioModificacion[j],
+          );
+        }
+        sheetObject.merge(
+          CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: contador),
+          CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: cantidad),
+          customValue: TextCellValue(perdidas),
+        );
+        contador = cantidad;
+      }
+      var status = await Permission.manageExternalStorage.request();
+      if (status.isDenied) {
+        await Permission.manageExternalStorage.request();
+      }
+      if (status.isPermanentlyDenied) {
+        openAppSettings();
+      }
+      if (status.isGranted) {
+        final path = '/storage/emulated/0/Download/Inventarios';
+        String fecha =
+            '${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}';
+        List<int>? fileBytes = excel.save();
+        if (fileBytes != null) {
+          File('$path/historial$fecha.xlsx')
+            ..createSync(recursive: true)
+            ..writeAsBytesSync(fileBytes, flush: true);
+          mensaje = 'Archivo guardado en: $path/historial$fecha.xlsx';
+        }
+      } else {
+        mensaje = 'Error: Se aborto el proceso';
+      }
     }
     if (context.mounted) {
       context.read<Carga>().cargaBool(false);
     }
+    return mensaje;
   }
 
   static void scanProducto(BuildContext ctx, StatefulWidget ruta) async {
@@ -215,7 +355,7 @@ class RecDrawer {
     Navigator.of(ctx).pop();
     prod = await Textos.scan(ctx);
     bool flag = true;
-    List<ProductoModel> productos = await ProductoModel.getProductos("id", "");
+    List<ProductoModel> productos = await ProductoModel.getProductos('id', '');
     for (int i = 0; i < productos.length; i++) {
       if (productos[i].codigoBarras == prod) {
         flag = false;
@@ -231,7 +371,7 @@ class RecDrawer {
       }
     }
     if (flag) {
-      Textos.toast("No se reconocio el codigo.", false);
+      Textos.toast('No se reconocio el codigo.', false);
     }
     if (ctx.mounted) {
       ctx.read<Carga>().cargaBool(false);
@@ -245,8 +385,8 @@ class RecDrawer {
     prod = await Textos.scan(ctx);
     bool flag = true;
     List<ArticulosModel> articulos = await ArticulosModel.getArticulos(
-      "id",
-      "",
+      'id',
+      '',
     );
     for (int i = 0; i < articulos.length; i++) {
       if (articulos[i].codigoBarras == prod) {
@@ -262,7 +402,7 @@ class RecDrawer {
       }
     }
     if (flag) {
-      Textos.toast("No se reconocio el codigo.", false);
+      Textos.toast('No se reconocio el codigo.', false);
     }
     if (ctx.mounted) {
       ctx.read<Carga>().cargaBool(false);
@@ -270,19 +410,19 @@ class RecDrawer {
   }
 
   static Future<void> getListas(BuildContext ctx, StatefulWidget ruta) async {
-    String texto = "";
+    String texto = '';
     ctx.read<Carga>().cargaBool(true);
     Navigator.of(ctx).pop();
     List<ArticulosModel> articulos = await ArticulosModel.getArticulos(
-      "id",
-      "",
+      'id',
+      '',
     );
     List areas = await ProductoModel.getAreas();
-    if (articulos.last.nombre == "Error") {
+    if (articulos.last.nombre == 'Error') {
       texto = articulos.last.mensaje;
     }
-    if (areas.last.split(": ")[0] == 'Error') {
-      texto = areas.last.split(": ")[1];
+    if (areas.last.split(': ')[0] == 'Error') {
+      texto = areas.last.split(': ')[1];
     }
     if (texto.isNotEmpty) {
       Textos.toast(texto, false);
@@ -311,17 +451,12 @@ class RecDrawer {
     Navigator.of(ctx).pop();
     CampoTexto.seleccionFiltro = Filtros.id;
     List<ProductoModel> productos = await ProductoModel.getProductos(
-      "idProducto",
-      "",
+      'id',
+      '',
     );
-    if (productos[0].nombre != "Error") {
+    if (productos[0].nombre != 'Error') {
       if (ctx.mounted) {
-        Textos.crearLista(
-          int.parse(
-            productos.last.id.substring(0, productos.last.id.length - 3),
-          ),
-          Color(0xFFFDC930),
-        );
+        Textos.crearLista(productos.last.id, Color(0xFFFDC930));
         Navigator.pushReplacement(
           ctx,
           MaterialPageRoute(builder: (context) => OrdenSalida()),
@@ -339,17 +474,12 @@ class RecDrawer {
     ctx.read<Carga>().cargaBool(true);
     CampoTexto.seleccionFiltro = Filtros.id;
     List<ProductoModel> productos = await ProductoModel.getProductosProd(
-      "idProducto",
-      "",
+      'id',
+      '',
     );
-    if (productos[0].nombre != "Error") {
+    if (productos[0].nombre != 'Error') {
       if (ctx.mounted) {
-        Textos.crearLista(
-          int.parse(
-            productos.last.id.substring(0, productos.last.id.length - 3),
-          ),
-          Color(0xFFFDC930),
-        );
+        Textos.crearLista(productos.last.id, Color(0xFFFDC930));
       }
     } else {
       Textos.toast(productos[0].tipo, false);

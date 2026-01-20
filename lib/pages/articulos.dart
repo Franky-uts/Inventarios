@@ -28,17 +28,34 @@ class _ArticulosState extends State<Articulos> {
     String busqueda,
   ) async => await ArticulosModel.getArticulos(filtro, busqueda);
 
+  Future<void> getArticuloInfo(BuildContext ctx, int id) async {
+    ctx.read<Carga>().cargaBool(true);
+    ArticulosModel articulo = await ArticulosModel.getArticulo(id);
+    if (articulo.mensaje.isEmpty) {
+      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
+      if (ctx.mounted) {
+        Navigator.pushReplacement(
+          ctx,
+          MaterialPageRoute(builder: (ctx) => ArticuloInfo(articulo: articulo)),
+        );
+      }
+    } else {
+      Textos.toast(articulo.mensaje, true);
+    }
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+  }
+
   Future<void> _getListas(BuildContext ctx) async {
-    String texto = "";
+    String texto = '';
     ctx.read<Carga>().cargaBool(true);
     Navigator.of(ctx).pop();
     List tipos = await ProductoModel.getTipos();
     List areas = await ProductoModel.getAreas();
-    if (tipos.last.split(": ")[0] == "Error") {
-      texto = tipos.last.split(": ")[1];
+    if (tipos.last.split(': ')[0] == 'Error') {
+      texto = tipos.last.split(': ')[1];
     }
-    if (areas.last.split(": ")[0] == "Error") {
-      texto = areas.last.split(": ")[1];
+    if (areas.last.split(': ')[0] == 'Error') {
+      texto = areas.last.split(': ')[1];
     }
     if (texto.isNotEmpty) {
       Textos.toast(texto, false);
@@ -67,11 +84,11 @@ class _ArticulosState extends State<Articulos> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Añadir un artículo",
+              'Añadir un artículo',
               Icons.edit_note_rounded,
               false,
               () async => {carga.cargaBool(true), await _getListas(context)},
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -79,11 +96,11 @@ class _ArticulosState extends State<Articulos> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Escanear artículo",
+              'Escanear artículo',
               Icons.barcode_reader,
               false,
               () async => RecDrawer.scanArticulo(context),
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -91,7 +108,7 @@ class _ArticulosState extends State<Articulos> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Ver almacen",
+              'Ver almacen',
               Icons.inventory_rounded,
               false,
               () => {
@@ -102,7 +119,7 @@ class _ArticulosState extends State<Articulos> {
                 ),
                 carga.cargaBool(false),
               },
-              () => Textos.toast("Espera a que los datos carguen.", false),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
@@ -110,7 +127,7 @@ class _ArticulosState extends State<Articulos> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              "Ordenes",
+              'Ordenes',
               Icons.border_color_rounded,
               true,
               () => {
@@ -140,7 +157,7 @@ class _ArticulosState extends State<Articulos> {
                     Tablas.contenedorInfo(
                       MediaQuery.sizeOf(context).width,
                       [.1, .4, .2, .2],
-                      ["id", "Nombre", "Área", "Tipo"],
+                      ['id', 'Nombre', 'Área', 'Tipo'],
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -149,15 +166,15 @@ class _ArticulosState extends State<Articulos> {
                         builder: (context, tablas, child) {
                           return Tablas.listaFutura(
                             listaPrincipal,
-                            "No hay productos registrados.",
-                            "No hay coincidencias.",
+                            'No hay productos registrados.',
+                            'No hay coincidencias.',
                             () => getArticulos(
-                              CampoTexto.filtroTexto(false),
+                              CampoTexto.filtroTexto(),
                               CampoTexto.busquedaTexto.text,
                             ),
                             accionRefresh: () async => tablas.datos(
                               await getArticulos(
-                                CampoTexto.filtroTexto(false),
+                                CampoTexto.filtroTexto(),
                                 CampoTexto.busquedaTexto.text,
                               ),
                             ),
@@ -182,7 +199,7 @@ class _ArticulosState extends State<Articulos> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Botones.btnRctMor(
-          "Abrir menú",
+          'Abrir menú',
           35,
           Icons.menu_rounded,
           false,
@@ -197,7 +214,7 @@ class _ArticulosState extends State<Articulos> {
                 () async => {
                   tablas.datos(
                     await getArticulos(
-                      CampoTexto.filtroTexto(false),
+                      CampoTexto.filtroTexto(),
                       CampoTexto.busquedaTexto.text,
                     ),
                   ),
@@ -228,7 +245,7 @@ class _ArticulosState extends State<Articulos> {
             MediaQuery.sizeOf(context).width,
             [.1, .4, .2, .2],
             [
-              "${lista[index].id}",
+              '${lista[index].id}',
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,
@@ -236,19 +253,7 @@ class _ArticulosState extends State<Articulos> {
             [],
             2,
             true,
-            extra: () async => {
-              await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
-              if (context.mounted)
-                {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          ArticuloInfo(articulo: lista[index]),
-                    ),
-                  ),
-                },
-            },
+            extra: () async => await getArticuloInfo(context, lista[index].id),
           ),
         );
       },

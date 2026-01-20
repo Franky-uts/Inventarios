@@ -44,8 +44,8 @@ class _AddproductoState extends State<AddProducto> {
 
   @override
   void initState() {
-    articuloLista.add("Artículos");
-    areasLista.add("Áreas");
+    articuloLista.add('Artículos');
+    areasLista.add('Áreas');
     articuloValor = articuloLista.first;
     areaValor = areasLista.first;
     areasLista.addAll(widget.areas.map((item) => item as String).toList());
@@ -68,29 +68,29 @@ class _AddproductoState extends State<AddProducto> {
     if (control[0].text.isEmpty) {
       colorCampo[2] = Color(0xFFFF0000);
     }
-    if (articuloValor == "Artículos") {
+    if (articuloValor == 'Artículos') {
       colorCampo[1] = Color(0xFFFF0000);
     }
-    if (areaValor == "Áreas") {
+    if (areaValor == 'Áreas') {
       colorCampo[0] = Color(0xFFFF0000);
     }
     if (control[0].text.isNotEmpty &&
-        articuloValor != "Artículos" &&
-        areaValor != "Áreas") {
+        articuloValor != 'Artículos' &&
+        areaValor != 'Áreas') {
       String respuesta = await ProductoModel.addProducto(
         id,
         int.parse(control[0].text),
       );
-      if (respuesta.split(": ")[0] != "Error") {
+      if (respuesta.split(': ')[0] != 'Error') {
         id = 0;
-        control[0].text = "";
-        control[1].text = "";
-        control[2].text = "";
+        control[0].text = '';
+        control[1].text = '';
+        control[2].text = '';
         articuloValor = articuloLista.first;
         areaValor = areasLista.first;
-        respuesta = "Se guardo producto con id $respuesta correctamente.";
+        respuesta = 'Se guardo producto con id $respuesta correctamente.';
       } else {
-        respuesta = respuesta.split(": ")[1];
+        respuesta = respuesta.split(': ')[1];
       }
       Textos.toast(respuesta, true);
     }
@@ -119,7 +119,7 @@ class _AddproductoState extends State<AddProducto> {
                           children: [
                             Column(
                               children: [
-                                Textos.textoBlanco("Áreas", 15),
+                                Textos.textoBlanco('Áreas', 15),
                                 CampoTexto.inputDropdown(
                                   MediaQuery.of(context).size.width,
                                   Icons.door_front_door_rounded,
@@ -132,7 +132,7 @@ class _AddproductoState extends State<AddProducto> {
                             ),
                             Column(
                               children: [
-                                Textos.textoBlanco("Artículo", 15),
+                                Textos.textoBlanco('Artículo', 15),
                                 CampoTexto.inputDropdown(
                                   MediaQuery.of(context).size.width,
                                   Icons.door_front_door_rounded,
@@ -152,7 +152,7 @@ class _AddproductoState extends State<AddProducto> {
                             CampoTexto.inputTexto(
                               MediaQuery.of(context).size.width * .365,
                               Icons.file_copy_rounded,
-                              "Tipo",
+                              'Tipo',
                               control[1],
                               Color(0x00FFFFFF),
                               false,
@@ -163,7 +163,7 @@ class _AddproductoState extends State<AddProducto> {
                             CampoTexto.inputTexto(
                               MediaQuery.of(context).size.width * .365,
                               Icons.file_copy_rounded,
-                              "Cantidad por unidad",
+                              'Cantidad por unidad',
                               control[2],
                               Color(0x00FFFFFF),
                               false,
@@ -176,7 +176,7 @@ class _AddproductoState extends State<AddProducto> {
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75,
                           Icons.file_copy_rounded,
-                          "Limite minimo de productos",
+                          'Limite minimo de productos',
                           control[0],
                           colorCampo[2],
                           true,
@@ -190,7 +190,7 @@ class _AddproductoState extends State<AddProducto> {
                           formato: FilteringTextInputFormatter.digitsOnly,
                         ),
                         Botones.iconoTexto(
-                          "Añadir",
+                          'Añadir',
                           Icons.add_circle_rounded,
                           () => {
                             carga.cargaBool(true),
@@ -218,7 +218,7 @@ class _AddproductoState extends State<AddProducto> {
   }
 
   void setArea(String areaNombre) {
-    articuloLista = ["Artículos"];
+    articuloLista = ['Artículos'];
     articuloValor = articuloLista.first;
     if (areaNombre != 'Áreas') {
       for (int i = 0; i < widget.listaArticulos.length; i++) {
@@ -229,23 +229,23 @@ class _AddproductoState extends State<AddProducto> {
     }
     id = 0;
     setState(() {
-      control[1].text = "";
-      control[2].text = "";
+      control[1].text = '';
+      control[2].text = '';
       areaValor = areaNombre;
     });
   }
 
   void setArticulo(String articuloNombre) {
     int id = 0;
-    String tipo = "";
-    String cantidad = "";
-    if (articuloNombre != "Artículos") {
+    String tipo = '';
+    String cantidad = '';
+    if (articuloNombre != 'Artículos') {
       for (int i = 0; i < widget.listaArticulos.length; i++) {
         if (widget.listaArticulos[i].nombre == articuloNombre &&
             widget.listaArticulos[i].area == areaValor) {
           id = widget.listaArticulos[i].id;
           tipo = widget.listaArticulos[i].tipo;
-          cantidad = "${widget.listaArticulos[i].cantidadPorUnidad}";
+          cantidad = '${widget.listaArticulos[i].cantidadPorUnidad}';
         }
       }
     }

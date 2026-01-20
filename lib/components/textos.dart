@@ -21,8 +21,8 @@ class Textos with ChangeNotifier {
   static Future<String> scan(BuildContext ctx) async {
     String? scan = await SimpleBarcodeScanner.scanBarcode(
       ctx,
-      lineColor: "#8A03A9",
-      cancelButtonText: "Regresar",
+      lineColor: '#8A03A9',
+      cancelButtonText: 'Regresar',
       isShowFlashIcon: true,
       delayMillis: 2000,
       cameraFace: CameraFace.back,
@@ -37,30 +37,16 @@ class Textos with ChangeNotifier {
     bool centro,
     int maxLines,
   ) {
-    TextStyle estilo;
     Color color;
-    TextAlign alineamiento;
-    if (principal) {
-      color = Color(0xFF8A03A9);
-    } else {
-      color = Color(0xFFF6AFCF);
-    }
-    if (size > 0) {
-      estilo = TextStyle(fontSize: size, color: color);
-    } else {
-      estilo = TextStyle(color: color);
-    }
-    if (centro) {
-      alineamiento = TextAlign.center;
-    } else {
-      alineamiento = TextAlign.start;
-    }
+    principal ? {color = Color(0xFF8A03A9)} : color = Color(0xFFF6AFCF);
     return Text(
       texto,
-      textAlign: alineamiento,
+      textAlign: centro ? TextAlign.center : TextAlign.start,
       maxLines: maxLines,
       overflow: TextOverflow.ellipsis,
-      style: estilo,
+      style: size > 0
+          ? TextStyle(fontSize: size, color: color)
+          : TextStyle(color: color),
     );
   }
 
@@ -78,6 +64,7 @@ class Textos with ChangeNotifier {
     return Text(
       texto,
       textAlign: TextAlign.center,
+      maxLines: 2,
       style: TextStyle(
         color: Color(0xFF8A03A9),
         fontSize: size,
@@ -174,6 +161,13 @@ class Textos with ChangeNotifier {
 
   void setColor(int i, Color colorInt) {
     color[i] = colorInt;
+    notifyListeners();
+  }
+
+  void setAllColor(Color colorInt) {
+    for (int i = 0; i < color.length; i++) {
+      color[i] = colorInt;
+    }
     notifyListeners();
   }
 }

@@ -12,6 +12,7 @@ class ArticulosModel {
   String codigoBarras;
   double cantidadPorUnidad;
   double precio;
+  bool materia;
   String mensaje;
 
   ArticulosModel({
@@ -22,8 +23,18 @@ class ArticulosModel {
     required this.codigoBarras,
     required this.cantidadPorUnidad,
     required this.precio,
+    required this.materia,
     required this.mensaje,
   });
+
+  static List<String> getInventarios() => [
+    'Árbol Grande',
+    'Café',
+    'Cedis',
+    'Faja de Oro',
+    'Portales',
+    'Yogulive Jardín',
+  ];
 
   static Future<List<ArticulosModel>> getArticulos(
     String filtro,
@@ -32,26 +43,27 @@ class ArticulosModel {
     String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     List<ArticulosModel> articulosFuture = [];
-    if (locacion.isEmpty || locacion == "null") {
+    if (locacion.isEmpty || locacion == 'null') {
       articulosFuture.add(
         ArticulosModel(
           id: 0,
-          nombre: "Error",
-          tipo: "",
+          nombre: '',
+          tipo: '',
           cantidadPorUnidad: 0,
-          area: "",
-          codigoBarras: "",
+          area: '',
+          codigoBarras: '',
           precio: 0,
-          mensaje: "No hay locación establecida",
+          materia: false,
+          mensaje: 'No hay locación establecida',
         ),
       );
     } else {
       try {
         var res = await http.get(
-          Uri.parse("$conexion/articulos/$filtro/$busqueda"),
+          Uri.parse('$conexion/articulos/$filtro/$busqueda'),
           headers: {
-            "Accept": "application/json",
-            "content-type": "application/json; charset=UTF-8",
+            'Accept': 'application/json',
+            'content-type': 'application/json; charset=UTF-8',
           },
         );
         if (res.statusCode == 200) {
@@ -59,14 +71,15 @@ class ArticulosModel {
           for (var item in datos) {
             articulosFuture.add(
               ArticulosModel(
-                id: item["id"],
-                nombre: item["Nombre"],
-                tipo: item["Tipo"],
-                cantidadPorUnidad: item["CantidadPorUnidad"].toDouble(),
-                area: item["Area"],
-                codigoBarras: item["CodigoBarras"],
-                precio: item["Precio"].toDouble(),
-                mensaje: "",
+                id: item['id'],
+                nombre: item['Nombre'],
+                tipo: item['Tipo'],
+                cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+                area: item['Area'],
+                codigoBarras: item['CodigoBarras'],
+                precio: item['Precio'].toDouble(),
+                materia: item['MateriaPrima'],
+                mensaje: '',
               ),
             );
           }
@@ -74,12 +87,13 @@ class ArticulosModel {
           articulosFuture.add(
             ArticulosModel(
               id: 0,
-              nombre: "Error",
-              tipo: "",
+              nombre: '',
+              tipo: '',
               cantidadPorUnidad: 0,
-              area: "",
-              codigoBarras: "",
+              area: '',
+              codigoBarras: '',
               precio: 0,
+              materia: false,
               mensaje: res.body,
             ),
           );
@@ -88,25 +102,27 @@ class ArticulosModel {
         articulosFuture.add(
           ArticulosModel(
             id: 0,
-            nombre: "Error",
-            tipo: "",
+            nombre: '',
+            tipo: '',
             cantidadPorUnidad: 0,
-            area: "",
-            codigoBarras: "",
+            area: '',
+            codigoBarras: '',
             precio: 0,
-            mensaje: "${e.message}",
+            materia: false,
+            mensaje: '${e.message}',
           ),
         );
       } on SocketException catch (e) {
         articulosFuture.add(
           ArticulosModel(
             id: 0,
-            nombre: "Error",
-            tipo: "",
+            nombre: '',
+            tipo: '',
             cantidadPorUnidad: 0,
-            area: "",
-            codigoBarras: "",
+            area: '',
+            codigoBarras: '',
             precio: 0,
+            materia: false,
             mensaje: e.message,
           ),
         );
@@ -114,12 +130,13 @@ class ArticulosModel {
         articulosFuture.add(
           ArticulosModel(
             id: 0,
-            nombre: "Error",
-            tipo: "",
+            nombre: '',
+            tipo: '',
             cantidadPorUnidad: 0,
-            area: "",
-            codigoBarras: "",
+            area: '',
+            codigoBarras: '',
             precio: 0,
+            materia: false,
             mensaje: e.message,
           ),
         );
@@ -127,18 +144,109 @@ class ArticulosModel {
         articulosFuture.add(
           ArticulosModel(
             id: 0,
-            nombre: "Error",
-            tipo: "",
+            nombre: '',
+            tipo: '',
             cantidadPorUnidad: 0,
-            area: "",
-            codigoBarras: "",
+            area: '',
+            codigoBarras: '',
             precio: 0,
-            mensaje: "$e",
+            materia: false,
+            mensaje: '$e',
           ),
         );
       }
     }
     return articulosFuture;
+  }
+
+  static Future<ArticulosModel> getArticulo(int id) async {
+    String conexion = LocalStorage.local('conexion');
+    ArticulosModel articulo;
+    try {
+      var res = await http.get(
+        Uri.parse('$conexion/articulos/Articulo/$id'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+      );
+      articulo = ArticulosModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        codigoBarras: '',
+        precio: 0,
+        materia: false,
+        mensaje: res.body,
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          articulo = ArticulosModel(
+            id: item['id'],
+            nombre: item['Nombre'],
+            tipo: item['Tipo'],
+            cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+            area: item['Area'],
+            codigoBarras: item['CodigoBarras'],
+            precio: item['Precio'].toDouble(),
+            materia: item['MateriaPrima'],
+            mensaje: '',
+          );
+        }
+      }
+    } on TimeoutException catch (e) {
+      articulo = ArticulosModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        codigoBarras: '',
+        precio: 0,
+        materia: false,
+        mensaje: '${e.message}',
+      );
+    } on SocketException catch (e) {
+      articulo = ArticulosModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        codigoBarras: '',
+        precio: 0,
+        materia: false,
+        mensaje: e.message,
+      );
+    } on http.ClientException catch (e) {
+      articulo = ArticulosModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        codigoBarras: '',
+        precio: 0,
+        materia: false,
+        mensaje: e.message,
+      );
+    } on Error catch (e) {
+      articulo = ArticulosModel(
+        id: 0,
+        nombre: '',
+        tipo: '',
+        cantidadPorUnidad: 0,
+        area: '',
+        codigoBarras: '',
+        precio: 0,
+        materia: false,
+        mensaje: '$e',
+      );
+    }
+    return articulo;
   }
 
   static Future<String> addArticulo(
@@ -148,14 +256,15 @@ class ArticulosModel {
     double cantidad,
     String barras,
     double precio,
+    bool materia,
   ) async {
     late String articulosFuture;
     try {
       final res = await http.post(
-        Uri.parse("${LocalStorage.local('conexion')}/articulos"),
+        Uri.parse('${LocalStorage.local('conexion')}/articulos'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
           'nombre': nombre,
@@ -164,23 +273,24 @@ class ArticulosModel {
           'cantidad': cantidad,
           'barras': barras,
           'precio': precio,
+          'materia': materia,
         }),
       );
       articulosFuture = res.body;
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          articulosFuture = item["Nombre"];
+          articulosFuture = item['Nombre'];
         }
       }
     } on TimeoutException catch (e) {
-      articulosFuture = "Error: ${e.message}";
+      articulosFuture = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      articulosFuture = "Error: ${e.message}";
+      articulosFuture = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      articulosFuture = "Error: ${e.message}";
+      articulosFuture = 'Error: ${e.message}';
     } on Error catch (e) {
-      articulosFuture = "Error: $e";
+      articulosFuture = 'Error: $e';
     }
     return articulosFuture;
   }
@@ -193,10 +303,10 @@ class ArticulosModel {
     late String articulosFuture;
     try {
       final res = await http.put(
-        Uri.parse("${LocalStorage.local('conexion')}/articulos/$id/$columna"),
+        Uri.parse('${LocalStorage.local('conexion')}/articulos/$id/$columna'),
         headers: {
-          "Accept": "application/json",
-          "content-type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({'dato': dato}),
       );
@@ -204,17 +314,17 @@ class ArticulosModel {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          articulosFuture = item["Nombre"];
+          articulosFuture = item['Nombre'];
         }
       }
     } on TimeoutException catch (e) {
-      articulosFuture = "Error: ${e.message}";
+      articulosFuture = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      articulosFuture = "Error: ${e.message}";
+      articulosFuture = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      articulosFuture = "Error: ${e.message}";
+      articulosFuture = 'Error: ${e.message}';
     } on Error catch (e) {
-      articulosFuture = "Error: $e";
+      articulosFuture = 'Error: $e';
     }
     return articulosFuture;
   }

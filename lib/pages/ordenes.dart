@@ -28,12 +28,12 @@ class _OrdenesState extends State<Ordenes> {
   ];
   List canCubVenOrg = [];
   TextEditingController controller = TextEditingController();
-  String cerrarGuardar = "",
-      filtro = "id",
-      accion = "",
-      titulo = "",
-      btnNo = "",
-      btnSi = "";
+  String cerrarGuardar = '',
+      filtro = 'id',
+      accion = '',
+      titulo = '',
+      btnNo = '',
+      btnSi = '';
   int id = 0;
   List<Widget> wid = [];
 
@@ -53,29 +53,54 @@ class _OrdenesState extends State<Ordenes> {
   Future<List<OrdenModel>> getOrdenes() async =>
       await OrdenModel.getAllOrdenes(filtro);
 
-  void cambiarEstado(String accion, String estado) {
-    String mensaje = "La orden esta finalizada.";
-    if (estado == "En proceso") {
-      wid = [];
-      titulo = "¿Segur@ que quieres $accion la orden?";
-      btnNo = "No, volver";
-      btnSi = "Si, $accion";
-      this.accion = accion;
-      mensaje = "";
-      context.read<Ventanas>().emergente(true);
-    } else if (estado == "Cancelado" || estado == "Denegado") {
-      mensaje = "La orden ya esta cencelada.";
+  Future<void> getOrdenInfo(BuildContext ctx, int id) async {
+    ctx.read<Carga>().cargaBool(true);
+    OrdenModel orden = await OrdenModel.getOrden(id);
+    if (orden.mensaje.isEmpty) {
+      Textos.limpiarLista();
+      if (ctx.mounted) {
+        canCubVenOrg.clear();
+        ctx.read<VenDatos>().setDatos(
+          orden.idProductos,
+          orden.articulos,
+          orden.cantidades,
+          orden.areas,
+          orden.tipos,
+          orden.cantidadesCubiertas,
+          orden.comentariosProveedor,
+          orden.comentariosTienda,
+          orden.confirmacion,
+          '${orden.id}',
+          orden.remitente,
+          orden.estado,
+          orden.ultimaModificacion,
+          orden.locacion,
+        );
+        Textos.crearLista(orden.articulos.length, Color(0xFF8A03A9));
+        canCubVenOrg.addAll(ctx.read<VenDatos>().canCubVenLista());
+        _cerrarGuardar(ctx.read<VenDatos>().canCubVenLista());
+        ctx.read<Ventanas>().tabla(true);
+      }
+    } else {
+      Textos.toast(orden.mensaje, true);
     }
-    if (mensaje.isNotEmpty) {
-      Textos.toast(mensaje, false);
-    }
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+  }
+
+  void cambiarEstado(String accion) {
+    wid = [];
+    titulo = '¿Segur@ que quieres $accion la orden?';
+    btnNo = 'No, volver';
+    btnSi = 'Si, $accion';
+    this.accion = accion;
+    context.read<Ventanas>().emergente(true);
   }
 
   void _cerrarGuardar(List lista) {
-    cerrarGuardar = "Cerrar";
+    cerrarGuardar = 'Cerrar';
     for (int i = 0; i < canCubVenOrg.length; i++) {
       if (lista[i] != canCubVenOrg[i]) {
-        cerrarGuardar = "Guardar";
+        cerrarGuardar = 'Guardar';
       }
     }
   }
@@ -86,23 +111,23 @@ class _OrdenesState extends State<Ordenes> {
     String comTienda,
     String comProv,
   ) {
-    titulo = "Comentarios de $nombre";
-    btnNo = "Volver";
-    btnSi = "Guardar";
-    accion = "confirmar";
+    titulo = 'Comentarios de $nombre';
+    btnNo = 'Volver';
+    btnSi = 'Guardar';
+    accion = 'confirmar';
     wid = [
-      Textos.textoTilulo("Comentarios de la tienda:", 20),
+      Textos.textoTilulo('Comentarios de la tienda:', 20),
       Textos.textoGeneral(comTienda, 20, true, true, 5),
     ];
-    if (estado == "En proceso") {
-      if (comProv == "Sin comentarios") {
-        comProv = "";
+    if (estado == 'En proceso') {
+      if (comProv == 'Sin comentarios') {
+        comProv = '';
       }
       wid.add(
         CampoTexto.inputTexto(
           MediaQuery.sizeOf(context).width,
           Icons.message_rounded,
-          "Comentarios de la del almacenista",
+          'Comentarios de la del almacenista',
           controller,
           Color(0x00000000),
           true,
@@ -112,7 +137,7 @@ class _OrdenesState extends State<Ordenes> {
       );
     } else {
       wid.addAll([
-        Textos.textoTilulo("Comentarios del proveedor:", 20),
+        Textos.textoTilulo('Comentarios del proveedor:', 20),
         Textos.textoGeneral(comProv, 20, true, true, 5),
       ]);
     }
@@ -120,38 +145,33 @@ class _OrdenesState extends State<Ordenes> {
     context.read<Ventanas>().emergente(true);
   }
 
-  IconData iconoConfirm(bool valor) {
-    IconData icono = Icons.check_box_outline_blank_rounded;
-    if (valor) {
-      icono = Icons.check_box_rounded;
-    }
-    return icono;
-  }
-
   Future<String> guardarDatos(BuildContext ctx) async {
-    String columna = "Estado";
+    String columna = 'Estado';
     String datos = accion;
     List listaDatos = [];
     switch (datos) {
-      case ("guardar"):
-        columna = "CantidadesCubiertas";
-        datos = "${ctx.read<VenDatos>().canCubVenLista()}"
-            .replaceAll("[", "{")
-            .replaceAll("]", "}");
+      case ('guardar'):
+        columna = 'CantidadesCubiertas';
+        datos = '${ctx.read<VenDatos>().canCubVenLista()}'
+            .replaceAll('[', '{')
+            .replaceAll(']', '}');
         break;
-      case ("confirmar"):
+      case ('entregar'):
+        datos = 'Entregado';
+        break;
+      case ('confirmar'):
         if (controller.text.isNotEmpty &&
             controller.text != ctx.read<VenDatos>().comProv(id)) {
-          columna = "ComentariosProveedor";
+          columna = 'ComentariosProveedor';
           ctx.read<VenDatos>().setComProv(id, controller.text);
           for (int i = 0; i < ctx.read<VenDatos>().length(); i++) {
             listaDatos.add(ctx.read<VenDatos>().comProv(i));
           }
-          datos = "$listaDatos".replaceAll("[", "{").replaceAll("]", "}");
+          datos = '$listaDatos'.replaceAll('[', '{').replaceAll(']', '}');
         }
         break;
     }
-    if (datos != "confirmar") {
+    if (datos != 'confirmar') {
       datos = await OrdenModel.editarOrden(
         ctx.read<VenDatos>().idVen(),
         columna,
@@ -161,11 +181,11 @@ class _OrdenesState extends State<Ordenes> {
         ctx.read<Tablas>().datos(await OrdenModel.getAllOrdenes(filtro));
       }
     } else {
-      datos = "No hay cambios";
+      datos = 'No hay cambios';
     }
-    if ((accion == "guardar" ||
-            (accion == "confirmar" && datos != "confirmar")) &&
-        datos.split(": ")[0] != "Error") {
+    if ((accion == 'guardar' ||
+            (accion == 'confirmar' && datos != 'confirmar')) &&
+        datos.split(': ')[0] != 'Error') {
       canCubVenOrg.clear();
       if (ctx.mounted) {
         for (int i = 0; i < ctx.read<VenDatos>().canCubVenLista().length; i++) {
@@ -174,8 +194,8 @@ class _OrdenesState extends State<Ordenes> {
         _cerrarGuardar(ctx.read<VenDatos>().canCubVenLista());
       }
     }
-    if (datos.split(": ")[0] == "Error") {
-      datos = datos.split(": ")[1];
+    if (datos.split(': ')[0] == 'Error') {
+      datos = datos.split(': ')[1];
     }
     return datos;
   }
@@ -189,16 +209,16 @@ class _OrdenesState extends State<Ordenes> {
     }
     switch (valor) {
       case (0):
-        filtro = "id";
+        filtro = 'id';
         break;
       case (1):
-        filtro = "Estado";
+        filtro = 'Estado';
         break;
       case (2):
-        filtro = "Remitente";
+        filtro = 'Remitente';
         break;
       case (3):
-        filtro = "Destino";
+        filtro = 'Locacion';
         break;
     }
     context.read<Tablas>().datos(await getOrdenes());
@@ -211,7 +231,7 @@ class _OrdenesState extends State<Ordenes> {
         Consumer<Carga>(
           builder: (context, carga, child) {
             return Botones.icoCirMor(
-              "Ver artículos",
+              'Ver artículos',
               Icons.list,
               false,
               () => {
@@ -232,7 +252,7 @@ class _OrdenesState extends State<Ordenes> {
         Consumer<Carga>(
           builder: (context, carga, child) {
             return Botones.icoCirMor(
-              "Ver almacen",
+              'Ver almacen',
               Icons.inventory_rounded,
               true,
               () => {
@@ -267,12 +287,12 @@ class _OrdenesState extends State<Ordenes> {
                           MediaQuery.sizeOf(context).width,
                           [.05, .125, .15, .2, .2, .25],
                           [
-                            "id",
-                            "Art. ordenados",
-                            "Estado",
-                            "Remitente",
-                            "Destino",
-                            "Última modificación",
+                            'id',
+                            'Art. ordenados',
+                            'Estado',
+                            'Remitente',
+                            'Locacion',
+                            'Última modificación',
                           ],
                         ),
                         SizedBox(
@@ -282,8 +302,8 @@ class _OrdenesState extends State<Ordenes> {
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
                                 listaPrincipal,
-                                "Todo está en orden, no hay órdenes entrantes.",
-                                "No se recuperaron órdenes.",
+                                'Todo está en orden, no hay órdenes entrantes.',
+                                'No se recuperaron órdenes.',
                                 () => getOrdenes(),
                                 accionRefresh: () async =>
                                     tablas.datos(await getOrdenes()),
@@ -303,25 +323,26 @@ class _OrdenesState extends State<Ordenes> {
                   MediaQuery.of(context).size.height,
                   MediaQuery.of(context).size.width,
                   [
-                    "Id de la orden: ${venDatos.idVen()}",
-                    "Estado: ${venDatos.estVen()}",
+                    'Id de la orden: ${venDatos.idVen()}',
+                    'Estado: ${venDatos.estVen()}',
                   ],
                   [
-                    "Destino: ${venDatos.desVen()}",
-                    "Remitente: ${venDatos.remVen()}",
-                    "Última modificación: ${venDatos.modVen()}",
+                    'Locación: ${venDatos.desVen()}',
+                    'Remitente: ${venDatos.remVen()}',
+                    'Última modificación: ${venDatos.modVen()}',
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.25, .1, .125, .1, .165, .055, .055],
+                    [.1, .25, .1, .125, .1, .155, .045, .045],
                     [
-                      "Nombre del articulo",
-                      "Tipo",
-                      "Área",
-                      "Cant. orden",
-                      "Cant. cubierta",
-                      "💬",
-                      "☑️",
+                      'id',
+                      'Nombre del articulo',
+                      'Tipo',
+                      'Área',
+                      'Cant. orden',
+                      'Cant. cubierta',
+                      '💬',
+                      '☑️',
                     ],
                   ),
                   ListView.separated(
@@ -339,90 +360,19 @@ class _OrdenesState extends State<Ordenes> {
                           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
                           child: Tablas.barraDatos(
                             MediaQuery.sizeOf(context).width,
-                            [.25, .1, .125, .1, .285],
+                            [.1, .25, .1, .125, .1, .245],
                             [
-                              (venDatos.artVen(index)),
+                              '${venDatos.idArt(index)}',
+                              venDatos.artVen(index),
                               venDatos.tipVen(index),
                               venDatos.areVen(index),
-                              "${venDatos.canVen(index)}",
-                              "",
+                              '${venDatos.canVen(index)}',
+                              '',
                             ],
                             [],
                             1,
                             false,
-                            extraWid: Consumer<Textos>(
-                              builder: (context, textos, child) {
-                                return Row(
-                                  children: [
-                                    Botones.botonesSumaResta(
-                                      venDatos.artVen(index),
-                                      venDatos.canCubVen(index),
-                                      Textos.getColor(index),
-                                      () => {
-                                        if (venDatos.estVen() == "En proceso")
-                                          {
-                                            if (venDatos.canCubVen(index) > 0)
-                                              {
-                                                context
-                                                    .read<VenDatos>()
-                                                    .canCubVenSub(index),
-                                                _cerrarGuardar(
-                                                  context
-                                                      .read<VenDatos>()
-                                                      .canCubVenLista(),
-                                                ),
-                                              }
-                                            else
-                                              {
-                                                textos.setColor(
-                                                  index,
-                                                  Color(0xFFFF0000),
-                                                ),
-                                              },
-                                          },
-                                      },
-                                      () => {
-                                        if (venDatos.canCubVen(index) <
-                                                venDatos.canVen(index) &&
-                                            venDatos.estVen() == "En proceso")
-                                          {
-                                            textos.setColor(
-                                              index,
-                                              Color(0xFF8A03A9),
-                                            ),
-                                            venDatos.canCubVenAdd(index),
-                                            _cerrarGuardar(
-                                              venDatos.canCubVenLista(),
-                                            ),
-                                          },
-                                      },
-                                    ),
-                                    Botones.btnRctMor(
-                                      "Ver comentarios",
-                                      20,
-                                      Icons.comment_rounded,
-                                      false,
-                                      () => {
-                                        id = index,
-                                        verComentarios(
-                                          venDatos.artVen(index),
-                                          venDatos.estVen(),
-                                          venDatos.comTienda(index),
-                                          venDatos.comProv(index),
-                                        ),
-                                      },
-                                    ),
-                                    Botones.btnRctMor(
-                                      "Confirmar",
-                                      20,
-                                      iconoConfirm(venDatos.comfProd(index)),
-                                      false,
-                                      () => {},
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
+                            extraWid: botones(index),
                           ),
                         ),
                       );
@@ -433,20 +383,22 @@ class _OrdenesState extends State<Ordenes> {
                       cerrarGuardar,
                       () => {
                         context.read<Ventanas>().tabla(
-                          cerrarGuardar != "Cerrar",
+                          cerrarGuardar != 'Cerrar',
                         ),
-                        if (cerrarGuardar != "Cerrar")
-                          {cambiarEstado("guardar", venDatos.estVen())},
+                        if (cerrarGuardar != 'Cerrar')
+                          {cambiarEstado('guardar')},
                       },
                     ),
-                    Botones.btnCirRos(
-                      "Denegar",
-                      () => {cambiarEstado("denegar", venDatos.estVen())},
-                    ),
-                    Botones.btnCirRos(
-                      "Entregar",
-                      () => {cambiarEstado("entregar", venDatos.estVen())},
-                    ),
+                    if (venDatos.estVen() == 'En proceso')
+                      Botones.btnCirRos(
+                        'Denegar',
+                        () => {cambiarEstado('denegar')},
+                      ),
+                    if (venDatos.estVen() == 'En proceso')
+                      Botones.btnCirRos(
+                        'Entregar',
+                        () => {cambiarEstado('entregar')},
+                      ),
                   ],
                 );
               },
@@ -460,13 +412,10 @@ class _OrdenesState extends State<Ordenes> {
                   () => ventana.emergente(false),
                   () async => {
                     ventana.emergente(false),
-                    if (venDatos.estVen() == "En proceso")
-                      {
-                        carga.cargaBool(true),
-                        Textos.toast(await guardarDatos(context), false),
-                        carga.cargaBool(false),
-                      },
-                    ventana.tabla(accion == "guardar" || accion == "confirmar"),
+                    carga.cargaBool(true),
+                    Textos.toast(await guardarDatos(context), false),
+                    carga.cargaBool(false),
+                    ventana.tabla(accion == 'guardar' || accion == 'confirmar'),
                   },
                   widget: Column(children: wid),
                 );
@@ -486,14 +435,14 @@ class _OrdenesState extends State<Ordenes> {
         builder: (context, tablas, carga, child) {
           List<Widget> filtroList = [
             Botones.btnRctMor(
-              "Abrir menú",
+              'Abrir menú',
               35,
               Icons.menu_rounded,
               false,
               () => Scaffold.of(context).openDrawer(),
             ),
           ];
-          List<String> txt = ["id", "Estado", "Remitente", "Destino"];
+          List<String> txt = ['id', 'Estado', 'Remitente', 'Locación'];
           List<IconData> icono = [
             Icons.numbers_rounded,
             Icons.query_builder_rounded,
@@ -506,9 +455,7 @@ class _OrdenesState extends State<Ordenes> {
                 txt[i],
                 icono[i],
                 colores[i],
-                () async => {
-                  if (filtro != txt[i]) {filtroTexto(i)},
-                },
+                () async => {if (filtro != txt[i]) filtroTexto(i)},
               ),
             );
           }
@@ -516,6 +463,83 @@ class _OrdenesState extends State<Ordenes> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: filtroList,
+          );
+        },
+      ),
+    );
+  }
+
+  SizedBox botones(int index) {
+    return SizedBox(
+      width: MediaQuery.sizeOf(context).width * .245,
+      child: Consumer2<Textos, VenDatos>(
+        builder: (context, textos, venDatos, child) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width * .155,
+                child: Botones.botonesSumaResta(
+                  venDatos.artVen(index),
+                  venDatos.canCubVen(index),
+                  Textos.getColor(index),
+                  () => {
+                    if (venDatos.estVen() == 'En proceso')
+                      {
+                        if (venDatos.canCubVen(index) > 0)
+                          {
+                            context.read<VenDatos>().canCubVenSub(index),
+                            _cerrarGuardar(
+                              context.read<VenDatos>().canCubVenLista(),
+                            ),
+                          }
+                        else
+                          {textos.setColor(index, Color(0xFFFF0000))},
+                      },
+                  },
+                  () => {
+                    if (venDatos.canCubVen(index) < venDatos.canVen(index) &&
+                        venDatos.estVen() == 'En proceso')
+                      {
+                        textos.setColor(index, Color(0xFF8A03A9)),
+                        venDatos.canCubVenAdd(index),
+                        _cerrarGuardar(venDatos.canCubVenLista()),
+                      },
+                  },
+                ),
+              ),
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width * .045,
+                child: Botones.btnRctMor(
+                  'Ver comentarios',
+                  20,
+                  Icons.comment_rounded,
+                  false,
+                  () => {
+                    id = index,
+                    verComentarios(
+                      venDatos.artVen(index),
+                      venDatos.estVen(),
+                      venDatos.comTienda(index),
+                      venDatos.comProv(index),
+                    ),
+                  },
+                ),
+              ),
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width * .045,
+                child: Botones.btnRctMor(
+                  'Confirmar',
+                  20,
+                  venDatos.comfProd(index)
+                      ? Icons.check_box_rounded
+                      : Icons.check_box_outline_blank_rounded,
+                  false,
+                  () => {},
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -546,43 +570,17 @@ class _OrdenesState extends State<Ordenes> {
                 MediaQuery.sizeOf(context).width,
                 [.05, .125, .175, .2, .2, .25],
                 [
-                  "${lista[index].id}",
-                  "${lista[index].articulos.length}",
+                  '${lista[index].id}',
+                  '${lista[index].cantArticulos}',
                   lista[index].estado,
                   lista[index].remitente,
-                  lista[index].destino,
+                  lista[index].locacion,
                   lista[index].ultimaModificacion,
                 ],
                 coloresLista,
                 1,
                 true,
-                extra: () => {
-                  Textos.limpiarLista(),
-                  canCubVenOrg.clear(),
-                  venDatos.setDatos(
-                    lista[index].articulos,
-                    lista[index].cantidades,
-                    lista[index].areas,
-                    lista[index].tipos,
-                    lista[index].cantidadesCubiertas,
-                    lista[index].comentariosProveedor,
-                    lista[index].comentariosTienda,
-                    lista[index].confirmacion,
-                    "${lista[index].id}",
-                    lista[index].remitente,
-                    lista[index].estado,
-                    lista[index].ultimaModificacion,
-                    lista[index].destino,
-                  ),
-                  Textos.crearLista(
-                    lista[index].articulos.length,
-                    Color(0xFF8A03A9),
-                  ),
-                  for (int i = 0; i < lista[index].articulos.length; i++)
-                    {canCubVenOrg.add(venDatos.canCubVen(i))},
-                  _cerrarGuardar(venDatos.canCubVenLista()),
-                  ventanas.tabla(true),
-                },
+                extra: () async => await getOrdenInfo(context, lista[index].id),
               ),
             );
           },

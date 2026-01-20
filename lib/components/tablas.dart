@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
@@ -51,13 +52,27 @@ class Tablas with ChangeNotifier {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
             _datos = snapshot.data;
-            wid = Textos.textoError(textoListaVacia);
+            wid = Center(child: Textos.textoError(textoListaVacia));
             if (_datos.isNotEmpty) {
-              wid = Textos.textoError(_datos[0].mensaje);
+              wid = Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Textos.textoError(_datos[0].mensaje),
+                  Botones.icoCirMor(
+                    'Volver a cargar',
+                    Icons.refresh_rounded,
+                    false,
+                    () async => await accionRefresh!(),
+                    () => {},
+                    true,
+                  ),
+                ],
+              );
               if (CampoTexto.busquedaTexto.text.isNotEmpty) {
-                wid = Textos.textoError(errorTexto);
+                wid = Center(child: Textos.textoError(errorTexto));
               }
-              if (_datos[0].mensaje == "") {
+              if (_datos[0].mensaje == '') {
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   context.read<Carga>().valido(true);
                 });
@@ -65,12 +80,26 @@ class Tablas with ChangeNotifier {
               }
             }
           } else if (snapshot.hasError) {
-            wid = Textos.textoError("Error:\n${snapshot.error}");
+            wid = Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Textos.textoError('Error:\n${snapshot.error}'),
+                Botones.icoCirMor(
+                  'Volver a cargar',
+                  Icons.refresh_rounded,
+                  false,
+                  () async => await accionRefresh!(),
+                  () => {},
+                  true,
+                ),
+              ],
+            );
           }
         }
         return RefreshIndicator(
           child: wid,
-          onRefresh: () async => accionRefresh!(),
+          onRefresh: () async => await accionRefresh!(),
         );
       },
     );
@@ -132,10 +161,9 @@ class Tablas with ChangeNotifier {
           );
         }
       }
-      if (i != textos.length - 1) {
-        lista.add(_divider());
-      }
+      lista.add(_divider());
     }
+    lista.removeLast();
     if (boton) {
       return TextButton(
         onPressed: () => extra!(),

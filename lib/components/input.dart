@@ -160,37 +160,37 @@ class CampoTexto with ChangeNotifier {
           onSelected: (Filtros filtro) => {
             if (filtro != seleccionFiltro) {seleccionFiltro = filtro, accion()},
           },
-          tooltip: "Filtros",
+          tooltip: 'Filtros',
           itemBuilder: (BuildContext context) => <PopupMenuEntry<Filtros>>[
             PopupMenuItem<Filtros>(
               value: Filtros.id,
-              child: Textos.textoGeneral("ID", 17.5, true, true, 1),
+              child: Textos.textoGeneral('ID', 17.5, true, true, 1),
             ),
             PopupMenuItem<Filtros>(
               value: Filtros.nombre,
-              child: Textos.textoGeneral("Nombre", 17.5, true, true, 1),
+              child: Textos.textoGeneral('Nombre', 17.5, true, true, 1),
             ),
             PopupMenuItem<Filtros>(
               value: Filtros.tipo,
-              child: Textos.textoGeneral("Tipo", 17.5, true, true, 1),
+              child: Textos.textoGeneral('Tipo', 17.5, true, true, 1),
             ),
             PopupMenuItem<Filtros>(
               value: Filtros.area,
-              child: Textos.textoGeneral("Área", 17.5, true, true, 1),
+              child: Textos.textoGeneral('Área', 17.5, true, true, 1),
             ),
             if (unidades)
               PopupMenuItem<Filtros>(
                 value: Filtros.unidades,
-                child: Textos.textoGeneral("Unidades", 17.5, true, true, 1),
+                child: Textos.textoGeneral('Unidades', 17.5, true, true, 1),
               ),
             if (fecha)
               PopupMenuItem<Filtros>(
                 value: Filtros.fecha,
-                child: Textos.textoGeneral("Fecha", 17.5, true, true, 1),
+                child: Textos.textoGeneral('Fecha', 17.5, true, true, 1),
               ),
           ],
         ),
-        hintText: "Buscar",
+        hintText: 'Buscar',
         hintStyle: TextStyle(color: Color(0xFFF6AFCF)),
       ),
     );
@@ -200,7 +200,7 @@ class CampoTexto with ChangeNotifier {
     IconButton iconb;
     if (busquedaTexto.text.isEmpty) {
       iconb = IconButton(
-        tooltip: "Buscar",
+        tooltip: 'Buscar',
         onPressed: () => {
           if (busquedaTexto.text.isEmpty)
             {
@@ -218,7 +218,7 @@ class CampoTexto with ChangeNotifier {
       );
     } else {
       iconb = IconButton(
-        tooltip: "Limpiar busqueda",
+        tooltip: 'Limpiar busqueda',
         onPressed: () => {
           FocusManager.instance.primaryFocus?.unfocus(),
           busquedaTexto.clear(),
@@ -234,32 +234,29 @@ class CampoTexto with ChangeNotifier {
     busquedaTexto.text = busqueda;
   }
 
-  static String filtroTexto(bool idProducto) {
+  static String filtroTexto() {
     String filtro;
     switch (seleccionFiltro) {
       case (Filtros.id):
-        filtro = "id";
-        if (idProducto) {
-          filtro = "idProducto";
-        }
+        filtro = 'id';
         break;
       case (Filtros.nombre):
-        filtro = "Nombre";
+        filtro = 'Nombre';
         break;
       case (Filtros.unidades):
-        filtro = "Unidades";
+        filtro = 'Unidades';
         break;
       case (Filtros.tipo):
-        filtro = "Tipo";
+        filtro = 'Tipo';
         break;
       case (Filtros.area):
-        filtro = "Area";
+        filtro = 'Area';
         break;
       case (Filtros.fecha):
-        filtro = "Fecha";
+        filtro = 'Fecha';
         break;
       default:
-        filtro = "id";
+        filtro = 'id';
         break;
     }
     return filtro;

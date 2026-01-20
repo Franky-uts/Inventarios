@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class VenDatos with ChangeNotifier {
+  static List _idArt = [];
   static List _artVen = [];
   static List _canVen = [];
   static List _areVen = [];
@@ -9,13 +10,14 @@ class VenDatos with ChangeNotifier {
   static List _comProv = [];
   static List _comTienda = [];
   static List _comfProd = [];
-  static String _idVen = "";
-  static String _remVen = "";
-  static String _estVen = "";
-  static String _modVen = "";
-  static String _desVen = "";
+  static String _idVen = '';
+  static String _remVen = '';
+  static String _estVen = '';
+  static String _modVen = '';
+  static String _locVen = '';
 
   void setDatos(
+    List idArt,
     List artVen,
     List canVen,
     List areVen,
@@ -28,8 +30,9 @@ class VenDatos with ChangeNotifier {
     String remVen,
     String estVen,
     String modVen,
-    String desVen,
+    String locVen,
   ) {
+    _idArt = idArt;
     _artVen = artVen;
     _canVen = canVen;
     _areVen = areVen;
@@ -42,12 +45,16 @@ class VenDatos with ChangeNotifier {
     _remVen = remVen;
     _estVen = estVen;
     _modVen = modVen;
-    _desVen = desVen;
+    _locVen = locVen;
     notifyListeners();
   }
 
   int length() {
     return _artVen.length;
+  }
+
+  int idArt(int i) {
+    return _idArt[i];
   }
 
   String artVen(int i) {
@@ -136,6 +143,6 @@ class VenDatos with ChangeNotifier {
   }
 
   String desVen() {
-    return _desVen;
+    return _locVen;
   }
 }
