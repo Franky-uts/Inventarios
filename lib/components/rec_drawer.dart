@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:excel/excel.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
@@ -103,6 +104,7 @@ class RecDrawer {
     List<ProductoModel> productos = await ProductoModel.getProductos('id', '');
     var excel = Excel.createExcel();
     Sheet sheetObject = excel['Inventario'];
+    excel.delete('Sheet1');
     List<String> headers = [
       'id',
       'Nombre',
@@ -118,11 +120,7 @@ class RecDrawer {
       'Ultima Modificación',
     ];
     for (int i = 0; i < headers.length; i++) {
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-          .value = TextCellValue(
-        headers[i],
-      );
+      establecerCelda(sheetObject, i, 0, TextCellValue(headers[i]));
     }
     for (int i = 0; i < productos.length; i++) {
       ProductoModel item = productos[i];
@@ -130,98 +128,63 @@ class RecDrawer {
       if (item.perdidaCantidad.isNotEmpty) {
         perdidas = '${item.perdidaCantidad[0]} ${item.perdidaRazones[0]}';
         if (item.perdidaCantidad.length > 1) {
-          for (int i = 1; i < item.perdidaCantidad.length; i++) {
+          for (int j = 1; j < item.perdidaCantidad.length; j++) {
             perdidas =
-                '$perdidas, \n${item.perdidaCantidad[i]} ${item.perdidaRazones[i]}';
+                '$perdidas, ${item.perdidaCantidad[j]} ${item.perdidaRazones[j]}';
           }
         }
       }
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: i + 1))
-          .value = IntCellValue(
-        item.id,
+      establecerCelda(sheetObject, 0, i + 1, IntCellValue(item.id));
+      establecerCelda(sheetObject, 1, i + 1, TextCellValue(item.nombre));
+      establecerCelda(sheetObject, 2, i + 1, TextCellValue(item.tipo));
+      establecerCelda(sheetObject, 3, i + 1, TextCellValue(item.area));
+      establecerCelda(sheetObject, 4, i + 1, DoubleCellValue(item.unidades));
+      establecerCelda(
+        sheetObject,
+        5,
+        i + 1,
+        DoubleCellValue(item.cantidadPorUnidad),
       );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: i + 1))
-          .value = TextCellValue(
-        item.nombre,
+      establecerCelda(
+        sheetObject,
+        6,
+        i + 1,
+        DoubleCellValue((item.unidades * item.cantidadPorUnidad)),
       );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1))
-          .value = TextCellValue(
-        item.tipo,
-      );
-
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1))
-          .value = TextCellValue(
-        item.area,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1))
-          .value = DoubleCellValue(
-        item.unidades,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1))
-          .value = DoubleCellValue(
-        item.cantidadPorUnidad,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1))
-          .value = DoubleCellValue(
-        (item.unidades * item.cantidadPorUnidad),
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1))
-          .value = IntCellValue(
-        item.limiteProd,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: i + 1))
-          .value = DoubleCellValue(
-        item.entrada,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: i + 1))
-          .value = DoubleCellValue(
-        item.salida,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 10, rowIndex: i + 1))
-          .value = TextCellValue(
-        perdidas,
-      );
-      sheetObject
-          .cell(CellIndex.indexByColumnRow(columnIndex: 11, rowIndex: i + 1))
-          .value = TextCellValue(
-        '${item.ultimaModificacion}: ${item.ultimaModificacion}',
+      establecerCelda(sheetObject, 7, i + 1, IntCellValue(item.limiteProd));
+      establecerCelda(sheetObject, 8, i + 1, DoubleCellValue(item.entrada));
+      establecerCelda(sheetObject, 9, i + 1, DoubleCellValue(item.salida));
+      establecerCelda(sheetObject, 10, i + 1, TextCellValue(perdidas));
+      establecerCelda(
+        sheetObject,
+        11,
+        i + 1,
+        TextCellValue('${item.ultimaModificacion}: ${item.ultimaModificacion}'),
       );
     }
-    var status = await Permission.manageExternalStorage.request();
-    if (status.isDenied) {
-      await Permission.manageExternalStorage.request();
-    }
-    if (status.isPermanentlyDenied) {
-      openAppSettings();
-    }
-    String mensaje = 'Se aborto el proceso';
-    if (status.isGranted) {
-      final path = '/storage/emulated/0/Download/Inventarios';
-      String fecha =
-          '${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}';
-      List<int>? fileBytes = excel.save();
-      if (fileBytes != null) {
-        File('$path/$fecha.xlsx')
-          ..createSync(recursive: true)
-          ..writeAsBytesSync(fileBytes, flush: true);
-        mensaje = 'Archivo guardado en: $path/$fecha.xlsx';
+    String mensaje = "Se canceló el proceso";
+    String fecha =
+        '${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}';
+    if (kIsWeb) {
+      List<int>? fileBytes = excel.save(fileName: '$fecha.xlsx');
+      if (fileBytes != null) mensaje = 'Descargando el archivo';
+    } else {
+      var status = await Permission.manageExternalStorage.request();
+      if (status.isDenied) await Permission.manageExternalStorage.request();
+      if (status.isPermanentlyDenied) openAppSettings();
+      if (status.isGranted) {
+        final path = '/storage/emulated/0/Download/Inventarios';
+        List<int>? fileBytes = excel.save();
+        if (fileBytes != null) {
+          File('$path/$fecha.xlsx')
+            ..createSync(recursive: true)
+            ..writeAsBytesSync(fileBytes, flush: true);
+          mensaje = 'Archivo guardado en: $path/$fecha.xlsx';
+        }
       }
     }
     Textos.toast(mensaje, true);
-    if (context.mounted) {
-      context.read<Carga>().cargaBool(false);
-    }
+    if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
   static Future<String> historialExcel(
@@ -229,18 +192,18 @@ class RecDrawer {
     String fechaInicial,
     String fechaFinal,
   ) async {
-    context.read<Carga>().cargaBool(true);
-    Navigator.of(context).pop();
     List<HistorialModel> historial = await HistorialModel.getAllHistorial(
       fechaInicial,
       fechaFinal,
     );
-    String mensaje = 'Error:No hay registros en esa fecha.';
-    if (historial.isNotEmpty && historial.last.mensaje.isEmpty) {
+    String mensaje = 'Error: No hay registros en esa fecha.';
+    if (historial.isNotEmpty || historial.last.mensaje.isEmpty) {
       var excel = Excel.createExcel();
-      int contador = 1;
+      int contador = 0;
       Sheet sheetObject = excel['Historial'];
+      excel.delete('Sheet1');
       List<String> headers = [
+        'id',
         'Nombre',
         'Fecha',
         'Unidades',
@@ -252,101 +215,123 @@ class RecDrawer {
         'Detalle de perdidas',
       ];
       for (int i = 0; i < headers.length; i++) {
-        sheetObject
-            .cell(CellIndex.indexByColumnRow(columnIndex: i, rowIndex: 0))
-            .value = TextCellValue(
-          headers[i],
-        );
+        establecerCelda(sheetObject, i, 0, TextCellValue(headers[i]));
       }
       for (int i = 0; i < historial.length; i++) {
-        int cantidad = contador + historial[i].unidades.length;
+        contador += 1;
+        int cantidad = contador + historial[i].unidades.length - 1;
         HistorialModel item = historial[i];
         String perdidas = 'No hay perdidas registradas';
         if (item.cantidades.isNotEmpty) {
-          perdidas = '${item.cantidades[0]} ${item.razones[0]}';
+          perdidas = '${item.cantidades[0]}: ${item.razones[0]}';
           if (item.cantidades.length > 1) {
             for (int j = 1; j < item.razones.length; j++) {
-              perdidas =
-                  '$perdidas, \n${item.cantidades[j]} ${item.razones[j]}';
+              perdidas = '$perdidas, ${item.cantidades[j]}: ${item.razones[j]}';
             }
           }
         }
+        establecerCelda(
+          sheetObject,
+          0,
+          contador,
+          IntCellValue(item.idProducto),
+        );
+        establecerCelda(sheetObject, 1, contador, TextCellValue(item.nombre));
+        establecerCelda(sheetObject, 2, contador, TextCellValue(item.fecha));
+        establecerCelda(sheetObject, 7, contador, TextCellValue(perdidas));
         sheetObject.merge(
           CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: contador),
           CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: cantidad),
-          customValue: TextCellValue(item.nombre),
         );
         sheetObject.merge(
           CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: contador),
           CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: cantidad),
-          customValue: TextCellValue(item.fecha),
         );
-        for (int j = 1; j < item.unidades.length; j++) {
-          sheetObject
-              .cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: i + 1))
-              .value = DoubleCellValue(
-            item.unidades[j],
+        sheetObject.merge(
+          CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: contador),
+          CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: cantidad),
+        );
+        sheetObject.merge(
+          CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: contador),
+          CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: cantidad),
+        );
+        for (int j = 0; j < item.unidades.length; j++) {
+          establecerCelda(
+            sheetObject,
+            3,
+            j + contador,
+            DoubleCellValue(item.unidades[j]),
           );
-          sheetObject
-              .cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: i + 1))
-              .value = DoubleCellValue(
-            item.entradas[j],
+          establecerCelda(
+            sheetObject,
+            4,
+            j + contador,
+            DoubleCellValue(item.entradas[j]),
           );
-
-          sheetObject
-              .cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: i + 1))
-              .value = DoubleCellValue(
-            item.salidas[j],
+          establecerCelda(
+            sheetObject,
+            5,
+            j + contador,
+            DoubleCellValue(item.salidas[j]),
           );
-          sheetObject
-              .cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: i + 1))
-              .value = IntCellValue(
-            item.perdidas[j],
+          establecerCelda(
+            sheetObject,
+            6,
+            j + contador,
+            IntCellValue(item.perdidas[j]),
           );
-          sheetObject
-              .cell(CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: i + 1))
-              .value = TextCellValue(
-            item.horasModificacion[j],
+          establecerCelda(
+            sheetObject,
+            8,
+            j + contador,
+            TextCellValue(item.horasModificacion[j]),
           );
-          sheetObject
-              .cell(CellIndex.indexByColumnRow(columnIndex: 7, rowIndex: i + 1))
-              .value = TextCellValue(
-            item.usuarioModificacion[j],
+          establecerCelda(
+            sheetObject,
+            9,
+            j + contador,
+            TextCellValue(item.usuarioModificacion[j]),
           );
         }
-        sheetObject.merge(
-          CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: contador),
-          CellIndex.indexByColumnRow(columnIndex: 8, rowIndex: cantidad),
-          customValue: TextCellValue(perdidas),
-        );
         contador = cantidad;
       }
-      var status = await Permission.manageExternalStorage.request();
-      if (status.isDenied) {
-        await Permission.manageExternalStorage.request();
-      }
-      if (status.isPermanentlyDenied) {
-        openAppSettings();
-      }
-      if (status.isGranted) {
-        final path = '/storage/emulated/0/Download/Inventarios';
-        String fecha =
-            '${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}';
-        List<int>? fileBytes = excel.save();
-        if (fileBytes != null) {
-          File('$path/historial$fecha.xlsx')
-            ..createSync(recursive: true)
-            ..writeAsBytesSync(fileBytes, flush: true);
-          mensaje = 'Archivo guardado en: $path/historial$fecha.xlsx';
-        }
+      mensaje = "Error: Se canceló el proceso";
+      if (kIsWeb) {
+        List<int>? fileBytes = excel.save(
+          fileName: 'historial $fechaInicial $fechaFinal.xlsx',
+        );
+        if (fileBytes != null) mensaje = 'Descargando archivo';
       } else {
+        var status = await Permission.manageExternalStorage.request();
+        if (status.isDenied) await Permission.manageExternalStorage.request();
+        if (status.isPermanentlyDenied) openAppSettings();
         mensaje = 'Error: Se aborto el proceso';
+        if (status.isGranted) {
+          final path = '/storage/emulated/0/Download/Inventarios';
+          List<int>? fileBytes = excel.save();
+          if (fileBytes != null) {
+            File('$path/historial $fechaInicial $fechaFinal.xlsx')
+              ..createSync(recursive: true)
+              ..writeAsBytesSync(fileBytes, flush: true);
+            mensaje =
+                'Archivo guardado en: $path/historial $fechaInicial $fechaFinal.xlsx';
+          }
+        }
       }
-    }
-    if (context.mounted) {
-      context.read<Carga>().cargaBool(false);
     }
     return mensaje;
+  }
+
+  static void establecerCelda(Sheet hoja, int col, int row, CellValue valor) {
+    hoja.updateCell(
+      CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row),
+      valor,
+      cellStyle: CellStyle(
+        verticalAlign: VerticalAlign.Top,
+        horizontalAlign: HorizontalAlign.Center,
+        textWrapping: TextWrapping.WrapText,
+      ),
+    );
   }
 
   static void scanProducto(BuildContext ctx, StatefulWidget ruta) async {
@@ -450,10 +435,7 @@ class RecDrawer {
     ctx.read<Carga>().cargaBool(true);
     Navigator.of(ctx).pop();
     CampoTexto.seleccionFiltro = Filtros.id;
-    List<ProductoModel> productos = await ProductoModel.getProductos(
-      'id',
-      '',
-    );
+    List<ProductoModel> productos = await ProductoModel.getProductos('id', '');
     if (productos[0].nombre != 'Error') {
       if (ctx.mounted) {
         Textos.crearLista(productos.last.id, Color(0xFFFDC930));

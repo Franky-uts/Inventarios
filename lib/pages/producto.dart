@@ -73,6 +73,11 @@ class _ProductoState extends State<Producto> {
     ProductoModel producto = await ProductoModel.getProducto(productoInfo.id);
     producto.mensaje.isEmpty
         ? {
+            entr = 0,
+            sali = 0,
+            productosPerdido = calcularPerdidas(producto.perdidaCantidad),
+            color[0] = Color(0xFF8A03A9),
+            color[1] = Color(0xFF8A03A9),
             setState(() {
               productoInfo = producto;
             }),

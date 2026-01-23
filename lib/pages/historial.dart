@@ -49,9 +49,12 @@ class _HistorialState extends State<Historial> {
   ) async =>
       await HistorialModel.getHistorial(fecIni, fecFin, filtro, busqueda);
 
-  Future<void> getHistorialInfo(BuildContext ctx, String id) async {
+  Future<void> getHistorialInfo(BuildContext ctx, int id, String fecha) async {
     ctx.read<Carga>().cargaBool(true);
-    HistorialModel historial = await HistorialModel.getHistorialDatos(id);
+    HistorialModel historial = await HistorialModel.getHistorialDatos(
+      id,
+      fecha,
+    );
     if (historial.mensaje.isEmpty) {
       await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
       if (ctx.mounted) {
@@ -102,11 +105,7 @@ class _HistorialState extends State<Historial> {
             '${fecFinCont[0].text}-${fecFinCont[1].text}-${fecFinCont[2].text}';
         reporte
             ? {
-                mensaje = await RecDrawer.historialExcel(
-                  context,
-                  fecIni,
-                  fecFin,
-                ),
+                mensaje = await RecDrawer.historialExcel(ctx, fecIni, fecFin),
                 mensaje.split(': ')[0] == 'Error'
                     ? {mensaje = mensaje.split(': ')[1]}
                     : {
@@ -469,7 +468,7 @@ class _HistorialState extends State<Historial> {
             [.2, .1, .25, .175, .125],
             [
               lista[index].fecha,
-              lista[index].idProducto,
+              "${lista[index].idProducto}",
               lista[index].nombre,
               lista[index].area,
               '${lista[index].movimientos}',
@@ -477,7 +476,11 @@ class _HistorialState extends State<Historial> {
             [],
             1,
             true,
-            extra: () async => await getHistorialInfo(context, lista[index].id),
+            extra: () async => await getHistorialInfo(
+              context,
+              lista[index].idProducto,
+              lista[index].fecha,
+            ),
           ),
         );
       },

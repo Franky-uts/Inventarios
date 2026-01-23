@@ -34,8 +34,11 @@ class _HistorialInfoState extends State<HistorialInfo> {
     super.initState();
   }
 
-  Future<List<HistorialModel>> getHistorialInfo(String id) async {
-    List<HistorialModel> historial = await HistorialModel.getHistorialInfo(id);
+  Future<List<HistorialModel>> getHistorialInfo() async {
+    List<HistorialModel> historial = await HistorialModel.getHistorialInfo(
+      widget.historialInfo.idProducto,
+      widget.historialInfo.fecha,
+    );
     if (perdidas) {
       for (int i = 0; i < historial[0].perdidas.last; i++) {
         cantidadPerdida += historial[0].cantidades[i];
@@ -127,12 +130,9 @@ class _HistorialInfoState extends State<HistorialInfo> {
                                 listaPrincipal,
                                 'No hay datos registrados.',
                                 'No hay datos registrados.',
-                                () => getHistorialInfo(widget.historialInfo.id),
-                                accionRefresh: () async => tablas.datos(
-                                  await getHistorialInfo(
-                                    widget.historialInfo.id,
-                                  ),
-                                ),
+                                () => getHistorialInfo(),
+                                accionRefresh: () async =>
+                                    tablas.datos(await getHistorialInfo()),
                               );
                             },
                           ),

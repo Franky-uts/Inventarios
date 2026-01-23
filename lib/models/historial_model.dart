@@ -5,8 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:inventarios/services/local_storage.dart';
 
 class HistorialModel {
-  String id;
-  String idProducto;
+  int idProducto;
   String fecha;
   String nombre;
   String area;
@@ -22,7 +21,6 @@ class HistorialModel {
   String mensaje;
 
   HistorialModel({
-    required this.id,
     required this.idProducto,
     required this.fecha,
     required this.nombre,
@@ -51,8 +49,7 @@ class HistorialModel {
     if (locacion.isEmpty || locacion == 'null') {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -85,8 +82,7 @@ class HistorialModel {
           for (var item in datos) {
             historialFuture.add(
               HistorialModel(
-                id: item['id'],
-                idProducto: item['id'].split(' ')[0],
+                idProducto: item['idProducto'],
                 fecha: item['Fecha'],
                 nombre: item['Nombre'],
                 area: item['Area'],
@@ -106,8 +102,7 @@ class HistorialModel {
         } else {
           historialFuture.add(
             HistorialModel(
-              id: '',
-              idProducto: '',
+              idProducto: 0,
               fecha: '',
               nombre: '',
               area: '',
@@ -127,8 +122,7 @@ class HistorialModel {
       } on TimeoutException catch (e) {
         historialFuture.add(
           HistorialModel(
-            id: '',
-            idProducto: '',
+            idProducto: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -147,8 +141,7 @@ class HistorialModel {
       } on SocketException catch (e) {
         historialFuture.add(
           HistorialModel(
-            id: '',
-            idProducto: '',
+            idProducto: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -167,8 +160,7 @@ class HistorialModel {
       } on http.ClientException catch (e) {
         historialFuture.add(
           HistorialModel(
-            id: '',
-            idProducto: '',
+            idProducto: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -187,8 +179,7 @@ class HistorialModel {
       } on Error catch (e) {
         historialFuture.add(
           HistorialModel(
-            id: '',
-            idProducto: '',
+            idProducto: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -229,8 +220,7 @@ class HistorialModel {
         for (var item in datos) {
           historialFuture.add(
             HistorialModel(
-              id: item['id'],
-              idProducto: item['id'].split(' ')[0],
+              idProducto: item['idProducto'],
               fecha: item['Fecha'],
               nombre: item['Nombre'],
               area: item['Area'],
@@ -250,8 +240,7 @@ class HistorialModel {
       } else {
         historialFuture.add(
           HistorialModel(
-            id: '',
-            idProducto: '',
+            idProducto: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -271,8 +260,7 @@ class HistorialModel {
     } on TimeoutException catch (e) {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -291,8 +279,7 @@ class HistorialModel {
     } on SocketException catch (e) {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -311,8 +298,7 @@ class HistorialModel {
     } on http.ClientException catch (e) {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -331,8 +317,7 @@ class HistorialModel {
     } on Error catch (e) {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -361,7 +346,9 @@ class HistorialModel {
     List<HistorialModel> historialFuture = [];
     try {
       var res = await http.get(
-        Uri.parse('$conexion/historial/$locacion/id/$fechaInicial/$fechaFinal'),
+        Uri.parse(
+          '$conexion/historial/$locacion/Fecha/$fechaInicial/$fechaFinal',
+        ),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -400,8 +387,7 @@ class HistorialModel {
           }
           historialFuture.add(
             HistorialModel(
-              id: item['id'],
-              idProducto: item['id'].split(' ')[0],
+              idProducto: item['idProducto'],
               fecha: item['Fecha'],
               nombre: item['Nombre'],
               area: item['Area'],
@@ -423,8 +409,7 @@ class HistorialModel {
       } else {
         historialFuture.add(
           HistorialModel(
-            id: '',
-            idProducto: '',
+            idProducto: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -444,8 +429,7 @@ class HistorialModel {
     } on TimeoutException catch (e) {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -464,8 +448,7 @@ class HistorialModel {
     } on SocketException catch (e) {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -484,8 +467,7 @@ class HistorialModel {
     } on http.ClientException catch (e) {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -504,8 +486,7 @@ class HistorialModel {
     } on Error catch (e) {
       historialFuture.add(
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -525,20 +506,20 @@ class HistorialModel {
     return historialFuture;
   }
 
-  static Future<HistorialModel> getHistorialDatos(String id) async {
+  static Future<HistorialModel> getHistorialDatos(int id, String fecha) async {
     String conexion = LocalStorage.local('conexion');
+    String locacion = LocalStorage.local('locación');
     HistorialModel historial;
     try {
       var res = await http.get(
-        Uri.parse('$conexion/historial/Historial/$id'),
+        Uri.parse('$conexion/historial/Historial/$locacion/$id/$fecha'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
         },
       );
       historial = HistorialModel(
-        id: '',
-        idProducto: '',
+        idProducto: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -557,8 +538,7 @@ class HistorialModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           historial = HistorialModel(
-            id: item['id'],
-            idProducto: item['id'].split(' ')[0],
+            idProducto: item['idProducto'],
             fecha: item['Fecha'],
             nombre: item['Nombre'],
             area: item['Area'],
@@ -577,8 +557,7 @@ class HistorialModel {
       }
     } on TimeoutException catch (e) {
       historial = HistorialModel(
-        id: '',
-        idProducto: '',
+        idProducto: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -595,8 +574,7 @@ class HistorialModel {
       );
     } on SocketException catch (e) {
       historial = HistorialModel(
-        id: '',
-        idProducto: '',
+        idProducto: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -613,8 +591,7 @@ class HistorialModel {
       );
     } on http.ClientException catch (e) {
       historial = HistorialModel(
-        id: '',
-        idProducto: '',
+        idProducto: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -631,8 +608,7 @@ class HistorialModel {
       );
     } on Error catch (e) {
       historial = HistorialModel(
-        id: '',
-        idProducto: '',
+        idProducto: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -651,12 +627,16 @@ class HistorialModel {
     return historial;
   }
 
-  static Future<List<HistorialModel>> getHistorialInfo(String id) async {
+  static Future<List<HistorialModel>> getHistorialInfo(
+    int id,
+    String fecha,
+  ) async {
     String conexion = LocalStorage.local('conexion');
+    String locacion = LocalStorage.local('locación');
     List<HistorialModel> historial;
     try {
       var res = await http.get(
-        Uri.parse('$conexion/historial/Historial/$id'),
+        Uri.parse('$conexion/historial/Historial/$locacion/$id/$fecha'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -664,8 +644,7 @@ class HistorialModel {
       );
       historial = [
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -714,8 +693,7 @@ class HistorialModel {
           }
           historial = [
             HistorialModel(
-              id: '',
-              idProducto: '',
+              idProducto: 0,
               fecha: '',
               nombre: '',
               area: '',
@@ -738,8 +716,7 @@ class HistorialModel {
     } on TimeoutException catch (e) {
       historial = [
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -758,8 +735,7 @@ class HistorialModel {
     } on SocketException catch (e) {
       historial = [
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -778,8 +754,7 @@ class HistorialModel {
     } on http.ClientException catch (e) {
       historial = [
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -798,8 +773,7 @@ class HistorialModel {
     } on Error catch (e) {
       historial = [
         HistorialModel(
-          id: '',
-          idProducto: '',
+          idProducto: 0,
           fecha: '',
           nombre: '',
           area: '',
