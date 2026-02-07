@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:inventarios/services/local_storage.dart';
 
 class HistorialModel {
-  int idProducto;
+  int id;
   String fecha;
   String nombre;
   String area;
@@ -21,7 +21,7 @@ class HistorialModel {
   String mensaje;
 
   HistorialModel({
-    required this.idProducto,
+    required this.id,
     required this.fecha,
     required this.nombre,
     required this.area,
@@ -49,7 +49,7 @@ class HistorialModel {
     if (locacion.isEmpty || locacion == 'null') {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -82,7 +82,7 @@ class HistorialModel {
           for (var item in datos) {
             historialFuture.add(
               HistorialModel(
-                idProducto: item['idProducto'],
+                id: item['id'],
                 fecha: item['Fecha'],
                 nombre: item['Nombre'],
                 area: item['Area'],
@@ -102,7 +102,7 @@ class HistorialModel {
         } else {
           historialFuture.add(
             HistorialModel(
-              idProducto: 0,
+              id: 0,
               fecha: '',
               nombre: '',
               area: '',
@@ -122,7 +122,7 @@ class HistorialModel {
       } on TimeoutException catch (e) {
         historialFuture.add(
           HistorialModel(
-            idProducto: 0,
+            id: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -141,7 +141,7 @@ class HistorialModel {
       } on SocketException catch (e) {
         historialFuture.add(
           HistorialModel(
-            idProducto: 0,
+            id: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -160,7 +160,7 @@ class HistorialModel {
       } on http.ClientException catch (e) {
         historialFuture.add(
           HistorialModel(
-            idProducto: 0,
+            id: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -179,7 +179,7 @@ class HistorialModel {
       } on Error catch (e) {
         historialFuture.add(
           HistorialModel(
-            idProducto: 0,
+            id: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -220,7 +220,7 @@ class HistorialModel {
         for (var item in datos) {
           historialFuture.add(
             HistorialModel(
-              idProducto: item['idProducto'],
+              id: item['id'],
               fecha: item['Fecha'],
               nombre: item['Nombre'],
               area: item['Area'],
@@ -240,7 +240,7 @@ class HistorialModel {
       } else {
         historialFuture.add(
           HistorialModel(
-            idProducto: 0,
+            id: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -260,7 +260,7 @@ class HistorialModel {
     } on TimeoutException catch (e) {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -279,7 +279,7 @@ class HistorialModel {
     } on SocketException catch (e) {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -298,7 +298,7 @@ class HistorialModel {
     } on http.ClientException catch (e) {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -317,7 +317,7 @@ class HistorialModel {
     } on Error catch (e) {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -387,7 +387,7 @@ class HistorialModel {
           }
           historialFuture.add(
             HistorialModel(
-              idProducto: item['idProducto'],
+              id: item['id'],
               fecha: item['Fecha'],
               nombre: item['Nombre'],
               area: item['Area'],
@@ -409,7 +409,7 @@ class HistorialModel {
       } else {
         historialFuture.add(
           HistorialModel(
-            idProducto: 0,
+            id: 0,
             fecha: '',
             nombre: '',
             area: '',
@@ -429,7 +429,7 @@ class HistorialModel {
     } on TimeoutException catch (e) {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -448,7 +448,7 @@ class HistorialModel {
     } on SocketException catch (e) {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -467,7 +467,7 @@ class HistorialModel {
     } on http.ClientException catch (e) {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -486,7 +486,7 @@ class HistorialModel {
     } on Error catch (e) {
       historialFuture.add(
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -519,7 +519,7 @@ class HistorialModel {
         },
       );
       historial = HistorialModel(
-        idProducto: 0,
+        id: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -538,7 +538,7 @@ class HistorialModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           historial = HistorialModel(
-            idProducto: item['idProducto'],
+            id: item['id'],
             fecha: item['Fecha'],
             nombre: item['Nombre'],
             area: item['Area'],
@@ -557,7 +557,7 @@ class HistorialModel {
       }
     } on TimeoutException catch (e) {
       historial = HistorialModel(
-        idProducto: 0,
+        id: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -574,7 +574,7 @@ class HistorialModel {
       );
     } on SocketException catch (e) {
       historial = HistorialModel(
-        idProducto: 0,
+        id: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -591,7 +591,7 @@ class HistorialModel {
       );
     } on http.ClientException catch (e) {
       historial = HistorialModel(
-        idProducto: 0,
+        id: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -608,7 +608,7 @@ class HistorialModel {
       );
     } on Error catch (e) {
       historial = HistorialModel(
-        idProducto: 0,
+        id: 0,
         fecha: '',
         nombre: '',
         area: '',
@@ -644,7 +644,7 @@ class HistorialModel {
       );
       historial = [
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -693,7 +693,7 @@ class HistorialModel {
           }
           historial = [
             HistorialModel(
-              idProducto: 0,
+              id: 0,
               fecha: '',
               nombre: '',
               area: '',
@@ -716,7 +716,7 @@ class HistorialModel {
     } on TimeoutException catch (e) {
       historial = [
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -735,7 +735,7 @@ class HistorialModel {
     } on SocketException catch (e) {
       historial = [
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -754,7 +754,7 @@ class HistorialModel {
     } on http.ClientException catch (e) {
       historial = [
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',
@@ -773,7 +773,7 @@ class HistorialModel {
     } on Error catch (e) {
       historial = [
         HistorialModel(
-          idProducto: 0,
+          id: 0,
           fecha: '',
           nombre: '',
           area: '',

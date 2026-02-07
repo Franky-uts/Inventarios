@@ -490,12 +490,6 @@ class OrdenModel {
         }),
       );
       productoFuture = res.body;
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          productoFuture = '${item['id']}';
-        }
-      }
     } on TimeoutException catch (e) {
       productoFuture = 'Error: ${e.message}';
     } on SocketException catch (e) {
@@ -526,10 +520,7 @@ class OrdenModel {
         },
         body: jsonEncode({'dato': dato}),
       );
-      respuesta = '${res.reasonPhrase}';
-      if (res.statusCode == 200) {
-        respuesta = 'Se modificó la orden.';
-      }
+      respuesta = res.body;
     } on TimeoutException catch (e) {
       respuesta = 'Error: ${e.message}';
     } on SocketException catch (e) {
@@ -557,10 +548,7 @@ class OrdenModel {
         },
         body: jsonEncode({'estado': estado, 'confirmacion': confirmaciones}),
       );
-      respuesta = '${res.reasonPhrase}';
-      if (res.statusCode == 200) {
-        respuesta = 'Se modificó la orden.';
-      }
+      respuesta = res.body;
     } on TimeoutException catch (e) {
       respuesta = 'Error: ${e.message}';
     } on SocketException catch (e) {

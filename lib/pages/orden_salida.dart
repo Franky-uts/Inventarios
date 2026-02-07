@@ -64,8 +64,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       comentarios,
     );
     if (respuesta.split(': ')[0] != 'Error') {
-      respuesta =
-          'Se guardo la orden $respuesta correctamente con ${listaProd.length} artículos.';
       if (ctx.mounted) {
         ctx.read<Textos>().setAllColor(Color(0xFFFDC930));
         ctx.read<Ventanas>().tabla(false);

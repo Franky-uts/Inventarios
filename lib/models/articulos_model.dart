@@ -277,12 +277,6 @@ class ArticulosModel {
         }),
       );
       articulosFuture = res.body;
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          articulosFuture = item['Nombre'];
-        }
-      }
     } on TimeoutException catch (e) {
       articulosFuture = 'Error: ${e.message}';
     } on SocketException catch (e) {
@@ -303,20 +297,14 @@ class ArticulosModel {
     late String articulosFuture;
     try {
       final res = await http.put(
-        Uri.parse('${LocalStorage.local('conexion')}/articulos/$id/$columna'),
+        Uri.parse('${LocalStorage.local('conexion')}/articulos/$id'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode({'dato': dato}),
+        body: jsonEncode({'dato': dato, 'columna': columna}),
       );
       articulosFuture = res.body;
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          articulosFuture = item['Nombre'];
-        }
-      }
     } on TimeoutException catch (e) {
       articulosFuture = 'Error: ${e.message}';
     } on SocketException catch (e) {

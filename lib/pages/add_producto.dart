@@ -88,7 +88,6 @@ class _AddproductoState extends State<AddProducto> {
         control[2].text = '';
         articuloValor = articuloLista.first;
         areaValor = areasLista.first;
-        respuesta = 'Se guardo producto con id $respuesta correctamente.';
       } else {
         respuesta = respuesta.split(': ')[1];
       }

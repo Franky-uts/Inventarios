@@ -234,7 +234,7 @@ class RecDrawer {
           sheetObject,
           0,
           contador,
-          IntCellValue(item.idProducto),
+          IntCellValue(item.id),
         );
         establecerCelda(sheetObject, 1, contador, TextCellValue(item.nombre));
         establecerCelda(sheetObject, 2, contador, TextCellValue(item.fecha));

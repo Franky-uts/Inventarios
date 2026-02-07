@@ -89,28 +89,22 @@ class _ProductoState extends State<Producto> {
 
   Future enviarDatos(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
-    ProductoModel producto = await ProductoModel.guardarES(
-      entr,
-      sali,
-      productoInfo.id,
-    );
-    String mensaje = 'No se pudieron guardar los datos';
-    if (producto.mensaje.isEmpty) {
-      mensaje = 'Cambios realizados con exito';
-      setState(() {
-        productoInfo.unidades = producto.unidades;
-        productoInfo.entrada = producto.entrada;
-        productoInfo.salida = producto.salida;
-        productoInfo.perdidaRazones = producto.perdidaRazones;
-        productoInfo.perdidaCantidad = producto.perdidaCantidad;
-        productoInfo.ultimoUsuario = producto.ultimoUsuario;
-        productoInfo.ultimaModificacion = producto.ultimaModificacion;
-        productosPerdido = calcularPerdidas(producto.perdidaCantidad);
-        entr = 0;
-        sali = 0;
-        color[0] = Color(0xFF8A03A9);
-        color[1] = Color(0xFF8A03A9);
-      });
+    String mensaje = await ProductoModel.guardarES(entr, sali, productoInfo.id);
+    if (mensaje.split(": ")[0] != 'Error') {
+      ProductoModel producto = await ProductoModel.getProducto(productoInfo.id);
+      if (producto.mensaje.isEmpty) {
+        setState(() {
+          productoInfo = producto;
+          productosPerdido = calcularPerdidas(producto.perdidaCantidad);
+          entr = 0;
+          sali = 0;
+          color[0] = Color(0xFF8A03A9);
+          color[1] = Color(0xFF8A03A9);
+        });
+      } else {
+        mensaje =
+            'Se guardó la información, pero no se pudo actualizar el producto';
+      }
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
     Textos.toast(mensaje, true);
@@ -139,27 +133,23 @@ class _ProductoState extends State<Producto> {
         color[1] = Color(0xFFFF0000);
       }
       if (ent >= 0 && sal >= 0) {
-        ProductoModel producto = await ProductoModel.guardarES(
-          ent,
-          sal,
-          productoInfo.id,
-        );
-        mensaje = producto.mensaje;
-        if (producto.mensaje.isEmpty) {
-          mensaje = 'Cambios realizados con exito';
-          setState(() {
-            productoInfo.unidades = producto.unidades;
-            productoInfo.entrada = producto.entrada;
-            productoInfo.salida = producto.salida;
-            productoInfo.perdidaRazones = producto.perdidaRazones;
-            productoInfo.perdidaCantidad = producto.perdidaCantidad;
-            productoInfo.ultimoUsuario = producto.ultimoUsuario;
-            productoInfo.ultimaModificacion = producto.ultimaModificacion;
-            color[0] = Color(0x00000000);
-            color[1] = Color(0x00000000);
-            controllerGranel[0].text = '';
-            controllerGranel[1].text = '';
-          });
+        mensaje = await ProductoModel.guardarES(ent, sal, productoInfo.id);
+        if (mensaje.split(": ")[0] != 'Error') {
+          ProductoModel producto = await ProductoModel.getProducto(
+            productoInfo.id,
+          );
+          if (producto.mensaje.isEmpty) {
+            setState(() {
+              productoInfo = producto;
+              color[0] = Color(0x00000000);
+              color[1] = Color(0x00000000);
+              controllerGranel[0].text = '';
+              controllerGranel[1].text = '';
+            });
+          } else {
+            mensaje =
+                'Se guardó la información, pero no se pudo actualizar el producto';
+          }
         }
       }
     }
@@ -222,25 +212,24 @@ class _ProductoState extends State<Producto> {
       );
       String mensaje = 'Error: Las perdidas exceden la cantidad almacenada';
       if (unidades >= 0) {
-        ProductoModel producto = await ProductoModel.guardarPerdidas(
+        mensaje = await ProductoModel.guardarPerdidas(
           controllerPerdidas[1].text,
           perdidas,
           productoInfo.id,
         );
-        if (producto.mensaje.isEmpty) {
-          mensaje = (productoInfo.tipo == 'Granel')
-              ? 'Se registro la perdida de ${(perdidas / productoInfo.cantidadPorUnidad).toStringAsFixed(3)} kilos'
-              : 'Se registro la perdida de ${(perdidas / productoInfo.cantidadPorUnidad).toStringAsFixed(3)} unidades';
-          setState(() {
-            productosPerdido += perdidas;
-            productoInfo.unidades = producto.unidades;
-            productoInfo.entrada = producto.entrada;
-            productoInfo.salida = producto.salida;
-            productoInfo.perdidaRazones = producto.perdidaRazones;
-            productoInfo.perdidaCantidad = producto.perdidaCantidad;
-            productoInfo.ultimoUsuario = producto.ultimoUsuario;
-            productoInfo.ultimaModificacion = producto.ultimaModificacion;
-          });
+        if (mensaje.split(": ")[0] != 'Error') {
+          ProductoModel producto = await ProductoModel.getProducto(
+            productoInfo.id,
+          );
+          if (producto.mensaje.isEmpty) {
+            setState(() {
+              productosPerdido += perdidas;
+              productoInfo = producto;
+            });
+          } else {
+            mensaje =
+                'Se guardó la información, pero no se pudo actualizar el producto';
+          }
         }
         if (ctx.mounted) {
           ctx.read<Ventanas>().emergente(mensaje.split(':')[0] == 'Error');

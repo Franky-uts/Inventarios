@@ -63,22 +63,24 @@ class _PerdidasProvState extends State<PerdidasProv> {
       );
       String mensaje = 'Error: Las perdidas exceden la cantidad almacenada';
       if (productoInfo.unidades - unidades >= 0) {
-        ProductoModel producto = await ProductoModel.guardarPerdidas(
+        mensaje = await ProductoModel.guardarPerdidas(
           controller[1].text,
           perdidas,
           productoInfo.id,
         );
-        mensaje = producto.mensaje;
-        if (mensaje.isEmpty) {
-          mensaje = (productoInfo.tipo == 'Granel')
-              ? 'Se registro la perdida de $unidades kilos'
-              : 'Se registro la perdida de $unidades unidades';
-          setState(() {
-            productosPerdido += perdidas;
-            productoInfo.unidades = producto.unidades;
-            productoInfo.perdidaRazones = producto.perdidaRazones;
-            productoInfo.perdidaCantidad = producto.perdidaCantidad;
-          });
+        if (mensaje.split(": ")[0] != 'Error') {
+          ProductoModel producto = await ProductoModel.getProducto(
+            productoInfo.id,
+          );
+          if (producto.mensaje.isEmpty) {
+            setState(() {
+              productosPerdido += perdidas;
+              productoInfo = producto;
+            });
+          } else {
+            mensaje =
+                'Se guardó la información, pero no se pudo actualizar el producto';
+          }
         }
       }
       if (ctx.mounted) {

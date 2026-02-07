@@ -36,11 +36,11 @@ class _HistorialInfoState extends State<HistorialInfo> {
 
   Future<List<HistorialModel>> getHistorialInfo() async {
     List<HistorialModel> historial = await HistorialModel.getHistorialInfo(
-      widget.historialInfo.idProducto,
+      widget.historialInfo.id,
       widget.historialInfo.fecha,
     );
     if (perdidas) {
-      for (int i = 0; i < historial[0].perdidas.last; i++) {
+      for (int i = 0; i < historial[0].cantidades.length; i++) {
         cantidadPerdida += historial[0].cantidades[i];
       }
       setState(() {

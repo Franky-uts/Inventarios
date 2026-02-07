@@ -662,12 +662,6 @@ class ProductoModel {
         }),
       );
       mensaje = res.body;
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          mensaje = "${item['idProducto']}";
-        }
-      }
     } on TimeoutException catch (e) {
       mensaje = 'Error: ${e.message}';
     } on SocketException catch (e) {
@@ -687,10 +681,9 @@ class ProductoModel {
   ) async {
     String texto;
     String conexion = LocalStorage.local('conexion');
-    String almacen = LocalStorage.local('locación');
     try {
       final res = await http.put(
-        Uri.parse('$conexion/almacen/$almacen/$id/$columna'),
+        Uri.parse('$conexion/almacen/Editar/$id/$columna'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -701,11 +694,40 @@ class ProductoModel {
         }),
       );
       texto = res.body;
+    } on TimeoutException catch (e) {
+      texto = 'Error: ${e.message}';
+    } on SocketException catch (e) {
+      texto = 'Error: ${e.message}';
+    } on http.ClientException catch (e) {
+      texto = 'Error: ${e.message}';
+    } on Error catch (e) {
+      texto = 'Error: $e';
+    }
+    return texto;
+  }
+
+  static Future<String> guardarES(
+    double entradas,
+    double salidas,
+    int id,
+  ) async {
+    String conexion = LocalStorage.local('conexion');
+    String texto = 'Error: No se guardo la información.';
+    try {
+      final res = await http.put(
+        Uri.parse('$conexion/almacen/ES/$id'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'entradas': entradas,
+          'salidas': salidas,
+          'usuario': LocalStorage.local('usuario'),
+        }),
+      );
       if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          texto = "${item['idProducto']}";
-        }
+        texto = res.body;
       }
     } on TimeoutException catch (e) {
       texto = 'Error: ${e.message}';
@@ -719,195 +741,16 @@ class ProductoModel {
     return texto;
   }
 
-  static Future<ProductoModel> guardarES(
-    double entradas,
-    double salidas,
-    int id,
-  ) async {
-    ProductoModel producto = ProductoModel(
-      id: 0,
-      nombre: '',
-      area: '',
-      tipo: '',
-      codigoBarras: '',
-      cantidadPorUnidad: 0.0,
-      unidades: 0.0,
-      limiteProd: 0,
-      entrada: 0.0,
-      salida: 0.0,
-      perdidaCantidad: [],
-      perdidaRazones: [],
-      ultimoUsuario: '',
-      ultimaModificacion: '',
-      mensaje: 'Error: No se guardo la información.',
-    );
-    String conexion = LocalStorage.local('conexion');
-    String almacen = LocalStorage.local('locación');
-    try {
-      final res = await http.put(
-        Uri.parse('$conexion/almacen/$almacen/$id/ES'),
-        headers: {
-          'Accept': 'application/json',
-          'content-type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'entradas': entradas,
-          'salidas': salidas,
-          'usuario': LocalStorage.local('usuario'),
-          'almacen': LocalStorage.local('locación'),
-        }),
-      );
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          List<double> doublelist = [];
-          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
-            String dob = '${item['PerdidaCantidad'][i]}.0';
-            if (dob.split('.').length > 2) {
-              dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
-            }
-            doublelist.add(double.parse(dob));
-          }
-          producto = ProductoModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            unidades: item['Unidades'].toDouble(),
-            ultimaModificacion: item['UltimaModificación'],
-            cantidadPorUnidad: 0,
-            area: '',
-            entrada: item['Entradas'].toDouble(),
-            salida: item['Salidas'].toDouble(),
-            perdidaCantidad: doublelist,
-            perdidaRazones: List<String>.from(item['PerdidaRazon']),
-            ultimoUsuario: item['UltimoUsuario'],
-            codigoBarras: '',
-            limiteProd: item['LimiteProd'],
-            mensaje: '',
-          );
-        }
-      } else {
-        producto = ProductoModel(
-          id: 0,
-          nombre: '',
-          area: '',
-          tipo: '',
-          codigoBarras: '',
-          cantidadPorUnidad: 0.0,
-          unidades: 0.0,
-          limiteProd: 0,
-          entrada: 0.0,
-          salida: 0.0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          ultimaModificacion: '',
-          mensaje: 'Error: ${res.reasonPhrase}',
-        );
-      }
-    } on TimeoutException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        area: '',
-        tipo: '',
-        codigoBarras: '',
-        cantidadPorUnidad: 0.0,
-        unidades: 0.0,
-        limiteProd: 0,
-        entrada: 0.0,
-        salida: 0.0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        ultimaModificacion: '',
-        mensaje: 'Error: ${e.message}',
-      );
-    } on SocketException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        area: '',
-        tipo: '',
-        codigoBarras: '',
-        cantidadPorUnidad: 0.0,
-        unidades: 0.0,
-        limiteProd: 0,
-        entrada: 0.0,
-        salida: 0.0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        ultimaModificacion: '',
-        mensaje: 'Error: ${e.message}',
-      );
-    } on http.ClientException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        area: '',
-        tipo: '',
-        codigoBarras: '',
-        cantidadPorUnidad: 0.0,
-        unidades: 0.0,
-        limiteProd: 0,
-        entrada: 0.0,
-        salida: 0.0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        ultimaModificacion: '',
-        mensaje: 'Error: ${e.message}',
-      );
-    } on Error catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        area: '',
-        tipo: '',
-        codigoBarras: '',
-        cantidadPorUnidad: 0.0,
-        unidades: 0.0,
-        limiteProd: 0,
-        entrada: 0.0,
-        salida: 0.0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        ultimaModificacion: '',
-        mensaje: 'Error: $e',
-      );
-    }
-    return producto;
-  }
-
-  static Future<ProductoModel> guardarPerdidas(
+  static Future<String> guardarPerdidas(
     String razon,
     double cantidad,
     int id,
   ) async {
-    ProductoModel producto = ProductoModel(
-      id: 0,
-      nombre: '',
-      area: '',
-      tipo: '',
-      codigoBarras: '',
-      cantidadPorUnidad: 0.0,
-      unidades: 0.0,
-      limiteProd: 0,
-      entrada: 0.0,
-      salida: 0.0,
-      perdidaCantidad: [],
-      perdidaRazones: [],
-      ultimoUsuario: '',
-      ultimaModificacion: '',
-      mensaje: 'Error: No se guardo la información.',
-    );
     String conexion = LocalStorage.local('conexion');
-    String almacen = LocalStorage.local('locación');
+    String texto = 'Error: No se guardo la información.';
     try {
       final res = await http.put(
-        Uri.parse('$conexion/almacen/$almacen/$id/Perdidas'),
+        Uri.parse('$conexion/almacen/Perdidas/$id'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -916,131 +759,21 @@ class ProductoModel {
           'cantidad': cantidad,
           'razon': razon,
           'usuario': LocalStorage.local('usuario'),
-          'almacen': LocalStorage.local('locación'),
         }),
       );
       if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          List<double> doublelist = [];
-          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
-            String dob = '${item['PerdidaCantidad'][i]}.0';
-            if (dob.split('.').length > 2) {
-              dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
-            }
-            doublelist.add(double.parse(dob));
-          }
-          producto = ProductoModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            unidades: item['Unidades'].toDouble(),
-            ultimaModificacion: item['UltimaModificación'],
-            cantidadPorUnidad: 0,
-            area: '',
-            entrada: item['Entradas'].toDouble(),
-            salida: item['Salidas'].toDouble(),
-            perdidaCantidad: doublelist,
-            perdidaRazones: List<String>.from(item['PerdidaRazon']),
-            ultimoUsuario: item['UltimoUsuario'],
-            codigoBarras: '',
-            limiteProd: item['LimiteProd'],
-            mensaje: '',
-          );
-        }
-      } else {
-        producto = ProductoModel(
-          id: 0,
-          nombre: '',
-          area: '',
-          tipo: '',
-          codigoBarras: '',
-          cantidadPorUnidad: 0.0,
-          unidades: 0.0,
-          limiteProd: 0,
-          entrada: 0.0,
-          salida: 0.0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          ultimaModificacion: '',
-          mensaje: 'Error: ${res.reasonPhrase}',
-        );
+        texto = res.body;
       }
     } on TimeoutException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        area: '',
-        tipo: '',
-        codigoBarras: '',
-        cantidadPorUnidad: 0.0,
-        unidades: 0.0,
-        limiteProd: 0,
-        entrada: 0.0,
-        salida: 0.0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        ultimaModificacion: '',
-        mensaje: 'Error: ${e.message}',
-      );
+      texto = 'Error: ${e.message}';
     } on SocketException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        area: '',
-        tipo: '',
-        codigoBarras: '',
-        cantidadPorUnidad: 0.0,
-        unidades: 0.0,
-        limiteProd: 0,
-        entrada: 0.0,
-        salida: 0.0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        ultimaModificacion: '',
-        mensaje: 'Error: ${e.message}',
-      );
+      texto = 'Error: ${e.message}';
     } on http.ClientException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        area: '',
-        tipo: '',
-        codigoBarras: '',
-        cantidadPorUnidad: 0.0,
-        unidades: 0.0,
-        limiteProd: 0,
-        entrada: 0.0,
-        salida: 0.0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        ultimaModificacion: '',
-        mensaje: 'Error: ${e.message}',
-      );
+      texto = 'Error: ${e.message}';
     } on Error catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        area: '',
-        tipo: '',
-        codigoBarras: '',
-        cantidadPorUnidad: 0.0,
-        unidades: 0.0,
-        limiteProd: 0,
-        entrada: 0.0,
-        salida: 0.0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        ultimaModificacion: '',
-        mensaje: 'Error: $e',
-      );
+      texto = 'Error: $e';
     }
-    return producto;
+    return texto;
   }
 
   static Future<String> reiniciarESP() async {
@@ -1049,16 +782,13 @@ class ProductoModel {
     String almacen = LocalStorage.local('locación');
     try {
       final res = await http.put(
-        Uri.parse('$conexion/almacen/$almacen/reiniciarMovimientos'),
+        Uri.parse('$conexion/almacen/reiniciarMovimientos/$almacen'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
         },
       );
-      texto = '${res.reasonPhrase}';
-      if (res.statusCode == 200) {
-        texto = 'Reinicio exitoso.';
-      }
+      texto = res.body;
     } on TimeoutException catch (e) {
       texto = 'Error: ${e.message}';
     } on SocketException catch (e) {
@@ -1085,7 +815,7 @@ class ProductoModel {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          tipos.add(item['Nombre']);
+          tipos.add(item['Tipo']);
         }
       } else {
         tipos.add(res.body);
@@ -1116,7 +846,7 @@ class ProductoModel {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          areas.add(item['Nombre']);
+          areas.add(item['Area']);
         }
       } else {
         areas.add(res.body);

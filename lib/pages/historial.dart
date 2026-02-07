@@ -468,7 +468,7 @@ class _HistorialState extends State<Historial> {
             [.2, .1, .25, .175, .125],
             [
               lista[index].fecha,
-              "${lista[index].idProducto}",
+              "${lista[index].id}",
               lista[index].nombre,
               lista[index].area,
               '${lista[index].movimientos}',
@@ -478,7 +478,7 @@ class _HistorialState extends State<Historial> {
             true,
             extra: () async => await getHistorialInfo(
               context,
-              lista[index].idProducto,
+              lista[index].id,
               lista[index].fecha,
             ),
           ),
