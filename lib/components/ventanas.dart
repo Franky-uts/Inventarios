@@ -9,9 +9,11 @@ import 'botones.dart';
 import 'carga.dart';
 
 class Ventanas with ChangeNotifier {
+  static FocusNode focus = FocusNode();
   static bool _emergente = false;
   static bool _tabla = false;
   static bool _cambio = false;
+  static bool _scan = false;
   static String _inventario = LocalStorage.local('locación');
 
   static Widget ventanaEmergente(
@@ -71,28 +73,23 @@ class Ventanas with ChangeNotifier {
   ) {
     List<Widget> titulos = [];
     List<Widget> footer = [];
-    int tam;
-    for (int i = 0; i < tituloTexto.length; i++) {
-      titulos.add(Textos.textoTilulo(tituloTexto[i], 20));
+    for (String titulo in tituloTexto) {
+      titulos.add(Textos.textoTilulo(titulo, 20));
     }
-    if (footerTexto.length > 1) {
-      tam = 168;
-      for (int i = 0; i < footerTexto.length; i++) {
-        footer.add(Textos.textoGeneral(footerTexto[i], 15, false, false, 1));
+    if (footerTexto.isNotEmpty) {
+      for (String texto in footerTexto) {
+        footer.add(
+          Textos.textoGeneral(
+            texto,
+            false,
+            1,
+            alignment: (footerTexto.length > 1)
+                ? TextAlign.start
+                : TextAlign.center,
+            size: (footerTexto.length > 1) ? 15 : 20,
+          ),
+        );
       }
-    } else {
-      tam = 153;
-      if (footerTexto.isNotEmpty) {
-        footer.add(Textos.textoGeneral(footerTexto[0], 20, true, false, 1));
-      }
-    }
-    if (tablaListView.runtimeType == ListView) {
-      tablaListView = Container(
-        width: ancho,
-        height: alto - tam,
-        margin: EdgeInsets.zero,
-        child: tablaListView,
-      );
     }
     return Visibility(
       visible: _tabla,
@@ -118,7 +115,20 @@ class Ventanas with ChangeNotifier {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: titulos,
                   ),
-                  Column(children: [tablaInfo, tablaListView]),
+                  Column(
+                    children: [
+                      tablaInfo,
+                      (tablaListView.runtimeType == ListView)
+                          ? Container(
+                              width: ancho,
+                              height:
+                                  alto - ((footerTexto.length > 1) ? 168 : 153),
+                              margin: EdgeInsets.zero,
+                              child: tablaListView,
+                            )
+                          : tablaListView,
+                    ],
+                  ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
@@ -197,6 +207,89 @@ class Ventanas with ChangeNotifier {
     );
   }
 
+  static Widget ventanaScan(BuildContext ctx, Function(String valor) accion) {
+    return Visibility(
+      visible: _scan,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
+        decoration: BoxDecoration(color: Colors.black38),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadiusGeometry.circular(25),
+              border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 5,
+                children: [
+                  Textos.textoTilulo("Escanea un producto", 25),
+                  SizedBox(
+                    width: MediaQuery.of(ctx).size.width * .75,
+                    child: TextField(
+                      focusNode: focus,
+                      onSubmitted: (texto) => {
+                        accion(texto),
+                        ctx.read<Ventanas>().scan(false),
+                      },
+                      cursorColor: Color(0xFF8A03A9),
+                      style: TextStyle(color: Color(0xFF8A03A9)),
+                      decoration: InputDecoration(
+                        filled: true,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(
+                            color: Color(0xFFFDC930),
+                            width: 3.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(
+                            color: Color(0xFFFDC930),
+                            width: 3.5,
+                          ),
+                        ),
+                        disabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(30),
+                          borderSide: BorderSide(
+                            color: Color(0xFFFDC930),
+                            width: 2.5,
+                          ),
+                        ),
+                        prefixIcon: Icon(Icons.qr_code_scanner_rounded),
+                        prefixIconColor: Color(0xFF8A03A9),
+                        fillColor: Colors.white,
+                        label: Text(
+                          'Código de barras',
+                          style: TextStyle(color: Color(0xFF8A03A9)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    spacing: 15,
+                    children: [
+                      Botones.btnCirRos(
+                        'Volver',
+                        () => ctx.read<Ventanas>().scan(false),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void tabla(bool booleano) {
     _tabla = booleano;
     notifyListeners();
@@ -209,6 +302,12 @@ class Ventanas with ChangeNotifier {
 
   void cambio(bool booleano) {
     _cambio = booleano;
+    notifyListeners();
+  }
+
+  void scan(bool booleano) {
+    _scan = booleano;
+    focus.requestFocus();
     notifyListeners();
   }
 
@@ -225,7 +324,7 @@ class Ventanas with ChangeNotifier {
     ctx.read<Carga>().cargaBool(true);
     String mensaje;
     _inventario != LocalStorage.local('locación')
-        ? {mensaje = await UsuarioModel.cambiarInfo('Locacion', _inventario)}
+        ? mensaje = await UsuarioModel.cambiarInfo('Locacion', _inventario)
         : mensaje = 'Error: No hay cambios';
     mensaje.split(': ')[0] != 'Error'
         ? {

@@ -6,11 +6,9 @@ class Textos with ChangeNotifier {
   static List<Color> color = [];
 
   static void toast(String texto, bool longLength) {
-    Toast length;
-    longLength ? length = Toast.LENGTH_LONG : length = Toast.LENGTH_SHORT;
     Fluttertoast.showToast(
       msg: texto,
-      toastLength: length,
+      toastLength: longLength ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT,
       gravity: ToastGravity.BOTTOM,
       backgroundColor: Color(0xBFFDC930),
       textColor: Colors.white,
@@ -19,45 +17,41 @@ class Textos with ChangeNotifier {
   }
 
   static Future<String> scan(BuildContext ctx) async {
-    String? scan = await SimpleBarcodeScanner.scanBarcode(
+    return (await SimpleBarcodeScanner.scanBarcode(
       ctx,
       lineColor: '#8A03A9',
       cancelButtonText: 'Regresar',
       isShowFlashIcon: true,
       delayMillis: 2000,
       cameraFace: CameraFace.back,
-    );
-    return scan!;
+    ))!;
   }
 
   static Text textoGeneral(
     String texto,
-    double size,
     bool principal,
-    bool centro,
-    int maxLines,
-  ) {
-    Color color;
-    principal ? {color = Color(0xFF8A03A9)} : color = Color(0xFFF6AFCF);
+    int maxLines, {
+    double? size,
+    TextAlign? alignment,
+  }) {
     return Text(
       texto,
-      textAlign: centro ? TextAlign.center : TextAlign.start,
+      textAlign: alignment ?? TextAlign.start,
       maxLines: maxLines,
       overflow: TextOverflow.ellipsis,
-      style: size > 0
-          ? TextStyle(fontSize: size, color: color)
-          : TextStyle(color: color),
+      style: TextStyle(
+        fontSize: size,
+        color: principal ? Color(0xFF8A03A9) : Color(0xFFF6AFCF),
+      ),
     );
   }
 
-  static Text textoBlanco(String texto, double size) {
-    TextStyle estilo;
-    if (size > 0) {
-      estilo = TextStyle(fontSize: size, color: Color(0xFFFFFFFF));
-    } else {
-      estilo = TextStyle(color: Color(0xFFFFFFFF));
-    }
-    return Text(texto, textAlign: TextAlign.center, style: estilo);
+  static Text textoBlanco(String texto, {double? size}) {
+    return Text(
+      texto,
+      textAlign: TextAlign.center,
+      style: TextStyle(fontSize: size, color: Color(0xFFFFFFFF)),
+    );
   }
 
   static Text textoTilulo(String texto, double size) {
@@ -93,9 +87,9 @@ class Textos with ChangeNotifier {
   static Container recuadroCantidad(
     String textoValor,
     Color colorBorde,
-    double size,
-    int maxLines,
-  ) {
+    int maxLines, {
+    double? size,
+  }) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10, vertical: 2.5),
       margin: EdgeInsets.symmetric(horizontal: 5),
@@ -103,56 +97,49 @@ class Textos with ChangeNotifier {
         border: Border.all(color: colorBorde, width: 2.5),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: textoGeneral(textoValor, size, true, true, maxLines),
+      child: textoGeneral(
+        textoValor,
+        true,
+        maxLines,
+        size: size,
+        alignment: TextAlign.center,
+      ),
     );
   }
 
   static Color colorLimite(int limite, int cantidad) {
     Color color = Color(0xff32c864);
-    if (cantidad < limite) {
-      color = Color(0xFFFDC930);
-      if (cantidad < limite / 2) {
-        color = Color(0xFFFF4B4B);
-      }
-    }
+    if (cantidad < limite) color = Color(0xFFFDC930);
+    if (cantidad < limite / 2) color = Color(0xFFFF4B4B);
     return color;
   }
 
   static Color colorEstado(String estado) {
-    late Color color;
     switch (estado) {
       case ('En proceso'):
-        color = Colors.blue.shade200;
-        break;
+        return Colors.blue.shade200;
       case ('Entregado'):
-        color = Colors.green.shade100;
-        break;
+        return Colors.green.shade100;
       case ('Incompleto'):
-        color = Colors.yellow.shade300;
-        break;
+        return Colors.yellow.shade300;
       case ('Finalizado'):
-        color = Colors.green.shade300;
-        break;
+        return Colors.green.shade300;
       case ('Cancelado'):
-        color = Colors.red.shade200;
-        break;
+        return Colors.red.shade200;
       case ('Denegado'):
-        color = Colors.red.shade300;
-        break;
+        return Colors.red.shade300;
+      default:
+        return Colors.white;
     }
-    return color;
   }
 
   static void crearLista(int length, Color color_) {
-    for (int i = 0; i < length; i++) {
-      color.add(color_);
-    }
+    color.addAll(List.filled(length, color_));
   }
 
   static void limpiarLista() {
-    if (color.isNotEmpty) {
-      color.clear();
-    }
+
+    if (color.isNotEmpty) color = [];
   }
 
   static Color getColor(int i) {
@@ -164,9 +151,9 @@ class Textos with ChangeNotifier {
     notifyListeners();
   }
 
-  void setAllColor(Color colorInt) {
+  void setAllColor(Color color_) {
     for (int i = 0; i < color.length; i++) {
-      color[i] = colorInt;
+      color[i] = color_;
     }
     notifyListeners();
   }

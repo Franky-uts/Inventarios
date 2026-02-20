@@ -15,15 +15,12 @@ class Tablas with ChangeNotifier {
   ) {
     List<Widget> lista = [];
     for (int i = 0; i < textos.length; i++) {
-      if (grosores[i] > 0.075) {
-        lista.add(_barraSuperior(grosor * grosores[i], textos[i], true));
-      } else {
-        lista.add(_barraSuperior(grosor * grosores[i], textos[i], false));
-      }
-      if (i != textos.length - 1) {
-        lista.add(_divider());
-      }
+      lista.add(
+        _barraSuperior(grosor * grosores[i], textos[i], (grosores[i] > 0.075)),
+      );
+      lista.add(_divider());
     }
+    lista.removeLast();
     return Container(
       width: grosor,
       decoration: BoxDecoration(color: Color(0xFF8A03A9)),
@@ -62,9 +59,9 @@ class Tablas with ChangeNotifier {
                   Botones.icoCirMor(
                     'Volver a cargar',
                     Icons.refresh_rounded,
-                    false,
                     () async => await accionRefresh!(),
                     () => {},
+                    false,
                     true,
                   ),
                 ],
@@ -88,9 +85,9 @@ class Tablas with ChangeNotifier {
                 Botones.icoCirMor(
                   'Volver a cargar',
                   Icons.refresh_rounded,
-                  false,
                   () async => await accionRefresh!(),
                   () => {},
+                  false,
                   true,
                 ),
               ],
@@ -106,13 +103,10 @@ class Tablas with ChangeNotifier {
   }
 
   static SizedBox _barraSuperior(double grosor, String texto, bool grande) {
-    double size;
-    if (grande) {
-      size = 15;
-    } else {
-      size = 12;
-    }
-    return SizedBox(width: grosor, child: Textos.textoBlanco(texto, size));
+    return SizedBox(
+      width: grosor,
+      child: Textos.textoBlanco(texto, size: grande ? 15 : 12),
+    );
   }
 
   static Widget _barraDato(
@@ -127,7 +121,13 @@ class Tablas with ChangeNotifier {
         color: color,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Textos.textoGeneral(texto, 20, true, true, maxLines),
+      child: Textos.textoGeneral(
+        texto,
+        true,
+        maxLines,
+        size: 20,
+        alignment: TextAlign.center,
+      ),
     );
   }
 
@@ -143,47 +143,35 @@ class Tablas with ChangeNotifier {
   }) {
     List<Widget> lista = [];
     for (int i = 0; i < textos.length; i++) {
-      if (textos[i].isEmpty) {
-        lista.add(SizedBox(width: grosor * grosores[i], child: extraWid!));
-      } else {
-        if (colores.isEmpty) {
-          lista.add(
-            _barraDato(
-              grosor * grosores[i],
-              textos[i],
-              Colors.transparent,
-              maxLines,
-            ),
-          );
-        } else {
-          lista.add(
-            _barraDato(grosor * grosores[i], textos[i], colores[i], maxLines),
-          );
-        }
-      }
+      lista.add(
+        textos[i].isEmpty
+            ? SizedBox(width: grosor * grosores[i], child: extraWid!)
+            : _barraDato(
+                grosor * grosores[i],
+                textos[i],
+                colores.isNotEmpty ? colores[i] : Colors.transparent,
+                maxLines,
+              ),
+      );
       lista.add(_divider());
     }
     lista.removeLast();
+    Widget wid = Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: lista,
+    );
     if (boton) {
-      return TextButton(
+      wid = TextButton(
         onPressed: () => extra!(),
         style: TextButton.styleFrom(
           padding: EdgeInsets.all(0),
           shape: ContinuousRectangleBorder(),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: lista,
-        ),
-      );
-    } else {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: lista,
+        child: wid,
       );
     }
+    return wid;
   }
 
   static VerticalDivider _divider() {

@@ -1,94 +1,103 @@
 import 'package:flutter/material.dart';
 
 class VenDatos with ChangeNotifier {
-  static List _idArt = [];
-  static List _artVen = [];
-  static List _canVen = [];
-  static List _areVen = [];
-  static List _tipVen = [];
-  static List _canCubVen = [];
-  static List _comProv = [];
-  static List _comTienda = [];
-  static List _comfProd = [];
-  static String _idVen = '';
-  static String _remVen = '';
-  static String _estVen = '';
-  static String _modVen = '';
-  static String _locVen = '';
+  static List<int> _idArt = [];
+  static List<String> _art = [];
+  static List<int> _can = [];
+  static List<String> _are = [];
+  static List<String> _tip = [];
+  static List<int> _canCub = [];
+  static List<double> _canAlm = [];
+  static List<String> _comProv = [];
+  static List<String> _comTienda = [];
+  static List<bool> _comfProd = [];
+  static String _id = '';
+  static String _rem = '';
+  static String _est = '';
+  static String _mod = '';
+  static String _loc = '';
 
   void setDatos(
-    List idArt,
-    List artVen,
-    List canVen,
-    List areVen,
-    List tipVen,
-    List canCubVen,
-    List comprov,
-    List comTienda,
-    List comfProd,
-    String idVen,
-    String remVen,
-    String estVen,
-    String modVen,
-    String locVen,
+    List<int> idArt,
+    List<String> art,
+    List<int> can,
+    List<String> are,
+    List<String> tip,
+    List<int> canCub,
+    List<double> canAlm,
+    List<String> comProv,
+    List<String> comTienda,
+    List<bool> comfProd,
+    String id,
+    String rem,
+    String est,
+    String mod,
+    String loc,
   ) {
     _idArt = idArt;
-    _artVen = artVen;
-    _canVen = canVen;
-    _areVen = areVen;
-    _tipVen = tipVen;
-    _canCubVen = canCubVen;
-    _comProv = comprov;
+    _art = art;
+    _can = can;
+    _are = are;
+    _tip = tip;
+    _canCub = canCub;
+    _canAlm = canAlm;
+    _comProv = comProv;
     _comTienda = comTienda;
     _comfProd = comfProd;
-    _idVen = idVen;
-    _remVen = remVen;
-    _estVen = estVen;
-    _modVen = modVen;
-    _locVen = locVen;
+    _id = id;
+    _rem = rem;
+    _est = est;
+    _mod = mod;
+    _loc = loc;
     notifyListeners();
   }
 
   int length() {
-    return _artVen.length;
+    return _art.length;
   }
 
   int idArt(int i) {
     return _idArt[i];
   }
 
-  String artVen(int i) {
-    return _artVen[i];
+  String art(int i) {
+    return _art[i];
   }
 
-  int canVen(int i) {
-    return _canVen[i];
+  int can(int i) {
+    return _can[i];
   }
 
-  String areVen(int i) {
-    return _areVen[i];
+  String are(int i) {
+    return _are[i];
   }
 
-  String tipVen(int i) {
-    return _tipVen[i];
+  String tip(int i) {
+    return _tip[i];
   }
 
-  int canCubVen(int i) {
-    return _canCubVen[i];
+  int canCub(int i) {
+    return _canCub[i];
   }
 
-  void canCubVenSub(int i) {
-    _canCubVen[i]--;
+  double canAlm(int i) {
+    return _canAlm[i];
+  }
+
+  void canCubSub(int i) {
+    _canAlm[i]++;
+    _canCub[i]--;
     notifyListeners();
   }
 
-  void canCubVenAdd(int i) {
-    _canCubVen[i]++;
+  void canCubAdd(int i) {
+    _canAlm[i]--;
+    _canCub[i]++;
     notifyListeners();
   }
 
-  List canCubVenLista() {
-    return _canCubVen;
+  List<int> canCubLista() {
+    return _canCub;
   }
 
   String comTienda(int i) {
@@ -99,7 +108,7 @@ class VenDatos with ChangeNotifier {
     return _comProv[i];
   }
 
-  List comProvLista() {
+  List<String> comProvLista() {
     return _comProv;
   }
 
@@ -108,16 +117,11 @@ class VenDatos with ChangeNotifier {
     notifyListeners();
   }
 
-  void setComProvLista(List lista) {
-    _comProv = lista;
-    notifyListeners();
-  }
-
   bool comfProd(int i) {
     return _comfProd[i];
   }
 
-  List comfProdLista() {
+  List<bool> comfProdLista() {
     return _comfProd;
   }
 
@@ -126,23 +130,23 @@ class VenDatos with ChangeNotifier {
     notifyListeners();
   }
 
-  String idVen() {
-    return _idVen;
+  String id() {
+    return _id;
   }
 
-  String remVen() {
-    return _remVen;
+  String rem() {
+    return _rem;
   }
 
-  String estVen() {
-    return _estVen;
+  String est() {
+    return _est;
   }
 
-  String modVen() {
-    return _modVen;
+  String mod() {
+    return _mod;
   }
 
-  String desVen() {
-    return _locVen;
+  String loc() {
+    return _loc;
   }
 }

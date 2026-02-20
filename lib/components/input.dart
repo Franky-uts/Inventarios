@@ -11,23 +11,19 @@ class CampoTexto with ChangeNotifier {
 
   static Widget inputTexto(
     double size,
-    IconData? icono,
     String texto,
     TextEditingController controller,
     Color errorColor,
     bool enabled,
     bool password,
     Function accion, {
+    IconData? icono,
     Color? borderColor,
     EdgeInsets? margin,
     FocusNode? focus,
     TextInputFormatter? formato,
     TextInputType? inputType,
   }) {
-    Icon? icon;
-    if (icono != null) {
-      icon = Icon(icono);
-    }
     return Container(
       width: size,
       margin: margin,
@@ -67,7 +63,7 @@ class CampoTexto with ChangeNotifier {
               width: 2.5,
             ),
           ),
-          prefixIcon: icon,
+          prefixIcon: Icon(icono),
           prefixIconColor: Color(0xFF8A03A9),
           suffixIcon: Icon(Icons.warning_rounded),
           suffixIconColor: errorColor,
@@ -83,7 +79,7 @@ class CampoTexto with ChangeNotifier {
     IconData icono,
     String valorActual,
     List<String> lista,
-    Color color,
+    Color colorWarning,
     Function accion,
   ) {
     return Container(
@@ -113,15 +109,19 @@ class CampoTexto with ChangeNotifier {
                     value: value,
                     child: SizedBox(
                       width: sizeTotal * .223,
-                      child: Textos.textoGeneral(value, 0, true, false, 1),
+                      child: Textos.textoGeneral(
+                        value,
+                        true,
+                        1,
+                      ),
                     ),
                   );
                 }).toList(),
-                onChanged: (value) => {accion(value)},
+                onChanged: (value) => accion(value),
               ),
             ),
           ),
-          Icon(Icons.warning_rounded, color: color),
+          Icon(Icons.warning_rounded, color: colorWarning),
         ],
       ),
     );
@@ -132,9 +132,9 @@ class CampoTexto with ChangeNotifier {
       controller: busquedaTexto,
       focusNode: focusBusqueda,
       cursorColor: Color(0xFF8A03A9),
-      onSubmitted: (event) => {accion()},
+      onSubmitted: (event) => accion(),
       onTapOutside: (event) => {
-        if (busquedaTexto.text.isNotEmpty) {accion()},
+        if (busquedaTexto.text.isNotEmpty) accion(),
         FocusManager.instance.primaryFocus?.unfocus(),
       },
       style: TextStyle(color: Color(0xFF8A03A9)),
@@ -158,35 +158,72 @@ class CampoTexto with ChangeNotifier {
           initialValue: seleccionFiltro,
           color: Colors.white,
           onSelected: (Filtros filtro) => {
-            if (filtro != seleccionFiltro) {seleccionFiltro = filtro, accion()},
+            if (filtro != seleccionFiltro) seleccionFiltro = filtro,
+            accion(),
           },
           tooltip: 'Filtros',
           itemBuilder: (BuildContext context) => <PopupMenuEntry<Filtros>>[
             PopupMenuItem<Filtros>(
               value: Filtros.id,
-              child: Textos.textoGeneral('ID', 17.5, true, true, 1),
+              child: Textos.textoGeneral(
+                'ID',
+                true,
+                1,
+                size: 17.5,
+                alignment: TextAlign.center,
+              ),
             ),
             PopupMenuItem<Filtros>(
               value: Filtros.nombre,
-              child: Textos.textoGeneral('Nombre', 17.5, true, true, 1),
+              child: Textos.textoGeneral(
+                'Nombre',
+                true,
+                1,
+                size: 17.5,
+                alignment: TextAlign.center,
+              ),
             ),
             PopupMenuItem<Filtros>(
               value: Filtros.tipo,
-              child: Textos.textoGeneral('Tipo', 17.5, true, true, 1),
+              child: Textos.textoGeneral(
+                'Tipo',
+                true,
+                1,
+                size: 17.5,
+                alignment: TextAlign.center,
+              ),
             ),
             PopupMenuItem<Filtros>(
               value: Filtros.area,
-              child: Textos.textoGeneral('Área', 17.5, true, true, 1),
+              child: Textos.textoGeneral(
+                'Área',
+                true,
+                1,
+                size: 17.5,
+                alignment: TextAlign.center,
+              ),
             ),
             if (unidades)
               PopupMenuItem<Filtros>(
                 value: Filtros.unidades,
-                child: Textos.textoGeneral('Unidades', 17.5, true, true, 1),
+                child: Textos.textoGeneral(
+                  'Unidades',
+                  true,
+                  1,
+                  size: 17.5,
+                  alignment: TextAlign.center,
+                ),
               ),
             if (fecha)
               PopupMenuItem<Filtros>(
                 value: Filtros.fecha,
-                child: Textos.textoGeneral('Fecha', 17.5, true, true, 1),
+                child: Textos.textoGeneral(
+                  'Fecha',
+                  true,
+                  1,
+                  size: 17.5,
+                  alignment: TextAlign.center,
+                ),
               ),
           ],
         ),
@@ -197,68 +234,49 @@ class CampoTexto with ChangeNotifier {
   }
 
   static IconButton botonBusqueda(Function accion) {
-    IconButton iconb;
-    if (busquedaTexto.text.isEmpty) {
-      iconb = IconButton(
-        tooltip: 'Buscar',
-        onPressed: () => {
-          if (busquedaTexto.text.isEmpty)
-            {
-              if (!focusBusqueda.hasFocus)
-                {
-                  FocusManager.instance.primaryFocus?.requestFocus(
-                    focusBusqueda,
-                  ),
-                },
-            }
-          else
-            {FocusManager.instance.primaryFocus?.unfocus(), accion()},
-        },
-        icon: Icon(Icons.search, color: Color(0xFF8A03A9)),
-      );
-    } else {
-      iconb = IconButton(
-        tooltip: 'Limpiar busqueda',
-        onPressed: () => {
-          FocusManager.instance.primaryFocus?.unfocus(),
-          busquedaTexto.clear(),
-          accion(),
-        },
-        icon: Icon(Icons.close_rounded, color: Color(0xFF8A03A9)),
-      );
-    }
-    return iconb;
-  }
-
-  void setBusqueda(String busqueda) {
-    busquedaTexto.text = busqueda;
+    return (busquedaTexto.text.isEmpty)
+        ? IconButton(
+            tooltip: 'Buscar',
+            onPressed: () => {
+              (busquedaTexto.text.isEmpty)
+                  ? {
+                      if (!focusBusqueda.hasFocus)
+                        FocusManager.instance.primaryFocus?.requestFocus(
+                          focusBusqueda,
+                        ),
+                    }
+                  : FocusManager.instance.primaryFocus?.unfocus(),
+              accion(),
+            },
+            icon: Icon(Icons.search, color: Color(0xFF8A03A9)),
+          )
+        : IconButton(
+            tooltip: 'Limpiar busqueda',
+            onPressed: () => {
+              FocusManager.instance.primaryFocus?.unfocus(),
+              busquedaTexto.clear(),
+              accion(),
+            },
+            icon: Icon(Icons.close_rounded, color: Color(0xFF8A03A9)),
+          );
   }
 
   static String filtroTexto() {
-    String filtro;
     switch (seleccionFiltro) {
       case (Filtros.id):
-        filtro = 'id';
-        break;
+        return 'id';
       case (Filtros.nombre):
-        filtro = 'Nombre';
-        break;
+        return 'Nombre';
       case (Filtros.unidades):
-        filtro = 'Unidades';
-        break;
+        return 'Unidades';
       case (Filtros.tipo):
-        filtro = 'Tipo';
-        break;
+        return 'Tipo';
       case (Filtros.area):
-        filtro = 'Area';
-        break;
+        return 'Area';
       case (Filtros.fecha):
-        filtro = 'Fecha';
-        break;
+        return 'Fecha';
       default:
-        filtro = 'id';
-        break;
+        return 'id';
     }
-    return filtro;
   }
 }

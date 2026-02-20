@@ -62,18 +62,11 @@ class _AddproductoState extends State<AddProducto> {
   }
 
   void registrarProducto(BuildContext ctx) async {
-    colorCampo[0] = Color(0x00FFFFFF);
-    colorCampo[1] = Color(0x00FFFFFF);
-    colorCampo[2] = Color(0x00FFFFFF);
-    if (control[0].text.isEmpty) {
-      colorCampo[2] = Color(0xFFFF0000);
-    }
-    if (articuloValor == 'Artículos') {
-      colorCampo[1] = Color(0xFFFF0000);
-    }
-    if (areaValor == 'Áreas') {
-      colorCampo[0] = Color(0xFFFF0000);
-    }
+    ctx.read<Carga>().cargaBool(true);
+    colorCampo = List.filled(3, Color(0x00FFFFFF));
+    if (control[0].text.isEmpty) colorCampo[2] = Color(0xFFFF0000);
+    if (articuloValor == 'Artículos') colorCampo[1] = Color(0xFFFF0000);
+    if (areaValor == 'Áreas') colorCampo[0] = Color(0xFFFF0000);
     if (control[0].text.isNotEmpty &&
         articuloValor != 'Artículos' &&
         areaValor != 'Áreas') {
@@ -81,17 +74,18 @@ class _AddproductoState extends State<AddProducto> {
         id,
         int.parse(control[0].text),
       );
-      if (respuesta.split(': ')[0] != 'Error') {
-        id = 0;
-        control[0].text = '';
-        control[1].text = '';
-        control[2].text = '';
-        articuloValor = articuloLista.first;
-        areaValor = areasLista.first;
-      } else {
-        respuesta = respuesta.split(': ')[1];
-      }
+      (respuesta.split(': ')[0] != 'Error')
+          ? {
+              id = 0,
+              control[0].text = '',
+              control[1].text = '',
+              control[2].text = '',
+              articuloValor = articuloLista.first,
+              areaValor = areasLista.first,
+            }
+          : respuesta = respuesta.split(': ')[1];
       Textos.toast(respuesta, true);
+      if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
     }
   }
 
@@ -118,7 +112,7 @@ class _AddproductoState extends State<AddProducto> {
                           children: [
                             Column(
                               children: [
-                                Textos.textoBlanco('Áreas', 15),
+                                Textos.textoBlanco('Áreas', size: 15),
                                 CampoTexto.inputDropdown(
                                   MediaQuery.of(context).size.width,
                                   Icons.door_front_door_rounded,
@@ -131,7 +125,7 @@ class _AddproductoState extends State<AddProducto> {
                             ),
                             Column(
                               children: [
-                                Textos.textoBlanco('Artículo', 15),
+                                Textos.textoBlanco('Artículo', size: 15),
                                 CampoTexto.inputDropdown(
                                   MediaQuery.of(context).size.width,
                                   Icons.door_front_door_rounded,
@@ -150,7 +144,6 @@ class _AddproductoState extends State<AddProducto> {
                           children: [
                             CampoTexto.inputTexto(
                               MediaQuery.of(context).size.width * .365,
-                              Icons.file_copy_rounded,
                               'Tipo',
                               control[1],
                               Color(0x00FFFFFF),
@@ -158,10 +151,10 @@ class _AddproductoState extends State<AddProducto> {
                               false,
                               () =>
                                   FocusManager.instance.primaryFocus?.unfocus(),
+                              icono: Icons.file_copy_rounded,
                             ),
                             CampoTexto.inputTexto(
                               MediaQuery.of(context).size.width * .365,
-                              Icons.file_copy_rounded,
                               'Cantidad por unidad',
                               control[2],
                               Color(0x00FFFFFF),
@@ -169,33 +162,26 @@ class _AddproductoState extends State<AddProducto> {
                               false,
                               () =>
                                   FocusManager.instance.primaryFocus?.unfocus(),
+                              icono: Icons.question_mark_rounded,
                             ),
                           ],
                         ),
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75,
-                          Icons.file_copy_rounded,
                           'Limite minimo de productos',
                           control[0],
                           colorCampo[2],
                           true,
                           false,
-                          () => {
-                            carga.cargaBool(true),
-                            registrarProducto(context),
-                            carga.cargaBool(false),
-                          },
+                          () => registrarProducto(context),
+                          icono: Icons.production_quantity_limits_rounded,
                           inputType: TextInputType.number,
                           formato: FilteringTextInputFormatter.digitsOnly,
                         ),
                         Botones.iconoTexto(
                           'Añadir',
                           Icons.add_circle_rounded,
-                          () => {
-                            carga.cargaBool(true),
-                            registrarProducto(context),
-                            carga.cargaBool(false),
-                          },
+                          () => registrarProducto(context),
                         ),
                       ],
                     ),
@@ -220,10 +206,8 @@ class _AddproductoState extends State<AddProducto> {
     articuloLista = ['Artículos'];
     articuloValor = articuloLista.first;
     if (areaNombre != 'Áreas') {
-      for (int i = 0; i < widget.listaArticulos.length; i++) {
-        if (widget.listaArticulos[i].area == areaNombre) {
-          articuloLista.add(widget.listaArticulos[i].nombre);
-        }
+      for (ArticulosModel articulo in widget.listaArticulos) {
+        if (articulo.area == areaNombre) articuloLista.add(articulo.nombre);
       }
     }
     id = 0;
@@ -235,23 +219,18 @@ class _AddproductoState extends State<AddProducto> {
   }
 
   void setArticulo(String articuloNombre) {
-    int id = 0;
-    String tipo = '';
-    String cantidad = '';
+    ArticulosModel? art;
     if (articuloNombre != 'Artículos') {
-      for (int i = 0; i < widget.listaArticulos.length; i++) {
-        if (widget.listaArticulos[i].nombre == articuloNombre &&
-            widget.listaArticulos[i].area == areaValor) {
-          id = widget.listaArticulos[i].id;
-          tipo = widget.listaArticulos[i].tipo;
-          cantidad = '${widget.listaArticulos[i].cantidadPorUnidad}';
+      for (ArticulosModel articulo in widget.listaArticulos) {
+        if (articulo.nombre == articuloNombre && articulo.area == areaValor) {
+          art = articulo;
         }
       }
     }
-    this.id = id;
+    id = art!.id;
     setState(() {
-      control[1].text = tipo;
-      control[2].text = cantidad;
+      control[1].text = art!.tipo;
+      control[2].text = '${art.cantidadPorUnidad}';
       articuloValor = articuloNombre;
     });
   }

@@ -30,7 +30,7 @@ class _HistorialInfoState extends State<HistorialInfo> {
 
   @override
   void initState() {
-    widget.historialInfo.perdidas = [0];
+    widget.historialInfo.perdidas.add(0);
     super.initState();
   }
 
@@ -40,8 +40,8 @@ class _HistorialInfoState extends State<HistorialInfo> {
       widget.historialInfo.fecha,
     );
     if (perdidas) {
-      for (int i = 0; i < historial[0].cantidades.length; i++) {
-        cantidadPerdida += historial[0].cantidades[i];
+      for (var registro in historial[0].cantidades) {
+        cantidadPerdida += registro;
       }
       setState(() {
         widget.historialInfo.cantidades = historial[0].cantidades;
@@ -100,7 +100,7 @@ class _HistorialInfoState extends State<HistorialInfo> {
                               'Ver perdidas',
                               Icons.cookie_rounded,
                               Color(0xFF8A03A9),
-                              () => {context.read<Ventanas>().tabla(true)},
+                              () => context.read<Ventanas>().tabla(true),
                             ),
                           ],
                         ),

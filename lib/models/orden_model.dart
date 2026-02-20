@@ -11,6 +11,7 @@ class OrdenModel {
   List<String> tipos;
   List<String> areas;
   List<int> cantidadesCubiertas;
+  List<double> cantidadAlmacen;
   List<String> comentariosTienda;
   List<String> comentariosProveedor;
   List<bool> confirmacion;
@@ -29,6 +30,7 @@ class OrdenModel {
     required this.tipos,
     required this.areas,
     required this.cantidadesCubiertas,
+    required this.cantidadAlmacen,
     required this.comentariosProveedor,
     required this.comentariosTienda,
     required this.confirmacion,
@@ -66,6 +68,7 @@ class OrdenModel {
               tipos: [],
               areas: [],
               cantidadesCubiertas: [],
+              cantidadAlmacen: [],
               comentariosProveedor: [],
               comentariosTienda: [],
               confirmacion: [],
@@ -88,6 +91,7 @@ class OrdenModel {
             tipos: [],
             areas: [],
             cantidadesCubiertas: [],
+            cantidadAlmacen: [],
             comentariosProveedor: [],
             comentariosTienda: [],
             confirmacion: [],
@@ -105,11 +109,12 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ['Error'],
+          articulos: [],
           cantidades: [],
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          cantidadAlmacen: [],
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
@@ -126,11 +131,12 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ['Error'],
+          articulos: [],
           cantidades: [],
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          cantidadAlmacen: [],
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
@@ -147,11 +153,12 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ['Error'],
+          articulos: [],
           cantidades: [],
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          cantidadAlmacen: [],
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
@@ -168,11 +175,12 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ['Error'],
+          articulos: [],
           cantidades: [],
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          cantidadAlmacen: [],
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
@@ -211,6 +219,7 @@ class OrdenModel {
               tipos: [],
               areas: [],
               cantidadesCubiertas: [],
+              cantidadAlmacen: [],
               comentariosProveedor: [],
               comentariosTienda: [],
               confirmacion: [],
@@ -233,6 +242,7 @@ class OrdenModel {
             tipos: [],
             areas: [],
             cantidadesCubiertas: [],
+            cantidadAlmacen: [],
             comentariosProveedor: [],
             comentariosTienda: [],
             confirmacion: [],
@@ -250,11 +260,12 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ['Error'],
+          articulos: [],
           cantidades: [],
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          cantidadAlmacen: [],
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
@@ -271,11 +282,12 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ['Error'],
+          articulos: [],
           cantidades: [],
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          cantidadAlmacen: [],
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
@@ -292,11 +304,12 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ['Error'],
+          articulos: [],
           cantidades: [],
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          cantidadAlmacen: [],
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
@@ -313,11 +326,12 @@ class OrdenModel {
       ordenesFuture.add(
         OrdenModel(
           id: 0,
-          articulos: ['Error'],
+          articulos: [],
           cantidades: [],
           tipos: [],
           areas: [],
           cantidadesCubiertas: [],
+          cantidadAlmacen: [],
           comentariosProveedor: [],
           comentariosTienda: [],
           confirmacion: [],
@@ -345,6 +359,7 @@ class OrdenModel {
           'content-type': 'application/json; charset=UTF-8',
         },
       );
+      final datos = json.decode(res.body);
       orden = OrdenModel(
         id: 0,
         articulos: [],
@@ -352,6 +367,7 @@ class OrdenModel {
         tipos: [],
         areas: [],
         cantidadesCubiertas: [],
+        cantidadAlmacen: [],
         comentariosProveedor: [],
         comentariosTienda: [],
         confirmacion: [],
@@ -364,7 +380,6 @@ class OrdenModel {
         mensaje: res.body,
       );
       if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
         for (var item in datos) {
           orden = OrdenModel(
             id: item['id'],
@@ -373,6 +388,7 @@ class OrdenModel {
             tipos: List<String>.from(item['Tipos']),
             areas: List<String>.from(item['Areas']),
             cantidadesCubiertas: List<int>.from(item['CantidadesCubiertas']),
+            cantidadAlmacen: List<double>.from(item['CantidadAlmacen']),
             comentariosProveedor: List<String>.from(
               item['ComentariosProveedor'],
             ),
@@ -396,6 +412,7 @@ class OrdenModel {
         tipos: [],
         areas: [],
         cantidadesCubiertas: [],
+        cantidadAlmacen: [],
         comentariosProveedor: [],
         comentariosTienda: [],
         confirmacion: [],
@@ -415,6 +432,7 @@ class OrdenModel {
         tipos: [],
         areas: [],
         cantidadesCubiertas: [],
+        cantidadAlmacen: [],
         comentariosProveedor: [],
         comentariosTienda: [],
         confirmacion: [],
@@ -434,6 +452,7 @@ class OrdenModel {
         tipos: [],
         areas: [],
         cantidadesCubiertas: [],
+        cantidadAlmacen: [],
         comentariosProveedor: [],
         comentariosTienda: [],
         confirmacion: [],
@@ -453,6 +472,7 @@ class OrdenModel {
         tipos: [],
         areas: [],
         cantidadesCubiertas: [],
+        cantidadAlmacen: [],
         comentariosProveedor: [],
         comentariosTienda: [],
         confirmacion: [],
@@ -474,7 +494,7 @@ class OrdenModel {
     List<String> comentarios,
   ) async {
     String remitente = LocalStorage.local('usuario');
-    String productoFuture;
+    String productoFuture = '';
     try {
       final res = await http.post(
         Uri.parse('${LocalStorage.local('conexion')}/ordenes/'),
@@ -502,12 +522,8 @@ class OrdenModel {
     return productoFuture;
   }
 
-  static Future<String> editarOrden(
-    String id,
-    String columna,
-    String dato,
-  ) async {
-    String respuesta;
+  static Future<String> editarOrden(String id, String columna, var dato) async {
+    String respuesta = '';
     if (columna == 'Estado') {
       dato = '${dato[0].toUpperCase()}${dato.substring(1, dato.length)}';
     }
@@ -538,7 +554,7 @@ class OrdenModel {
     String estado,
     List confirmaciones,
   ) async {
-    String respuesta;
+    String respuesta = '';
     try {
       final res = await http.put(
         Uri.parse('${LocalStorage.local('conexion')}/ordenes/$id/confirmacion'),

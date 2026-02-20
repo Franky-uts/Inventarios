@@ -61,8 +61,8 @@ class _ProductoState extends State<Producto> {
 
   double calcularPerdidas(List<double> lista) {
     double perdida = 0;
-    for (int i = 0; i < lista.length; i++) {
-      perdida += lista[i];
+    for (double obj in lista) {
+      perdida += obj;
     }
     return perdida;
   }
@@ -92,19 +92,17 @@ class _ProductoState extends State<Producto> {
     String mensaje = await ProductoModel.guardarES(entr, sali, productoInfo.id);
     if (mensaje.split(": ")[0] != 'Error') {
       ProductoModel producto = await ProductoModel.getProducto(productoInfo.id);
-      if (producto.mensaje.isEmpty) {
-        setState(() {
-          productoInfo = producto;
-          productosPerdido = calcularPerdidas(producto.perdidaCantidad);
-          entr = 0;
-          sali = 0;
-          color[0] = Color(0xFF8A03A9);
-          color[1] = Color(0xFF8A03A9);
-        });
-      } else {
-        mensaje =
-            'Se guardó la información, pero no se pudo actualizar el producto';
-      }
+      (producto.mensaje.isEmpty)
+          ? setState(() {
+              productoInfo = producto;
+              productosPerdido = calcularPerdidas(producto.perdidaCantidad);
+              entr = 0;
+              sali = 0;
+              color[0] = Color(0xFF8A03A9);
+              color[1] = Color(0xFF8A03A9);
+            })
+          : mensaje =
+                'Se guardó la información, pero no se pudo actualizar el producto';
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
     Textos.toast(mensaje, true);
@@ -116,40 +114,30 @@ class _ProductoState extends State<Producto> {
     String mensaje = 'No hay datos';
     if (!(controllerGranel[0].text.isEmpty &&
         controllerGranel[1].text.isEmpty)) {
-      if (controllerGranel[0].text.isEmpty) {
-        ent = 0;
-      } else {
-        ent = double.parse(controllerGranel[0].text);
-      }
-      if (controllerGranel[1].text.isEmpty) {
-        sal = 0;
-      } else {
-        sal = double.parse(controllerGranel[1].text);
-      }
-      if (ent < 0) {
-        color[0] = Color(0xFFFF0000);
-      }
-      if (sal < 0) {
-        color[1] = Color(0xFFFF0000);
-      }
+      (controllerGranel[0].text.isEmpty)
+          ? ent = 0
+          : ent = double.parse(controllerGranel[0].text);
+      (controllerGranel[1].text.isEmpty)
+          ? sal = 0
+          : sal = double.parse(controllerGranel[1].text);
+      if (ent < 0) color[0] = Color(0xFFFF0000);
+      if (sal < 0) color[1] = Color(0xFFFF0000);
       if (ent >= 0 && sal >= 0) {
         mensaje = await ProductoModel.guardarES(ent, sal, productoInfo.id);
         if (mensaje.split(": ")[0] != 'Error') {
           ProductoModel producto = await ProductoModel.getProducto(
             productoInfo.id,
           );
-          if (producto.mensaje.isEmpty) {
-            setState(() {
-              productoInfo = producto;
-              color[0] = Color(0x00000000);
-              color[1] = Color(0x00000000);
-              controllerGranel[0].text = '';
-              controllerGranel[1].text = '';
-            });
-          } else {
-            mensaje =
-                'Se guardó la información, pero no se pudo actualizar el producto';
-          }
+          (producto.mensaje.isEmpty)
+              ? setState(() {
+                  productoInfo = producto;
+                  color[0] = Color(0x00000000);
+                  color[1] = Color(0x00000000);
+                  controllerGranel[0].text = '';
+                  controllerGranel[1].text = '';
+                })
+              : mensaje =
+                    'Se guardó la información, pero no se pudo actualizar el producto';
         }
       }
     }
@@ -221,15 +209,13 @@ class _ProductoState extends State<Producto> {
           ProductoModel producto = await ProductoModel.getProducto(
             productoInfo.id,
           );
-          if (producto.mensaje.isEmpty) {
-            setState(() {
-              productosPerdido += perdidas;
-              productoInfo = producto;
-            });
-          } else {
-            mensaje =
-                'Se guardó la información, pero no se pudo actualizar el producto';
-          }
+          (producto.mensaje.isEmpty)
+              ? setState(() {
+                  productosPerdido += perdidas;
+                  productoInfo = producto;
+                })
+              : mensaje =
+                    'Se guardó la información, pero no se pudo actualizar el producto';
         }
         if (ctx.mounted) {
           ctx.read<Ventanas>().emergente(mensaje.split(':')[0] == 'Error');
@@ -242,34 +228,37 @@ class _ProductoState extends State<Producto> {
   }
 
   void editarLimite(BuildContext ctx) async {
-    if (controllerPerdidas[0].text.isEmpty) {
-      setState(() {
-        color[3] = Color(0xFFFF0000);
-      });
-    } else {
-      ctx.read<Carga>().cargaBool(true);
-      String mensaje = await ProductoModel.editarProducto(
-        productoInfo.id,
-        controllerPerdidas[0].text,
-        'LimiteProd',
-      );
-      if (mensaje.split(': ')[0] != 'Error') {
-        setState(() {
-          color[3] = Color(0x00000000);
-          productoInfo.limiteProd = double.parse(
-            controllerPerdidas[0].text,
-          ).floor();
-          controllerPerdidas[0].text = '';
-        });
-        mensaje =
-            'Se actualizó el límite de productos del producto con id $mensaje.';
-        if (ctx.mounted) {
-          ctx.read<Ventanas>().emergente(false);
-          ctx.read<Carga>().cargaBool(false);
-        }
-      }
-      Textos.toast(mensaje, true);
-    }
+    String mensaje = '';
+    (controllerPerdidas[0].text.isEmpty)
+        ? setState(() {
+            color[3] = Color(0xFFFF0000);
+          })
+        : {
+            ctx.read<Carga>().cargaBool(true),
+            mensaje = await ProductoModel.editarProducto(
+              productoInfo.id,
+              controllerPerdidas[0].text,
+              'LimiteProd',
+            ),
+            if (mensaje.split(': ')[0] != 'Error')
+              {
+                setState(() {
+                  color[3] = Color(0x00000000);
+                  productoInfo.limiteProd = double.parse(
+                    controllerPerdidas[0].text,
+                  ).floor();
+                  controllerPerdidas[0].text = '';
+                }),
+                mensaje =
+                    'Se actualizó el límite de productos del producto con id $mensaje.',
+                if (ctx.mounted)
+                  {
+                    ctx.read<Ventanas>().emergente(false),
+                    ctx.read<Carga>().cargaBool(false),
+                  },
+              },
+          };
+    if (mensaje.isNotEmpty) Textos.toast(mensaje, true);
   }
 
   @override
@@ -334,11 +323,11 @@ class _ProductoState extends State<Producto> {
                         Botones.icoCirMor(
                           'Guardar movimientos',
                           Icons.save_rounded,
-                          false,
                           () => productoInfo.tipo != 'Granel'
                               ? enviarDatos(context)
                               : enviarDatosGranel(context),
                           () => Textos.toast('No hay hay cambios.', false),
+                          false,
                           productoInfo.tipo != 'Granel'
                               ? entr > 0 || sali > 0
                               : true,
@@ -476,18 +465,15 @@ class _ProductoState extends State<Producto> {
                       children: [
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75,
-                          Icons.numbers_rounded,
                           'Cantidad',
                           controllerPerdidas[0],
                           color[3],
                           true,
                           false,
-                          () => {
-                            if (texto == '¿Cuánto se perdió y por qué?')
-                              {focus.requestFocus()}
-                            else
-                              {editarLimite(context)},
-                          },
+                          () => (texto == '¿Cuánto se perdió y por qué?')
+                              ? focus.requestFocus()
+                              : editarLimite(context),
+                          icono: Icons.numbers_rounded,
                           formato: FilteringTextInputFormatter.allow(
                             RegExp(r'(^\d*\.?\d{0,3})'),
                           ),
@@ -498,13 +484,13 @@ class _ProductoState extends State<Producto> {
                         if (texto == '¿Cuánto se perdió y por qué?')
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .75,
-                            Icons.message_rounded,
                             'Razón de la perdida',
                             controllerPerdidas[1],
                             color[4],
                             true,
                             false,
                             () => guardarPerdidas(context),
+                            icono: Icons.message_rounded,
                             focus: focus,
                           ),
                       ],
@@ -555,18 +541,23 @@ class _ProductoState extends State<Producto> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Textos.textoGeneral(titulo, 20, true, true, 1),
+              Textos.textoGeneral(
+                titulo,
+                true,
+                1,
+                size: 20,
+                alignment: TextAlign.center,
+              ),
               if (cantidad.isNotEmpty)
-                Textos.textoGeneral(cantidad, 15, false, true, 1),
+                Textos.textoGeneral(cantidad, true, 1, size: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Textos.textoGeneral(
                     'Minimo requerido: ${productoInfo.limiteProd}',
-                    15,
-                    false,
                     true,
                     1,
+                    size: 15,
                   ),
                   SizedBox(
                     height: 40,
@@ -595,8 +586,8 @@ class _ProductoState extends State<Producto> {
               productoInfo.limiteProd,
               productoInfo.unidades.floor(),
             ),
-            20,
             1,
+            size: 20,
           ),
         ],
       ),
@@ -617,7 +608,13 @@ class _ProductoState extends State<Producto> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Textos.textoGeneral(text, 20, true, false, 1),
+          Textos.textoGeneral(
+            text,
+            false,
+            1,
+            size: 20,
+            alignment: TextAlign.center,
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
@@ -632,13 +629,12 @@ class _ProductoState extends State<Producto> {
                 }),
                 child: Botones.btnRctMor(
                   '',
-                  0,
                   Icons.remove,
                   false,
                   () => cambioValor(valor, -1),
                 ),
               ),
-              Textos.recuadroCantidad(textoValor, color[valor], 20, 1),
+              Textos.recuadroCantidad(textoValor, color[valor], 1, size: 20),
               GestureDetector(
                 onLongPress: () => timer = Timer.periodic(
                   Duration(milliseconds: 150),
@@ -649,7 +645,6 @@ class _ProductoState extends State<Producto> {
                 }),
                 child: Botones.btnRctMor(
                   '',
-                  0,
                   Icons.add,
                   false,
                   () => cambioValor(valor, 1),
@@ -682,20 +677,20 @@ class _ProductoState extends State<Producto> {
         children: [
           CampoTexto.inputTexto(
             MediaQuery.sizeOf(context).width * .3575,
-            Icons.info_outline_rounded,
             text,
             controllerGranel[valor],
             color[valor],
             true,
             false,
             () => FocusManager.instance.primaryFocus?.unfocus(),
+            icono: Icons.info_outline_rounded,
             formato: FilteringTextInputFormatter.allow(
               RegExp(r'(^\d*\.?\d{0,3})'),
             ),
             inputType: TextInputType.numberWithOptions(decimal: true),
             borderColor: Color(0xFF8A03A9),
           ),
-          Textos.recuadroCantidad(textoValor, Color(0xFF8A03A9), 20, 1),
+          Textos.recuadroCantidad(textoValor, Color(0xFF8A03A9), 1, size: 20),
         ],
       ),
     );
@@ -715,15 +710,20 @@ class _ProductoState extends State<Producto> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Textos.textoGeneral(text, 20, true, false, 1),
+          Textos.textoGeneral(
+            text,
+            false,
+            1,
+            size: 20,
+            alignment: TextAlign.center,
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Textos.recuadroCantidad(textoValor, color[valor], 20, 1),
+              Textos.recuadroCantidad(textoValor, color[valor], 1, size: 20),
               Botones.btnRctMor(
                 texto.split(':')[0],
-                0,
                 Icons.info_outline_rounded,
                 false,
                 () => {
@@ -742,8 +742,8 @@ class _ProductoState extends State<Producto> {
 
   SizedBox footer(List<String> textos) {
     List<Widget> lista = [];
-    for (int i = 0; i < textos.length; i++) {
-      lista.add(Textos.textoGeneral(textos[i], 15, false, false, 1));
+    for (String txt in textos) {
+      lista.add(Textos.textoGeneral(txt, false, 1, size: 15));
     }
     return SizedBox(
       width: MediaQuery.of(context).size.width * .35,

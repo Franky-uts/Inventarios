@@ -39,20 +39,19 @@ class _InventarioState extends State<Inventario> {
   Future<void> getProductoInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     ProductoModel producto = await ProductoModel.getProducto(id);
-    if (producto.mensaje.isEmpty) {
-      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
-      if (ctx.mounted) {
-        Navigator.pushReplacement(
-          ctx,
-          MaterialPageRoute(
-            builder: (ctx) =>
-                Producto(productoInfo: producto, ruta: Inventario()),
-          ),
-        );
-      }
-    } else {
-      Textos.toast(producto.mensaje, true);
-    }
+    (producto.mensaje.isEmpty)
+        ? {
+            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            if (ctx.mounted)
+              Navigator.pushReplacement(
+                ctx,
+                MaterialPageRoute(
+                  builder: (ctx) =>
+                      Producto(productoInfo: producto, ruta: Inventario()),
+                ),
+              ),
+          }
+        : Textos.toast(producto.mensaje, true);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -66,7 +65,6 @@ class _InventarioState extends State<Inventario> {
               return Botones.icoCirMor(
                 'Cambiar de tienda',
                 Icons.change_circle_rounded,
-                false,
                 () => {
                   Navigator.of(ctx).pop(),
                   carga.cargaBool(true),
@@ -74,6 +72,7 @@ class _InventarioState extends State<Inventario> {
                   carga.cargaBool(false),
                 },
                 () => Textos.toast('Espera a que los datos carguen.', false),
+                false,
                 Carga.getValido(),
               );
             },
@@ -83,12 +82,12 @@ class _InventarioState extends State<Inventario> {
             return Botones.icoCirMor(
               'Añadir un producto',
               Icons.edit_note_rounded,
-              false,
               () async => {
                 carga.cargaBool(true),
                 await RecDrawer.getListas(context, Inventario()),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -98,9 +97,9 @@ class _InventarioState extends State<Inventario> {
             return Botones.icoCirMor(
               'Descargar reporte',
               Icons.download_rounded,
-              false,
               () async => await RecDrawer.datosExcel(context),
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -110,20 +109,21 @@ class _InventarioState extends State<Inventario> {
             return Botones.icoCirMor(
               'Historial movimientos',
               Icons.history_toggle_off_rounded,
-              false,
               () => {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                  {CampoTexto.seleccionFiltro = Filtros.id},
+                  CampoTexto.seleccionFiltro = Filtros.id,
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
                     builder: (context) => Historial(ruta: Inventario()),
                   ),
                 ),
+                false,
                 carga.cargaBool(false),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -133,12 +133,12 @@ class _InventarioState extends State<Inventario> {
             return Botones.icoCirMor(
               'Reiniciar movimientos',
               Icons.refresh_rounded,
-              false,
               () => {
                 Navigator.of(context).pop(),
                 context.read<Ventanas>().emergente(true),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -148,9 +148,9 @@ class _InventarioState extends State<Inventario> {
             return Botones.icoCirMor(
               'Escanear codigo',
               Icons.barcode_reader,
-              false,
               () => RecDrawer.scanProducto(context, Inventario()),
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -160,12 +160,12 @@ class _InventarioState extends State<Inventario> {
             return Botones.icoCirMor(
               'Nueva orden',
               Icons.add_shopping_cart_rounded,
-              true,
               () async => {
                 carga.cargaBool(true),
                 await RecDrawer.salidaOrdenes(context),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              true,
               Carga.getValido(),
             );
           },
@@ -267,6 +267,15 @@ class _InventarioState extends State<Inventario> {
                   );
                 },
               ),
+            Consumer2<Ventanas, Carga>(
+              builder: (context, ventanas, carga, child) {
+                return Ventanas.ventanaScan(
+                  context,
+                  (texto) =>
+                      RecDrawer.rutaProducto(texto, Inventario(), context),
+                );
+              },
+            ),
             Carga.ventanaCarga(),
           ],
         ),
@@ -281,10 +290,10 @@ class _InventarioState extends State<Inventario> {
       children: [
         Botones.btnRctMor(
           'Abrir menú',
-          35,
           Icons.menu_rounded,
           false,
           () => Scaffold.of(context).openDrawer(),
+          size: 35,
         ),
         Container(
           width: MediaQuery.of(context).size.width * .875,
@@ -319,10 +328,7 @@ class _InventarioState extends State<Inventario> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = [];
-        for (int i = 0; i < 8; i++) {
-          colores.add(Colors.transparent);
-        }
+        List<Color> colores = List.filled(8, Colors.transparent);
         colores[2] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),

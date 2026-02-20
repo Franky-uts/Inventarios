@@ -37,10 +37,9 @@ class RecDrawer {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Textos.textoGeneral('Bienvenido, ', 15, true, false, 1),
+                    Textos.textoGeneral('Bienvenido, ', true, 1, size: 15),
                     Botones.btnRctMor(
                       'Cerrar sesión',
-                      0,
                       Icons.logout_rounded,
                       true,
                       () => {
@@ -54,26 +53,23 @@ class RecDrawer {
                 ),
                 Textos.textoGeneral(
                   LocalStorage.local('usuario'),
-                  30,
                   true,
-                  false,
                   1,
+                  size: 30,
                 ),
                 Textos.textoGeneral(
                   LocalStorage.local('puesto'),
-                  15,
                   true,
-                  false,
                   1,
+                  size: 15,
                 ),
                 Consumer<Ventanas>(
                   builder: (ctx, ventanas, child) {
                     return Textos.textoGeneral(
                       'Mostrando: ${Ventanas.getInventario()}',
-                      20,
                       true,
-                      false,
                       1,
+                      size: 20,
                     );
                   },
                 ),
@@ -230,12 +226,7 @@ class RecDrawer {
             }
           }
         }
-        establecerCelda(
-          sheetObject,
-          0,
-          contador,
-          IntCellValue(item.id),
-        );
+        establecerCelda(sheetObject, 0, contador, IntCellValue(item.id));
         establecerCelda(sheetObject, 1, contador, TextCellValue(item.nombre));
         establecerCelda(sheetObject, 2, contador, TextCellValue(item.fecha));
         establecerCelda(sheetObject, 7, contador, TextCellValue(perdidas));
@@ -335,16 +326,28 @@ class RecDrawer {
   }
 
   static void scanProducto(BuildContext ctx, StatefulWidget ruta) async {
-    String prod;
-    ctx.read<Carga>().cargaBool(true);
     Navigator.of(ctx).pop();
-    prod = await Textos.scan(ctx);
+    if (kIsWeb) {
+      ctx.read<Ventanas>().scan(true);
+    } else {
+      ctx.read<Carga>().cargaBool(true);
+      String producto = await Textos.scan(ctx);
+      if (ctx.mounted) rutaProducto(producto, ruta, ctx);
+    }
+  }
+
+  static void rutaProducto(
+    String prod,
+    StatefulWidget ruta,
+    BuildContext ctx,
+  ) async {
     bool flag = true;
     List<ProductoModel> productos = await ProductoModel.getProductos('id', '');
     for (int i = 0; i < productos.length; i++) {
       if (productos[i].codigoBarras == prod) {
         flag = false;
         if (ctx.mounted) {
+          ctx.read<Ventanas>().scan(false);
           Navigator.pushReplacement(
             ctx,
             MaterialPageRoute(
@@ -352,22 +355,25 @@ class RecDrawer {
                   Producto(productoInfo: productos[i], ruta: ruta),
             ),
           );
+          ctx.read<Carga>().cargaBool(false);
         }
       }
     }
-    if (flag) {
-      Textos.toast('No se reconocio el codigo.', false);
-    }
-    if (ctx.mounted) {
-      ctx.read<Carga>().cargaBool(false);
-    }
+    if (flag) Textos.toast('No se reconocio el codigo.', false);
   }
 
   static void scanArticulo(BuildContext ctx) async {
-    String prod;
-    ctx.read<Carga>().cargaBool(true);
     Navigator.of(ctx).pop();
-    prod = await Textos.scan(ctx);
+    if (kIsWeb) {
+      ctx.read<Ventanas>().scan(true);
+    } else {
+      ctx.read<Carga>().cargaBool(true);
+      String articulo = await Textos.scan(ctx);
+      if (ctx.mounted) rutaArticulo(articulo, ctx);
+    }
+  }
+
+  static void rutaArticulo(String prod, BuildContext ctx) async {
     bool flag = true;
     List<ArticulosModel> articulos = await ArticulosModel.getArticulos(
       'id',
@@ -377,21 +383,18 @@ class RecDrawer {
       if (articulos[i].codigoBarras == prod) {
         flag = false;
         if (ctx.mounted) {
+          ctx.read<Ventanas>().scan(false);
           Navigator.pushReplacement(
             ctx,
             MaterialPageRoute(
               builder: (cxt) => ArticuloInfo(articulo: articulos[i]),
             ),
           );
+          ctx.read<Carga>().cargaBool(false);
         }
       }
     }
-    if (flag) {
-      Textos.toast('No se reconocio el codigo.', false);
-    }
-    if (ctx.mounted) {
-      ctx.read<Carga>().cargaBool(false);
-    }
+    if (flag) Textos.toast('No se reconocio el codigo.', false);
   }
 
   static Future<void> getListas(BuildContext ctx, StatefulWidget ruta) async {
@@ -403,32 +406,25 @@ class RecDrawer {
       '',
     );
     List areas = await ProductoModel.getAreas();
-    if (articulos.last.nombre == 'Error') {
-      texto = articulos.last.mensaje;
-    }
-    if (areas.last.split(': ')[0] == 'Error') {
-      texto = areas.last.split(': ')[1];
-    }
-    if (texto.isNotEmpty) {
-      Textos.toast(texto, false);
-    } else {
-      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
-      if (ctx.mounted) {
-        Navigator.pushReplacement(
-          ctx,
-          MaterialPageRoute(
-            builder: (context) => AddProducto(
-              listaArticulos: articulos,
-              areas: areas,
-              ruta: ruta,
-            ),
-          ),
-        );
-      }
-    }
-    if (ctx.mounted) {
-      ctx.read<Carga>().cargaBool(false);
-    }
+    if (articulos.last.mensaje != '') texto = articulos.last.mensaje;
+    if (areas.last.split(': ')[0] == 'Error') texto = areas.last.split(': ')[1];
+    (texto.isNotEmpty)
+        ? Textos.toast(texto, false)
+        : {
+            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            if (ctx.mounted)
+              Navigator.pushReplacement(
+                ctx,
+                MaterialPageRoute(
+                  builder: (context) => AddProducto(
+                    listaArticulos: articulos,
+                    areas: areas,
+                    ruta: ruta,
+                  ),
+                ),
+              ),
+          };
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
   static Future<void> salidaOrdenes(BuildContext ctx) async {
@@ -436,37 +432,60 @@ class RecDrawer {
     Navigator.of(ctx).pop();
     CampoTexto.seleccionFiltro = Filtros.id;
     List<ProductoModel> productos = await ProductoModel.getProductos('id', '');
-    if (productos[0].nombre != 'Error') {
-      if (ctx.mounted) {
-        Textos.crearLista(productos.last.id, Color(0xFFFDC930));
-        Navigator.pushReplacement(
-          ctx,
-          MaterialPageRoute(builder: (context) => OrdenSalida()),
-        );
-      }
-    } else {
-      Textos.toast(productos[0].tipo, false);
-    }
-    if (ctx.mounted) {
-      ctx.read<Carga>().cargaBool(false);
-    }
+    (productos.last.mensaje == '')
+        ? {
+            if (ctx.mounted)
+              {
+                Textos.crearLista(productos.last.id, Color(0xFFFDC930)),
+                Navigator.pushReplacement(
+                  ctx,
+                  MaterialPageRoute(builder: (context) => OrdenSalida()),
+                ),
+              },
+          }
+        : Textos.toast(productos.last.mensaje, true);
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
-  static Future<StatefulWidget> salidaOrdenesProd(BuildContext ctx) async {
+  static Future<void> salidaOrdenesProd(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
+    Navigator.of(ctx).pop();
     CampoTexto.seleccionFiltro = Filtros.id;
     List<ProductoModel> productos = await ProductoModel.getProductosProd(
       'id',
       '',
     );
-    if (productos[0].nombre != 'Error') {
-      if (ctx.mounted) {
-        Textos.crearLista(productos.last.id, Color(0xFFFDC930));
-      }
-    } else {
-      Textos.toast(productos[0].tipo, false);
-    }
+    (productos.last.mensaje == '')
+        ? {
+            if (ctx.mounted)
+              {
+                Textos.crearLista(productos.last.id, Color(0xFFFDC930)),
+                Navigator.pushReplacement(
+                  ctx,
+                  MaterialPageRoute(builder: (context) => OrdenSalidaProd()),
+                ),
+              },
+          }
+        : Textos.toast(productos.last.mensaje, false);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
-    return OrdenSalidaProd();
+  }
+
+  static void pushAnim(StatefulWidget ruta, BuildContext ctx) {
+    Navigator.of(ctx).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => ruta,
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return SlideTransition(
+            position: animation.drive(
+              Tween(
+                begin: Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).chain(CurveTween(curve: Curves.ease)),
+            ),
+            child: child,
+          );
+        },
+      ),
+    );
   }
 }

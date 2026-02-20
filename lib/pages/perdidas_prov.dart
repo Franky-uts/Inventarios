@@ -31,8 +31,8 @@ class _PerdidasProvState extends State<PerdidasProv> {
 
   @override
   void initState() {
-    for (int i = 0; i < productoInfo.perdidaCantidad.length; i++) {
-      productosPerdido += productoInfo.perdidaCantidad[i];
+    for (double perdida in productoInfo.perdidaCantidad) {
+      productosPerdido += perdida;
     }
     super.initState();
   }
@@ -44,19 +44,20 @@ class _PerdidasProvState extends State<PerdidasProv> {
 
   void guardarPerdidas(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
-    bool valido = true;
-    for (int i = 0; i < controller.length; i++) {
+    setState(() {
+      List.filled(2, Color(0x00FFFFFF));
+    });
+    if (controller[0].text.isEmpty) {
       setState(() {
-        colores[i] = Color(0x00FFFFFF);
+        colores[0] = Color(0xFFFF0000);
       });
-      if (controller[i].text.isEmpty) {
-        valido = false;
-        setState(() {
-          colores[i] = Color(0xFFFF0000);
-        });
-      }
     }
-    if (valido) {
+    if (controller[1].text.isEmpty) {
+      setState(() {
+        colores[1] = Color(0xFFFF0000);
+      });
+    }
+    if (controller[1].text.isNotEmpty || controller[1].text.isNotEmpty) {
       double perdidas = double.parse(controller[0].text);
       double unidades = double.parse(
         (perdidas / productoInfo.cantidadPorUnidad).toStringAsFixed(3),
@@ -72,15 +73,13 @@ class _PerdidasProvState extends State<PerdidasProv> {
           ProductoModel producto = await ProductoModel.getProducto(
             productoInfo.id,
           );
-          if (producto.mensaje.isEmpty) {
-            setState(() {
-              productosPerdido += perdidas;
-              productoInfo = producto;
-            });
-          } else {
-            mensaje =
-                'Se guardó la información, pero no se pudo actualizar el producto';
-          }
+          (producto.mensaje.isEmpty)
+              ? setState(() {
+                  productosPerdido += perdidas;
+                  productoInfo = producto;
+                })
+              : mensaje =
+                    'Se guardó la información, pero no se pudo actualizar el producto';
         }
       }
       if (ctx.mounted) {
@@ -140,17 +139,17 @@ class _PerdidasProvState extends State<PerdidasProv> {
                                   children: [
                                     Textos.textoGeneral(
                                       'Área: ${productoInfo.area}',
-                                      20,
-                                      true,
                                       true,
                                       1,
+                                      size: 20,
+                                      alignment: TextAlign.center,
                                     ),
                                     Textos.textoGeneral(
                                       '${productoInfo.tipo}:',
-                                      20,
-                                      true,
                                       true,
                                       1,
+                                      size: 20,
+                                      alignment: TextAlign.center,
                                     ),
                                     Textos.recuadroCantidad(
                                       ('${productoInfo.unidades}'.split(
@@ -165,8 +164,8 @@ class _PerdidasProvState extends State<PerdidasProv> {
                                         productoInfo.limiteProd,
                                         productoInfo.unidades.floor(),
                                       ),
-                                      20,
                                       1,
+                                      size: 20,
                                     ),
                                   ],
                                 ),
@@ -278,13 +277,13 @@ class _PerdidasProvState extends State<PerdidasProv> {
                       children: [
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75,
-                          Icons.numbers_rounded,
                           'Cantidad',
                           controller[0],
                           colores[0],
                           true,
                           false,
                           () => focus.requestFocus(),
+                          icono: Icons.numbers_rounded,
                           formato: FilteringTextInputFormatter.allow(
                             RegExp(r'(^\d*\.?\d{0,3})'),
                           ),
@@ -294,13 +293,13 @@ class _PerdidasProvState extends State<PerdidasProv> {
                         ),
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75,
-                          Icons.message_rounded,
                           'Razón de la perdida',
                           controller[1],
                           colores[1],
                           true,
                           false,
                           () => guardarPerdidas(context),
+                          icono: Icons.message_rounded,
                           focus: focus,
                         ),
                       ],

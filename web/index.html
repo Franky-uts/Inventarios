@@ -1,38 +1,101 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+    <!--
+      If you are serving your web app in a path other than the root, change the
+      href value below to reflect the base path you are serving from.
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+      The path provided below has to start and end with a slash "/" in order for
+      it to work correctly.
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+      For more details:
+      * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
+      This is a placeholder for base href that will be replaced by the value of
+      the `--base-href` argument provided to `flutter build`.
 
-  <base href=".$FLUTTER_BASE_HREF">-->
+    <base href=".$FLUTTER_BASE_HREF">-->
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="A new Flutter project.">
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="A new Flutter project.">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="inventarios">
-  <link rel="apple-touch-icon" href="icons/logo.jpg">
+    <!-- iOS meta tags & icons -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="inventarios">
+    <link rel="apple-touch-icon" href="icons/logo.jpg">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="logo.jpg"/>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logo.jpg"/>
 
-  <title>Inventarios</title>
-  <link rel="manifest" href="manifest.json">
+    <title>Inventarios</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body{
+            background-color: #FF5600;
+        }
+        .loading {
+          background-color: transparent;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin: 0;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          -ms-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+        }
+
+        .loader {
+          width: 250px;
+          height: 250px;
+          -webkit-animation: spin 5s linear infinite;
+          animation: spin 5s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: scale(0.9);
+                -ms-transform: scale(0.9);
+                transform: scale(0.9);
+            }
+            50% {
+                -webkit-transform: scale(1);
+                -ms-transform: scale(1);
+                transform: scale(1);
+            }
+            100% {
+                -webkit-transform: scale(0.9);
+                -ms-transform: scale(0.9);
+                transform: scale(0.9);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                -webkit-transform: scale(0.9);
+                -ms-transform: scale(0.9);
+                transform: scale(0.9);
+            }
+            50% {
+                -webkit-transform: scale(1);
+                -ms-transform: scale(1);
+                transform: scale(1);
+            }
+            100% {
+                -webkit-transform: scale(0.9);
+                -ms-transform: scale(0.9);
+                transform: scale(0.9);
+            }
+        }
+    </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+<div class="loading">
+    <image class="loader" src="./icons/logo.jpg"></image>
+</div>
+<script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

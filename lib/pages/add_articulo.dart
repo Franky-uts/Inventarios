@@ -30,14 +30,19 @@ class _AddproductoState extends State<Addarticulo> {
   late List<String> listaTipo = [];
   late String valorArea, valorTipo;
   late bool cantidad, materia;
-  IconData _iconoScan = Icons.document_scanner_rounded;
   final List<TextEditingController> controller = [
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
   ];
-  late List<Color> colorCampo = [];
+  late List<Color> colorCampo = [
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
+  ];
   String? res;
 
   @override
@@ -50,9 +55,6 @@ class _AddproductoState extends State<Addarticulo> {
     listaArea.addAll(widget.listaArea.map((item) => item as String).toList());
     valorArea = listaArea.first;
     valorTipo = listaTipo.first;
-    for (int i = 0; i < 5; i++) {
-      colorCampo.add(Color(0x00FFFFFF));
-    }
     super.initState();
   }
 
@@ -85,24 +87,12 @@ class _AddproductoState extends State<Addarticulo> {
     setState(() {
       context.read<Carga>().cargaBool(true);
     });
-    for (int i = 0; i < colorCampo.length; i++) {
-      colorCampo[i] = Color(0x00FFFFFF);
-    }
-    if (controller[0].text.isEmpty) {
-      colorCampo[0] = Color(0xFFFF0000);
-    }
-    if (controller[1].text.isEmpty) {
-      colorCampo[3] = Color(0xFFFF0000);
-    }
-    if (controller[3].text.isEmpty) {
-      colorCampo[4] = Color(0xFFFF0000);
-    }
-    if (valorArea == 'Área') {
-      colorCampo[2] = Color(0xFFFF0000);
-    }
-    if (valorTipo == 'Tipo') {
-      colorCampo[1] = Color(0xFFFF0000);
-    }
+    colorCampo = List.filled(colorCampo.length, Color(0x00FFFFFF));
+    if (controller[0].text.isEmpty) colorCampo[0] = Color(0xFFFF0000);
+    if (controller[1].text.isEmpty) colorCampo[3] = Color(0xFFFF0000);
+    if (controller[3].text.isEmpty) colorCampo[4] = Color(0xFFFF0000);
+    if (valorArea == 'Área') colorCampo[2] = Color(0xFFFF0000);
+    if (valorTipo == 'Tipo') colorCampo[1] = Color(0xFFFF0000);
     if (controller[0].text.isNotEmpty &&
         controller[1].text.isNotEmpty &&
         controller[3].text.isNotEmpty &&
@@ -125,21 +115,11 @@ class _AddproductoState extends State<Addarticulo> {
         cantidad = false;
         valorTipo = listaTipo.first;
         valorArea = listaArea.first;
-        respuesta = 'Se guardo $respuesta correctamente.';
       }
       Textos.toast(respuesta, true);
     }
     setState(() {
       context.read<Carga>().cargaBool(false);
-    });
-  }
-
-  void iconoScan() {
-    setState(() {
-      _iconoScan = Icons.document_scanner_rounded;
-      if (controller[2].text.isEmpty) {
-        _iconoScan = Icons.refresh_rounded;
-      }
     });
   }
 
@@ -153,7 +133,6 @@ class _AddproductoState extends State<Addarticulo> {
             return Botones.icoCirMor(
               'Ver artículos',
               Icons.list,
-              false,
               () => {
                 carga.cargaBool(true),
                 Navigator.pushReplacement(
@@ -163,6 +142,7 @@ class _AddproductoState extends State<Addarticulo> {
                 carga.cargaBool(false),
               },
               () => {},
+              false,
               true,
             );
           },
@@ -172,7 +152,6 @@ class _AddproductoState extends State<Addarticulo> {
             return Botones.icoCirMor(
               'Ver almacen',
               Icons.inventory_rounded,
-              false,
               () => {
                 carga.cargaBool(true),
                 Navigator.pushReplacement(
@@ -182,6 +161,7 @@ class _AddproductoState extends State<Addarticulo> {
                 carga.cargaBool(false),
               },
               () => {},
+              false,
               true,
             );
           },
@@ -191,7 +171,6 @@ class _AddproductoState extends State<Addarticulo> {
             return Botones.icoCirMor(
               'Ordenes',
               Icons.border_color_rounded,
-              true,
               () => {
                 context.read<Carga>().cargaBool(true),
                 Navigator.pushReplacement(
@@ -201,6 +180,7 @@ class _AddproductoState extends State<Addarticulo> {
                 context.read<Carga>().cargaBool(false),
               },
               () => {},
+              true,
               true,
             );
           },
@@ -224,22 +204,21 @@ class _AddproductoState extends State<Addarticulo> {
                       children: [
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .675,
-                          Icons.file_copy_rounded,
                           'Nombre',
                           controller[0],
                           colorCampo[0],
                           true,
                           false,
                           () => FocusManager.instance.primaryFocus?.unfocus(),
+                          icono: Icons.file_copy_rounded,
                         ),
                         Column(
                           children: [
-                            Textos.textoBlanco('Materia prima', 15),
+                            Textos.textoBlanco('Materia prima', size: 15),
                             SizedBox(
                               width: MediaQuery.of(context).size.width * .075,
                               child: Botones.btnRctMor(
                                 'Materia Prima',
-                                20,
                                 materia
                                     ? Icons.check_box_rounded
                                     : Icons.check_box_outline_blank_rounded,
@@ -247,6 +226,7 @@ class _AddproductoState extends State<Addarticulo> {
                                 () => setState(() {
                                   materia = !materia;
                                 }),
+                                size: 20,
                               ),
                             ),
                           ],
@@ -258,24 +238,22 @@ class _AddproductoState extends State<Addarticulo> {
                       children: [
                         Column(
                           children: [
-                            Textos.textoBlanco('Área', 15),
+                            Textos.textoBlanco('Área', size: 15),
                             CampoTexto.inputDropdown(
                               MediaQuery.of(context).size.width,
                               Icons.door_front_door_rounded,
                               valorArea,
                               listaArea,
                               colorCampo[2],
-                              (value) {
-                                setState(() {
-                                  valorArea = value;
-                                });
-                              },
+                              (value) => setState(() {
+                                valorArea = value;
+                              }),
                             ),
                           ],
                         ),
                         Column(
                           children: [
-                            Textos.textoBlanco('Tipo', 15),
+                            Textos.textoBlanco('Tipo', size: 15),
                             CampoTexto.inputDropdown(
                               MediaQuery.of(context).size.width,
                               Icons.settings_suggest,
@@ -299,13 +277,13 @@ class _AddproductoState extends State<Addarticulo> {
                       children: [
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .365,
-                          Icons.numbers_rounded,
                           'Cantidad por unidades',
                           controller[1],
                           colorCampo[3],
                           cantidad,
                           false,
                           () => FocusManager.instance.primaryFocus?.unfocus(),
+                          icono: Icons.numbers_rounded,
                           margin: EdgeInsets.symmetric(horizontal: 10),
                           formato: FilteringTextInputFormatter.allow(
                             RegExp(r'(^\d*\.?\d{0,3})'),
@@ -316,13 +294,13 @@ class _AddproductoState extends State<Addarticulo> {
                         ),
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .365,
-                          Icons.numbers_rounded,
                           'Precio',
                           controller[3],
                           colorCampo[4],
                           true,
                           false,
                           () => FocusManager.instance.primaryFocus?.unfocus(),
+                          icono: Icons.numbers_rounded,
                           margin: EdgeInsets.symmetric(horizontal: 10),
                           formato: FilteringTextInputFormatter.allow(
                             RegExp(r'(^\d*\.?\d{0,3})'),
@@ -339,33 +317,31 @@ class _AddproductoState extends State<Addarticulo> {
                       children: [
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75 * .925,
-                          Icons.barcode_reader,
                           'Codigo de barras',
                           controller[2],
                           Color(0x00FFFFFF),
                           false,
                           false,
                           () => {},
+                          icono: Icons.barcode_reader,
                         ),
                         SizedBox(
                           width:
                               MediaQuery.of(context).size.width * (.75 * .075),
                           child: Botones.btnSimple(
                             'Escanear código',
-                            _iconoScan,
+                            (controller[2].text.isEmpty)
+                                ? Icons.document_scanner_rounded
+                                : Icons.refresh_rounded,
                             Color(0xFFFFFFFF),
                             () async => {
-                              if (controller[2].text.isEmpty)
-                                {
-                                  controller[2].text = await Textos.scan(
-                                    context,
-                                  ),
-                                  if (controller[2].text == '-1')
-                                    {controller[2].text = ''},
-                                }
-                              else
-                                {controller[2].text = ''},
-                              iconoScan(),
+                              (controller[2].text.isEmpty)
+                                  ? controller[2].text = await Textos.scan(
+                                      context,
+                                    )
+                                  : controller[2].text = '',
+                              if (controller[2].text == '-1')
+                                controller[2].text = '',
                             },
                           ),
                         ),

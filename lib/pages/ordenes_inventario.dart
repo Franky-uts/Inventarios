@@ -30,20 +30,21 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
   Future<void> getProductoInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     ProductoModel producto = await ProductoModel.getProducto(id);
-    if (producto.mensaje.isEmpty) {
-      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
-      if (ctx.mounted) {
-        Navigator.pushReplacement(
-          ctx,
-          MaterialPageRoute(
-            builder: (context) =>
-                Producto(productoInfo: producto, ruta: OrdenesInventario()),
-          ),
-        );
-      }
-    } else {
-      Textos.toast(producto.mensaje, true);
-    }
+    (producto.mensaje.isEmpty)
+        ? {
+            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            if (ctx.mounted)
+              Navigator.pushReplacement(
+                ctx,
+                MaterialPageRoute(
+                  builder: (context) => Producto(
+                    productoInfo: producto,
+                    ruta: OrdenesInventario(),
+                  ),
+                ),
+              ),
+          }
+        : Textos.toast(producto.mensaje, true);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -56,12 +57,12 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             return Botones.icoCirMor(
               'Añadir un producto',
               Icons.edit_note_rounded,
-              false,
               () async => {
                 carga.cargaBool(true),
                 await RecDrawer.getListas(context, OrdenesInventario()),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -71,9 +72,9 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             return Botones.icoCirMor(
               'Descargar reporte',
               Icons.download_rounded,
-              false,
-              () async => {await RecDrawer.datosExcel(context)},
+              () async => await RecDrawer.datosExcel(context),
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -83,9 +84,9 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             return Botones.icoCirMor(
               'Escanear producto',
               Icons.barcode_reader,
-              false,
               () => RecDrawer.scanProducto(context, OrdenesInventario()),
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -95,11 +96,10 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             return Botones.icoCirMor(
               'Historial movimientos',
               Icons.history_toggle_off_rounded,
-              false,
               () => {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                  {CampoTexto.seleccionFiltro = Filtros.id},
+                  CampoTexto.seleccionFiltro = Filtros.id,
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -109,6 +109,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 carga.cargaBool(false),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -118,12 +119,12 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             return Botones.icoCirMor(
               'Reiniciar movimientos',
               Icons.refresh_rounded,
-              false,
               () => {
                 Navigator.of(context).pop(),
                 context.read<Ventanas>().emergente(true),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -133,11 +134,10 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             return Botones.icoCirMor(
               'Ver artículos',
               Icons.list,
-              false,
               () => {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                  {CampoTexto.seleccionFiltro = Filtros.id},
+                  CampoTexto.seleccionFiltro = Filtros.id,
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => Articulos()),
@@ -145,6 +145,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 carga.cargaBool(false),
               },
               () => {},
+              false,
               true,
             );
           },
@@ -154,7 +155,6 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             return Botones.icoCirMor(
               'Ordenes',
               Icons.border_color_rounded,
-              true,
               () => {
                 carga.cargaBool(true),
                 Navigator.pushReplacement(
@@ -164,6 +164,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 carga.cargaBool(false),
               },
               () => {},
+              true,
               true,
             );
           },
@@ -251,6 +252,18 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 );
               },
             ),
+            Consumer2<Ventanas, Carga>(
+              builder: (context, ventanas, carga, child) {
+                return Ventanas.ventanaScan(
+                  context,
+                  (texto) => RecDrawer.rutaProducto(
+                    texto,
+                    OrdenesInventario(),
+                    context,
+                  ),
+                );
+              },
+            ),
             Carga.ventanaCarga(),
           ],
         ),
@@ -265,10 +278,10 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
       children: [
         Botones.btnRctMor(
           'Abrir menú',
-          35,
           Icons.menu_rounded,
           false,
           () => Scaffold.of(context).openDrawer(),
+          size: 35,
         ),
         Container(
           width: MediaQuery.of(context).size.width * .875,
@@ -276,14 +289,12 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
           child: Consumer2<Tablas, CampoTexto>(
             builder: (context, tablas, campoTexto, child) {
               return CampoTexto.barraBusqueda(
-                () async => {
-                  tablas.datos(
-                    await getProductos(
-                      CampoTexto.filtroTexto(),
-                      CampoTexto.busquedaTexto.text,
-                    ),
+                () async => tablas.datos(
+                  await getProductos(
+                    CampoTexto.filtroTexto(),
+                    CampoTexto.busquedaTexto.text,
                   ),
-                },
+                ),
                 true,
                 false,
               );
@@ -303,10 +314,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = [];
-        for (int i = 0; i < 8; i++) {
-          colores.add(Colors.transparent);
-        }
+        List<Color> colores = List.filled(8, Colors.transparent);
         colores[2] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),
@@ -323,11 +331,11 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             [
               "${lista[index].id}",
               lista[index].nombre,
-              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
+              (unidad.split('.').length > 1) ? unidad.split('.')[0] : unidad,
               lista[index].area,
               lista[index].tipo,
-              (entrada.split('.')[1] == '0') ? entrada.split('.')[0] : entrada,
-              (salida.split('.')[1] == '0') ? salida.split('.')[0] : salida,
+              (entrada.split('.').length > 1) ? entrada.split('.')[0] : entrada,
+              (salida.split('.').length > 1) ? salida.split('.')[0] : salida,
               '${lista[index].perdidaCantidad.length}',
             ],
             colores,

@@ -21,20 +21,18 @@ class Inicio extends StatefulWidget {
 
 class _InicioState extends State<Inicio> {
   late UsuarioModel usuarioMod;
-  late bool verContr;
+  bool verContr = true;
   late List<TextEditingController> controller = [];
   late List<FocusNode> focus = [];
   late List<Color> color = [];
-  String ip = '192.168.1.64';
+  String ip = (LocalStorage.preferencias.getString('conexion') == null)
+      ? '192.168.1.64'
+      : LocalStorage.local(
+          'conexion',
+        ).substring(7, LocalStorage.local('conexion').length - 5);
 
   @override
   void initState() {
-    if (LocalStorage.preferencias.getString('conexion') != null) {
-      ip = LocalStorage.local(
-        'conexion',
-      ).substring(7, LocalStorage.local('conexion').length - 5);
-    }
-    verContr = true;
     for (int i = 0; i < 6; i++) {
       controller.add(TextEditingController());
       focus.add(FocusNode());
@@ -53,21 +51,22 @@ class _InicioState extends State<Inicio> {
   }
 
   void verificar(BuildContext ctx) async {
-    bool valido = true;
     String mensaje = '';
-    for (int i = 0; i < 2; i++) {
+    setState(() {
+      color.addAll(List.filled(2, Color(0x00FFFFFF)));
+    });
+    if (controller[0].text.isEmpty) {
       setState(() {
-        color[i] = Color(0x00FFFFFF);
+        color[0] = Color(0xFFFF0000);
       });
-      if (controller[i].text.isEmpty) {
-        valido = false;
-        setState(() {
-          color[i] = Color(0xFFFF0000);
-        });
-      }
     }
-    if (valido) {
-      context.read<Carga>().cargaBool(true);
+    if (controller[1].text.isEmpty) {
+      setState(() {
+        color[1] = Color(0xFFFF0000);
+      });
+    }
+    if (controller[0].text.isNotEmpty && controller[1].text.isNotEmpty) {
+      ctx.read<Carga>().cargaBool(true);
       usuarioMod = await UsuarioModel.getUsuario(
         controller[0].text,
         controller[1].text,
@@ -76,10 +75,6 @@ class _InicioState extends State<Inicio> {
       mensaje = usuarioMod.puesto;
       if (usuarioMod.nombre != 'error') {
         await LocalStorage.set('conexion', 'http://$ip:3000');
-        //await LocalStorage.set('conexion', 'http://192.168.1.130:3000');
-        await LocalStorage.set('usuario', usuarioMod.nombre);
-        await LocalStorage.set('puesto', usuarioMod.puesto);
-        await LocalStorage.set('locación', usuarioMod.locacion);
         mensaje = '';
         if (usuarioMod.puesto == 'El usuario no existe') {
           setState(() {
@@ -91,15 +86,16 @@ class _InicioState extends State<Inicio> {
           });
         } else {
           mensaje = '';
+          await LocalStorage.set('usuario', usuarioMod.nombre);
+          await LocalStorage.set('puesto', usuarioMod.puesto);
+          await LocalStorage.set('locación', usuarioMod.locacion);
           StatefulWidget ruta = Inventario();
           switch (usuarioMod.puesto) {
             case ('Proveedor'):
               ruta = Ordenes();
               break;
             case ('Producción'):
-              if (ctx.mounted) {
-                ruta = InventarioProd();
-              }
+              ruta = InventarioProd();
               break;
           }
           if (ctx.mounted) {
@@ -110,12 +106,8 @@ class _InicioState extends State<Inicio> {
           }
         }
       }
-      if (mensaje.isNotEmpty) {
-        Textos.toast(mensaje, false);
-      }
-      if (ctx.mounted) {
-        ctx.read<Carga>().cargaBool(false);
-      }
+      if (mensaje.isNotEmpty) Textos.toast(mensaje, false);
+      if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
     }
   }
 
@@ -162,7 +154,6 @@ class _InicioState extends State<Inicio> {
       lista.add(
         CampoTexto.inputTexto(
           MediaQuery.of(context).size.width * .125,
-          null,
           '',
           controller[i + 2],
           color[i + 2],
@@ -179,7 +170,6 @@ class _InicioState extends State<Inicio> {
     lista.add(
       CampoTexto.inputTexto(
         MediaQuery.of(context).size.width * .125,
-        null,
         '',
         controller[5],
         color[5],
@@ -223,13 +213,13 @@ class _InicioState extends State<Inicio> {
                     ),
                     CampoTexto.inputTexto(
                       MediaQuery.of(context).size.width * .75,
-                      Icons.person_rounded,
                       'Usuario',
                       controller[0],
                       color[0],
                       true,
                       false,
                       () => focus[1].requestFocus(),
+                      icono: Icons.person_rounded,
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -237,13 +227,13 @@ class _InicioState extends State<Inicio> {
                       children: [
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * (.75 * .925),
-                          Icons.lock_rounded,
                           'Contraseña',
                           controller[1],
                           color[1],
                           true,
                           verContr,
                           () => verificar(context),
+                          icono: Icons.lock_rounded,
                           focus: focus[1],
                         ),
                         SizedBox(
@@ -278,12 +268,12 @@ class _InicioState extends State<Inicio> {
               alignment: Alignment.topLeft,
               child: Botones.btnRctMor(
                 'Ajustes',
-                35,
                 Icons.settings,
                 false,
                 () => setState(() {
                   context.read<Ventanas>().emergente(true);
                 }),
+                size: 35,
               ),
             ),
             Ventanas.ventanaEmergente(

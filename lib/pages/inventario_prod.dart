@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
@@ -5,6 +6,7 @@ import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/perdidas_prov.dart';
 import 'package:inventarios/services/local_storage.dart';
@@ -22,29 +24,56 @@ Future<List<ProductoModel>> getProductos(
   String busqueda,
 ) async => await ProductoModel.getProductosProd(filtro, busqueda);
 
-Future<void> ordenSalida(BuildContext ctx) async {
-  StatefulWidget ruta = await RecDrawer.salidaOrdenesProd(ctx);
-  if (ctx.mounted) {
-    Navigator.pushReplacement(ctx, MaterialPageRoute(builder: (ctx) => ruta));
-  }
-}
-
 Future<void> getProductoInfo(BuildContext ctx, int id) async {
   ctx.read<Carga>().cargaBool(true);
   ProductoModel producto = await ProductoModel.getProducto(id);
-  if (producto.mensaje.isEmpty) {
-    await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
-    if (ctx.mounted) {
-      Navigator.pushReplacement(
-        ctx,
-        MaterialPageRoute(
-          builder: (ctx) => PerdidasProv(productoInfo: producto),
-        ),
-      );
-    }
+  (producto.mensaje.isEmpty)
+      ? {
+          await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+          if (ctx.mounted)
+            Navigator.pushReplacement(
+              ctx,
+              MaterialPageRoute(
+                builder: (ctx) => PerdidasProv(productoInfo: producto),
+              ),
+            ),
+        }
+      : Textos.toast(producto.mensaje, true);
+  if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+}
+
+Future<void> scanProd(BuildContext ctx) async {
+  Navigator.of(ctx).pop();
+  if (kIsWeb) {
+    ctx.read<Ventanas>().scan(true);
   } else {
-    Textos.toast(producto.mensaje, true);
+    ctx.read<Carga>().cargaBool(true);
+    String producto = await Textos.scan(ctx);
+    if (ctx.mounted) rutaProducto(producto, ctx);
   }
+}
+
+void rutaProducto(String prod, BuildContext ctx) async {
+  bool flag = false;
+  List<ProductoModel> productos = await ProductoModel.getProductosProd(
+    'id',
+    '',
+  );
+  for (int i = 0; i < productos.length; i++) {
+    if (!flag) {
+      flag = (productos[i].codigoBarras == prod);
+      if (ctx.mounted) {
+        ctx.read<Ventanas>().scan(false);
+        Navigator.pushReplacement(
+          ctx,
+          MaterialPageRoute(
+            builder: (cxt) => PerdidasProv(productoInfo: productos[i]),
+          ),
+        );
+      }
+    }
+  }
+  if (flag) Textos.toast('No se reconocio el codigo.', false);
   if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
 }
 
@@ -56,11 +85,26 @@ class _InventarioProdState extends State<InventarioProd> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
+              'Escanear codigo',
+              Icons.barcode_reader,
+              () => scanProd(context),
+              () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
+              Carga.getValido(),
+            );
+          },
+        ),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
               'Nueva orden',
               Icons.add_shopping_cart_rounded,
-              true,
-              () async => await ordenSalida(context),
+              () async => {
+                carga.cargaBool(true),
+                await RecDrawer.salidaOrdenesProd(context),
+              },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              true,
               Carga.getValido(),
             );
           },
@@ -123,6 +167,14 @@ class _InventarioProdState extends State<InventarioProd> {
                 ),
               ),
             ),
+            Consumer2<Ventanas, Carga>(
+              builder: (context, ventanas, carga, child) {
+                return Ventanas.ventanaScan(
+                  context,
+                  (texto) => rutaProducto(texto, context),
+                );
+              },
+            ),
             Carga.ventanaCarga(),
           ],
         ),
@@ -137,10 +189,10 @@ class _InventarioProdState extends State<InventarioProd> {
       children: [
         Botones.btnRctMor(
           'Abrir menú',
-          35,
           Icons.menu_rounded,
           false,
           () => Scaffold.of(context).openDrawer(),
+          size: 35,
         ),
         Container(
           width: MediaQuery.of(context).size.width * .875,
@@ -175,10 +227,7 @@ class _InventarioProdState extends State<InventarioProd> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = [];
-        for (int i = 0; i < 8; i++) {
-          colores.add(Colors.transparent);
-        }
+        List<Color> colores = List.filled(8, Colors.transparent);
         colores[2] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),

@@ -361,8 +361,8 @@ class HistorialModel {
           List<double> unidadeslist = [];
           List<double> entradaslist = [];
           List<double> salidaslist = [];
-          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
-            String dob = '${item['PerdidaCantidad'][i]}';
+          for (double perdida in item['PerdidaCantidad']) {
+            String dob = '$perdida';
             if (dob.split('.').length < 2) {
               dob = '$dob.0';
             }
@@ -667,8 +667,8 @@ class HistorialModel {
           List<double> unidadeslist = [];
           List<double> entradaslist = [];
           List<double> salidaslist = [];
-          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
-            String dob = '${item['PerdidaCantidad'][i]}';
+          for (double perdida in item['PerdidaCantidad']) {
+            String dob = '$perdida';
             if (dob.split('.').length < 2) {
               dob = '$dob.0';
             }

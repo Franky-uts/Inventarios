@@ -79,10 +79,10 @@ class ProductoModel {
           final datos = json.decode(res.body);
           for (var item in datos) {
             List<double> doublelist = [];
-            for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
-              String dob = '${item['PerdidaCantidad'][i]}.0';
-              if (dob.split('.').length > 2) {
-                dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
+            for (double perdida in item['PerdidaCantidad']) {
+              String dob = '$perdida';
+              if (dob.split('.').length < 2) {
+                dob = '$dob.0';
               }
               doublelist.add(double.parse(dob));
             }
@@ -230,10 +230,10 @@ class ProductoModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
-            String dob = '${item['PerdidaCantidad'][i]}.0';
-            if (dob.split('.').length > 2) {
-              dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
+          for (double perdida in item['PerdidaCantidad']) {
+            String dob = '$perdida';
+            if (dob.split('.').length < 2) {
+              dob = '$dob.0';
             }
             doublelist.add(double.parse(dob));
           }
@@ -395,10 +395,10 @@ class ProductoModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
-            String dob = '${item['PerdidaCantidad'][i]}.0';
-            if (dob.split('.').length > 2) {
-              dob = '${dob.split('.')[0]}.${dob.split('.')[1]}';
+          for (double perdida in item['PerdidaCantidad']) {
+            String dob = '$perdida';
+            if (dob.split('.').length < 2) {
+              dob = '$dob.0';
             }
             doublelist.add(double.parse(dob));
           }
@@ -512,10 +512,10 @@ class ProductoModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          for (int i = 0; i < item['PerdidaCantidad'].length; i++) {
-            String dob = '${item['PerdidaCantidad'][i]}';
+          for (double perdida in item['PerdidaCantidad']) {
+            String dob = '$perdida';
             if (dob.split('.').length < 2) {
-              dob = '${item['PerdidaCantidad'][i]}.0';
+              dob = '$dob.0';
             }
             doublelist.add(double.parse(dob));
           }
@@ -679,7 +679,7 @@ class ProductoModel {
     String dato,
     String columna,
   ) async {
-    String texto;
+    String texto = '';
     String conexion = LocalStorage.local('conexion');
     try {
       final res = await http.put(
@@ -726,9 +726,7 @@ class ProductoModel {
           'usuario': LocalStorage.local('usuario'),
         }),
       );
-      if (res.statusCode == 200) {
-        texto = res.body;
-      }
+      texto = res.body;
     } on TimeoutException catch (e) {
       texto = 'Error: ${e.message}';
     } on SocketException catch (e) {
@@ -761,9 +759,7 @@ class ProductoModel {
           'usuario': LocalStorage.local('usuario'),
         }),
       );
-      if (res.statusCode == 200) {
-        texto = res.body;
-      }
+      texto = res.body;
     } on TimeoutException catch (e) {
       texto = 'Error: ${e.message}';
     } on SocketException catch (e) {
@@ -777,7 +773,7 @@ class ProductoModel {
   }
 
   static Future<String> reiniciarESP() async {
-    String texto;
+    String texto = '';
     String conexion = LocalStorage.local('conexion');
     String almacen = LocalStorage.local('locación');
     try {

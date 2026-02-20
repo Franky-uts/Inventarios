@@ -55,20 +55,21 @@ class _HistorialState extends State<Historial> {
       id,
       fecha,
     );
-    if (historial.mensaje.isEmpty) {
-      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
-      if (ctx.mounted) {
-        Navigator.pushReplacement(
-          ctx,
-          MaterialPageRoute(
-            builder: (context) =>
-                HistorialInfo(historialInfo: historial, ruta: widget.ruta),
-          ),
-        );
-      }
-    } else {
-      Textos.toast(historial.mensaje, true);
-    }
+    (historial.mensaje.isEmpty)
+        ? {
+            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            if (ctx.mounted)
+              Navigator.pushReplacement(
+                ctx,
+                MaterialPageRoute(
+                  builder: (context) => HistorialInfo(
+                    historialInfo: historial,
+                    ruta: widget.ruta,
+                  ),
+                ),
+              ),
+          }
+        : Textos.toast(historial.mensaje, true);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -77,20 +78,18 @@ class _HistorialState extends State<Historial> {
     bool valido = true;
     String mensaje = '';
     for (int i = 0; i < 2; i++) {
-      if (fecIniCont[i].text.isEmpty || fecFinCont[i].text.isEmpty) {
-        valido = false;
-      } else {
-        if (fecIniCont[i].text.length < 2) {
-          fecIniCont[i].text = '0${fecIniCont[i].text}';
-        }
-        if (fecFinCont[i].text.length < 2) {
-          fecFinCont[i].text = '0${fecFinCont[i].text}';
-        }
-      }
+      (valido)
+          ? valido = !(fecIniCont[i].text.isEmpty || fecFinCont[i].text.isEmpty)
+          : {
+              if (fecIniCont[i].text.length < 2)
+                fecIniCont[i].text = '0${fecIniCont[i].text}',
+              if (fecFinCont[i].text.length < 2)
+                fecFinCont[i].text = '0${fecFinCont[i].text}',
+            };
     }
-    if (fecFinCont[2].text.length < 4 || fecIniCont[2].text.length < 4) {
-      valido = false;
-    }
+    valido =
+        valido &&
+        !(fecFinCont[2].text.length < 4 || fecIniCont[2].text.length < 4);
     if (valido) {
       DateTime fi = DateTime.parse(
         '${fecIniCont[2].text}-${fecIniCont[1].text}-${fecIniCont[0].text}',
@@ -98,46 +97,51 @@ class _HistorialState extends State<Historial> {
       DateTime ff = DateTime.parse(
         '${fecFinCont[2].text}-${fecFinCont[1].text}-${fecFinCont[0].text}',
       );
-      if (ff.isAfter(fi)) {
-        fecIni =
-            '${fecIniCont[0].text}-${fecIniCont[1].text}-${fecIniCont[2].text}';
-        fecFin =
-            '${fecFinCont[0].text}-${fecFinCont[1].text}-${fecFinCont[2].text}';
-        reporte
-            ? {
-                mensaje = await RecDrawer.historialExcel(ctx, fecIni, fecFin),
-                mensaje.split(': ')[0] == 'Error'
-                    ? {mensaje = mensaje.split(': ')[1]}
-                    : {
-                        fecIniCont[0].text = '',
-                        fecIniCont[1].text = '',
-                        fecIniCont[2].text = '',
-                        fecFinCont[0].text = '',
-                        fecFinCont[1].text = '',
-                        fecFinCont[2].text = '',
-                        fecIni = '',
-                        fecFin = '',
-                        if (ctx.mounted) ctx.read<Ventanas>().emergente(false),
-                      },
-              }
-            : {
-                ctx.read<Tablas>().datos(
-                  await getHistorial(
-                    CampoTexto.filtroTexto(),
-                    CampoTexto.busquedaTexto.text,
-                  ),
-                ),
-              };
-      } else {
-        mensaje = 'La fecha inicial no debe ser mayor a la final.';
-      }
+      (ff.isAfter(fi))
+          ? {
+              fecIni =
+                  '${fecIniCont[0].text}-${fecIniCont[1].text}-${fecIniCont[2].text}',
+              fecFin =
+                  '${fecFinCont[0].text}-${fecFinCont[1].text}-${fecFinCont[2].text}',
+              reporte
+                  ? {
+                      mensaje = await RecDrawer.historialExcel(
+                        ctx,
+                        fecIni,
+                        fecFin,
+                      ),
+                      mensaje.split(': ')[0] == 'Error'
+                          ? mensaje = mensaje.split(': ')[1]
+                          : {
+                              fecIniCont[0].text = '',
+                              fecIniCont[1].text = '',
+                              fecIniCont[2].text = '',
+                              fecFinCont[0].text = '',
+                              fecFinCont[1].text = '',
+                              fecFinCont[2].text = '',
+                              fecIni = '',
+                              fecFin = '',
+                              if (ctx.mounted)
+                                ctx.read<Ventanas>().emergente(false),
+                            },
+                    }
+                  : ctx.read<Tablas>().datos(
+                      await getHistorial(
+                        CampoTexto.filtroTexto(),
+                        CampoTexto.busquedaTexto.text,
+                      ),
+                    ),
+            }
+          : mensaje = 'La fecha inicial no debe ser mayor a la final.';
     } else {
       mensaje = 'Fecha inválida';
     }
-    mensaje.isEmpty
-        ? {if (ctx.mounted) ctx.read<Ventanas>().emergente(false)}
-        : Textos.toast(mensaje, true);
-    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+    if (ctx.mounted) {
+      mensaje.isEmpty
+          ? ctx.read<Ventanas>().emergente(false)
+          : Textos.toast(mensaje, true);
+      ctx.read<Carga>().cargaBool(false);
+    }
   }
 
   @override
@@ -150,7 +154,6 @@ class _HistorialState extends State<Historial> {
               return Botones.icoCirMor(
                 'Cambiar de tienda',
                 Icons.change_circle_rounded,
-                false,
                 () => {
                   Navigator.of(ctx).pop(),
                   carga.cargaBool(true),
@@ -158,6 +161,7 @@ class _HistorialState extends State<Historial> {
                   carga.cargaBool(false),
                 },
                 () => {},
+                false,
                 true,
               );
             },
@@ -167,44 +171,44 @@ class _HistorialState extends State<Historial> {
             return Botones.icoCirMor(
               'Descargar reporte',
               Icons.download_rounded,
-              false,
               () => {
                 Navigator.of(context).pop(),
                 ventanas.emergente(true),
                 reporte = true,
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Nueva orden',
-              Icons.add_shopping_cart_rounded,
               false,
-              () async => {
-                carga.cargaBool(true),
-                if (CampoTexto.seleccionFiltro == Filtros.fecha)
-                  {CampoTexto.seleccionFiltro = Filtros.id},
-                await RecDrawer.salidaOrdenes(context),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
               Carga.getValido(),
             );
           },
         ),
+        if (LocalStorage.local('locación') != 'Cedis')
+          Consumer<Carga>(
+            builder: (ctx, carga, child) {
+              return Botones.icoCirMor(
+                'Nueva orden',
+                Icons.add_shopping_cart_rounded,
+                () async => {
+                  carga.cargaBool(true),
+                  if (CampoTexto.seleccionFiltro == Filtros.fecha)
+                    CampoTexto.seleccionFiltro = Filtros.id,
+                  await RecDrawer.salidaOrdenes(context),
+                },
+                () => Textos.toast('Espera a que los datos carguen.', false),
+                false,
+                Carga.getValido(),
+              );
+            },
+          ),
         Consumer<Carga>(
           builder: (context, carga, child) {
             return Botones.icoCirMor(
               'Ver almacen',
               Icons.inventory_rounded,
-              true,
               () => {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.fecha)
-                  {CampoTexto.seleccionFiltro = Filtros.id},
+                  CampoTexto.seleccionFiltro = Filtros.id,
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(builder: (context) => widget.ruta),
@@ -212,6 +216,7 @@ class _HistorialState extends State<Historial> {
                 carga.cargaBool(false),
               },
               () => {},
+              true,
               true,
             );
           },
@@ -289,14 +294,19 @@ class _HistorialState extends State<Historial> {
                   () async => await setFecha(context),
                   widget: Column(
                     children: [
-                      Textos.textoGeneral('Fecha inicial', 20, true, true, 1),
+                      Textos.textoGeneral(
+                        'Fecha inicial',
+                        true,
+                        1,
+                        size: 20,
+                        alignment: TextAlign.center,
+                      ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
-                            null,
                             'Dia',
                             fecIniCont[0],
                             Color(0x00000000),
@@ -308,7 +318,6 @@ class _HistorialState extends State<Historial> {
                           ),
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
-                            null,
                             'Mes',
                             fecIniCont[1],
                             Color(0x00000000),
@@ -321,7 +330,6 @@ class _HistorialState extends State<Historial> {
                           ),
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
-                            null,
                             'Año',
                             fecIniCont[2],
                             Color(0x00000000),
@@ -334,14 +342,19 @@ class _HistorialState extends State<Historial> {
                           ),
                         ],
                       ),
-                      Textos.textoGeneral('Fecha final', 20, true, true, 1),
+                      Textos.textoGeneral(
+                        'Fecha final',
+                        true,
+                        1,
+                        size: 20,
+                        alignment: TextAlign.center,
+                      ),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
-                            null,
                             'Dia',
                             fecFinCont[0],
                             Color(0x00000000),
@@ -354,7 +367,6 @@ class _HistorialState extends State<Historial> {
                           ),
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
-                            null,
                             'Mes',
                             fecFinCont[1],
                             Color(0x00000000),
@@ -367,7 +379,6 @@ class _HistorialState extends State<Historial> {
                           ),
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
-                            null,
                             'Año',
                             fecFinCont[2],
                             Color(0x00000000),
@@ -399,21 +410,20 @@ class _HistorialState extends State<Historial> {
       children: [
         Botones.btnRctMor(
           'Abrir menú',
-          35,
           Icons.menu_rounded,
           false,
           () => Scaffold.of(context).openDrawer(),
+          size: 35,
         ),
         Botones.btnRctMor(
           'Establecer rango de fechas',
-          35,
           Icons.date_range_rounded,
           false,
           () => {context.read<Ventanas>().emergente(true), reporte = false},
+          size: 35,
         ),
         Botones.btnRctMor(
           'Restablecer fechas',
-          35,
           Icons.calendar_month_rounded,
           false,
           () async => {
@@ -428,6 +438,7 @@ class _HistorialState extends State<Historial> {
               ),
             ),
           },
+          size: 35,
         ),
         Container(
           width: MediaQuery.of(context).size.width * .8,

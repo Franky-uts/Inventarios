@@ -25,14 +25,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   List<int> cantidad = [];
   List<ProductoModel> listaProd = [];
   List<String> comentarios = [];
-  late bool lista;
   String comTit = '';
   int comid = 0;
   TextEditingController controller = TextEditingController();
 
   @override
   initState() {
-    lista = true;
     super.initState();
   }
 
@@ -54,9 +52,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     List<int> cantidades = [];
     List<int> idProductos = [];
     ctx.read<Carga>().cargaBool(true);
-    for (int i = 0; i < listaProd.length; i++) {
-      cantidades.add(cantidad[listaProd[i].id - 1]);
-      idProductos.add(listaProd[i].id);
+    for (ProductoModel prod in listaProd) {
+      cantidades.add(cantidad[prod.id - 1]);
+      idProductos.add(prod.id);
     }
     String respuesta = await OrdenModel.postOrden(
       idProductos,
@@ -68,9 +66,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         ctx.read<Textos>().setAllColor(Color(0xFFFDC930));
         ctx.read<Ventanas>().tabla(false);
       }
-      for (int i = 0; i < cantidad.length; i++) {
-        cantidad[i] = 0;
-      }
+      cantidad.addAll(List.filled(cantidad.length, 0));
       listaProd.clear();
       comentarios.clear();
     }
@@ -79,11 +75,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   }
 
   void listas(int length) {
-    if (lista) {
-      for (int i = 0; i < length; i++) {
-        cantidad.add(0);
-      }
-      lista = false;
+    if (cantidad.isEmpty) {
+      cantidad.addAll(List.filled(length, 0));
     }
   }
 
@@ -117,7 +110,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             return Botones.icoCirMor(
               'Historial de ordenes',
               Icons.history_rounded,
-              false,
               () async => {
                 await LocalStorage.set(
                   'busqueda',
@@ -133,6 +125,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                   ),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
               Carga.getValido(),
             );
           },
@@ -140,7 +133,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         Botones.icoCirMor(
           'Ver almacen',
           Icons.inventory_rounded,
-          true,
           () => {
             Textos.limpiarLista(),
             Navigator.pushReplacement(
@@ -149,6 +141,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             ),
           },
           () => {},
+          true,
           true,
         ),
       ]),
@@ -238,10 +231,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     itemBuilder: (context, index) {
                       return Consumer<Tablas>(
                         builder: (context, tablas, child) {
-                          List<Color> colores = [];
-                          for (int i = 0; i < 8; i++) {
-                            colores.add(Color(0x00000000));
-                          }
+                          List<Color> colores = List.filled(
+                            8,
+                            Color(0x00000000),
+                          );
                           colores[4] = Textos.colorLimite(
                             listaProd[index].limiteProd,
                             cantidad[listaProd[index].id - 1] +
@@ -276,7 +269,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                               false,
                               extraWid: Botones.btnRctMor(
                                 'Añadir comentario',
-                                15,
                                 Icons.comment_rounded,
                                 false,
                                 () => {
@@ -285,6 +277,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                                   controller.text = comentarios[index],
                                   context.read<Ventanas>().emergente(true),
                                 },
+                                size: 15,
                               ),
                             ),
                           );
@@ -315,17 +308,16 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                   'Comentario para: $comTit',
                   'Cancelar',
                   'Guardar',
-                  () => {context.read<Ventanas>().emergente(false)},
+                  () => context.read<Ventanas>().emergente(false),
                   () => {
                     if (controller.text.isNotEmpty &&
                         controller.text != comentarios[comid])
                       Textos.toast('Comentario añadido', false),
-                    comentarios[comid] = controller.text,
+                    comentarios[comid] = "'${controller.text}'",
                     context.read<Ventanas>().emergente(false),
                   },
                   widget: CampoTexto.inputTexto(
                     MediaQuery.sizeOf(context).width,
-                    Icons.comment_rounded,
                     'Comentario',
                     controller,
                     Color(0x00000000),
@@ -338,6 +330,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       comentarios[comid] = controller.text,
                       context.read<Ventanas>().emergente(false),
                     },
+                    icono: Icons.comment_rounded,
                   ),
                 );
               },
@@ -356,14 +349,13 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       children: [
         Botones.btnRctMor(
           'Regresar',
-          35,
           Icons.menu_rounded,
           false,
           () => Scaffold.of(context).openDrawer(),
+          size: 35,
         ),
         Botones.btnRctMor(
           'Revisar orden',
-          35,
           Icons.task_rounded,
           false,
           () async => {
@@ -371,6 +363,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             generarTabla(context),
             if (context.mounted) context.read<Carga>().cargaBool(false),
           },
+          size: 35,
         ),
         Container(
           width: MediaQuery.of(context).size.width * .775,
@@ -395,8 +388,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   }
 
   ListView listaPrincipal(List lista) {
-    int length = lista.last.id;
-    listas(length);
+    listas(lista.last.id);
     return ListView.separated(
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
@@ -405,10 +397,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = [];
-        for (int i = 0; i < 6; i++) {
-          colores.add(Colors.transparent);
-        }
+        List<Color> colores = List.filled(6, Colors.transparent);
         colores[4] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),

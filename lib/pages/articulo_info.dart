@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
@@ -22,38 +23,46 @@ class ArticuloInfo extends StatefulWidget {
 
 class _ArticuloInfoState extends State<ArticuloInfo> {
   late ArticulosModel articulo = widget.articulo;
-  late String barras = articulo.codigoBarras, texto = '', columna = '';
+  late String texto = '', columna = '';
   String tituloVen = '';
   TextEditingController controller = TextEditingController();
   Color color = Color(0x00000000);
 
-  void scanCod(BuildContext ctx) async {
-    ctx.read<Carga>().cargaBool(true);
-    barras = await Textos.scan(context);
-    if (barras == '-1' || barras.isEmpty) {
-      barras = articulo.codigoBarras;
+  void iniciarScan(BuildContext ctx) async {
+    if (kIsWeb) {
+      ctx.read<Ventanas>().scan(true);
+    } else {
+      ctx.read<Carga>().cargaBool(true);
+      String respuesta = await Textos.scan(context);
+      if (ctx.mounted) scanCod(ctx, respuesta);
+    }
+  }
+
+  void scanCod(BuildContext ctx, String texto) async {
+    if (texto == '-1' || texto.isEmpty) {
+      texto = articulo.codigoBarras;
     } else {
       List<ArticulosModel> lista = await ArticulosModel.getArticulos('id', '');
       bool flag = true;
-      for (int i = 0; i < lista.length; i++) {
-        if (lista[i].codigoBarras == barras) {
-          flag = false;
-        }
+      for (ArticulosModel articulo in lista) {
+        if (articulo.codigoBarras == texto) flag = false;
       }
       if (flag) {
         tituloVen = 'Confirmar Código de barras';
-        texto = 'Código de barras';
+        this.texto = 'Código de barras';
         columna = 'CodigoBarras';
-        controller.text = barras;
+        controller.text = texto;
         if (ctx.mounted) {
-          ctx.read<Ventanas>().emergente(true);
+          (kIsWeb)
+              ? {cambioColumna(ctx)}
+              : {
+                  ctx.read<Ventanas>().emergente(true),
+                  ctx.read<Carga>().cargaBool(false),
+                };
         }
       } else {
         Textos.toast('El código ya esta registrado', flag);
       }
-    }
-    if (ctx.mounted) {
-      ctx.read<Carga>().cargaBool(false);
     }
   }
 
@@ -66,7 +75,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
       ctx.read<Carga>().cargaBool(true);
       String mensaje = await ArticulosModel.editarArticulo(
         articulo.id,
-        controller.text,
+        "'${controller.text}'",
         columna,
       );
       if (mensaje.split(': ')[0] != 'Error') {
@@ -74,7 +83,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
           color = Color(0x00000000);
           switch (columna) {
             case 'CodigoBarras':
-              articulo.codigoBarras = barras;
+              articulo.codigoBarras = controller.text;
               mensaje = 'Se actualizó el código de barras de $mensaje.';
               break;
             case 'CantidadPorUnidad':
@@ -116,10 +125,10 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
   }
 
   String codigoTexto(String codigo) {
-    if (codigo.isEmpty) {
-      codigo = 'Sin codigo establecido';
-    }
-    return 'Código de barras: $codigo';
+    (codigo.isEmpty)
+        ? codigo = 'Sin codigo establecido'
+        : codigo = 'Código de barras: $codigo';
+    return codigo;
   }
 
   @override
@@ -158,20 +167,20 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                                 ),
                                 child: Textos.textoGeneral(
                                   'Materia prima:',
-                                  20,
-                                  true,
                                   true,
                                   1,
+                                  size: 20,
+                                  alignment: TextAlign.center,
                                 ),
                               ),
                               Botones.btnRctMor(
                                 'Materia Prima',
-                                20,
                                 articulo.materia
                                     ? Icons.check_box_rounded
                                     : Icons.check_box_outline_blank_rounded,
                                 false,
                                 () => {},
+                                size: 20,
                               ),
                             ],
                           ),
@@ -192,18 +201,15 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                                 'Cambiar Código de barras',
                                 Icons.edit_note_rounded,
                                 Color(0xFF8A03A9),
-                                () => scanCod(context),
+                                () => iniciarScan(context),
                               ),
                             ],
                           ),
                           Row(
                             children: [
                               rectanguloContainer(
-                                ('${articulo.precio}'.split('')[1] ==
-                                        '0')
-                                    ? 'Precio: ${articulo.precio}'.split(
-                                        '.',
-                                      )[0]
+                                ('${articulo.precio}'.split('')[1] == '0')
+                                    ? 'Precio: ${articulo.precio}'.split('.')[0]
                                     : 'Precio: ${articulo.precio}',
                               ),
                               Botones.btnSimple(
@@ -212,17 +218,12 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                                 Color(0xFF8A03A9),
                                 () => {
                                   tituloVen = 'Editar precio',
-                                  texto =
-                                      ('${articulo.precio}'.split(
-                                            '',
-                                          )[1] ==
-                                          '0')
-                                      ? '${articulo.precio}'.split(
-                                          '.',
-                                        )[0]
-                                      : '${articulo.precio}',
+                                  texto = '',
                                   columna = 'Precio',
-                                  controller.text = texto,
+                                  controller.text =
+                                      ('${articulo.precio}'.split('')[1] == '0')
+                                      ? '${articulo.precio}'.split('.')[0]
+                                      : '${articulo.precio}',
                                   context.read<Ventanas>().emergente(true),
                                 },
                               ),
@@ -256,9 +257,8 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                                 listaPrincipal,
                                 'No hay productos registrados.',
                                 'No hay coincidencias.',
-                                () => ProductoModel.getDatosArticulo(
-                                  articulo.id,
-                                ),
+                                () =>
+                                    ProductoModel.getDatosArticulo(articulo.id),
                                 accionRefresh: () async => tablas.datos(
                                   await ProductoModel.getDatosArticulo(
                                     articulo.id,
@@ -294,18 +294,26 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                   () => cambioColumna(context),
                   widget: CampoTexto.inputTexto(
                     MediaQuery.of(context).size.width * .75,
-                    Icons.mode_edit_outline_rounded,
                     texto,
                     controller,
                     color,
                     texto != 'Código de barras',
                     false,
                     () => cambioColumna(context),
+                    icono: Icons.mode_edit_outline_rounded,
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),
                     ),
                     inputType: TextInputType.numberWithOptions(decimal: true),
                   ),
+                );
+              },
+            ),
+            Consumer2<Ventanas, Carga>(
+              builder: (context, ventanas, carga, child) {
+                return Ventanas.ventanaScan(
+                  context,
+                  (texto) => scanCod(context, texto),
                 );
               },
             ),
@@ -326,9 +334,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
       ),
       itemBuilder: (context, index) {
         List<Color> colores = [];
-        for (int i = 0; i < 7; i++) {
-          colores.add(Colors.transparent);
-        }
+        colores = List.filled(7, Colors.transparent);
         colores[1] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),
@@ -396,7 +402,13 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
         color: Color(0x59F6AFCF),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Textos.textoGeneral(texto, 20, true, true, 1),
+      child: Textos.textoGeneral(
+        texto,
+        true,
+        1,
+        size: 20,
+        alignment: TextAlign.center,
+      ),
     );
   }
 }
