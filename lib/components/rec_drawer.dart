@@ -348,13 +348,7 @@ class RecDrawer {
         flag = false;
         if (ctx.mounted) {
           ctx.read<Ventanas>().scan(false);
-          Navigator.pushReplacement(
-            ctx,
-            MaterialPageRoute(
-              builder: (cxt) =>
-                  Producto(productoInfo: productos[i], ruta: ruta),
-            ),
-          );
+          pushAnim(Producto(productoInfo: productos[i], ruta: ruta), ctx);
           ctx.read<Carga>().cargaBool(false);
         }
       }
@@ -384,12 +378,7 @@ class RecDrawer {
         flag = false;
         if (ctx.mounted) {
           ctx.read<Ventanas>().scan(false);
-          Navigator.pushReplacement(
-            ctx,
-            MaterialPageRoute(
-              builder: (cxt) => ArticuloInfo(articulo: articulos[i]),
-            ),
-          );
+          pushAnim(ArticuloInfo(articulo: articulos[i]), ctx);
           ctx.read<Carga>().cargaBool(false);
         }
       }
@@ -413,15 +402,13 @@ class RecDrawer {
         : {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.pushReplacement(
-                ctx,
-                MaterialPageRoute(
-                  builder: (context) => AddProducto(
-                    listaArticulos: articulos,
-                    areas: areas,
-                    ruta: ruta,
-                  ),
+              pushAnim(
+                AddProducto(
+                  listaArticulos: articulos,
+                  areas: areas,
+                  ruta: ruta,
                 ),
+                ctx,
               ),
           };
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -437,10 +424,7 @@ class RecDrawer {
             if (ctx.mounted)
               {
                 Textos.crearLista(productos.last.id, Color(0xFFFDC930)),
-                Navigator.pushReplacement(
-                  ctx,
-                  MaterialPageRoute(builder: (context) => OrdenSalida()),
-                ),
+                pushAnim(OrdenSalida(), ctx),
               },
           }
         : Textos.toast(productos.last.mensaje, true);
@@ -455,19 +439,15 @@ class RecDrawer {
       'id',
       '',
     );
-    (productos.last.mensaje == '')
-        ? {
-            if (ctx.mounted)
-              {
-                Textos.crearLista(productos.last.id, Color(0xFFFDC930)),
-                Navigator.pushReplacement(
-                  ctx,
-                  MaterialPageRoute(builder: (context) => OrdenSalidaProd()),
-                ),
-              },
-          }
-        : Textos.toast(productos.last.mensaje, false);
-    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+    if (ctx.mounted) {
+      (productos.last.mensaje == '')
+          ? {
+              Textos.crearLista(productos.last.id, Color(0xFFFDC930)),
+              pushAnim(OrdenSalidaProd(), ctx),
+            }
+          : Textos.toast(productos.last.mensaje, false);
+      ctx.read<Carga>().cargaBool(false);
+    }
   }
 
   static void pushAnim(StatefulWidget ruta, BuildContext ctx) {

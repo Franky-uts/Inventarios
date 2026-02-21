@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ven_datos.dart';
@@ -145,36 +146,35 @@ class _ProductoState extends State<Producto> {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
-  void cambioValor(int tipo, int valor) {
+  void cambioValor(bool entrada, int valor) {
     Color color = Color(0xFFFF0000);
-    switch (tipo) {
-      case 0:
-        if ((entr + productoInfo.entrada + valor) >= productoInfo.entrada) {
-          color = Color(0xFF8A03A9);
-          entr += valor;
-          if (valor < 0 && productoInfo.unidades + entr - sali < 0) {
-            sali += valor;
-            if (sali == 0) this.color[1] = Color(0xFF8A03A9);
+    entrada
+        ? {
+            if ((entr + productoInfo.entrada + valor) >= productoInfo.entrada)
+              {
+                color = Color(0xFF8A03A9),
+                entr += valor,
+                if (valor < 0 && productoInfo.unidades + entr - sali < 0)
+                  {
+                    sali += valor,
+                    if (sali == 0) this.color[1] = Color(0xFF8A03A9),
+                  },
+              },
+            if (entr + productoInfo.entrada != productoInfo.entrada)
+              color = Color(0xFF00be00),
           }
-        }
-        if (entr + productoInfo.entrada != productoInfo.entrada) {
-          color = Color(0xFF00be00);
-        }
-        break;
-      case 1:
-        if ((sali + productoInfo.salida + valor) >= productoInfo.salida) {
-          color = Color(0xFF8A03A9);
-          if ((productoInfo.unidades + entr - (sali + valor)) >= 0) {
-            sali += valor;
-          }
-          if (sali + productoInfo.salida != productoInfo.salida) {
-            color = Color(0xFF00be00);
-          }
-        }
-        break;
-    }
+        : {
+            if ((sali + productoInfo.salida + valor) >= productoInfo.salida)
+              {
+                color = Color(0xFF8A03A9),
+                if ((productoInfo.unidades + entr - (sali + valor)) >= 0)
+                  sali += valor,
+                if (sali + productoInfo.salida != productoInfo.salida)
+                  color = Color(0xFF00be00),
+              },
+          };
     setState(() {
-      this.color[tipo] = color;
+      this.color[entrada ? 0 : 1] = color;
     });
   }
 
@@ -271,8 +271,8 @@ class _ProductoState extends State<Producto> {
           children: [
             Consumer<Carga>(
               builder: (context, carga, child) {
-                String entradas = '${productoInfo.entrada + entr}';
-                String salidas = '${productoInfo.salida + sali}';
+                String entradas = '${productoInfo.entrada}';
+                String salidas = '${productoInfo.salida}';
                 String perd = '$productosPerdido';
                 return SingleChildScrollView(
                   child: SizedBox(
@@ -287,10 +287,11 @@ class _ProductoState extends State<Producto> {
                         productoInfo.tipo != 'Granel'
                             ? contenedorInfo(
                                 ' que entraron:',
+                                '$entr',
                                 (entradas.split('.')[1] == '0')
                                     ? entradas.split('.')[0]
                                     : entradas,
-                                0,
+                                true,
                               )
                             : contenedorInfoGranel(
                                 ' que entraron:',
@@ -302,10 +303,11 @@ class _ProductoState extends State<Producto> {
                         productoInfo.tipo != 'Granel'
                             ? contenedorInfo(
                                 ' que salieron:',
+                                '$sali',
                                 (salidas.split('.')[1] == '0')
                                     ? salidas.split('.')[0]
                                     : salidas,
-                                1,
+                                false,
                               )
                             : contenedorInfoGranel(
                                 ' que salieron:',
@@ -353,10 +355,7 @@ class _ProductoState extends State<Producto> {
               },
             ),
             Botones.layerButton(
-              () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => widget.ruta),
-              ),
+              () => RecDrawer.pushAnim(widget.ruta, context),
               recarga: () => recarga(context),
             ),
             Consumer2<Ventanas, VenDatos>(
@@ -594,7 +593,12 @@ class _ProductoState extends State<Producto> {
     );
   }
 
-  SizedBox contenedorInfo(String textoInfo, String textoValor, int valor) {
+  SizedBox contenedorInfo(
+    String textoInfo,
+    String textoValor,
+    String textoTotal,
+    bool entrada,
+  ) {
     String text = '${productoInfo.tipo}s$textoInfo';
     if (productoInfo.tipo == 'Granel') {
       text = 'Unidades$textoInfo';
@@ -615,41 +619,51 @@ class _ProductoState extends State<Producto> {
             size: 20,
             alignment: TextAlign.center,
           ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+          Column(
             children: [
-              GestureDetector(
-                onLongPress: () => timer = Timer.periodic(
-                  Duration(milliseconds: 150),
-                  (timer) => cambioValor(valor, -1),
-                ),
-                onLongPressEnd: (_) => setState(() {
-                  timer?.cancel();
-                }),
-                child: Botones.btnRctMor(
-                  '',
-                  Icons.remove,
-                  false,
-                  () => cambioValor(valor, -1),
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onLongPress: () => timer = Timer.periodic(
+                      Duration(milliseconds: 150),
+                      (timer) => cambioValor(entrada, -1),
+                    ),
+                    onLongPressEnd: (_) => setState(() {
+                      timer?.cancel();
+                    }),
+                    child: Botones.btnRctMor(
+                      '',
+                      Icons.remove,
+                      false,
+                      () => cambioValor(entrada, -1),
+                    ),
+                  ),
+                  Textos.recuadroCantidad(
+                    textoValor,
+                    color[entrada ? 0 : 1],
+                    1,
+                    size: 20,
+                  ),
+                  GestureDetector(
+                    onLongPress: () => timer = Timer.periodic(
+                      Duration(milliseconds: 150),
+                      (timer) => cambioValor(entrada, 1),
+                    ),
+                    onLongPressEnd: (_) => setState(() {
+                      timer?.cancel();
+                    }),
+                    child: Botones.btnRctMor(
+                      '',
+                      Icons.add,
+                      false,
+                      () => cambioValor(entrada, 1),
+                    ),
+                  ),
+                ],
               ),
-              Textos.recuadroCantidad(textoValor, color[valor], 1, size: 20),
-              GestureDetector(
-                onLongPress: () => timer = Timer.periodic(
-                  Duration(milliseconds: 150),
-                  (timer) => cambioValor(valor, 1),
-                ),
-                onLongPressEnd: (_) => setState(() {
-                  timer?.cancel();
-                }),
-                child: Botones.btnRctMor(
-                  '',
-                  Icons.add,
-                  false,
-                  () => cambioValor(valor, 1),
-                ),
-              ),
+              Textos.textoGeneral('Total: $textoTotal', true, 1),
             ],
           ),
         ],

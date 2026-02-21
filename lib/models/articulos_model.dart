@@ -36,6 +36,20 @@ class ArticulosModel {
     'Yogulive Jardín',
   ];
 
+  static ArticulosModel dummy(String mensaje) {
+    return ArticulosModel(
+      id: 0,
+      nombre: '',
+      tipo: '',
+      cantidadPorUnidad: 0,
+      area: '',
+      codigoBarras: '',
+      precio: 0,
+      materia: false,
+      mensaje: mensaje,
+    );
+  }
+
   static Future<List<ArticulosModel>> getArticulos(
     String filtro,
     String busqueda,
@@ -44,19 +58,7 @@ class ArticulosModel {
     String locacion = LocalStorage.local('locación');
     List<ArticulosModel> articulosFuture = [];
     if (locacion.isEmpty || locacion == 'null') {
-      articulosFuture.add(
-        ArticulosModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          codigoBarras: '',
-          precio: 0,
-          materia: false,
-          mensaje: 'No hay locación establecida',
-        ),
-      );
+      articulosFuture.add(dummy('No hay locación establecida'));
     } else {
       try {
         var res = await http.get(
@@ -84,76 +86,16 @@ class ArticulosModel {
             );
           }
         } else {
-          articulosFuture.add(
-            ArticulosModel(
-              id: 0,
-              nombre: '',
-              tipo: '',
-              cantidadPorUnidad: 0,
-              area: '',
-              codigoBarras: '',
-              precio: 0,
-              materia: false,
-              mensaje: res.body,
-            ),
-          );
+          articulosFuture.add(dummy(res.body));
         }
       } on TimeoutException catch (e) {
-        articulosFuture.add(
-          ArticulosModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            codigoBarras: '',
-            precio: 0,
-            materia: false,
-            mensaje: '${e.message}',
-          ),
-        );
+        articulosFuture.add(dummy('${e.message}'));
       } on SocketException catch (e) {
-        articulosFuture.add(
-          ArticulosModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            codigoBarras: '',
-            precio: 0,
-            materia: false,
-            mensaje: e.message,
-          ),
-        );
+        articulosFuture.add(dummy(e.message));
       } on http.ClientException catch (e) {
-        articulosFuture.add(
-          ArticulosModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            codigoBarras: '',
-            precio: 0,
-            materia: false,
-            mensaje: e.message,
-          ),
-        );
+        articulosFuture.add(dummy(e.message));
       } on Error catch (e) {
-        articulosFuture.add(
-          ArticulosModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            codigoBarras: '',
-            precio: 0,
-            materia: false,
-            mensaje: '$e',
-          ),
-        );
+        articulosFuture.add(dummy('$e'));
       }
     }
     return articulosFuture;
@@ -170,17 +112,7 @@ class ArticulosModel {
           'content-type': 'application/json; charset=UTF-8',
         },
       );
-      articulo = ArticulosModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        codigoBarras: '',
-        precio: 0,
-        materia: false,
-        mensaje: res.body,
-      );
+      articulo = dummy(res.body);
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
@@ -198,53 +130,13 @@ class ArticulosModel {
         }
       }
     } on TimeoutException catch (e) {
-      articulo = ArticulosModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        codigoBarras: '',
-        precio: 0,
-        materia: false,
-        mensaje: '${e.message}',
-      );
+      articulo = dummy('${e.message}');
     } on SocketException catch (e) {
-      articulo = ArticulosModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        codigoBarras: '',
-        precio: 0,
-        materia: false,
-        mensaje: e.message,
-      );
+      articulo = dummy(e.message);
     } on http.ClientException catch (e) {
-      articulo = ArticulosModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        codigoBarras: '',
-        precio: 0,
-        materia: false,
-        mensaje: e.message,
-      );
+      articulo = dummy(e.message);
     } on Error catch (e) {
-      articulo = ArticulosModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        codigoBarras: '',
-        precio: 0,
-        materia: false,
-        mensaje: '$e',
-      );
+      articulo = dummy('$e');
     }
     return articulo;
   }

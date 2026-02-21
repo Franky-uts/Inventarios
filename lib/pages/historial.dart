@@ -59,14 +59,9 @@ class _HistorialState extends State<Historial> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.pushReplacement(
+              RecDrawer.pushAnim(
+                HistorialInfo(historialInfo: historial, ruta: widget.ruta),
                 ctx,
-                MaterialPageRoute(
-                  builder: (context) => HistorialInfo(
-                    historialInfo: historial,
-                    ruta: widget.ruta,
-                  ),
-                ),
               ),
           }
         : Textos.toast(historial.mensaje, true);
@@ -209,10 +204,7 @@ class _HistorialState extends State<Historial> {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.fecha)
                   CampoTexto.seleccionFiltro = Filtros.id,
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => widget.ruta),
-                ),
+                RecDrawer.pushAnim(widget.ruta, context),
                 carga.cargaBool(false),
               },
               () => {},

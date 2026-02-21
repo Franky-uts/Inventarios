@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/usuario_model.dart';
@@ -99,10 +100,7 @@ class _InicioState extends State<Inicio> {
               break;
           }
           if (ctx.mounted) {
-            Navigator.pushReplacement(
-              ctx,
-              MaterialPageRoute(builder: (ctx) => ruta),
-            );
+            RecDrawer.pushAnim(ruta, ctx);
           }
         }
       }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
@@ -257,10 +258,7 @@ class _PerdidasProvState extends State<PerdidasProv> {
               },
             ),
             Botones.layerButton(
-              () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => InventarioProd()),
-              ),
+              () => RecDrawer.pushAnim(InventarioProd(), context),
               recarga: () => recarga(context),
             ),
             Consumer3<Ventanas, Carga, Tablas>(

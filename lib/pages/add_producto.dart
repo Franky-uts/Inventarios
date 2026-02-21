@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/producto_model.dart';
@@ -189,12 +190,7 @@ class _AddproductoState extends State<AddProducto> {
                 );
               },
             ),
-            Botones.layerButton(
-              () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => widget.ruta),
-              ),
-            ),
+            Botones.layerButton(() => RecDrawer.pushAnim(widget.ruta, context)),
             Carga.ventanaCarga(),
           ],
         ),

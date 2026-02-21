@@ -118,12 +118,9 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                   CampoTexto.busquedaTexto.text,
                 ),
                 if (context.mounted)
-                  Navigator.pushReplacement(
+                  RecDrawer.pushAnim(
+                    HistorialOrdenes(ruta: OrdenSalidaProd()),
                     context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          HistorialOrdenes(ruta: OrdenSalidaProd()),
-                    ),
                   ),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
@@ -144,10 +141,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                 ),
                 Textos.limpiarLista(),
                 if (context.mounted)
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => InventarioProd()),
-                  ),
+                  RecDrawer.pushAnim(InventarioProd(), context),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
               true,

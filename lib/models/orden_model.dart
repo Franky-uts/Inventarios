@@ -43,6 +43,28 @@ class OrdenModel {
     required this.mensaje,
   });
 
+  static OrdenModel dummy(String mensaje) {
+    return OrdenModel(
+      id: 0,
+      articulos: [],
+      cantidades: [],
+      tipos: [],
+      areas: [],
+      cantidadesCubiertas: [],
+      cantidadAlmacen: [],
+      comentariosProveedor: [],
+      comentariosTienda: [],
+      confirmacion: [],
+      idProductos: [],
+      cantArticulos: 0,
+      estado: '',
+      remitente: '',
+      ultimaModificacion: '',
+      locacion: '',
+      mensaje: mensaje,
+    );
+  }
+
   static Future<List<OrdenModel>> getOrdenes(
     String filtro,
     String locacion,
@@ -83,116 +105,16 @@ class OrdenModel {
           );
         }
       } else {
-        ordenesFuture.add(
-          OrdenModel(
-            id: 0,
-            articulos: [],
-            cantidades: [],
-            tipos: [],
-            areas: [],
-            cantidadesCubiertas: [],
-            cantidadAlmacen: [],
-            comentariosProveedor: [],
-            comentariosTienda: [],
-            confirmacion: [],
-            idProductos: [],
-            cantArticulos: 0,
-            estado: '',
-            remitente: '',
-            ultimaModificacion: '',
-            locacion: '',
-            mensaje: res.body,
-          ),
-        );
+        ordenesFuture.add(dummy(res.body));
       }
     } on TimeoutException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: [],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          cantidadAlmacen: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          idProductos: [],
-          cantArticulos: 0,
-          estado: '',
-          remitente: '',
-          ultimaModificacion: '',
-          locacion: '',
-          mensaje: '${e.message}',
-        ),
-      );
+      ordenesFuture.add(dummy('${e.message}'));
     } on SocketException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: [],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          cantidadAlmacen: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          idProductos: [],
-          cantArticulos: 0,
-          estado: '',
-          remitente: '',
-          ultimaModificacion: '',
-          locacion: '',
-          mensaje: e.message,
-        ),
-      );
+      ordenesFuture.add(dummy(e.message));
     } on http.ClientException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: [],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          cantidadAlmacen: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          idProductos: [],
-          cantArticulos: 0,
-          estado: '',
-          remitente: '',
-          ultimaModificacion: '',
-          locacion: '',
-          mensaje: e.message,
-        ),
-      );
+      ordenesFuture.add(dummy(e.message));
     } on Error catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: [],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          cantidadAlmacen: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          idProductos: [],
-          cantArticulos: 0,
-          estado: '',
-          remitente: '',
-          ultimaModificacion: '',
-          locacion: '',
-          mensaje: '$e',
-        ),
-      );
+      ordenesFuture.add(dummy('$e'));
     }
     return ordenesFuture;
   }
@@ -234,116 +156,16 @@ class OrdenModel {
           );
         }
       } else {
-        ordenesFuture.add(
-          OrdenModel(
-            id: 0,
-            articulos: [],
-            cantidades: [],
-            tipos: [],
-            areas: [],
-            cantidadesCubiertas: [],
-            cantidadAlmacen: [],
-            comentariosProveedor: [],
-            comentariosTienda: [],
-            confirmacion: [],
-            idProductos: [],
-            cantArticulos: 0,
-            estado: '',
-            remitente: '',
-            ultimaModificacion: '',
-            locacion: '',
-            mensaje: res.body,
-          ),
-        );
+        ordenesFuture.add(dummy(res.body));
       }
     } on TimeoutException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: [],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          cantidadAlmacen: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          idProductos: [],
-          cantArticulos: 0,
-          estado: '',
-          remitente: '',
-          ultimaModificacion: '',
-          locacion: '',
-          mensaje: '${e.message}',
-        ),
-      );
+      ordenesFuture.add(dummy('${e.message}'));
     } on SocketException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: [],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          cantidadAlmacen: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          idProductos: [],
-          cantArticulos: 0,
-          estado: '',
-          remitente: '',
-          ultimaModificacion: '',
-          locacion: '',
-          mensaje: e.message,
-        ),
-      );
+      ordenesFuture.add(dummy(e.message));
     } on http.ClientException catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: [],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          cantidadAlmacen: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          idProductos: [],
-          cantArticulos: 0,
-          estado: '',
-          remitente: '',
-          ultimaModificacion: '',
-          locacion: '',
-          mensaje: e.message,
-        ),
-      );
+      ordenesFuture.add(dummy(e.message));
     } on Error catch (e) {
-      ordenesFuture.add(
-        OrdenModel(
-          id: 0,
-          articulos: [],
-          cantidades: [],
-          tipos: [],
-          areas: [],
-          cantidadesCubiertas: [],
-          cantidadAlmacen: [],
-          comentariosProveedor: [],
-          comentariosTienda: [],
-          confirmacion: [],
-          idProductos: [],
-          cantArticulos: 0,
-          estado: '',
-          remitente: '',
-          ultimaModificacion: '',
-          locacion: '',
-          mensaje: '$e',
-        ),
-      );
+      ordenesFuture.add(dummy('$e'));
     }
     return ordenesFuture;
   }
@@ -360,25 +182,7 @@ class OrdenModel {
         },
       );
       final datos = json.decode(res.body);
-      orden = OrdenModel(
-        id: 0,
-        articulos: [],
-        cantidades: [],
-        tipos: [],
-        areas: [],
-        cantidadesCubiertas: [],
-        cantidadAlmacen: [],
-        comentariosProveedor: [],
-        comentariosTienda: [],
-        confirmacion: [],
-        idProductos: [],
-        cantArticulos: 0,
-        estado: '',
-        remitente: '',
-        ultimaModificacion: '',
-        locacion: '',
-        mensaje: res.body,
-      );
+      orden = dummy(res.body);
       if (res.statusCode == 200) {
         for (var item in datos) {
           orden = OrdenModel(
@@ -405,85 +209,13 @@ class OrdenModel {
         }
       }
     } on TimeoutException catch (e) {
-      orden = OrdenModel(
-        id: 0,
-        articulos: [],
-        cantidades: [],
-        tipos: [],
-        areas: [],
-        cantidadesCubiertas: [],
-        cantidadAlmacen: [],
-        comentariosProveedor: [],
-        comentariosTienda: [],
-        confirmacion: [],
-        idProductos: [],
-        cantArticulos: 0,
-        estado: '',
-        remitente: '',
-        ultimaModificacion: '',
-        locacion: '',
-        mensaje: '${e.message}',
-      );
+      orden = dummy('${e.message}');
     } on SocketException catch (e) {
-      orden = OrdenModel(
-        id: 0,
-        articulos: [],
-        cantidades: [],
-        tipos: [],
-        areas: [],
-        cantidadesCubiertas: [],
-        cantidadAlmacen: [],
-        comentariosProveedor: [],
-        comentariosTienda: [],
-        confirmacion: [],
-        idProductos: [],
-        cantArticulos: 0,
-        estado: '',
-        remitente: '',
-        ultimaModificacion: '',
-        locacion: '',
-        mensaje: e.message,
-      );
+      orden = dummy(e.message);
     } on http.ClientException catch (e) {
-      orden = OrdenModel(
-        id: 0,
-        articulos: [],
-        cantidades: [],
-        tipos: [],
-        areas: [],
-        cantidadesCubiertas: [],
-        cantidadAlmacen: [],
-        comentariosProveedor: [],
-        comentariosTienda: [],
-        confirmacion: [],
-        idProductos: [],
-        cantArticulos: 0,
-        estado: '',
-        remitente: '',
-        ultimaModificacion: '',
-        locacion: '',
-        mensaje: e.message,
-      );
+      orden = dummy(e.message);
     } on Error catch (e) {
-      orden = OrdenModel(
-        id: 0,
-        articulos: [],
-        cantidades: [],
-        tipos: [],
-        areas: [],
-        cantidadesCubiertas: [],
-        cantidadAlmacen: [],
-        comentariosProveedor: [],
-        comentariosTienda: [],
-        confirmacion: [],
-        idProductos: [],
-        cantArticulos: 0,
-        estado: '',
-        remitente: '',
-        ultimaModificacion: '',
-        locacion: '',
-        mensaje: '$e',
-      );
+      orden = dummy('$e');
     }
     return orden;
   }

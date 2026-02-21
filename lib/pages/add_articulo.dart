@@ -135,10 +135,7 @@ class _AddproductoState extends State<Addarticulo> {
               Icons.list,
               () => {
                 carga.cargaBool(true),
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => Articulos()),
-                ),
+                RecDrawer.pushAnim(Articulos(), context),
                 carga.cargaBool(false),
               },
               () => {},
@@ -154,10 +151,7 @@ class _AddproductoState extends State<Addarticulo> {
               Icons.inventory_rounded,
               () => {
                 carga.cargaBool(true),
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => OrdenesInventario()),
-                ),
+                RecDrawer.pushAnim(OrdenesInventario(), context),
                 carga.cargaBool(false),
               },
               () => {},
@@ -173,10 +167,7 @@ class _AddproductoState extends State<Addarticulo> {
               Icons.border_color_rounded,
               () => {
                 context.read<Carga>().cargaBool(true),
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => Ordenes()),
-                ),
+                RecDrawer.pushAnim(Ordenes(), context),
                 context.read<Carga>().cargaBool(false),
               },
               () => {},
@@ -356,12 +347,7 @@ class _AddproductoState extends State<Addarticulo> {
                 ),
               ),
             ),
-            Botones.layerButton(
-              () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Articulos()),
-              ),
-            ),
+            Botones.layerButton(() => RecDrawer.pushAnim(Articulos(), context)),
             Carga.ventanaCarga(),
           ],
         ),

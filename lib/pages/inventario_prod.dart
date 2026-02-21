@@ -31,12 +31,7 @@ Future<void> getProductoInfo(BuildContext ctx, int id) async {
       ? {
           await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
           if (ctx.mounted)
-            Navigator.pushReplacement(
-              ctx,
-              MaterialPageRoute(
-                builder: (ctx) => PerdidasProv(productoInfo: producto),
-              ),
-            ),
+            RecDrawer.pushAnim(PerdidasProv(productoInfo: producto), ctx),
         }
       : Textos.toast(producto.mensaje, true);
   if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -59,22 +54,17 @@ void rutaProducto(String prod, BuildContext ctx) async {
     'id',
     '',
   );
-  for (int i = 0; i < productos.length; i++) {
-    if (!flag) {
-      flag = (productos[i].codigoBarras == prod);
-      if (ctx.mounted) {
+  if (ctx.mounted) {
+    for (int i = 0; i < productos.length; i++) {
+      if (!flag) {
+        flag = (productos[i].codigoBarras == prod);
         ctx.read<Ventanas>().scan(false);
-        Navigator.pushReplacement(
-          ctx,
-          MaterialPageRoute(
-            builder: (cxt) => PerdidasProv(productoInfo: productos[i]),
-          ),
-        );
+        RecDrawer.pushAnim(PerdidasProv(productoInfo: productos[i]), ctx);
       }
     }
+    if (flag) Textos.toast('No se reconocio el codigo.', false);
+    ctx.read<Carga>().cargaBool(false);
   }
-  if (flag) Textos.toast('No se reconocio el codigo.', false);
-  if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
 }
 
 class _InventarioProdState extends State<InventarioProd> {

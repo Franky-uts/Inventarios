@@ -34,14 +34,9 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.pushReplacement(
+              RecDrawer.pushAnim(
+                Producto(productoInfo: producto, ruta: OrdenesInventario()),
                 ctx,
-                MaterialPageRoute(
-                  builder: (context) => Producto(
-                    productoInfo: producto,
-                    ruta: OrdenesInventario(),
-                  ),
-                ),
               ),
           }
         : Textos.toast(producto.mensaje, true);
@@ -100,11 +95,9 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.unidades)
                   CampoTexto.seleccionFiltro = Filtros.id,
-                Navigator.pushReplacement(
+                RecDrawer.pushAnim(
+                  Historial(ruta: OrdenesInventario()),
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => Historial(ruta: OrdenesInventario()),
-                  ),
                 ),
                 carga.cargaBool(false),
               },
@@ -138,10 +131,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.unidades)
                   CampoTexto.seleccionFiltro = Filtros.id,
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => Articulos()),
-                ),
+                RecDrawer.pushAnim(Articulos(), context),
                 carga.cargaBool(false),
               },
               () => {},
@@ -157,10 +147,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               Icons.border_color_rounded,
               () => {
                 carga.cargaBool(true),
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => Ordenes()),
-                ),
+                RecDrawer.pushAnim(Ordenes(), context),
                 carga.cargaBool(false),
               },
               () => {},

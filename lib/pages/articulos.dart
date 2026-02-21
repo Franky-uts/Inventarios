@@ -35,12 +35,7 @@ class _ArticulosState extends State<Articulos> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.pushReplacement(
-                ctx,
-                MaterialPageRoute(
-                  builder: (ctx) => ArticuloInfo(articulo: articulo),
-                ),
-              ),
+              RecDrawer.pushAnim(ArticuloInfo(articulo: articulo), ctx),
           }
         : Textos.toast(articulo.mensaje, true);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -59,12 +54,9 @@ class _ArticulosState extends State<Articulos> {
         : {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.pushReplacement(
+              RecDrawer.pushAnim(
+                Addarticulo(listaArea: areas, listaTipo: tipos),
                 ctx,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      Addarticulo(listaArea: areas, listaTipo: tipos),
-                ),
               ),
           };
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -106,10 +98,7 @@ class _ArticulosState extends State<Articulos> {
               Icons.inventory_rounded,
               () => {
                 carga.cargaBool(true),
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => OrdenesInventario()),
-                ),
+                RecDrawer.pushAnim(OrdenesInventario(), context),
                 carga.cargaBool(false),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
@@ -125,10 +114,7 @@ class _ArticulosState extends State<Articulos> {
               Icons.border_color_rounded,
               () => {
                 carga.cargaBool(true),
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => Ordenes()),
-                ),
+                RecDrawer.pushAnim(Ordenes(), context),
                 carga.cargaBool(false),
               },
               () => {},

@@ -116,12 +116,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                   CampoTexto.busquedaTexto.text,
                 ),
                 if (context.mounted)
-                  Navigator.pushReplacement(
+                  RecDrawer.pushAnim(
+                    HistorialOrdenes(ruta: OrdenSalida()),
                     context,
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          HistorialOrdenes(ruta: OrdenSalida()),
-                    ),
                   ),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
@@ -135,10 +132,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           Icons.inventory_rounded,
           () => {
             Textos.limpiarLista(),
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Inventario()),
-            ),
+            RecDrawer.pushAnim(Inventario(), context),
           },
           () => {},
           true,

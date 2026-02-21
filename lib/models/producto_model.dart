@@ -39,6 +39,26 @@ class ProductoModel {
     required this.mensaje,
   });
 
+  static ProductoModel dummy(String mensaje) {
+    return ProductoModel(
+      id: 0,
+      nombre: '',
+      area: '',
+      tipo: '',
+      codigoBarras: '',
+      cantidadPorUnidad: 0,
+      unidades: 0,
+      limiteProd: 0,
+      entrada: 0,
+      salida: 0,
+      perdidaCantidad: [],
+      perdidaRazones: [],
+      ultimoUsuario: '',
+      ultimaModificacion: '',
+      mensaje: mensaje,
+    );
+  }
+
   static Future<List<ProductoModel>> getProductos(
     String filtro,
     String busqueda,
@@ -47,25 +67,7 @@ class ProductoModel {
     String locacion = LocalStorage.local('locación');
     late List<ProductoModel> productosFuture = [];
     if (locacion.isEmpty || locacion == 'null') {
-      productosFuture.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: No hay locación establecida',
-        ),
-      );
+      productosFuture.add(dummy('Error: No hay locación establecida'));
     } else {
       try {
         var res = await http.get(
@@ -107,106 +109,16 @@ class ProductoModel {
             );
           }
         } else {
-          productosFuture.add(
-            ProductoModel(
-              id: 0,
-              nombre: '',
-              tipo: '',
-              unidades: 0,
-              ultimaModificacion: '',
-              cantidadPorUnidad: 0,
-              area: '',
-              entrada: 0,
-              salida: 0,
-              perdidaCantidad: [],
-              perdidaRazones: [],
-              ultimoUsuario: '',
-              codigoBarras: '',
-              limiteProd: 0,
-              mensaje: 'Error: ${res.body}',
-            ),
-          );
+          productosFuture.add(dummy('Error: ${res.body}'));
         }
       } on TimeoutException catch (e) {
-        productosFuture.add(
-          ProductoModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            unidades: 0,
-            ultimaModificacion: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            entrada: 0,
-            salida: 0,
-            perdidaCantidad: [],
-            perdidaRazones: [],
-            ultimoUsuario: '',
-            codigoBarras: '',
-            limiteProd: 0,
-            mensaje: 'Error: ${e.message}',
-          ),
-        );
+        productosFuture.add(dummy('Error: ${e.message}'));
       } on SocketException catch (e) {
-        productosFuture.add(
-          ProductoModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            unidades: 0,
-            ultimaModificacion: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            entrada: 0,
-            salida: 0,
-            perdidaCantidad: [],
-            perdidaRazones: [],
-            ultimoUsuario: ' ',
-            codigoBarras: '',
-            limiteProd: 0,
-            mensaje: 'Error: ${e.message}',
-          ),
-        );
+        productosFuture.add(dummy('Error: ${e.message}'));
       } on http.ClientException catch (e) {
-        productosFuture.add(
-          ProductoModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            unidades: 0,
-            ultimaModificacion: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            entrada: 0,
-            salida: 0,
-            perdidaCantidad: [],
-            perdidaRazones: [],
-            ultimoUsuario: '',
-            codigoBarras: '',
-            limiteProd: 0,
-            mensaje: 'Error: ${e.message}',
-          ),
-        );
+        productosFuture.add(dummy('Error: ${e.message}'));
       } on Error catch (e) {
-        productosFuture.add(
-          ProductoModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            unidades: 0,
-            ultimaModificacion: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            entrada: 0,
-            salida: 0,
-            perdidaCantidad: [],
-            perdidaRazones: [],
-            ultimoUsuario: '',
-            codigoBarras: '',
-            limiteProd: 0,
-            mensaje: 'Error: $e',
-          ),
-        );
+        productosFuture.add(dummy('Error: $e'));
       }
     }
     return productosFuture;
@@ -258,106 +170,16 @@ class ProductoModel {
           );
         }
       } else {
-        productosFuture.add(
-          ProductoModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            unidades: 0,
-            ultimaModificacion: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            entrada: 0,
-            salida: 0,
-            perdidaCantidad: [],
-            perdidaRazones: [],
-            ultimoUsuario: '',
-            codigoBarras: '',
-            limiteProd: 0,
-            mensaje: 'Error: ${res.body}',
-          ),
-        );
+        productosFuture.add(dummy('Error: ${res.body}'));
       }
     } on TimeoutException catch (e) {
-      productosFuture.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: ${e.message}',
-        ),
-      );
+      productosFuture.add(dummy('Error: ${e.message}'));
     } on SocketException catch (e) {
-      productosFuture.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: ' ',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: ${e.message}',
-        ),
-      );
+      productosFuture.add(dummy('Error: ${e.message}'));
     } on http.ClientException catch (e) {
-      productosFuture.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: ${e.message}',
-        ),
-      );
+      productosFuture.add(dummy('Error: ${e.message}'));
     } on Error catch (e) {
-      productosFuture.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: $e',
-        ),
-      );
+      productosFuture.add(dummy('Error: $e'));
     }
     return productosFuture;
   }
@@ -374,23 +196,7 @@ class ProductoModel {
           'content-type': 'application/json; charset=UTF-8',
         },
       );
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        unidades: 0,
-        ultimaModificacion: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        entrada: 0,
-        salida: 0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        codigoBarras: '',
-        limiteProd: 0,
-        mensaje: 'Error: ${res.body}',
-      );
+      producto = dummy('Error: ${res.body}');
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
@@ -422,77 +228,13 @@ class ProductoModel {
         }
       }
     } on TimeoutException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        unidades: 0,
-        ultimaModificacion: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        entrada: 0,
-        salida: 0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        codigoBarras: '',
-        limiteProd: 0,
-        mensaje: 'Error: ${e.message}',
-      );
+      producto = dummy('Error: ${e.message}');
     } on SocketException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        unidades: 0,
-        ultimaModificacion: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        entrada: 0,
-        salida: 0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        codigoBarras: '',
-        limiteProd: 0,
-        mensaje: 'Error: ${e.message}',
-      );
+      producto = dummy('Error: ${e.message}');
     } on http.ClientException catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        unidades: 0,
-        ultimaModificacion: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        entrada: 0,
-        salida: 0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        codigoBarras: '',
-        limiteProd: 0,
-        mensaje: 'Error: ${e.message}',
-      );
+      producto = dummy('Error: ${e.message}');
     } on Error catch (e) {
-      producto = ProductoModel(
-        id: 0,
-        nombre: '',
-        tipo: '',
-        unidades: 0,
-        ultimaModificacion: '',
-        cantidadPorUnidad: 0,
-        area: '',
-        entrada: 0,
-        salida: 0,
-        perdidaCantidad: [],
-        perdidaRazones: [],
-        ultimoUsuario: '',
-        codigoBarras: '',
-        limiteProd: 0,
-        mensaje: 'Error: $e',
-      );
+      producto = dummy('Error: $e');
     }
     return producto;
   }
@@ -540,106 +282,16 @@ class ProductoModel {
           );
         }
       } else {
-        productoModel.add(
-          ProductoModel(
-            id: 0,
-            nombre: '',
-            tipo: '',
-            unidades: 0,
-            ultimaModificacion: '',
-            cantidadPorUnidad: 0,
-            area: '',
-            entrada: 0,
-            salida: 0,
-            perdidaCantidad: [],
-            perdidaRazones: [],
-            ultimoUsuario: '',
-            codigoBarras: '',
-            limiteProd: 0,
-            mensaje: 'Error: ${res.body}',
-          ),
-        );
+        productoModel.add(dummy('Error: ${res.body}'));
       }
     } on TimeoutException catch (e) {
-      productoModel.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: ${e.message}',
-        ),
-      );
+      productoModel.add(dummy('Error: ${e.message}'));
     } on SocketException catch (e) {
-      productoModel.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: ${e.message}',
-        ),
-      );
+      productoModel.add(dummy('Error: ${e.message}'));
     } on http.ClientException catch (e) {
-      productoModel.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: ${e.message}',
-        ),
-      );
+      productoModel.add(dummy('Error: ${e.message}'));
     } on Error catch (e) {
-      productoModel.add(
-        ProductoModel(
-          id: 0,
-          nombre: '',
-          tipo: '',
-          unidades: 0,
-          ultimaModificacion: '',
-          cantidadPorUnidad: 0,
-          area: '',
-          entrada: 0,
-          salida: 0,
-          perdidaCantidad: [],
-          perdidaRazones: [],
-          ultimoUsuario: '',
-          codigoBarras: '',
-          limiteProd: 0,
-          mensaje: 'Error: $e',
-        ),
-      );
+      productoModel.add(dummy('Error: $e'));
     }
     return productoModel;
   }

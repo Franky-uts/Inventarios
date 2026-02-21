@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
@@ -275,10 +276,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
               ),
             ),
             Botones.layerButton(
-              () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Articulos()),
-              ),
+              () => RecDrawer.pushAnim(Articulos(), context),
               recarga: () => recarga(context),
             ),
             Consumer2<Ventanas, Carga>(

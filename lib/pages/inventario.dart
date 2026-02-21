@@ -43,12 +43,9 @@ class _InventarioState extends State<Inventario> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.pushReplacement(
+              RecDrawer.pushAnim(
+                Producto(productoInfo: producto, ruta: Inventario()),
                 ctx,
-                MaterialPageRoute(
-                  builder: (ctx) =>
-                      Producto(productoInfo: producto, ruta: Inventario()),
-                ),
               ),
           }
         : Textos.toast(producto.mensaje, true);
@@ -113,12 +110,7 @@ class _InventarioState extends State<Inventario> {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.unidades)
                   CampoTexto.seleccionFiltro = Filtros.id,
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => Historial(ruta: Inventario()),
-                  ),
-                ),
+                RecDrawer.pushAnim(Historial(ruta: Inventario()), context),
                 false,
                 carga.cargaBool(false),
               },

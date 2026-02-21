@@ -177,10 +177,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               () => {
                 carga.cargaBool(true),
                 Textos.limpiarLista(),
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => Inventario()),
-                ),
+                RecDrawer.pushAnim(Inventario(), context),
                 carga.cargaBool(false),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
@@ -402,10 +399,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               false,
               () => {
                 carga.cargaBool(true),
-                Navigator.pushReplacement(
-                  ctx,
-                  MaterialPageRoute(builder: (context) => widget.ruta),
-                ),
+                RecDrawer.pushAnim(widget.ruta, ctx),
                 carga.cargaBool(false),
               },
               size: 35,

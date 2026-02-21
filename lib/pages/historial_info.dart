@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
@@ -144,12 +145,7 @@ class _HistorialInfoState extends State<HistorialInfo> {
               ),
             ),
             Botones.layerButton(
-              () => Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Historial(ruta: widget.ruta),
-                ),
-              ),
+              () => RecDrawer.pushAnim(Historial(ruta: widget.ruta), context),
             ),
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
