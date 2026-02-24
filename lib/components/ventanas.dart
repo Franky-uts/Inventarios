@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/articulos_model.dart';
-import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';

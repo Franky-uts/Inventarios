@@ -7,6 +7,7 @@ import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
+import 'package:inventarios/pages/empleado_view.dart';
 import 'package:inventarios/pages/historial.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
@@ -81,7 +82,7 @@ class _InventarioState extends State<Inventario> {
               Icons.edit_note_rounded,
               () async => {
                 carga.cargaBool(true),
-                await RecDrawer.getListas(context, Inventario()),
+                await RecDrawer.getListas(context, EmpleadoView(index: 0)),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
               false,
@@ -140,7 +141,7 @@ class _InventarioState extends State<Inventario> {
             return Botones.icoCirMor(
               'Escanear codigo',
               Icons.barcode_reader,
-              () => RecDrawer.scanProducto(context, Inventario()),
+              () => RecDrawer.scanProducto(context, EmpleadoView(index: 0)),
               () => Textos.toast('Espera a que los datos carguen.', false),
               false,
               Carga.getValido(),
@@ -193,7 +194,7 @@ class _InventarioState extends State<Inventario> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 97,
+                          height: MediaQuery.of(context).size.height - 144,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -313,6 +314,7 @@ class _InventarioState extends State<Inventario> {
 
   ListView listaPrincipal(List lista) {
     return ListView.separated(
+      shrinkWrap: true,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(
@@ -337,11 +339,23 @@ class _InventarioState extends State<Inventario> {
             [
               "${lista[index].id}",
               lista[index].nombre,
-              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
+              (unidad.split('.').length > 1)
+                  ? (unidad.split('.')[1] == '0')
+                        ? unidad.split('.')[0]
+                        : unidad
+                  : unidad,
               lista[index].area,
               lista[index].tipo,
-              (entrada.split('.')[1] == '0') ? entrada.split('.')[0] : entrada,
-              (salida.split('.')[1] == '0') ? salida.split('.')[0] : salida,
+              (entrada.split('.').length > 1)
+                  ? (entrada.split('.')[1] == '0')
+                        ? entrada.split('.')[0]
+                        : entrada
+                  : entrada,
+              (salida.split('.').length > 1)
+                  ? (salida.split('.')[1] == '0')
+                        ? salida.split('.')[0]
+                        : salida
+                  : salida,
               '${lista[index].perdidaCantidad.length}',
             ],
             colores,

@@ -234,11 +234,23 @@ class _InventarioProdState extends State<InventarioProd> {
             [
               '${lista[index].id}',
               lista[index].nombre,
-              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
+              (unidad.split('.').length > 1)
+                  ? (unidad.split('.')[1] == '0')
+                        ? unidad.split('.')[0]
+                        : unidad
+                  : unidad,
               lista[index].area,
               lista[index].tipo,
-              (entrada.split('.')[1] == '0') ? entrada.split('.')[0] : entrada,
-              (salida.split('.')[1] == '0') ? salida.split('.')[0] : salida,
+              (entrada.split('.').length > 1)
+                  ? (entrada.split('.')[1] == '0')
+                        ? entrada.split('.')[0]
+                        : entrada
+                  : entrada,
+              (unidad.split('.').length > 1)
+                  ? (salida.split('.')[1] == '0')
+                        ? salida.split('.')[0]
+                        : salida
+                  : salida,
               '${lista[index].perdidaCantidad.length}',
             ],
             colores,

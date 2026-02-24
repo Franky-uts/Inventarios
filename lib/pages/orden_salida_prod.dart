@@ -419,7 +419,11 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,
-              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
+              (unidad.split('.').length > 1)
+                  ? (unidad.split('.')[1] == '0')
+                        ? unidad.split('.')[0]
+                        : unidad
+                  : unidad,
               '',
             ],
             colores,

@@ -209,7 +209,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 82,
+                    height: MediaQuery.of(context).size.height - 144,
                     child: Consumer<Tablas>(
                       builder: (context, tablas, child) {
                         return Tablas.listaFutura(

@@ -10,8 +10,6 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/pages/articulos.dart';
 import 'package:inventarios/pages/ordenes_inventario.dart';
-import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing_web.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 import '../models/orden_model.dart';
@@ -206,14 +204,17 @@ class _OrdenesState extends State<Ordenes> {
         (accion == 'confirmar' && datos != 'confirmar'))) {
       (datos.split(': ')[0] != 'Error')
           ? {
-              canCubOrg.clear(),
-              if (ctx.mounted)
-                for (
-                  int i = 0;
-                  i < ctx.read<VenDatos>().canCubLista().length;
-                  i++
-                )
-                  {canCubOrg.add(ctx.read<VenDatos>().canCub(i))},
+              if (columna == 'CantidadesCubiertas')
+                {
+                  canCubOrg.clear(),
+                  if (ctx.mounted)
+                    for (
+                      int i = 0;
+                      i < ctx.read<VenDatos>().canCubLista().length;
+                      i++
+                    )
+                      {canCubOrg.add(ctx.read<VenDatos>().canCub(i))},
+                },
             }
           : datos = datos.split(': ')[1];
     }

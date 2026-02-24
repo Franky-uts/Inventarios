@@ -153,8 +153,10 @@ class _HistorialInfoState extends State<HistorialInfo> {
                   MediaQuery.of(context).size.height,
                   MediaQuery.of(context).size.width,
                   [
-                    '$cantidadPerdida'.split('.')[1] == '0'
-                        ? 'Perdidas: $cantidadPerdida'.split('.')[0]
+                    ('$cantidadPerdida'.split('.').length > 1)
+                        ? ('$cantidadPerdida'.split('.')[1] == '0')
+                              ? 'Perdidas: $cantidadPerdida'.split('.')[0]
+                              : 'Perdidas: $cantidadPerdida'
                         : 'Perdidas: $cantidadPerdida',
                   ],
                   [],
@@ -186,8 +188,10 @@ class _HistorialInfoState extends State<HistorialInfo> {
                                 [.05, .15, .6],
                                 [
                                   '${index + 1}',
-                                  (cantidad.split('.')[1] == '0')
-                                      ? cantidad.split('.')[0]
+                                  (cantidad.split('.').length > 1)
+                                      ? (cantidad.split('.')[1] == '0')
+                                            ? cantidad.split('.')[0]
+                                            : cantidad
                                       : cantidad,
                                   widget.historialInfo.razones[index],
                                 ],
@@ -231,9 +235,21 @@ class _HistorialInfoState extends State<HistorialInfo> {
             [
               lista[0].horasModificacion[index],
               lista[0].usuarioModificacion[index],
-              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
-              (entrada.split('.')[1] == '0') ? entrada.split('.')[0] : entrada,
-              (salida.split('.')[1] == '0') ? salida.split('.')[0] : salida,
+              (unidad.split('.').length > 1)
+                  ? (unidad.split('.')[1] == '0')
+                        ? unidad.split('.')[0]
+                        : unidad
+                  : unidad,
+              (entrada.split('.').length > 1)
+                  ? (entrada.split('.')[1] == '0')
+                        ? entrada.split('.')[0]
+                        : entrada
+                  : entrada,
+              (salida.split('.').length > 1)
+                  ? (salida.split('.')[1] == '0')
+                        ? salida.split('.')[0]
+                        : salida
+                  : salida,
               '${lista[0].perdidas[index]}',
             ],
             [],

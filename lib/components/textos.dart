@@ -41,7 +41,7 @@ class Textos with ChangeNotifier {
       overflow: TextOverflow.ellipsis,
       style: TextStyle(
         fontSize: size,
-        color: principal ? Color(0xFF8A03A9) : Color(0xFFF6AFCF),
+          color: principal ? Color(0xFF8A03A9) : Color(0xFFF6AFCF),
       ),
     );
   }

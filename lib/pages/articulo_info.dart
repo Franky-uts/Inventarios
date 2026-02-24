@@ -348,9 +348,21 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
             [0.2, 0.075, 0.075, 0.075, 0.075, 0.2, 0.25],
             [
               lista[index].nombre,
-              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
-              (entrada.split('.')[1] == '0') ? entrada.split('.')[0] : entrada,
-              (salida.split('.')[1] == '0') ? salida.split('.')[0] : salida,
+              (unidad.split('.').length > 1)
+                  ? (unidad.split('.')[1] == '0')
+                        ? unidad.split('.')[0]
+                        : unidad
+                  : unidad,
+              (entrada.split('.').length > 1)
+                  ? (entrada.split('.')[1] == '0')
+                        ? entrada.split('.')[0]
+                        : entrada
+                  : entrada,
+              (salida.split('.').length > 1)
+                  ? (salida.split('.')[1] == '0')
+                        ? salida.split('.')[0]
+                        : salida
+                  : salida,
               '${lista[index].perdidaCantidad.length}',
               lista[index].ultimoUsuario,
               lista[index].ultimaModificacion,
@@ -368,7 +380,9 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
 
   Row rowBoton() {
     String texto = '${articulo.cantidadPorUnidad}';
-    if (texto.split('.')[1] == '0') texto = texto.split('.')[0];
+    if (texto.split('.').length > 1) {
+      if (texto.split('.')[1] == '0') texto = texto.split('.')[0];
+    }
     return Row(
       children: [
         rectanguloContainer('Cantidad por unidad: $texto'),

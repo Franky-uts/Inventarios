@@ -235,7 +235,7 @@ class _HistorialState extends State<Historial> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 97,
+                          height: MediaQuery.of(context).size.height - 144,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -433,7 +433,7 @@ class _HistorialState extends State<Historial> {
           size: 35,
         ),
         Container(
-          width: MediaQuery.of(context).size.width * .8,
+          width: MediaQuery.of(context).size.width * .7,
           margin: EdgeInsets.symmetric(vertical: 10),
           child: Consumer2<Tablas, CampoTexto>(
             builder: (context, tablas, campoTexto, child) {

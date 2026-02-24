@@ -271,9 +271,6 @@ class _ProductoState extends State<Producto> {
           children: [
             Consumer<Carga>(
               builder: (context, carga, child) {
-                String entradas = '${productoInfo.entrada}';
-                String salidas = '${productoInfo.salida}';
-                String perd = '$productosPerdido';
                 return SingleChildScrollView(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
@@ -287,41 +284,28 @@ class _ProductoState extends State<Producto> {
                         productoInfo.tipo != 'Granel'
                             ? contenedorInfo(
                                 ' que entraron:',
-                                '$entr',
-                                (entradas.split('.')[1] == '0')
-                                    ? entradas.split('.')[0]
-                                    : entradas,
+                                entr,
+                                productoInfo.entrada,
                                 true,
                               )
                             : contenedorInfoGranel(
                                 ' que entraron:',
-                                (entradas.split('.')[1] == '0')
-                                    ? entradas.split('.')[0]
-                                    : entradas,
+                                productoInfo.entrada,
                                 0,
                               ),
                         productoInfo.tipo != 'Granel'
                             ? contenedorInfo(
                                 ' que salieron:',
-                                '$sali',
-                                (salidas.split('.')[1] == '0')
-                                    ? salidas.split('.')[0]
-                                    : salidas,
+                                sali,
+                                productoInfo.salida,
                                 false,
                               )
                             : contenedorInfoGranel(
                                 ' que salieron:',
-                                (salidas.split('.')[1] == '0')
-                                    ? salidas.split('.')[0]
-                                    : salidas,
+                                productoInfo.salida,
                                 1,
                               ),
-                        contenedorInfoPerdidas(
-                          (perd.split('.')[1] == '0')
-                              ? perd.split('.')[0]
-                              : perd,
-                          2,
-                        ),
+                        contenedorInfoPerdidas(productosPerdido, 2),
                         Botones.icoCirMor(
                           'Guardar movimientos',
                           Icons.save_rounded,
@@ -507,28 +491,27 @@ class _ProductoState extends State<Producto> {
 
   SizedBox tipoTexto(String tipo) {
     String titulo = '${tipo}s:';
-    String cantidad = '';
+    String cantidad = '${productoInfo.cantidadPorUnidad}';
+    if (cantidad.split('.').length > 1) {
+      if (cantidad.split('.')[1] == '0') cantidad = cantidad.split('.')[0];
+    }
     if (tipo == 'Granel') {
       titulo = 'Kilos:';
     } else if (tipo == 'Costal') {
       titulo = 'Unidades:';
-      cantidad = '${productoInfo.cantidadPorUnidad}';
-      if (cantidad.split('.')[1] == '0') cantidad = cantidad.split('.')[0];
       cantidad = 'Kilos por unidad: $cantidad';
     } else if (tipo == 'Bote') {
       titulo = 'Unidades:';
-      cantidad = '${productoInfo.cantidadPorUnidad}';
-      if (cantidad.split('.')[1] == '0') cantidad = cantidad.split('.')[0];
       cantidad = 'Kilos/Piezas por unidad: $cantidad';
     } else if (tipo == 'Caja' || tipo == 'Bulto' || tipo == 'Paquete') {
-      cantidad = '${productoInfo.cantidadPorUnidad}';
-      if (cantidad.split('.')[1] == '0') cantidad = cantidad.split('.')[0];
       cantidad = 'Productos por $tipo: $cantidad';
     } else if (tipo == 'Galón') {
       titulo = 'Galones:';
     }
     String unidades = '${productoInfo.unidades + entr - sali}';
-    if (unidades.split('.')[1] == '0') unidades = unidades.split('.')[0];
+    if (unidades.split('.').length > 1) {
+      if (unidades.split('.')[1] == '0') unidades = unidades.split('.')[0];
+    }
     return SizedBox(
       width: MediaQuery.of(context).size.width * .5,
       height: 90,
@@ -547,7 +530,7 @@ class _ProductoState extends State<Producto> {
                 size: 20,
                 alignment: TextAlign.center,
               ),
-              if (cantidad.isNotEmpty)
+              if (productoInfo.cantidadPorUnidad>1)
                 Textos.textoGeneral(cantidad, true, 1, size: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -583,7 +566,7 @@ class _ProductoState extends State<Producto> {
             unidades,
             Textos.colorLimite(
               productoInfo.limiteProd,
-              productoInfo.unidades.floor(),
+              (productoInfo.unidades + entr - sali).floor(),
             ),
             1,
             size: 20,
@@ -595,14 +578,17 @@ class _ProductoState extends State<Producto> {
 
   SizedBox contenedorInfo(
     String textoInfo,
-    String textoValor,
-    String textoTotal,
+    double textoValor,
+    double textoTotal,
     bool entrada,
   ) {
+    String valor = ('$textoValor'.split('.').length > 1)
+        ? ('$textoValor'.split('.')[1] == '0')
+              ? '$textoValor'.split('.')[0]
+              : '$textoValor'
+        : '$textoValor';
     String text = '${productoInfo.tipo}s$textoInfo';
-    if (productoInfo.tipo == 'Granel') {
-      text = 'Unidades$textoInfo';
-    } else if (productoInfo.tipo == 'Galón') {
+    if (productoInfo.tipo == 'Galón') {
       text = 'Galones$textoInfo';
     }
     return SizedBox(
@@ -641,7 +627,7 @@ class _ProductoState extends State<Producto> {
                     ),
                   ),
                   Textos.recuadroCantidad(
-                    textoValor,
+                    valor,
                     color[entrada ? 0 : 1],
                     1,
                     size: 20,
@@ -673,15 +659,10 @@ class _ProductoState extends State<Producto> {
 
   SizedBox contenedorInfoGranel(
     String textoInfo,
-    String textoValor,
+    double textoValor,
     int valor,
   ) {
-    String text = '${productoInfo.tipo}s$textoInfo';
-    if (productoInfo.tipo == 'Granel') {
-      text = 'Kilos$textoInfo';
-    } else if (productoInfo.tipo == 'Galón') {
-      text = 'Galones$textoInfo';
-    }
+    String text = 'Kilos ${productoInfo.tipo}s$textoInfo';
     return SizedBox(
       width: MediaQuery.of(context).size.width * .55,
       height: 45,
@@ -704,13 +685,18 @@ class _ProductoState extends State<Producto> {
             inputType: TextInputType.numberWithOptions(decimal: true),
             borderColor: Color(0xFF8A03A9),
           ),
-          Textos.recuadroCantidad(textoValor, Color(0xFF8A03A9), 1, size: 20),
+          Textos.recuadroCantidad(
+            '$textoValor',
+            Color(0xFF8A03A9),
+            1,
+            size: 20,
+          ),
         ],
       ),
     );
   }
 
-  SizedBox contenedorInfoPerdidas(String textoValor, int valor) {
+  SizedBox contenedorInfoPerdidas(double textoValor, int valor) {
     String text = 'Productos perdidos:';
     if (productoInfo.tipo == 'Granel' || productoInfo.tipo == 'Costal') {
       text = 'Kilos perdidos:';
@@ -735,7 +721,16 @@ class _ProductoState extends State<Producto> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Textos.recuadroCantidad(textoValor, color[valor], 1, size: 20),
+              Textos.recuadroCantidad(
+                ('$textoValor'.split('.').length > 1)
+                    ? ('$textoValor'.split('.')[1] == '0')
+                          ? '$textoValor'.split('.')[0]
+                          : '$textoValor'
+                    : '$textoValor',
+                color[valor],
+                1,
+                size: 20,
+              ),
               Botones.btnRctMor(
                 texto.split(':')[0],
                 Icons.info_outline_rounded,

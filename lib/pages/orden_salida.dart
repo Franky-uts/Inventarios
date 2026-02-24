@@ -167,7 +167,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 97,
+                          height: MediaQuery.of(context).size.height - 144,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -408,7 +408,11 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,
-              (unidad.split('.')[1] == '0') ? unidad.split('.')[0] : unidad,
+              (unidad.split('.').length > 1)
+                  ? (unidad.split('.')[1] == '0')
+                        ? unidad.split('.')[0]
+                        : unidad
+                  : unidad,
               '',
             ],
             colores,

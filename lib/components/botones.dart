@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:provider/provider.dart';
 
 class Botones {
   static IconButton btnRctMor(
@@ -142,6 +144,18 @@ class Botones {
         Textos.recuadroCantidad('$textoValor', colorBorde, 1, size: 20),
         Botones.btnRctMor('Sumar $nombre', Icons.add, false, () => suma()),
       ],
+    );
+  }
+
+  static Widget botonBarNav(String titulo, IconData icono, Function accion) {
+    accion();
+    return Consumer<Carga>(
+      builder: (ctx, carga, child) {
+        return NavigationDestination(
+          icon: Icon(icono, color: Color(0xFF8A03A9)),
+          label: titulo,
+        );
+      },
     );
   }
 

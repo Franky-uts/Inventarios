@@ -6,6 +6,7 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/ven_datos.dart';
+import 'package:inventarios/pages/empleado_view.dart';
 import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/inventario_prod.dart';
@@ -47,12 +48,12 @@ class MyApp extends StatelessWidget {
   Widget ruta() {
     StatefulWidget ruta = Inicio();
     if (LocalStorage.preferencias.getString('usuario') != null) {
-      ruta = Inventario();
-      switch(LocalStorage.preferencias.getString('puesto')){
-        case('Proveedor'):
+      ruta = EmpleadoView(index: 0);
+      switch (LocalStorage.preferencias.getString('puesto')) {
+        case ('Proveedor'):
           ruta = Ordenes();
           break;
-        case('Producción'):
+        case ('Producción'):
           ruta = InventarioProd();
           break;
       }
