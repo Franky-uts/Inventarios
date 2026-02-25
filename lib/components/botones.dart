@@ -72,20 +72,21 @@ class Botones {
     );
   }
 
-  static TextButton icoRctBor(
+  static OutlinedButton icoRctBor(
     String texto,
     IconData icono,
     Color colorBorde,
     Function accion,
   ) {
-    return TextButton.icon(
+    return OutlinedButton.icon(
       onPressed: () => accion(),
       label: Textos.textoGeneral(texto, true, 1, alignment: TextAlign.center),
       icon: Icon(icono, size: 25, color: Color(0xFF8A03A9)),
-      style: IconButton.styleFrom(
+      style: OutlinedButton.styleFrom(
+        padding: EdgeInsets.all(12.5),
         side: BorderSide(color: colorBorde, width: 2),
         backgroundColor: Colors.white,
-        shape: ContinuousRectangleBorder(
+        shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(27.5),
         ),
       ),
@@ -153,6 +154,7 @@ class Botones {
       builder: (ctx, carga, child) {
         return NavigationDestination(
           icon: Icon(icono, color: Color(0xFF8A03A9)),
+          selectedIcon: Icon(icono, color: Colors.white),
           label: titulo,
         );
       },

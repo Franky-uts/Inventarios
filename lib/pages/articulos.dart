@@ -10,10 +10,8 @@ import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/add_articulo.dart';
 import 'package:inventarios/pages/articulo_info.dart';
-import 'package:inventarios/pages/ordenes.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
-import 'ordenes_inventario.dart';
 
 class Articulos extends StatefulWidget {
   const Articulos({super.key});
@@ -35,7 +33,24 @@ class _ArticulosState extends State<Articulos> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              RecDrawer.pushAnim(ArticuloInfo(articulo: articulo), ctx),
+              Navigator.of(ctx).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      ArticuloInfo(articulo: articulo),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        return SlideTransition(
+                          position: animation.drive(
+                            Tween(
+                              begin: Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.ease)),
+                          ),
+                          child: child,
+                        );
+                      },
+                ),
+              ),
           }
         : Textos.toast(articulo.mensaje, true);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -86,12 +101,12 @@ class _ArticulosState extends State<Articulos> {
               Icons.barcode_reader,
               () async => RecDrawer.scanArticulo(context),
               () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
+              true,
               Carga.getValido(),
             );
           },
         ),
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Ver almacen',
@@ -122,7 +137,7 @@ class _ArticulosState extends State<Articulos> {
               true,
             );
           },
-        ),
+        ),*/
       ]),
       body: PopScope(
         canPop: false,
@@ -141,7 +156,7 @@ class _ArticulosState extends State<Articulos> {
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height - 97,
+                      height: MediaQuery.of(context).size.height - 144,
                       child: Consumer<Tablas>(
                         builder: (context, tablas, child) {
                           return Tablas.listaFutura(
@@ -215,8 +230,9 @@ class _ArticulosState extends State<Articulos> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

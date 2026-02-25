@@ -6,10 +6,7 @@ import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/articulos_model.dart';
-import 'package:inventarios/pages/ordenes.dart';
 import 'package:provider/provider.dart';
-import 'articulos.dart';
-import 'ordenes_inventario.dart';
 
 class Addarticulo extends StatefulWidget {
   final List listaArea;
@@ -128,7 +125,7 @@ class _AddproductoState extends State<Addarticulo> {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
       drawer: RecDrawer.drawer(context, [
-        Consumer<Carga>(
+        /* Consumer<Carga>(
           builder: (context, carga, child) {
             return Botones.icoCirMor(
               'Ver artículos',
@@ -175,7 +172,7 @@ class _AddproductoState extends State<Addarticulo> {
               true,
             );
           },
-        ),
+        ),*/
       ]),
       body: PopScope(
         canPop: false,
@@ -347,7 +344,7 @@ class _AddproductoState extends State<Addarticulo> {
                 ),
               ),
             ),
-            Botones.layerButton(() => RecDrawer.pushAnim(Articulos(), context)),
+            Botones.layerButton(() => Navigator.pop(context)),
             Carga.ventanaCarga(),
           ],
         ),

@@ -3,15 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
-import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/usuario_model.dart';
-import 'package:inventarios/pages/empleado_view.dart';
-import 'package:inventarios/pages/inventario.dart';
-import 'package:inventarios/pages/inventario_prod.dart';
-import 'package:inventarios/pages/ordenes.dart';
+import 'package:inventarios/views/empleado.dart';
 import 'package:inventarios/services/local_storage.dart';
+import 'package:inventarios/views/productor.dart';
+import 'package:inventarios/views/proveedor.dart';
 import 'package:provider/provider.dart';
 
 class Inicio extends StatefulWidget {
@@ -91,18 +89,34 @@ class _InicioState extends State<Inicio> {
           await LocalStorage.set('usuario', usuarioMod.nombre);
           await LocalStorage.set('puesto', usuarioMod.puesto);
           await LocalStorage.set('locación', usuarioMod.locacion);
-          StatefulWidget ruta = EmpleadoView(index: 0);
+          StatefulWidget ruta = Empleado(index: 0);
           switch (usuarioMod.puesto) {
             case ('Proveedor'):
-              ruta = Ordenes();
+              ruta = Proveedor(index: 0);
               break;
             case ('Producción'):
-              ruta = InventarioProd();
+              ruta = Productor(index: 0);
               break;
           }
           if (ctx.mounted) {
             ctx.read<Ventanas>().setInventario(usuarioMod.locacion);
-            RecDrawer.pushAnim(ruta, ctx);
+            Navigator.of(ctx).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => ruta,
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return SlideTransition(
+                        position: animation.drive(
+                          Tween(
+                            begin: Offset(1.0, 0.0),
+                            end: Offset.zero,
+                          ).chain(CurveTween(curve: Curves.ease)),
+                        ),
+                        child: child,
+                      );
+                    },
+              ),
+            );
           }
         }
       }

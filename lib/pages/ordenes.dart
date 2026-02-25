@@ -8,8 +8,6 @@ import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/botones.dart';
-import 'package:inventarios/pages/articulos.dart';
-import 'package:inventarios/pages/ordenes_inventario.dart';
 import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
 import '../models/orden_model.dart';
@@ -247,7 +245,7 @@ class _OrdenesState extends State<Ordenes> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: RecDrawer.drawer(context, [
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (context, carga, child) {
             return Botones.icoCirMor(
               'Ver artículos',
@@ -280,7 +278,7 @@ class _OrdenesState extends State<Ordenes> {
               true,
             );
           },
-        ),
+        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: Shortcuts(
@@ -314,7 +312,7 @@ class _OrdenesState extends State<Ordenes> {
                           ),
                           SizedBox(
                             width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height - 82,
+                            height: MediaQuery.of(context).size.height - 137,
                             child: Consumer<Tablas>(
                               builder: (context, tablas, child) {
                                 return Tablas.listaFutura(
@@ -572,8 +570,9 @@ class _OrdenesState extends State<Ordenes> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

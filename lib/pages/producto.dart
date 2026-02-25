@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
-import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ven_datos.dart';
@@ -14,9 +13,8 @@ import 'package:provider/provider.dart';
 
 class Producto extends StatefulWidget {
   final ProductoModel productoInfo;
-  final StatefulWidget ruta;
 
-  const Producto({super.key, required this.productoInfo, required this.ruta});
+  const Producto({super.key, required this.productoInfo});
 
   @override
   State<Producto> createState() => _ProductoState();
@@ -339,7 +337,7 @@ class _ProductoState extends State<Producto> {
               },
             ),
             Botones.layerButton(
-              () => RecDrawer.pushAnim(widget.ruta, context),
+              () => Navigator.pop(context),
               recarga: () => recarga(context),
             ),
             Consumer2<Ventanas, VenDatos>(

@@ -8,11 +8,7 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/inventario_prod.dart';
-import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
-
-import 'historial_ordenes.dart';
 
 class OrdenSalidaProd extends StatefulWidget {
   const OrdenSalidaProd({super.key});
@@ -55,6 +51,9 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
     for (ProductoModel prod in listaProd) {
       cantidades.add(cantidad[prod.id - 1]);
       idProductos.add(prod.id);
+    }
+    for (int i = 0; i < cantidades.length; i++) {
+      if (comentarios[i].isNotEmpty) comentarios[i] = "'$comentarios'";
     }
     String respuesta = await OrdenModel.postOrden(
       idProductos,
@@ -107,7 +106,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: RecDrawer.drawer(context, [
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Historial de ordenes',
@@ -119,7 +118,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                 ),
                 if (context.mounted)
                   RecDrawer.pushAnim(
-                    HistorialOrdenes(ruta: OrdenSalidaProd()),
+                    HistorialOrdenes(),
                     context,
                   ),
               },
@@ -148,7 +147,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
               Carga.getValido(),
             );
           },
-        ),
+        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -178,7 +177,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 97,
+                          height: MediaQuery.of(context).size.height - 144,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -318,7 +317,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                     if (controller.text.isNotEmpty &&
                         controller.text != comentarios[comid])
                       Textos.toast('Comentario añadido', false),
-                    comentarios[comid] = "'${controller.text}'",
+                    comentarios[comid] = controller.text,
                     context.read<Ventanas>().emergente(false),
                   },
                   widget: CampoTexto.inputTexto(
@@ -392,9 +391,10 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     listas(lista.last.id);
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

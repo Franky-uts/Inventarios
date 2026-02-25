@@ -7,9 +7,6 @@ import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/articulos.dart';
-import 'package:inventarios/pages/historial.dart';
-import 'package:inventarios/pages/ordenes.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
@@ -34,9 +31,23 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              RecDrawer.pushAnim(
-                Producto(productoInfo: producto, ruta: OrdenesInventario()),
-                ctx,
+              Navigator.of(ctx).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      Producto(productoInfo: producto),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                    return SlideTransition(
+                      position: animation.drive(
+                        Tween(
+                          begin: Offset(1.0, 0.0),
+                          end: Offset.zero,
+                        ).chain(CurveTween(curve: Curves.ease)),
+                      ),
+                      child: child,
+                    );
+                  },
+                ),
               ),
           }
         : Textos.toast(producto.mensaje, true);
@@ -79,14 +90,14 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             return Botones.icoCirMor(
               'Escanear producto',
               Icons.barcode_reader,
-              () => RecDrawer.scanProducto(context, OrdenesInventario()),
+              () => RecDrawer.scanProducto(context),
               () => Textos.toast('Espera a que los datos carguen.', false),
               false,
               Carga.getValido(),
             );
           },
         ),
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Historial movimientos',
@@ -96,7 +107,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 if (CampoTexto.seleccionFiltro == Filtros.unidades)
                   CampoTexto.seleccionFiltro = Filtros.id,
                 RecDrawer.pushAnim(
-                  Historial(ruta: OrdenesInventario()),
+                  Historial(),
                   context,
                 ),
                 carga.cargaBool(false),
@@ -106,7 +117,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               Carga.getValido(),
             );
           },
-        ),
+        ),*/
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
@@ -122,7 +133,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             );
           },
         ),
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Ver artículos',
@@ -155,7 +166,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               true,
             );
           },
-        ),
+        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -187,7 +198,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 97,
+                          height: MediaQuery.of(context).size.height - 144,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -245,7 +256,6 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                   context,
                   (texto) => RecDrawer.rutaProducto(
                     texto,
-                    OrdenesInventario(),
                     context,
                   ),
                 );
@@ -292,8 +302,9 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

@@ -29,6 +29,7 @@ class ArticulosModel {
 
   static List<String> getInventarios() => [
     'Árbol Grande',
+    'Bicentenario'
     'Café',
     'Cedis',
     'Faja de Oro',

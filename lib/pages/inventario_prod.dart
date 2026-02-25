@@ -31,7 +31,24 @@ Future<void> getProductoInfo(BuildContext ctx, int id) async {
       ? {
           await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
           if (ctx.mounted)
-            RecDrawer.pushAnim(PerdidasProv(productoInfo: producto), ctx),
+            Navigator.of(ctx).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    PerdidasProv(productoInfo: producto),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return SlideTransition(
+                        position: animation.drive(
+                          Tween(
+                            begin: Offset(1.0, 0.0),
+                            end: Offset.zero,
+                          ).chain(CurveTween(curve: Curves.ease)),
+                        ),
+                        child: child,
+                      );
+                    },
+              ),
+            ),
         }
       : Textos.toast(producto.mensaje, true);
   if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -59,7 +76,24 @@ void rutaProducto(String prod, BuildContext ctx) async {
       if (!flag) {
         flag = (productos[i].codigoBarras == prod);
         ctx.read<Ventanas>().scan(false);
-        RecDrawer.pushAnim(PerdidasProv(productoInfo: productos[i]), ctx);
+        Navigator.of(ctx).push(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                PerdidasProv(productoInfo: productos[i]),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return SlideTransition(
+                    position: animation.drive(
+                      Tween(
+                        begin: Offset(1.0, 0.0),
+                        end: Offset.zero,
+                      ).chain(CurveTween(curve: Curves.ease)),
+                    ),
+                    child: child,
+                  );
+                },
+          ),
+        );
       }
     }
     if (flag) Textos.toast('No se reconocio el codigo.', false);
@@ -79,12 +113,12 @@ class _InventarioProdState extends State<InventarioProd> {
               Icons.barcode_reader,
               () => scanProd(context),
               () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
+              true,
               Carga.getValido(),
             );
           },
         ),
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Nueva orden',
@@ -98,7 +132,7 @@ class _InventarioProdState extends State<InventarioProd> {
               Carga.getValido(),
             );
           },
-        ),
+        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -130,7 +164,7 @@ class _InventarioProdState extends State<InventarioProd> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 97,
+                          height: MediaQuery.of(context).size.height - 144,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -208,8 +242,9 @@ class _InventarioProdState extends State<InventarioProd> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

@@ -10,8 +10,6 @@ import 'package:inventarios/models/historial_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/add_producto.dart';
 import 'package:inventarios/pages/articulo_info.dart';
-import 'package:inventarios/pages/orden_salida.dart';
-import 'package:inventarios/pages/orden_salida_prod.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -325,20 +323,19 @@ class RecDrawer {
     );
   }
 
-  static void scanProducto(BuildContext ctx, StatefulWidget ruta) async {
+  static void scanProducto(BuildContext ctx) async {
     Navigator.of(ctx).pop();
     if (kIsWeb) {
       ctx.read<Ventanas>().scan(true);
     } else {
       ctx.read<Carga>().cargaBool(true);
       String producto = await Textos.scan(ctx);
-      if (ctx.mounted) rutaProducto(producto, ruta, ctx);
+      if (ctx.mounted) rutaProducto(producto, ctx);
     }
   }
 
   static void rutaProducto(
     String prod,
-    StatefulWidget ruta,
     BuildContext ctx,
   ) async {
     bool flag = true;
@@ -348,7 +345,24 @@ class RecDrawer {
         flag = false;
         if (ctx.mounted) {
           ctx.read<Ventanas>().scan(false);
-          pushAnim(Producto(productoInfo: productos[i], ruta: ruta), ctx);
+          Navigator.of(ctx).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  Producto(productoInfo: productos[i]),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return SlideTransition(
+                  position: animation.drive(
+                    Tween(
+                      begin: Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).chain(CurveTween(curve: Curves.ease)),
+                  ),
+                  child: child,
+                );
+              },
+            ),
+          );
           ctx.read<Carga>().cargaBool(false);
         }
       }
@@ -414,7 +428,7 @@ class RecDrawer {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
-  static Future<void> salidaOrdenes(BuildContext ctx) async {
+  /*static Future<void> salidaOrdenes(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
     Navigator.of(ctx).pop();
     CampoTexto.seleccionFiltro = Filtros.id;
@@ -448,7 +462,7 @@ class RecDrawer {
           : Textos.toast(productos.last.mensaje, false);
       ctx.read<Carga>().cargaBool(false);
     }
-  }
+  }*/
 
   static void pushAnim(StatefulWidget ruta, BuildContext ctx) {
     Navigator.of(ctx).pushReplacement(

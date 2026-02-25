@@ -3,12 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
-import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/inventario_prod.dart';
 import 'package:provider/provider.dart';
 
 class PerdidasProv extends StatefulWidget {
@@ -258,7 +256,7 @@ class _PerdidasProvState extends State<PerdidasProv> {
               },
             ),
             Botones.layerButton(
-              () => RecDrawer.pushAnim(InventarioProd(), context),
+              () => Navigator.pop(context),
               recarga: () => recarga(context),
             ),
             Consumer3<Ventanas, Carga, Tablas>(

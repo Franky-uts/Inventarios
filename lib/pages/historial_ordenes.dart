@@ -7,14 +7,11 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
-import 'package:inventarios/pages/inventario.dart';
 import 'package:provider/provider.dart';
 import '../services/local_storage.dart';
 
 class HistorialOrdenes extends StatefulWidget {
-  final StatefulWidget ruta;
-
-  const HistorialOrdenes({super.key, required this.ruta});
+  const HistorialOrdenes({super.key});
 
   @override
   State<HistorialOrdenes> createState() => _HistorialOrdenesState();
@@ -154,7 +151,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
       drawer: RecDrawer.drawer(context, [
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Nueva orden',
@@ -185,7 +182,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               Carga.getValido(),
             );
           },
-        ),
+        ),*/
       ]),
       body: PopScope(
         canPop: false,
@@ -209,7 +206,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 144,
+                    height: MediaQuery.of(context).size.height - 137,
                     child: Consumer<Tablas>(
                       builder: (context, tablas, child) {
                         return Tablas.listaFutura(
@@ -302,7 +299,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                   width:
                                       MediaQuery.sizeOf(context).width * .045,
                                   child: Botones.btnRctMor(
-                                    'Ver comentarios',
+                                    'Ver comentarios ${venDatos.art(index)}',
                                     Icons.comment_rounded,
                                     false,
                                     () => verComentarios(
@@ -317,7 +314,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                   width:
                                       MediaQuery.sizeOf(context).width * .045,
                                   child: Botones.btnRctMor(
-                                    'Confirmar',
+                                    'Confirmar ${venDatos.art(index)}',
                                     venDatos.comfProd(index)
                                         ? Icons.check_box_rounded
                                         : Icons.check_box_outline_blank_rounded,
@@ -391,8 +388,16 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 25),
       child: Consumer2<Tablas, Carga>(
         builder: (ctx, tablas, carga, child) {
-          List<Widget> filtroList = [];
-          filtroList.add(
+          List<Widget> filtroList = [
+            Botones.btnRctMor(
+              'Abrir menú',
+              Icons.menu_rounded,
+              false,
+              () => Scaffold.of(context).openDrawer(),
+              size: 35,
+            ),
+          ];
+          /*filtroList.add(
             Botones.btnRctMor(
               'Regresar',
               Icons.arrow_back_rounded,
@@ -404,7 +409,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               },
               size: 35,
             ),
-          );
+          );*/
           List<String> txt = ['id', 'Estado', 'Remitente'];
           List<IconData> icono = [
             Icons.numbers_rounded,
@@ -431,8 +436,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

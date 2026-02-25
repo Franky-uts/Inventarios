@@ -122,7 +122,7 @@ class Ventanas with ChangeNotifier {
                           ? Container(
                               width: ancho,
                               height:
-                                  alto - ((footerTexto.length > 1) ? 168 : 153),
+                                  alto - ((footerTexto.length > 1) ? 168 : 153)-65,
                               margin: EdgeInsets.zero,
                               child: tablaListView,
                             )

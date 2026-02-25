@@ -33,12 +33,13 @@ class Tablas with ChangeNotifier {
   }
 
   static FutureBuilder listaFutura(
-    ListView Function(List<dynamic>) lista,
+    ListView Function(List<dynamic>, ScrollController) lista,
     String textoListaVacia,
     String errorTexto,
     Function modelo, {
     Function? accionRefresh,
   }) {
+    ScrollController controller = ScrollController();
     return FutureBuilder(
       future: modelo(),
       builder: (context, snapshot) {
@@ -49,13 +50,16 @@ class Tablas with ChangeNotifier {
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData) {
             _datos = snapshot.data;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              context.read<Carga>().valido(true);
+            });
             wid = Center(child: Textos.textoError(textoListaVacia));
             if (_datos.isNotEmpty) {
               wid = Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Textos.textoError(_datos[0].mensaje),
+                  Textos.textoError(_datos.last.mensaje),
                   Botones.icoCirMor(
                     'Volver a cargar',
                     Icons.refresh_rounded,
@@ -69,11 +73,15 @@ class Tablas with ChangeNotifier {
               if (CampoTexto.busquedaTexto.text.isNotEmpty) {
                 wid = Center(child: Textos.textoError(errorTexto));
               }
-              if (_datos[0].mensaje == '') {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  context.read<Carga>().valido(true);
-                });
-                wid = lista(_datos);
+              if (_datos.last.mensaje == '') {
+                wid = Scrollbar(
+                  controller: controller,
+                  thickness: 17.5,
+                  thumbVisibility: true,
+                  interactive: true,
+                  trackVisibility: true,
+                  child: lista(_datos, controller),
+                );
               }
             }
           } else if (snapshot.hasError) {

@@ -7,8 +7,7 @@ import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/empleado_view.dart';
-import 'package:inventarios/pages/historial.dart';
+import 'package:inventarios/views/empleado.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:inventarios/components/botones.dart';
@@ -44,9 +43,23 @@ class _InventarioState extends State<Inventario> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              RecDrawer.pushAnim(
-                Producto(productoInfo: producto, ruta: Inventario()),
-                ctx,
+              Navigator.of(ctx).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      Producto(productoInfo: producto),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        return SlideTransition(
+                          position: animation.drive(
+                            Tween(
+                              begin: Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.ease)),
+                          ),
+                          child: child,
+                        );
+                      },
+                ),
               ),
           }
         : Textos.toast(producto.mensaje, true);
@@ -82,7 +95,7 @@ class _InventarioState extends State<Inventario> {
               Icons.edit_note_rounded,
               () async => {
                 carga.cargaBool(true),
-                await RecDrawer.getListas(context, EmpleadoView(index: 0)),
+                await RecDrawer.getListas(context, Empleado(index: 0)),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
               false,
@@ -102,7 +115,7 @@ class _InventarioState extends State<Inventario> {
             );
           },
         ),
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Historial movimientos',
@@ -120,7 +133,7 @@ class _InventarioState extends State<Inventario> {
               Carga.getValido(),
             );
           },
-        ),
+        ),*/
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
@@ -141,14 +154,14 @@ class _InventarioState extends State<Inventario> {
             return Botones.icoCirMor(
               'Escanear codigo',
               Icons.barcode_reader,
-              () => RecDrawer.scanProducto(context, EmpleadoView(index: 0)),
+              () => RecDrawer.scanProducto(context),
               () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
+              true,
               Carga.getValido(),
             );
           },
         ),
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Nueva orden',
@@ -162,7 +175,7 @@ class _InventarioState extends State<Inventario> {
               Carga.getValido(),
             );
           },
-        ),
+        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -264,8 +277,7 @@ class _InventarioState extends State<Inventario> {
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaScan(
                   context,
-                  (texto) =>
-                      RecDrawer.rutaProducto(texto, Inventario(), context),
+                  (texto) => RecDrawer.rutaProducto(texto, context),
                 );
               },
             ),
@@ -312,9 +324,9 @@ class _InventarioState extends State<Inventario> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
-      shrinkWrap: true,
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

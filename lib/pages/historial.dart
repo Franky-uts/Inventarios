@@ -13,9 +13,7 @@ import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
 class Historial extends StatefulWidget {
-  final StatefulWidget ruta;
-
-  const Historial({super.key, required this.ruta});
+  const Historial({super.key});
 
   @override
   State<Historial> createState() => _HistorialState();
@@ -59,9 +57,23 @@ class _HistorialState extends State<Historial> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              RecDrawer.pushAnim(
-                HistorialInfo(historialInfo: historial, ruta: widget.ruta),
-                ctx,
+              Navigator.of(ctx).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      HistorialInfo(historialInfo: historial),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        return SlideTransition(
+                          position: animation.drive(
+                            Tween(
+                              begin: Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.ease)),
+                          ),
+                          child: child,
+                        );
+                      },
+                ),
               ),
           }
         : Textos.toast(historial.mensaje, true);
@@ -172,12 +184,12 @@ class _HistorialState extends State<Historial> {
                 reporte = true,
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
+              true,
               Carga.getValido(),
             );
           },
         ),
-        if (LocalStorage.local('locación') != 'Cedis')
+        /*if (LocalStorage.local('locación') != 'Cedis')
           Consumer<Carga>(
             builder: (ctx, carga, child) {
               return Botones.icoCirMor(
@@ -212,7 +224,7 @@ class _HistorialState extends State<Historial> {
               true,
             );
           },
-        ),
+        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -454,8 +466,9 @@ class _HistorialState extends State<Historial> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

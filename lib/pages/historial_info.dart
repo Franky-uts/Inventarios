@@ -1,25 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
-import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/historial_model.dart';
-import 'package:inventarios/pages/historial.dart';
 import 'package:provider/provider.dart';
-
 import '../components/textos.dart';
 
 class HistorialInfo extends StatefulWidget {
   final HistorialModel historialInfo;
-  final StatefulWidget ruta;
 
-  const HistorialInfo({
-    super.key,
-    required this.historialInfo,
-    required this.ruta,
-  });
+  const HistorialInfo({super.key, required this.historialInfo});
 
   @override
   State<HistorialInfo> createState() => _HistorialInfoState();
@@ -144,9 +136,7 @@ class _HistorialInfoState extends State<HistorialInfo> {
                 ),
               ),
             ),
-            Botones.layerButton(
-              () => RecDrawer.pushAnim(Historial(ruta: widget.ruta), context),
-            ),
+            Botones.layerButton(() => Navigator.pop(context)),
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
                 return Ventanas.ventanaTabla(
@@ -214,8 +204,9 @@ class _HistorialInfoState extends State<HistorialInfo> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
+      controller: controller,
       itemCount: lista[0].movimientos,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

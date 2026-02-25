@@ -8,11 +8,8 @@ import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
-import 'package:inventarios/pages/historial_ordenes.dart';
-import 'package:inventarios/pages/inventario.dart';
 import 'package:provider/provider.dart';
 import '../models/producto_model.dart';
-import '../services/local_storage.dart';
 
 class OrdenSalida extends StatefulWidget {
   const OrdenSalida({super.key});
@@ -55,6 +52,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     for (ProductoModel prod in listaProd) {
       cantidades.add(cantidad[prod.id - 1]);
       idProductos.add(prod.id);
+    }
+    for (int i = 0; i < cantidades.length; i++) {
+      if (comentarios[i].isNotEmpty) comentarios[i] = "'$comentarios'";
     }
     String respuesta = await OrdenModel.postOrden(
       idProductos,
@@ -105,7 +105,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: RecDrawer.drawer(context, [
-        Consumer<Carga>(
+        /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
               'Historial de ordenes',
@@ -137,7 +137,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           () => {},
           true,
           true,
-        ),
+        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -307,7 +307,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     if (controller.text.isNotEmpty &&
                         controller.text != comentarios[comid])
                       Textos.toast('Comentario añadido', false),
-                    comentarios[comid] = "'${controller.text}'",
+                    comentarios[comid] = controller.text,
                     context.read<Ventanas>().emergente(false),
                   },
                   widget: CampoTexto.inputTexto(
@@ -381,9 +381,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     listas(lista.last.id);
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(

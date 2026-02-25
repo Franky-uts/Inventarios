@@ -4,13 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
-import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/articulos.dart';
 import 'package:provider/provider.dart';
 
 class ArticuloInfo extends StatefulWidget {
@@ -276,7 +274,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
               ),
             ),
             Botones.layerButton(
-              () => RecDrawer.pushAnim(Articulos(), context),
+              () => Navigator.pop(context),
               recarga: () => recarga(context),
             ),
             Consumer2<Ventanas, Carga>(
@@ -322,8 +320,9 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
     );
   }
 
-  ListView listaPrincipal(List lista) {
+  ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
+      controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
       separatorBuilder: (context, index) => Container(
