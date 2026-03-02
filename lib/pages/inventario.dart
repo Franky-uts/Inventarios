@@ -7,7 +7,6 @@ import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/views/empleado.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:inventarios/components/botones.dart';
@@ -95,7 +94,7 @@ class _InventarioState extends State<Inventario> {
               Icons.edit_note_rounded,
               () async => {
                 carga.cargaBool(true),
-                await RecDrawer.getListas(context, Empleado(index: 0)),
+                await RecDrawer.getListas(context),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
               false,

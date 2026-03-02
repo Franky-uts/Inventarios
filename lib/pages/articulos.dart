@@ -69,9 +69,23 @@ class _ArticulosState extends State<Articulos> {
         : {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              RecDrawer.pushAnim(
-                Addarticulo(listaArea: areas, listaTipo: tipos),
-                ctx,
+              Navigator.of(ctx).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      Addarticulo(listaArea: areas, listaTipo: tipos),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        return SlideTransition(
+                          position: animation.drive(
+                            Tween(
+                              begin: Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.ease)),
+                          ),
+                          child: child,
+                        );
+                      },
+                ),
               ),
           };
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);

@@ -69,8 +69,9 @@ class _OrdenesState extends State<Ordenes> {
                   orden.tipos,
                   orden.cantidadesCubiertas,
                   orden.cantidadAlmacen,
-                  orden.comentariosProveedor,
                   orden.comentariosTienda,
+                  orden.comentariosProveedor,
+                  orden.comentariosFinales,
                   orden.confirmacion,
                   '${orden.id}',
                   orden.remitente,
@@ -111,6 +112,7 @@ class _OrdenesState extends State<Ordenes> {
     String estado,
     String comTienda,
     String comProv,
+    String comFin,
   ) {
     titulo = 'Comentarios de $nombre';
     btnNo = 'Volver';
@@ -125,34 +127,45 @@ class _OrdenesState extends State<Ordenes> {
         size: 20,
         alignment: TextAlign.center,
       ),
+      if (estado == 'En proceso')
+        CampoTexto.inputTexto(
+          MediaQuery.sizeOf(context).width,
+          'Comentarios del Proveedor',
+          controller,
+          Color(0x00000000),
+          true,
+          false,
+          () => {},
+          icono: Icons.message_rounded,
+        ),
+      if (estado != 'En proceso')
+        Textos.textoTilulo('Comentarios del proveedor:', 20),
+      if (estado != 'En proceso')
+        Textos.textoGeneral(
+          comProv,
+          true,
+          5,
+          size: 20,
+          alignment: TextAlign.center,
+        ),
+      if (context.read<VenDatos>().est() == 'Finalizado' ||
+          context.read<VenDatos>().est() == 'Incompleto')
+        Textos.textoTilulo('Comentarios finales:', 20),
+      if (context.read<VenDatos>().est() == 'Finalizado' ||
+          context.read<VenDatos>().est() == 'Incompleto')
+        Textos.textoGeneral(
+          comFin,
+          true,
+          5,
+          size: 20,
+          alignment: TextAlign.center,
+        ),
     ];
-    (estado == 'En proceso')
-        ? {
-            if (comProv == 'Sin comentarios') comProv = '',
-            wid.add(
-              CampoTexto.inputTexto(
-                MediaQuery.sizeOf(context).width,
-                'Comentarios de la del almacenista',
-                controller,
-                Color(0x00000000),
-                true,
-                false,
-                () => {},
-                icono: Icons.message_rounded,
-              ),
-            ),
-          }
-        : wid.addAll([
-            Textos.textoTilulo('Comentarios del proveedor:', 20),
-            Textos.textoGeneral(
-              comProv,
-              true,
-              5,
-              size: 30,
-              alignment: TextAlign.center,
-            ),
-          ]);
-    controller.text = comProv;
+    controller.text = (estado == 'En proceso')
+        ? (comProv == 'Sin comentarios')
+              ? ''
+              : comProv
+        : comProv;
     context.read<Ventanas>().emergente(true);
   }
 
@@ -368,6 +381,7 @@ class _OrdenesState extends State<Ordenes> {
                         decoration: BoxDecoration(color: Color(0xFFFDC930)),
                       ),
                       itemBuilder: (context, index) {
+                        String cantidad = '${venDatos.can(index)}';
                         return SingleChildScrollView(
                           child: Container(
                             width: MediaQuery.sizeOf(context).width,
@@ -381,7 +395,11 @@ class _OrdenesState extends State<Ordenes> {
                                 venDatos.art(index),
                                 venDatos.tip(index),
                                 venDatos.are(index),
-                                '${venDatos.can(index)}',
+                                cantidad.split('.').length > 1
+                                    ? cantidad.split('.')[1] == '0'
+                                          ? cantidad.split('.')[0]
+                                          : cantidad
+                                    : cantidad,
                                 '',
                               ],
                               [],
@@ -546,6 +564,7 @@ class _OrdenesState extends State<Ordenes> {
                       venDatos.est(),
                       venDatos.comTienda(index),
                       venDatos.comProv(index),
+                      venDatos.comFin(index),
                     ),
                   },
                   size: 20,

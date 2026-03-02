@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/textos.dart';
@@ -10,14 +11,20 @@ class Botones {
     bool borde,
     Function accion, {
     double? size,
+    bool? alert = false,
   }) {
     return IconButton.filled(
       onPressed: () => accion(),
       tooltip: tip,
-      icon: Icon(
-        icono,
-        color: borde ? Color(0xFF8A03A9) : Color(0xFFFFFFFF),
-        size: size,
+      icon: Badge(
+        offset: (kIsWeb) ? Offset(10, -5) : null,
+        label: Text(''),
+        backgroundColor: alert! ? Color(0xFFFF0000) : Color(0x00000000),
+        child: Icon(
+          icono,
+          color: borde ? Color(0xFF8A03A9) : Color(0xFFFFFFFF),
+          size: size,
+        ),
       ),
       style: borde
           ? FilledButton.styleFrom(

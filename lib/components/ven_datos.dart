@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 
 class VenDatos with ChangeNotifier {
-  static List<int> _idArt = [];
-  static List<String> _art = [];
-  static List<int> _can = [];
-  static List<String> _are = [];
-  static List<String> _tip = [];
-  static List<int> _canCub = [];
-  static List<double> _canAlm = [];
-  static List<String> _comProv = [];
-  static List<String> _comTienda = [];
-  static List<bool> _comfProd = [];
+  static List _idArt = [];
+  static List _art = [];
+  static List _can = [];
+  static List _are = [];
+  static List _tip = [];
+  static List _canCub = [];
+  static List _canAlm = [];
+  static List _comFin = [];
+  static List _comProv = [];
+  static List _comTienda = [];
+  static List _comfProd = [];
   static String _id = '';
   static String _rem = '';
   static String _est = '';
@@ -18,16 +19,17 @@ class VenDatos with ChangeNotifier {
   static String _loc = '';
 
   void setDatos(
-    List<int> idArt,
-    List<String> art,
-    List<int> can,
-    List<String> are,
-    List<String> tip,
-    List<int> canCub,
-    List<double> canAlm,
-    List<String> comProv,
-    List<String> comTienda,
-    List<bool> comfProd,
+    List idArt,
+    List art,
+    List can,
+    List are,
+    List tip,
+    List canCub,
+    List canAlm,
+    List comTienda,
+    List comProv,
+    List comFin,
+    List comfProd,
     String id,
     String rem,
     String est,
@@ -41,8 +43,9 @@ class VenDatos with ChangeNotifier {
     _tip = tip;
     _canCub = canCub;
     _canAlm = canAlm;
-    _comProv = comProv;
     _comTienda = comTienda;
+    _comProv = comProv;
+    _comFin = comFin;
     _comfProd = comfProd;
     _id = id;
     _rem = rem;
@@ -96,7 +99,7 @@ class VenDatos with ChangeNotifier {
     notifyListeners();
   }
 
-  List<int> canCubLista() {
+  List canCubLista() {
     return _canCub;
   }
 
@@ -108,7 +111,7 @@ class VenDatos with ChangeNotifier {
     return _comProv[i];
   }
 
-  List<String> comProvLista() {
+  List comProvLista() {
     return _comProv;
   }
 
@@ -117,11 +120,20 @@ class VenDatos with ChangeNotifier {
     notifyListeners();
   }
 
+  String comFin(int i) {
+    return _comFin[i];
+  }
+
+  void setComFin(int i, String comentario) {
+    _comFin[i] = comentario;
+    notifyListeners();
+  }
+
   bool comfProd(int i) {
     return _comfProd[i];
   }
 
-  List<bool> comfProdLista() {
+  List comfProdLista() {
     return _comfProd;
   }
 

@@ -26,7 +26,7 @@ class _InicioState extends State<Inicio> {
   late List<FocusNode> focus = [];
   late List<Color> color = [];
   String ip = (LocalStorage.preferencias.getString('conexion') == null)
-      ? '192.168.1.64'
+      ? '189.187.125.214'
       : LocalStorage.local(
           'conexion',
         ).substring(7, LocalStorage.local('conexion').length - 5);
@@ -177,6 +177,7 @@ class _InicioState extends State<Inicio> {
           focus: focus[i + 2],
           formato: LengthLimitingTextInputFormatter(3),
           inputType: TextInputType.numberWithOptions(),
+          align: TextAlign.center,
         ),
       );
       lista.add(Textos.textoTilulo('.', 20));
@@ -193,6 +194,7 @@ class _InicioState extends State<Inicio> {
         focus: focus[5],
         formato: LengthLimitingTextInputFormatter(3),
         inputType: TextInputType.numberWithOptions(),
+        align: TextAlign.center,
       ),
     );
     return lista;

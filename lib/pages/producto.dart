@@ -28,8 +28,8 @@ class _ProductoState extends State<Producto> {
   String texto = '';
   FocusNode focus = FocusNode();
   late final List<Color> color = [
-    productoInfo.tipo == 'Granel' ? Color(0x00FFFFFF) : Color(0xFF8A03A9),
-    productoInfo.tipo == 'Granel' ? Color(0x00FFFFFF) : Color(0xFF8A03A9),
+    Color(0x00FFFFFF),
+    Color(0x00FFFFFF),
     Color(0xFF8A03A9),
     Color(0x00FFFFFF),
     Color(0x00FFFFFF),
@@ -38,7 +38,7 @@ class _ProductoState extends State<Producto> {
     TextEditingController(),
     TextEditingController(),
   ];
-  List<TextEditingController> controllerGranel = [
+  List<TextEditingController> controller = [
     TextEditingController(),
     TextEditingController(),
   ];
@@ -52,7 +52,7 @@ class _ProductoState extends State<Producto> {
   @override
   void dispose() {
     controllerPerdidas.clear();
-    controllerGranel.clear();
+    controller.clear();
     timer?.cancel();
     color.clear();
     super.dispose();
@@ -86,7 +86,7 @@ class _ProductoState extends State<Producto> {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
-  Future enviarDatos(BuildContext ctx) async {
+  /*Future enviarDatos(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
     String mensaje = await ProductoModel.guardarES(entr, sali, productoInfo.id);
     if (mensaje.split(": ")[0] != 'Error') {
@@ -105,20 +105,20 @@ class _ProductoState extends State<Producto> {
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
     Textos.toast(mensaje, true);
-  }
+  }*/
 
-  Future enviarDatosGranel(BuildContext ctx) async {
+  Future enviarDatos(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
     double ent, sal;
     String mensaje = 'No hay datos';
-    if (!(controllerGranel[0].text.isEmpty &&
-        controllerGranel[1].text.isEmpty)) {
-      (controllerGranel[0].text.isEmpty)
+    if (!(controller[0].text.isEmpty &&
+        controller[1].text.isEmpty)) {
+      (controller[0].text.isEmpty)
           ? ent = 0
-          : ent = double.parse(controllerGranel[0].text);
-      (controllerGranel[1].text.isEmpty)
+          : ent = double.parse(controller[0].text);
+      (controller[1].text.isEmpty)
           ? sal = 0
-          : sal = double.parse(controllerGranel[1].text);
+          : sal = double.parse(controller[1].text);
       if (ent < 0) color[0] = Color(0xFFFF0000);
       if (sal < 0) color[1] = Color(0xFFFF0000);
       if (ent >= 0 && sal >= 0) {
@@ -132,8 +132,8 @@ class _ProductoState extends State<Producto> {
                   productoInfo = producto;
                   color[0] = Color(0x00000000);
                   color[1] = Color(0x00000000);
-                  controllerGranel[0].text = '';
-                  controllerGranel[1].text = '';
+                  controller[0].text = '';
+                  controller[1].text = '';
                 })
               : mensaje =
                     'Se guardó la información, pero no se pudo actualizar el producto';
@@ -279,42 +279,24 @@ class _ProductoState extends State<Producto> {
                       children: [
                         Textos.textoTilulo(productoInfo.nombre, 30),
                         tipoTexto(productoInfo.tipo),
-                        productoInfo.tipo != 'Granel'
-                            ? contenedorInfo(
-                                ' que entraron:',
-                                entr,
-                                productoInfo.entrada,
-                                true,
-                              )
-                            : contenedorInfoGranel(
-                                ' que entraron:',
-                                productoInfo.entrada,
-                                0,
-                              ),
-                        productoInfo.tipo != 'Granel'
-                            ? contenedorInfo(
-                                ' que salieron:',
-                                sali,
-                                productoInfo.salida,
-                                false,
-                              )
-                            : contenedorInfoGranel(
-                                ' que salieron:',
-                                productoInfo.salida,
-                                1,
-                              ),
+                        contenedorInfo(
+                          ' que entraron:',
+                          productoInfo.entrada,
+                          0,
+                        ),
+                        contenedorInfo(
+                          ' que salieron:',
+                          productoInfo.salida,
+                          1,
+                        ),
                         contenedorInfoPerdidas(productosPerdido, 2),
                         Botones.icoCirMor(
                           'Guardar movimientos',
                           Icons.save_rounded,
-                          () => productoInfo.tipo != 'Granel'
-                              ? enviarDatos(context)
-                              : enviarDatosGranel(context),
+                          () => enviarDatos(context),
                           () => Textos.toast('No hay hay cambios.', false),
                           false,
-                          productoInfo.tipo != 'Granel'
-                              ? entr > 0 || sali > 0
-                              : true,
+                          entr > 0 || sali > 0,
                         ),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
@@ -375,8 +357,10 @@ class _ProductoState extends State<Producto> {
                                 [.05, .15, .6],
                                 [
                                   '${index + 1}',
-                                  (cantidad.split('.')[1] == '0')
-                                      ? cantidad.split('.')[0]
+                                  (cantidad.split('.').length > 1)
+                                      ? (cantidad.split('.')[1] == '0')
+                                            ? cantidad.split('.')[0]
+                                            : cantidad
                                       : cantidad,
                                   productoInfo.perdidaRazones[index],
                                 ],
@@ -528,7 +512,7 @@ class _ProductoState extends State<Producto> {
                 size: 20,
                 alignment: TextAlign.center,
               ),
-              if (productoInfo.cantidadPorUnidad>1)
+              if (productoInfo.cantidadPorUnidad != 1)
                 Textos.textoGeneral(cantidad, true, 1, size: 15),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -574,7 +558,7 @@ class _ProductoState extends State<Producto> {
     );
   }
 
-  SizedBox contenedorInfo(
+  /*SizedBox contenedorInfo(
     String textoInfo,
     double textoValor,
     double textoTotal,
@@ -653,9 +637,9 @@ class _ProductoState extends State<Producto> {
         ],
       ),
     );
-  }
+  }*/
 
-  SizedBox contenedorInfoGranel(
+  SizedBox contenedorInfo(
     String textoInfo,
     double textoValor,
     int valor,
@@ -671,7 +655,7 @@ class _ProductoState extends State<Producto> {
           CampoTexto.inputTexto(
             MediaQuery.sizeOf(context).width * .3575,
             text,
-            controllerGranel[valor],
+            controller[valor],
             color[valor],
             true,
             false,

@@ -334,10 +334,7 @@ class RecDrawer {
     }
   }
 
-  static void rutaProducto(
-    String prod,
-    BuildContext ctx,
-  ) async {
+  static void rutaProducto(String prod, BuildContext ctx) async {
     bool flag = true;
     List<ProductoModel> productos = await ProductoModel.getProductos('id', '');
     for (int i = 0; i < productos.length; i++) {
@@ -351,16 +348,16 @@ class RecDrawer {
                   Producto(productoInfo: productos[i]),
               transitionsBuilder:
                   (context, animation, secondaryAnimation, child) {
-                return SlideTransition(
-                  position: animation.drive(
-                    Tween(
-                      begin: Offset(1.0, 0.0),
-                      end: Offset.zero,
-                    ).chain(CurveTween(curve: Curves.ease)),
-                  ),
-                  child: child,
-                );
-              },
+                    return SlideTransition(
+                      position: animation.drive(
+                        Tween(
+                          begin: Offset(1.0, 0.0),
+                          end: Offset.zero,
+                        ).chain(CurveTween(curve: Curves.ease)),
+                      ),
+                      child: child,
+                    );
+                  },
             ),
           );
           ctx.read<Carga>().cargaBool(false);
@@ -400,12 +397,12 @@ class RecDrawer {
     if (flag) Textos.toast('No se reconocio el codigo.', false);
   }
 
-  static Future<void> getListas(BuildContext ctx, StatefulWidget ruta) async {
+  static Future<void> getListas(BuildContext ctx) async {
     String texto = '';
     ctx.read<Carga>().cargaBool(true);
     Navigator.of(ctx).pop();
     List<ArticulosModel> articulos = await ArticulosModel.getArticulos(
-      'id',
+      'Nombre',
       '',
     );
     List areas = await ProductoModel.getAreas();
@@ -416,13 +413,23 @@ class RecDrawer {
         : {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              pushAnim(
-                AddProducto(
-                  listaArticulos: articulos,
-                  areas: areas,
-                  ruta: ruta,
+              Navigator.of(ctx).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      AddProducto(listaArticulos: articulos, areas: areas),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        return SlideTransition(
+                          position: animation.drive(
+                            Tween(
+                              begin: Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.ease)),
+                          ),
+                          child: child,
+                        );
+                      },
                 ),
-                ctx,
               ),
           };
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);

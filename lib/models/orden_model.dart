@@ -14,6 +14,7 @@ class OrdenModel {
   List<double> cantidadAlmacen;
   List<String> comentariosTienda;
   List<String> comentariosProveedor;
+  List<String> comentariosFinales;
   List<bool> confirmacion;
   List<int> idProductos;
   int cantArticulos;
@@ -32,6 +33,7 @@ class OrdenModel {
     required this.cantidadesCubiertas,
     required this.cantidadAlmacen,
     required this.comentariosProveedor,
+    required this.comentariosFinales,
     required this.comentariosTienda,
     required this.confirmacion,
     required this.idProductos,
@@ -54,6 +56,7 @@ class OrdenModel {
       cantidadAlmacen: [],
       comentariosProveedor: [],
       comentariosTienda: [],
+      comentariosFinales: [],
       confirmacion: [],
       idProductos: [],
       cantArticulos: 0,
@@ -93,6 +96,7 @@ class OrdenModel {
               cantidadAlmacen: [],
               comentariosProveedor: [],
               comentariosTienda: [],
+              comentariosFinales: [],
               confirmacion: [],
               idProductos: [],
               cantArticulos: item['CantArticulos'],
@@ -144,6 +148,7 @@ class OrdenModel {
               cantidadAlmacen: [],
               comentariosProveedor: [],
               comentariosTienda: [],
+              comentariosFinales: [],
               confirmacion: [],
               idProductos: [],
               cantArticulos: item['CantArticulos'],
@@ -185,6 +190,14 @@ class OrdenModel {
       orden = dummy(res.body);
       if (res.statusCode == 200) {
         for (var item in datos) {
+          List<double> doublelist = [];
+          for (double cantidad in item['CantidadAlmacen']) {
+            String dob = '$cantidad';
+            if (dob.split('.').length < 2) {
+              dob = '$dob.0';
+            }
+            doublelist.add(double.parse(dob));
+          }
           orden = OrdenModel(
             id: item['id'],
             articulos: List<String>.from(item['Articulos']),
@@ -192,11 +205,12 @@ class OrdenModel {
             tipos: List<String>.from(item['Tipos']),
             areas: List<String>.from(item['Areas']),
             cantidadesCubiertas: List<int>.from(item['CantidadesCubiertas']),
-            cantidadAlmacen: List<double>.from(item['CantidadAlmacen']),
+            cantidadAlmacen: doublelist,
+            comentariosTienda: List<String>.from(item['ComentariosTienda']),
             comentariosProveedor: List<String>.from(
               item['ComentariosProveedor'],
             ),
-            comentariosTienda: List<String>.from(item['ComentariosTienda']),
+            comentariosFinales: List<String>.from(item['ComentariosFinales']),
             confirmacion: List<bool>.from(item['Confirmacion']),
             idProductos: List<int>.from(item['idProductos']),
             cantArticulos: item['CantArticulos'],

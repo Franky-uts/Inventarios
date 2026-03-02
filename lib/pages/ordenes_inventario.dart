@@ -65,7 +65,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               Icons.edit_note_rounded,
               () async => {
                 carga.cargaBool(true),
-                await RecDrawer.getListas(context, OrdenesInventario()),
+                await RecDrawer.getListas(context),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
               false,

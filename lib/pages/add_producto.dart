@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
-import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/producto_model.dart';
@@ -12,13 +11,11 @@ import 'package:provider/provider.dart';
 class AddProducto extends StatefulWidget {
   final List<ArticulosModel> listaArticulos;
   final List areas;
-  final StatefulWidget ruta;
 
   const AddProducto({
     super.key,
     required this.listaArticulos,
-    required this.areas,
-    required this.ruta,
+    required this.areas
   });
 
   @override
@@ -86,8 +83,8 @@ class _AddproductoState extends State<AddProducto> {
             }
           : respuesta = respuesta.split(': ')[1];
       Textos.toast(respuesta, true);
-      if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
     }
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
   @override
@@ -190,7 +187,7 @@ class _AddproductoState extends State<AddProducto> {
                 );
               },
             ),
-            Botones.layerButton(() => RecDrawer.pushAnim(widget.ruta, context)),
+            Botones.layerButton(() => Navigator.pop(context)),
             Carga.ventanaCarga(),
           ],
         ),

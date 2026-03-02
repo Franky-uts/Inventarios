@@ -54,7 +54,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       idProductos.add(prod.id);
     }
     for (int i = 0; i < cantidades.length; i++) {
-      if (comentarios[i].isNotEmpty) comentarios[i] = "'$comentarios'";
+      if (comentarios[i].isNotEmpty) comentarios[i] = "'${comentarios[i]}'";
     }
     String respuesta = await OrdenModel.postOrden(
       idProductos,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
+import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
@@ -24,8 +25,10 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     Color(0xFFFFFFFF),
     Color(0xFFFFFFFF),
   ];
+  TextEditingController controller = TextEditingController();
   String titulo = '', btnNo = '', btnSi = '', datos = '';
   List<Widget> wid = [];
+  late int indexComentario;
 
   @override
   void initState() {
@@ -57,8 +60,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   orden.tipos,
                   orden.cantidadesCubiertas,
                   orden.cantidadAlmacen,
-                  orden.comentariosProveedor,
                   orden.comentariosTienda,
+                  orden.comentariosProveedor,
+                  orden.comentariosFinales,
                   orden.confirmacion,
                   '${orden.id}',
                   orden.remitente,
@@ -109,7 +113,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     if (mensaje.isNotEmpty) Textos.toast(mensaje, false);
   }
 
-  void confirmarEntragas(List<bool> lista) {
+  void confirmarEntragas(List lista) {
     datos = 'Finalizado';
     for (bool obj in lista) {
       if (!obj) datos = 'Incompleto';
@@ -121,10 +125,17 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     context.read<Ventanas>().emergente(true);
   }
 
-  void verComentarios(String nombre, String comTienda, String comProv) {
+  void verComentarios(
+    String nombre,
+    String comTienda,
+    String comProv,
+    String comFin,
+    int index,
+  ) {
     titulo = 'Comentarios de $nombre';
     btnNo = 'Cerrar';
     btnSi = 'Confirmar';
+    indexComentario = index;
     wid = [
       Textos.textoTilulo('Comentarios de la tienda:', 20),
       Textos.textoGeneral(
@@ -142,8 +153,65 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         size: 20,
         alignment: TextAlign.center,
       ),
+      if (context.read<VenDatos>().est() == 'Entregado')
+        CampoTexto.inputTexto(
+          MediaQuery.sizeOf(context).width,
+          'Comentarios finales:',
+          controller,
+          Color(0x00000000),
+          true,
+          false,
+          () => guardarComentario(context),
+          icono: Icons.message_rounded,
+        ),
+      if (context.read<VenDatos>().est() == 'Finalizado' ||
+          context.read<VenDatos>().est() == 'Incompleto')
+        Textos.textoTilulo('Comentarios finales:', 20),
+      if (context.read<VenDatos>().est() == 'Finalizado' ||
+          context.read<VenDatos>().est() == 'Incompleto')
+        Textos.textoGeneral(
+          comFin,
+          true,
+          5,
+          size: 20,
+          alignment: TextAlign.center,
+        ),
     ];
+    controller.text = (context.read<VenDatos>().est() == 'Entregado')
+        ? (comFin == 'Sin comentarios')
+              ? ''
+              : comFin
+        : comFin;
     context.read<Ventanas>().emergente(true);
+  }
+
+  Future<void> guardarComentario(BuildContext ctx) async {
+    String datos;
+    List<String> listaDatos = [];
+    ctx.read<Carga>().cargaBool(true);
+    if (controller.text != ctx.read<VenDatos>().comFin(indexComentario)) {
+      ctx.read<Ventanas>().emergente(false);
+      ctx.read<VenDatos>().setComFin(indexComentario, controller.text);
+      for (int i = 0; i < ctx.read<VenDatos>().length(); i++) {
+        String texto = "'${ctx.read<VenDatos>().comFin(i)}'";
+        if (ctx.read<VenDatos>().comProv(i).isEmpty) {
+          texto = "'Sin comentarios'";
+        }
+        listaDatos.add(texto);
+      }
+      datos = 'Array$listaDatos';
+      datos = await OrdenModel.editarOrden(
+        ctx.read<VenDatos>().id(),
+        'ComentariosFinales',
+        datos,
+      );
+      if (ctx.mounted) ctx.read<Tablas>().datos(await getOrdenes());
+    } else {
+      datos = 'Error: No hay datos.';
+    }
+    if (datos.split(': ')[0] == 'Error') datos = datos.split(': ')[1];
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+    Textos.toast(datos, true);
   }
 
   @override
@@ -271,6 +339,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                       decoration: BoxDecoration(color: Color(0xFFFDC930)),
                     ),
                     itemBuilder: (context, index) {
+                      String cantidad = '${venDatos.can(index)}';
                       return Container(
                         width: MediaQuery.sizeOf(context).width,
                         decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
@@ -282,7 +351,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                             venDatos.art(index),
                             venDatos.are(index),
                             venDatos.tip(index),
-                            '${venDatos.can(index)}',
+                            cantidad.split('.').length > 1
+                                ? cantidad.split('.')[1] == '0'
+                                      ? cantidad.split('.')[0]
+                                      : cantidad
+                                : cantidad,
                             '${venDatos.canCub(index)}',
                             '',
                           ],
@@ -302,11 +375,21 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                     'Ver comentarios ${venDatos.art(index)}',
                                     Icons.comment_rounded,
                                     false,
+                                    alert:
+                                        venDatos.comTienda(index) !=
+                                            'Sin comentarios' ||
+                                        venDatos.comProv(index) !=
+                                            'Sin comentarios' ||
+                                        venDatos.comFin(index) !=
+                                            'Sin comentarios',
                                     () => verComentarios(
                                       venDatos.art(index),
                                       venDatos.comTienda(index),
                                       venDatos.comProv(index),
+                                      venDatos.comFin(index),
+                                      index,
                                     ),
+
                                     size: 20,
                                   ),
                                 ),
@@ -370,6 +453,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         if (context.mounted)
                           context.read<Tablas>().datos(await getOrdenes()),
                         carga.cargaBool(false),
+                      }
+                    else
+                      {
+                        if (venDatos.est() == 'Entregado')
+                          guardarComentario(context),
                       },
                   },
                   widget: Column(children: wid),

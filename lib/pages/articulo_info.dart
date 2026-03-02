@@ -53,7 +53,7 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
         controller.text = texto;
         if (ctx.mounted) {
           (kIsWeb)
-              ? {cambioColumna(ctx)}
+              ? cambioColumna(ctx)
               : {
                   ctx.read<Ventanas>().emergente(true),
                   ctx.read<Carga>().cargaBool(false),

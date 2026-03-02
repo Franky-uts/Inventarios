@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
@@ -5,6 +6,7 @@ import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/articulos_model.dart';
 import 'package:provider/provider.dart';
 
@@ -118,6 +120,40 @@ class _AddproductoState extends State<Addarticulo> {
     setState(() {
       context.read<Carga>().cargaBool(false);
     });
+  }
+
+  void iniciarScan(BuildContext ctx) async {
+    if (controller[2].text.isEmpty) {
+      if (kIsWeb) {
+        ctx.read<Ventanas>().scan(true);
+      } else {
+        ctx.read<Carga>().cargaBool(true);
+        String respuesta = await Textos.scan(context);
+        if (ctx.mounted) scanCod(ctx, respuesta);
+      }
+    } else {
+      controller[2].text = '';
+    }
+  }
+
+  void scanCod(BuildContext ctx, String texto) async {
+    if (texto == '-1' || texto.isEmpty) {
+      texto = '';
+    } else {
+      List<ArticulosModel> lista = await ArticulosModel.getArticulos('id', '');
+      bool flag = true;
+      for (ArticulosModel articulo in lista) {
+        if (articulo.codigoBarras == texto) flag = false;
+      }
+      if (!flag) Textos.toast('El código ya esta registrado', flag);
+    }
+    setState(() {
+      controller[2].text = texto;
+    });
+    if (ctx.mounted) {
+      ctx.read<Ventanas>().emergente(true);
+      ctx.read<Carga>().cargaBool(false);
+    }
   }
 
   @override
@@ -322,15 +358,7 @@ class _AddproductoState extends State<Addarticulo> {
                                 ? Icons.document_scanner_rounded
                                 : Icons.refresh_rounded,
                             Color(0xFFFFFFFF),
-                            () async => {
-                              (controller[2].text.isEmpty)
-                                  ? controller[2].text = await Textos.scan(
-                                      context,
-                                    )
-                                  : controller[2].text = '',
-                              if (controller[2].text == '-1')
-                                controller[2].text = '',
-                            },
+                            () async => iniciarScan(context),
                           ),
                         ),
                       ],
@@ -345,6 +373,14 @@ class _AddproductoState extends State<Addarticulo> {
               ),
             ),
             Botones.layerButton(() => Navigator.pop(context)),
+            Consumer2<Ventanas, Carga>(
+              builder: (context, ventanas, carga, child) {
+                return Ventanas.ventanaScan(
+                  context,
+                  (texto) => scanCod(context, texto),
+                );
+              },
+            ),
             Carga.ventanaCarga(),
           ],
         ),
