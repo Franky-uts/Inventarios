@@ -132,7 +132,6 @@ class _OrdenesState extends State<Ordenes> {
           MediaQuery.sizeOf(context).width,
           'Comentarios del Proveedor',
           controller,
-          Color(0x00000000),
           true,
           false,
           () => {},
@@ -404,7 +403,6 @@ class _OrdenesState extends State<Ordenes> {
                               ],
                               [],
                               1,
-                              false,
                               extraWid: botones(index),
                             ),
                           ),
@@ -620,7 +618,6 @@ class _OrdenesState extends State<Ordenes> {
                 ],
                 coloresLista,
                 1,
-                true,
                 extra: () async => await getOrdenInfo(context, lista[index].id),
               ),
             );

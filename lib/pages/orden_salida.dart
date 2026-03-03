@@ -250,17 +250,20 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                                 listaProd[index].area,
                                 listaProd[index].tipo,
                                 '${cantidad[listaProd[index].id - 1]}',
-                                (cantUni.split('.')[1] == '0')
-                                    ? cantUni.split('.')[0]
+                                (cantUni.split('.').length > 1)
+                                    ? (cantUni.split('.')[1] == '0')
+                                          ? cantUni.split('.')[0]
+                                          : cantUni
                                     : cantUni,
-                                (total.split('.')[1] == '0')
-                                    ? total.split('.')[0]
+                                (total.split('.').length > 1)
+                                    ? (total.split('.')[1] == '0')
+                                          ? total.split('.')[0]
+                                          : total
                                     : total,
                                 '',
                               ],
                               colores,
                               2,
-                              false,
                               extraWid: Botones.btnRctMor(
                                 'Añadir comentario',
                                 Icons.comment_rounded,
@@ -314,7 +317,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     MediaQuery.sizeOf(context).width,
                     'Comentario',
                     controller,
-                    Color(0x00000000),
                     true,
                     false,
                     () => {
@@ -418,7 +420,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             ],
             colores,
             2,
-            false,
             extraWid: SizedBox(
               width: MediaQuery.sizeOf(context).width * .2,
               child: Consumer<Textos>(

@@ -144,8 +144,7 @@ class Tablas with ChangeNotifier {
     List<double> grosores,
     List<String> textos,
     List<Color> colores,
-    int maxLines,
-    bool boton, {
+    int maxLines, {
     Function? extra,
     Widget? extraWid,
   }) {
@@ -169,9 +168,9 @@ class Tablas with ChangeNotifier {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: lista,
     );
-    if (boton) {
+    if (extra!=null) {
       wid = TextButton(
-        onPressed: () => extra!(),
+        onPressed: () => extra(),
         style: TextButton.styleFrom(
           padding: EdgeInsets.all(0),
           shape: ContinuousRectangleBorder(),

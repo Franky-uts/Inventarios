@@ -6,6 +6,7 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/historial.dart';
 import 'package:inventarios/pages/historial_ordenes.dart';
+import 'package:inventarios/pages/esp.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/orden_salida.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +34,7 @@ class _EmpleadoState extends State<Empleado> {
               if (Carga.getValido()) {
                 carga.cargaBool(true);
                 Textos.limpiarLista();
-                if (index == 1) {
+                if (index == 2) {
                   CampoTexto.seleccionFiltro = Filtros.id;
                   List<ProductoModel> productos =
                       await ProductoModel.getProductos('id', '');
@@ -69,13 +70,21 @@ class _EmpleadoState extends State<Empleado> {
                 },
               ),
               Botones.botonBarNav(
+                'Movimientos',
+                Icons.checklist_rtl_rounded,
+                    () => {
+                  if (CampoTexto.seleccionFiltro == Filtros.fecha)
+                    CampoTexto.seleccionFiltro = Filtros.id,
+                },
+              ),
+              Botones.botonBarNav(
                 'Nueva Orden',
                 Icons.add_shopping_cart_rounded,
                 () => {},
               ),
               Botones.botonBarNav('Ordenes', Icons.history_rounded, () => {}),
               Botones.botonBarNav(
-                'Movimientos',
+                'Historial',
                 Icons.history_toggle_off_rounded,
                 () => {
                   if (CampoTexto.seleccionFiltro == Filtros.unidades)
@@ -103,6 +112,7 @@ class _EmpleadoState extends State<Empleado> {
       ),
       body: [
         Inventario(),
+        ESP(),
         OrdenSalida(),
         HistorialOrdenes(),
         Historial(),

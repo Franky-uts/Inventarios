@@ -158,7 +158,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
           MediaQuery.sizeOf(context).width,
           'Comentarios finales:',
           controller,
-          Color(0x00000000),
           true,
           false,
           () => guardarComentario(context),
@@ -361,7 +360,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                           ],
                           [],
                           2,
-                          false,
                           extraWid: SizedBox(
                             width: MediaQuery.sizeOf(context).width * .09,
                             child: Row(
@@ -552,7 +550,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
             ],
             coloresLista,
             1,
-            true,
             extra: () async => await getOrdenInfo(context, lista[index].id),
           ),
         );

@@ -9,21 +9,24 @@ class CampoTexto with ChangeNotifier {
   static final focusBusqueda = FocusNode();
   static final busquedaTexto = TextEditingController();
 
-  static Widget inputTexto(double size,
-      String texto,
-      TextEditingController controller,
-      Color errorColor,
-      bool enabled,
-      bool password,
-      Function accion, {
-        IconData? icono,
-        Color? borderColor,
-        TextAlign? align,
-        EdgeInsets? margin,
-        FocusNode? focus,
-        TextInputFormatter? formato,
-        TextInputType? inputType,
-      }) {
+  static Widget inputTexto(
+    double size,
+    String texto,
+    TextEditingController controller,
+    bool enabled,
+    bool password,
+    Function accion, {
+    IconData? icono,
+    Color? borderColor,
+    Color? errorColor,
+    Color? disabledColor,
+    double? fontSize,
+    TextAlign? align,
+    EdgeInsets? margin,
+    FocusNode? focus,
+    TextInputFormatter? formato,
+    TextInputType? inputType,
+  }) {
     return Container(
       width: size,
       margin: margin,
@@ -32,6 +35,13 @@ class CampoTexto with ChangeNotifier {
         inputFormatters: [?formato],
         keyboardType: inputType,
         focusNode: focus,
+        onTap: () => {
+          if (controller.text.isNotEmpty)
+            controller.selection = TextSelection(
+              baseOffset: 0,
+              extentOffset: controller.text.length,
+            ),
+        },
         onSubmitted: (event) => accion(),
         onTapOutside: (event) {
           FocusManager.instance.primaryFocus?.unfocus();
@@ -40,7 +50,7 @@ class CampoTexto with ChangeNotifier {
         textAlign: align ?? TextAlign.start,
         obscureText: password,
         cursorColor: Color(0xFF8A03A9),
-        style: TextStyle(color: Color(0xFF8A03A9)),
+        style: TextStyle(color: Color(0xFF8A03A9), fontSize: fontSize),
         decoration: InputDecoration(
           filled: true,
           enabledBorder: OutlineInputBorder(
@@ -60,27 +70,32 @@ class CampoTexto with ChangeNotifier {
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(
-              color: borderColor ?? Color(0xFFFDC930),
+              color: disabledColor ?? borderColor ?? Color(0xFFFEE497),
               width: 2.5,
             ),
           ),
           prefixIcon: icono != null ? Icon(icono) : null,
           prefixIconColor: Color(0xFF8A03A9),
-          suffixIcon: Icon(Icons.warning_rounded),
+          suffixIcon: errorColor != null ? Icon(Icons.warning_rounded) : null,
           suffixIconColor: errorColor,
           fillColor: Colors.white,
           label: Text(texto, style: TextStyle(color: Color(0xFF8A03A9))),
+          floatingLabelAlignment: align == TextAlign.center
+              ? FloatingLabelAlignment.center
+              : FloatingLabelAlignment.start,
         ),
       ),
     );
   }
 
-  static Widget inputDropdown(double sizeTotal,
-      IconData icono,
-      String valorActual,
-      List<String> lista,
-      Color colorWarning,
-      Function accion,) {
+  static Widget inputDropdown(
+    double sizeTotal,
+    IconData icono,
+    String valorActual,
+    List<String> lista,
+    Color colorWarning,
+    Function accion,
+  ) {
     return Container(
       width: sizeTotal * .365,
       margin: EdgeInsets.symmetric(horizontal: 10),
@@ -128,8 +143,7 @@ class CampoTexto with ChangeNotifier {
       focusNode: focusBusqueda,
       cursorColor: Color(0xFF8A03A9),
       onChanged: (event) => accion(),
-      onTapOutside: (event) =>
-      {
+      onTapOutside: (event) => {
         if (busquedaTexto.text.isNotEmpty) accion(),
         FocusManager.instance.primaryFocus?.unfocus(),
       },
@@ -153,14 +167,12 @@ class CampoTexto with ChangeNotifier {
           icon: Icon(Icons.filter_list_rounded, color: Color(0xFF8A03A9)),
           initialValue: seleccionFiltro,
           color: Colors.white,
-          onSelected: (Filtros filtro) =>
-          {
+          onSelected: (Filtros filtro) => {
             if (filtro != seleccionFiltro) seleccionFiltro = filtro,
             accion(),
           },
           tooltip: 'Filtros',
-          itemBuilder: (BuildContext context) =>
-          <PopupMenuEntry<Filtros>>[
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<Filtros>>[
             PopupMenuItem<Filtros>(
               value: Filtros.id,
               child: Textos.textoGeneral(
@@ -234,31 +246,29 @@ class CampoTexto with ChangeNotifier {
   static IconButton botonBusqueda(Function accion) {
     return (busquedaTexto.text.isEmpty)
         ? IconButton(
-      tooltip: 'Buscar',
-      onPressed: () =>
-      {
-        (busquedaTexto.text.isEmpty)
-            ? {
-          if (!focusBusqueda.hasFocus)
-            FocusManager.instance.primaryFocus?.requestFocus(
-              focusBusqueda,
-            ),
-        }
-            : FocusManager.instance.primaryFocus?.unfocus(),
-        accion(),
-      },
-      icon: Icon(Icons.search, color: Color(0xFF8A03A9)),
-    )
+            tooltip: 'Buscar',
+            onPressed: () => {
+              (busquedaTexto.text.isEmpty)
+                  ? {
+                      if (!focusBusqueda.hasFocus)
+                        FocusManager.instance.primaryFocus?.requestFocus(
+                          focusBusqueda,
+                        ),
+                    }
+                  : FocusManager.instance.primaryFocus?.unfocus(),
+              accion(),
+            },
+            icon: Icon(Icons.search, color: Color(0xFF8A03A9)),
+          )
         : IconButton(
-      tooltip: 'Limpiar busqueda',
-      onPressed: () =>
-      {
-        FocusManager.instance.primaryFocus?.unfocus(),
-        busquedaTexto.clear(),
-        accion(),
-      },
-      icon: Icon(Icons.close_rounded, color: Color(0xFF8A03A9)),
-    );
+            tooltip: 'Limpiar busqueda',
+            onPressed: () => {
+              FocusManager.instance.primaryFocus?.unfocus(),
+              busquedaTexto.clear(),
+              accion(),
+            },
+            icon: Icon(Icons.close_rounded, color: Color(0xFF8A03A9)),
+          );
   }
 
   static String filtroTexto() {

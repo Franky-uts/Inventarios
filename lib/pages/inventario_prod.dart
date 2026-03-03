@@ -290,7 +290,6 @@ class _InventarioProdState extends State<InventarioProd> {
             ],
             colores,
             2,
-            true,
             extra: () async => await getProductoInfo(context, lista[index].id),
           ),
         );

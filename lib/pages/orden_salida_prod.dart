@@ -270,7 +270,6 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                               ],
                               colores,
                               2,
-                              false,
                               extraWid: Botones.btnRctMor(
                                 'Añadir comentario',
                                 Icons.comment_rounded,
@@ -324,7 +323,6 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                     MediaQuery.sizeOf(context).width,
                     'Comentario',
                     controller,
-                    Color(0x00000000),
                     true,
                     false,
                     () => {
@@ -428,7 +426,6 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
             ],
             colores,
             2,
-            false,
             extraWid: SizedBox(
               width: MediaQuery.sizeOf(context).width * .2,
               child: Consumer<Textos>(

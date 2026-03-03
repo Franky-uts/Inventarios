@@ -292,11 +292,11 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
                     MediaQuery.of(context).size.width * .75,
                     texto,
                     controller,
-                    color,
                     texto != 'Código de barras',
                     false,
                     () => cambioColumna(context),
                     icono: Icons.mode_edit_outline_rounded,
+                    errorColor: color,
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),
                     ),
@@ -368,8 +368,6 @@ class _ArticuloInfoState extends State<ArticuloInfo> {
             ],
             colores,
             2,
-            true,
-            extra: () => {},
             extraWid: Text(lista[index].mensaje),
           ),
         );

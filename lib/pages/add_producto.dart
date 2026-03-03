@@ -144,7 +144,6 @@ class _AddproductoState extends State<AddProducto> {
                               MediaQuery.of(context).size.width * .365,
                               'Tipo',
                               control[1],
-                              Color(0x00FFFFFF),
                               false,
                               false,
                               () =>
@@ -155,7 +154,6 @@ class _AddproductoState extends State<AddProducto> {
                               MediaQuery.of(context).size.width * .365,
                               'Cantidad por unidad',
                               control[2],
-                              Color(0x00FFFFFF),
                               false,
                               false,
                               () =>
@@ -168,11 +166,11 @@ class _AddproductoState extends State<AddProducto> {
                           MediaQuery.of(context).size.width * .75,
                           'Limite minimo de productos',
                           control[0],
-                          colorCampo[2],
                           true,
                           false,
                           () => registrarProducto(context),
                           icono: Icons.production_quantity_limits_rounded,
+                          errorColor: colorCampo[2],
                           inputType: TextInputType.number,
                           formato: FilteringTextInputFormatter.digitsOnly,
                         ),

@@ -268,7 +268,6 @@ class _ArticulosState extends State<Articulos> {
             ],
             [],
             2,
-            true,
             extra: () async => await getArticuloInfo(context, lista[index].id),
           ),
         );

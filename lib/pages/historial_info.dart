@@ -187,7 +187,6 @@ class _HistorialInfoState extends State<HistorialInfo> {
                                 ],
                                 [],
                                 2,
-                                false,
                               ),
                             );
                           },
@@ -245,7 +244,6 @@ class _HistorialInfoState extends State<HistorialInfo> {
             ],
             [],
             1,
-            true,
             extra: () => {},
           ),
         );

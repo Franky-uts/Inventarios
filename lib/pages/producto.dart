@@ -366,7 +366,6 @@ class _ProductoState extends State<Producto> {
                                 ],
                                 [],
                                 2,
-                                false,
                               ),
                             );
                           },
@@ -432,13 +431,13 @@ class _ProductoState extends State<Producto> {
                           MediaQuery.of(context).size.width * .75,
                           'Cantidad',
                           controllerPerdidas[0],
-                          color[3],
                           true,
                           false,
                           () => (texto == '¿Cuánto se perdió y por qué?')
                               ? focus.requestFocus()
                               : editarLimite(context),
                           icono: Icons.numbers_rounded,
+                          errorColor: color[3],
                           formato: FilteringTextInputFormatter.allow(
                             RegExp(r'(^\d*\.?\d{0,3})'),
                           ),
@@ -451,11 +450,11 @@ class _ProductoState extends State<Producto> {
                             MediaQuery.of(context).size.width * .75,
                             'Razón de la perdida',
                             controllerPerdidas[1],
-                            color[4],
                             true,
                             false,
                             () => guardarPerdidas(context),
                             icono: Icons.message_rounded,
+                            errorColor: color[4],
                             focus: focus,
                           ),
                       ],
@@ -656,11 +655,11 @@ class _ProductoState extends State<Producto> {
             MediaQuery.sizeOf(context).width * .3575,
             text,
             controller[valor],
-            color[valor],
             true,
             false,
             () => FocusManager.instance.primaryFocus?.unfocus(),
             icono: Icons.info_outline_rounded,
+            errorColor: color[valor],
             formato: FilteringTextInputFormatter.allow(
               RegExp(r'(^\d*\.?\d{0,3})'),
             ),

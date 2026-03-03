@@ -1,24 +1,35 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:inventarios/components/botones.dart';
+import 'package:inventarios/components/rec_drawer.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
-import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
-import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
+import 'package:inventarios/components/botones.dart';
 import 'package:provider/provider.dart';
 
-class OrdenesInventario extends StatefulWidget {
-  const OrdenesInventario({super.key});
+class ESP extends StatefulWidget {
+  const ESP({super.key});
 
   @override
-  State<OrdenesInventario> createState() => _OrdenesInventarioState();
+  State<ESP> createState() => _ESPState();
 }
 
-class _OrdenesInventarioState extends State<OrdenesInventario> {
+class _ESPState extends State<ESP> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
   Future<List<ProductoModel>> getProductos(
     String filtro,
     String busqueda,
@@ -37,16 +48,16 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                       Producto(productoInfo: producto),
                   transitionsBuilder:
                       (context, animation, secondaryAnimation, child) {
-                    return SlideTransition(
-                      position: animation.drive(
-                        Tween(
-                          begin: Offset(1.0, 0.0),
-                          end: Offset.zero,
-                        ).chain(CurveTween(curve: Curves.ease)),
-                      ),
-                      child: child,
-                    );
-                  },
+                        return SlideTransition(
+                          position: animation.drive(
+                            Tween(
+                              begin: Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.ease)),
+                          ),
+                          child: child,
+                        );
+                      },
                 ),
               ),
           }
@@ -58,6 +69,24 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: RecDrawer.drawer(context, [
+        if (LocalStorage.local('puesto') == 'Administrador')
+          Consumer<Carga>(
+            builder: (ctx, carga, child) {
+              return Botones.icoCirMor(
+                'Cambiar de tienda',
+                Icons.change_circle_rounded,
+                () => {
+                  Navigator.of(ctx).pop(),
+                  carga.cargaBool(true),
+                  ctx.read<Ventanas>().cambio(true),
+                  carga.cargaBool(false),
+                },
+                () => Textos.toast('Espera a que los datos carguen.', false),
+                false,
+                Carga.getValido(),
+              );
+            },
+          ),
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
@@ -85,18 +114,6 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             );
           },
         ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Escanear producto',
-              Icons.barcode_reader,
-              () => RecDrawer.scanProducto(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
-              Carga.getValido(),
-            );
-          },
-        ),
         /*Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
@@ -106,10 +123,8 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 carga.cargaBool(true),
                 if (CampoTexto.seleccionFiltro == Filtros.unidades)
                   CampoTexto.seleccionFiltro = Filtros.id,
-                RecDrawer.pushAnim(
-                  Historial(),
-                  context,
-                ),
+                RecDrawer.pushAnim(Historial(ruta: Inventario()), context),
+                false,
                 carga.cargaBool(false),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
@@ -133,37 +148,30 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             );
           },
         ),
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Ver artículos',
-              Icons.list,
-              () => {
-                carga.cargaBool(true),
-                if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                  CampoTexto.seleccionFiltro = Filtros.id,
-                RecDrawer.pushAnim(Articulos(), context),
-                carga.cargaBool(false),
-              },
-              () => {},
-              false,
-              true,
-            );
-          },
-        ),
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              'Ordenes',
-              Icons.border_color_rounded,
-              () => {
+              'Escanear codigo',
+              Icons.barcode_reader,
+              () => RecDrawer.scanProducto(context),
+              () => Textos.toast('Espera a que los datos carguen.', false),
+              true,
+              Carga.getValido(),
+            );
+          },
+        ),
+        /*Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              'Nueva orden',
+              Icons.add_shopping_cart_rounded,
+              () async => {
                 carga.cargaBool(true),
-                RecDrawer.pushAnim(Ordenes(), context),
-                carga.cargaBool(false),
+                await RecDrawer.salidaOrdenes(context),
               },
-              () => {},
+              () => Textos.toast('Espera a que los datos carguen.', false),
               true,
-              true,
+              Carga.getValido(),
             );
           },
         ),*/
@@ -191,9 +199,9 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                             'Unidades',
                             'Área',
                             'Tipo',
-                            'Entradas',
-                            'Salidas',
-                            'Perdidas',
+                            'Entrada',
+                            'Salida',
+                            'Perdida',
                           ],
                         ),
                         SizedBox(
@@ -250,14 +258,25 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 );
               },
             ),
+            if (LocalStorage.local('puesto') == 'Administrador')
+              Consumer2<Ventanas, Carga>(
+                builder: (context, ventanas, carga, child) {
+                  return Ventanas.cambioDeTienda(
+                    context,
+                    () async => context.read<Tablas>().datos(
+                      await getProductos(
+                        CampoTexto.filtroTexto(),
+                        CampoTexto.busquedaTexto.text,
+                      ),
+                    ),
+                  );
+                },
+              ),
             Consumer2<Ventanas, Carga>(
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaScan(
                   context,
-                  (texto) => RecDrawer.rutaProducto(
-                    texto,
-                    context,
-                  ),
+                  (texto) => RecDrawer.rutaProducto(texto, context),
                 );
               },
             ),
@@ -286,12 +305,14 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
           child: Consumer2<Tablas, CampoTexto>(
             builder: (context, tablas, campoTexto, child) {
               return CampoTexto.barraBusqueda(
-                () async => tablas.datos(
-                  await getProductos(
-                    CampoTexto.filtroTexto(),
-                    CampoTexto.busquedaTexto.text,
+                () async => {
+                  tablas.datos(
+                    await getProductos(
+                      CampoTexto.filtroTexto(),
+                      CampoTexto.busquedaTexto.text,
+                    ),
                   ),
-                ),
+                },
                 true,
                 false,
               );
@@ -350,7 +371,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             ],
             colores,
             2,
-            extra: () async => getProductoInfo(context, lista[index].id),
+            extra: () async => await getProductoInfo(context, lista[index].id),
           ),
         );
       },
