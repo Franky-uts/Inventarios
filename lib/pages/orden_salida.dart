@@ -83,6 +83,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   void generarTabla(BuildContext ctx) async {
     List<ProductoModel> lista = await getProductos('id', '');
     String mensaje = 'Espera a que los datos carguen.';
+    listaProd.clear();
+    comentarios.clear();
     if (Carga.getValido()) {
       mensaje = '';
       int j = 0;
@@ -197,10 +199,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             Consumer2<Ventanas, Carga>(
               builder: (context, ventana, carga, child) {
                 return Ventanas.ventanaTabla(
-                  MediaQuery.of(context).size.height,
+                  MediaQuery.of(context).size.height * .9,
                   MediaQuery.of(context).size.width,
                   ['Productos seleccionados:'],
-                  ['Enviar orden:'],
+
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
                     [.045, .215, .15, .105, .075, .075, .075, .05],
@@ -215,87 +217,108 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       '💬',
                     ],
                   ),
-                  ListView.separated(
-                    itemCount: listaProd.length,
-                    scrollDirection: Axis.vertical,
-                    separatorBuilder: (context, index) => Container(
-                      height: 2,
-                      decoration: BoxDecoration(color: Color(0xFFFDC930)),
-                    ),
-                    itemBuilder: (context, index) {
-                      return Consumer<Tablas>(
-                        builder: (context, tablas, child) {
-                          List<Color> colores = List.filled(
-                            8,
-                            Color(0x00000000),
-                          );
-                          colores[4] = Textos.colorLimite(
-                            listaProd[index].limiteProd,
-                            cantidad[listaProd[index].id - 1] +
-                                listaProd[index].unidades.floor(),
-                          );
-                          String cantUni =
-                              '${listaProd[index].cantidadPorUnidad}';
-                          String total =
-                              '${cantidad[listaProd[index].id - 1] * listaProd[index].cantidadPorUnidad}';
-                          return Container(
-                            width: MediaQuery.sizeOf(context).width,
-                            decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-                            child: Tablas.barraDatos(
-                              MediaQuery.sizeOf(context).width,
-                              [.045, .215, .15, .105, .075, .075, .075, .05],
-                              [
-                                "${listaProd[index].id}",
-                                listaProd[index].nombre,
-                                listaProd[index].area,
-                                listaProd[index].tipo,
-                                '${cantidad[listaProd[index].id - 1]}',
-                                (cantUni.split('.').length > 1)
-                                    ? (cantUni.split('.')[1] == '0')
-                                          ? cantUni.split('.')[0]
-                                          : cantUni
-                                    : cantUni,
-                                (total.split('.').length > 1)
-                                    ? (total.split('.')[1] == '0')
-                                          ? total.split('.')[0]
-                                          : total
-                                    : total,
-                                '',
-                              ],
-                              colores,
-                              2,
-                              extraWid: Botones.btnRctMor(
-                                'Añadir comentario',
-                                Icons.comment_rounded,
-                                false,
-                                () => {
-                                  comTit = listaProd[index].nombre,
-                                  comid = index,
-                                  controller.text = comentarios[index],
-                                  context.read<Ventanas>().emergente(true),
-                                },
-                                size: 15,
+                  SizedBox(
+                    height: MediaQuery.sizeOf(context).height-220,
+                    child: ListView.separated(
+                      itemCount: listaProd.length,
+                      scrollDirection: Axis.vertical,
+                      separatorBuilder: (context, index) => Container(
+                        height: 2,
+                        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                      ),
+                      itemBuilder: (context, index) {
+                        return Consumer<Tablas>(
+                          builder: (context, tablas, child) {
+                            List<Color> colores = List.filled(
+                              8,
+                              Color(0x00000000),
+                            );
+                            colores[4] = Textos.colorLimite(
+                              listaProd[index].limiteProd,
+                              cantidad[listaProd[index].id - 1] +
+                                  listaProd[index].unidades.floor(),
+                            );
+                            String cantUni =
+                                '${listaProd[index].cantidadPorUnidad}';
+                            String total =
+                                '${cantidad[listaProd[index].id - 1] * listaProd[index].cantidadPorUnidad}';
+                            return Container(
+                              width: MediaQuery.sizeOf(context).width,
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFFFFFF),
                               ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  [
-                    Botones.btnCirRos(
-                      'No',
-                      () => {
-                        listaProd.clear(),
-                        comentarios.clear(),
-                        ventana.tabla(false),
+                              child: Tablas.barraDatos(
+                                MediaQuery.sizeOf(context).width,
+                                [.045, .215, .15, .105, .075, .075, .075, .05],
+                                [
+                                  "${listaProd[index].id}",
+                                  listaProd[index].nombre,
+                                  listaProd[index].area,
+                                  listaProd[index].tipo,
+                                  '${cantidad[listaProd[index].id - 1]}',
+                                  (cantUni.split('.').length > 1)
+                                      ? (cantUni.split('.')[1] == '0')
+                                            ? cantUni.split('.')[0]
+                                            : cantUni
+                                      : cantUni,
+                                  (total.split('.').length > 1)
+                                      ? (total.split('.')[1] == '0')
+                                            ? total.split('.')[0]
+                                            : total
+                                      : total,
+                                  Botones.btnRctMor(
+                                    'Añadir comentario',
+                                    Icons.comment_rounded,
+                                    false,
+                                    () => {
+                                      comTit = listaProd[index].nombre,
+                                      comid = index,
+                                      controller.text = comentarios[index],
+                                      context.read<Ventanas>().emergente(true),
+                                    },
+                                    size: 15,
+                                  ),
+                                ],
+                                colores,
+                                2,
+                              ),
+                            );
+                          },
+                        );
                       },
                     ),
-                    Botones.btnCirRos(
-                      'Si',
-                      () async => await addOrden(context),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      vertical: 2.5,
+                      horizontal: 10,
                     ),
-                  ],
+                    alignment: Alignment.center,
+                    child: Row(
+                      spacing: 7.5,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Textos.textoGeneral(
+                          'Enviar orden:',
+                          false,
+                          1,
+                          size: 20,
+                        ),
+                        Botones.btnCirRos(
+                          'No',
+                          () => {
+                            listaProd.clear(),
+                            comentarios.clear(),
+                            ventana.tabla(false),
+                          },
+                        ),
+                        Botones.btnCirRos(
+                          'Si',
+                          () async => await addOrden(context),
+                        ),
+                      ],
+                    ),
+                  ),
                 );
               },
             ),
@@ -316,6 +339,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                   widget: CampoTexto.inputTexto(
                     MediaQuery.sizeOf(context).width,
                     'Comentario',
+                    '',
                     controller,
                     true,
                     false,
@@ -416,37 +440,36 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         ? unidad.split('.')[0]
                         : unidad
                   : unidad,
-              '',
+              SizedBox(
+                width: MediaQuery.sizeOf(context).width * .2,
+                child: Consumer<Textos>(
+                  builder: (context, textos, child) {
+                    return Botones.botonesSumaResta(
+                      lista[index].nombre,
+                      cantidad[lista[index].id - 1],
+                      Textos.getColor(lista[index].id - 1),
+                      () => {
+                        textos.setColor(lista[index].id - 1, Color(0xFFFF0000)),
+                        if ((cantidad[lista[index].id - 1] - 1) > -1)
+                          {
+                            textos.setColor(
+                              lista[index].id - 1,
+                              Color(0xFFFDC930),
+                            ),
+                            cantidad[lista[index].id - 1] -= 1,
+                          },
+                      },
+                      () => {
+                        textos.setColor(lista[index].id - 1, Color(0xFFFDC930)),
+                        cantidad[lista[index].id - 1] += 1,
+                      },
+                    );
+                  },
+                ),
+              ),
             ],
             colores,
             2,
-            extraWid: SizedBox(
-              width: MediaQuery.sizeOf(context).width * .2,
-              child: Consumer<Textos>(
-                builder: (context, textos, child) {
-                  return Botones.botonesSumaResta(
-                    lista[index].nombre,
-                    cantidad[lista[index].id - 1],
-                    Textos.getColor(lista[index].id - 1),
-                    () => {
-                      textos.setColor(lista[index].id - 1, Color(0xFFFF0000)),
-                      if ((cantidad[lista[index].id - 1] - 1) > -1)
-                        {
-                          textos.setColor(
-                            lista[index].id - 1,
-                            Color(0xFFFDC930),
-                          ),
-                          cantidad[lista[index].id - 1] -= 1,
-                        },
-                    },
-                    () => {
-                      textos.setColor(lista[index].id - 1, Color(0xFFFDC930)),
-                      cantidad[lista[index].id - 1] += 1,
-                    },
-                  );
-                },
-              ),
-            ),
           ),
         );
       },

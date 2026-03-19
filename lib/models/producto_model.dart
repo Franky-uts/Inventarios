@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:inventarios/main.dart';
 import 'dart:convert';
 import '../services/local_storage.dart';
 
@@ -63,7 +64,6 @@ class ProductoModel {
     String filtro,
     String busqueda,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     late List<ProductoModel> productosFuture = [];
     if (locacion.isEmpty || locacion == 'null') {
@@ -71,8 +71,9 @@ class ProductoModel {
     } else {
       try {
         var res = await http.get(
-          Uri.parse('$conexion/almacen/$locacion/$filtro/$busqueda'),
+          Uri.parse('${MyApp.url}:3000/almacen/$locacion/$filtro/$busqueda'),
           headers: {
+            "Access-Control-Allow-Origin": "*",
             'Accept': 'application/json',
             'content-type': 'application/json; charset=UTF-8',
           },
@@ -128,12 +129,12 @@ class ProductoModel {
     String filtro,
     String busqueda,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     late List<ProductoModel> productosFuture = [];
     try {
       var res = await http.get(
-        Uri.parse('$conexion/almacen/Prod/$filtro/$busqueda'),
+        Uri.parse('${MyApp.url}:3000/almacen/Prod/$filtro/$busqueda'),
         headers: {
+          "Access-Control-Allow-Origin": "*",
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
         },
@@ -185,13 +186,13 @@ class ProductoModel {
   }
 
   static Future<ProductoModel> getProducto(int id) async {
-    String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     ProductoModel producto;
     try {
       var res = await http.get(
-        Uri.parse('$conexion/almacen/Producto/$locacion/$id'),
+        Uri.parse('${MyApp.url}:3000/almacen/Producto/$locacion/$id'),
         headers: {
+          "Access-Control-Allow-Origin": "*",
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
         },
@@ -240,11 +241,10 @@ class ProductoModel {
   }
 
   static Future<List<ProductoModel>> getDatosArticulo(int id) async {
-    String conexion = LocalStorage.local('conexion');
     late List<ProductoModel> productoModel = [];
     try {
       var res = await http.get(
-        Uri.parse('$conexion/articulos/almacen/$id'),
+        Uri.parse('${MyApp.url}:3000/articulos/almacen/$id'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -298,10 +298,9 @@ class ProductoModel {
 
   static Future<String> addProducto(int id, int limite) async {
     String mensaje = '';
-    String conexion = LocalStorage.local('conexion');
     try {
       final res = await http.post(
-        Uri.parse('$conexion/almacen/'),
+        Uri.parse('${MyApp.url}:3000/almacen/'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -332,10 +331,9 @@ class ProductoModel {
     String columna,
   ) async {
     String texto = '';
-    String conexion = LocalStorage.local('conexion');
     try {
       final res = await http.put(
-        Uri.parse('$conexion/almacen/Editar/$id/$columna'),
+        Uri.parse('${MyApp.url}:3000/almacen/Editar/$id/$columna'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -363,11 +361,10 @@ class ProductoModel {
     double salidas,
     int id,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     String texto = 'Error: No se guardo la información.';
     try {
       final res = await http.put(
-        Uri.parse('$conexion/almacen/ES/$id'),
+        Uri.parse('${MyApp.url}:3000/almacen/ES/$id'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -396,11 +393,10 @@ class ProductoModel {
     double cantidad,
     int id,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     String texto = 'Error: No se guardo la información.';
     try {
       final res = await http.put(
-        Uri.parse('$conexion/almacen/Perdidas/$id'),
+        Uri.parse('${MyApp.url}:3000/almacen/Perdidas/$id'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -426,11 +422,10 @@ class ProductoModel {
 
   static Future<String> reiniciarESP() async {
     String texto = '';
-    String conexion = LocalStorage.local('conexion');
     String almacen = LocalStorage.local('locación');
     try {
       final res = await http.put(
-        Uri.parse('$conexion/almacen/reiniciarMovimientos/$almacen'),
+        Uri.parse('${MyApp.url}:3000/almacen/reiniciarMovimientos/$almacen'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -451,10 +446,9 @@ class ProductoModel {
 
   static Future<List<String>> getTipos() async {
     late List<String> tipos = [];
-    String conexion = LocalStorage.local('conexion');
     try {
       var res = await http.get(
-        Uri.parse('$conexion/tipos'),
+        Uri.parse('${MyApp.url}:3000/tipos'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -482,10 +476,9 @@ class ProductoModel {
 
   static Future<List<String>> getAreas() async {
     late List<String> areas = [];
-    String conexion = LocalStorage.local('conexion');
     try {
       var res = await http.get(
-        Uri.parse('$conexion/areas'),
+        Uri.parse('${MyApp.url}:3000/areas'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',

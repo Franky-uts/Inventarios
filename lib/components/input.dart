@@ -12,6 +12,7 @@ class CampoTexto with ChangeNotifier {
   static Widget inputTexto(
     double size,
     String texto,
+    String hint,
     TextEditingController controller,
     bool enabled,
     bool password,
@@ -19,8 +20,8 @@ class CampoTexto with ChangeNotifier {
     IconData? icono,
     Color? borderColor,
     Color? errorColor,
-    Color? disabledColor,
     double? fontSize,
+    double? height,
     TextAlign? align,
     EdgeInsets? margin,
     FocusNode? focus,
@@ -29,6 +30,7 @@ class CampoTexto with ChangeNotifier {
   }) {
     return Container(
       width: size,
+      height: height,
       margin: margin,
       child: TextField(
         controller: controller,
@@ -43,16 +45,20 @@ class CampoTexto with ChangeNotifier {
             ),
         },
         onSubmitted: (event) => accion(),
-        onTapOutside: (event) {
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
+        onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
         enabled: enabled,
         textAlign: align ?? TextAlign.start,
+        textAlignVertical: TextAlignVertical.center,
         obscureText: password,
         cursorColor: Color(0xFF8A03A9),
-        style: TextStyle(color: Color(0xFF8A03A9), fontSize: fontSize),
+        style: TextStyle(
+          color: Color(0xFF8A03A9),
+          fontSize: fontSize,
+          textBaseline: TextBaseline.ideographic,
+        ),
         decoration: InputDecoration(
           filled: true,
+          hintText: hint,
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(
@@ -70,7 +76,7 @@ class CampoTexto with ChangeNotifier {
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(30),
             borderSide: BorderSide(
-              color: disabledColor ?? borderColor ?? Color(0xFFFEE497),
+              color: borderColor ?? Color(0xFFFEE497),
               width: 2.5,
             ),
           ),
@@ -80,6 +86,9 @@ class CampoTexto with ChangeNotifier {
           suffixIconColor: errorColor,
           fillColor: Colors.white,
           label: Text(texto, style: TextStyle(color: Color(0xFF8A03A9))),
+          floatingLabelBehavior: hint.isEmpty
+              ? FloatingLabelBehavior.auto
+              : FloatingLabelBehavior.always,
           floatingLabelAlignment: align == TextAlign.center
               ? FloatingLabelAlignment.center
               : FloatingLabelAlignment.start,

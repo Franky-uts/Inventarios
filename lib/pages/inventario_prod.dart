@@ -8,7 +8,7 @@ import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
-import 'package:inventarios/pages/perdidas_prov.dart';
+import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
@@ -31,24 +31,10 @@ Future<void> getProductoInfo(BuildContext ctx, int id) async {
       ? {
           await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
           if (ctx.mounted)
-            Navigator.of(ctx).push(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) =>
-                    PerdidasProv(productoInfo: producto),
-                transitionsBuilder:
-                    (context, animation, secondaryAnimation, child) {
-                      return SlideTransition(
-                        position: animation.drive(
-                          Tween(
-                            begin: Offset(1.0, 0.0),
-                            end: Offset.zero,
-                          ).chain(CurveTween(curve: Curves.ease)),
-                        ),
-                        child: child,
-                      );
-                    },
-              ),
-            ),
+            {
+              ctx.read<Producto>().setProducto(producto),
+              ctx.read<Producto>().prov(true),
+            },
         }
       : Textos.toast(producto.mensaje, true);
   if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -76,24 +62,8 @@ void rutaProducto(String prod, BuildContext ctx) async {
       if (!flag) {
         flag = (productos[i].codigoBarras == prod);
         ctx.read<Ventanas>().scan(false);
-        Navigator.of(ctx).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                PerdidasProv(productoInfo: productos[i]),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-                  return SlideTransition(
-                    position: animation.drive(
-                      Tween(
-                        begin: Offset(1.0, 0.0),
-                        end: Offset.zero,
-                      ).chain(CurveTween(curve: Curves.ease)),
-                    ),
-                    child: child,
-                  );
-                },
-          ),
-        );
+        ctx.read<Producto>().setProducto(productos[i]);
+        ctx.read<Producto>().producto(true);
       }
     }
     if (flag) Textos.toast('No se reconocio el codigo.', false);
@@ -195,8 +165,14 @@ class _InventarioProdState extends State<InventarioProd> {
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaScan(
                   context,
+                  () => ventanas.scan(false),
                   (texto) => rutaProducto(texto, context),
                 );
+              },
+            ),
+            Consumer<Producto>(
+              builder: (context, producto, child) {
+                return producto.productorInfo(context);
               },
             ),
             Carga.ventanaCarga(),

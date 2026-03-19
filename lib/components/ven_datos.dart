@@ -1,164 +1,120 @@
 import 'package:flutter/material.dart';
+import 'package:inventarios/models/orden_model.dart';
 
 class VenDatos with ChangeNotifier {
-  static List _idArt = [];
-  static List _art = [];
-  static List _can = [];
-  static List _are = [];
-  static List _tip = [];
-  static List _canCub = [];
-  static List _canAlm = [];
-  static List _comFin = [];
-  static List _comProv = [];
-  static List _comTienda = [];
-  static List _comfProd = [];
-  static String _id = '';
-  static String _rem = '';
-  static String _est = '';
-  static String _mod = '';
-  static String _loc = '';
+  static OrdenModel _orden = OrdenModel.dummy('');
 
-  void setDatos(
-    List idArt,
-    List art,
-    List can,
-    List are,
-    List tip,
-    List canCub,
-    List canAlm,
-    List comTienda,
-    List comProv,
-    List comFin,
-    List comfProd,
-    String id,
-    String rem,
-    String est,
-    String mod,
-    String loc,
-  ) {
-    _idArt = idArt;
-    _art = art;
-    _can = can;
-    _are = are;
-    _tip = tip;
-    _canCub = canCub;
-    _canAlm = canAlm;
-    _comTienda = comTienda;
-    _comProv = comProv;
-    _comFin = comFin;
-    _comfProd = comfProd;
-    _id = id;
-    _rem = rem;
-    _est = est;
-    _mod = mod;
-    _loc = loc;
+  void setDatos(OrdenModel orden) {
+    _orden = orden;
     notifyListeners();
   }
 
+  OrdenModel getDatos() {
+    return _orden;
+  }
+
   int length() {
-    return _art.length;
+    return _orden.cantArticulos;
   }
 
   int idArt(int i) {
-    return _idArt[i];
+    return _orden.idProductos[i];
   }
 
   String art(int i) {
-    return _art[i];
+    return _orden.articulos[i];
   }
 
   int can(int i) {
-    return _can[i];
+    return _orden.cantidades[i];
   }
 
   String are(int i) {
-    return _are[i];
+    return _orden.areas[i];
   }
 
   String tip(int i) {
-    return _tip[i];
+    return _orden.tipos[i];
   }
 
   int canCub(int i) {
-    return _canCub[i];
-  }
-
-  double canAlm(int i) {
-    return _canAlm[i];
+    return _orden.cantidadesCubiertas[i];
   }
 
   void canCubSub(int i) {
-    _canAlm[i]++;
-    _canCub[i]--;
+    _orden.cantidadesCubiertas[i]--;
     notifyListeners();
   }
 
   void canCubAdd(int i) {
-    _canAlm[i]--;
-    _canCub[i]++;
+    _orden.cantidadesCubiertas[i]++;
     notifyListeners();
   }
 
   List canCubLista() {
-    return _canCub;
+    return _orden.cantidadesCubiertas;
   }
 
   String comTienda(int i) {
-    return _comTienda[i];
+    return _orden.comentariosTienda[i];
   }
 
   String comProv(int i) {
-    return _comProv[i];
+    return _orden.comentariosProveedor[i];
   }
 
   List comProvLista() {
-    return _comProv;
+    return _orden.comentariosProveedor;
   }
 
   void setComProv(int i, String comentario) {
-    _comProv[i] = comentario;
+    _orden.comentariosProveedor[i] = comentario;
     notifyListeners();
   }
 
   String comFin(int i) {
-    return _comFin[i];
+    return _orden.comentariosFinales[i];
   }
 
   void setComFin(int i, String comentario) {
-    _comFin[i] = comentario;
+    _orden.comentariosFinales[i] = comentario;
     notifyListeners();
   }
 
   bool comfProd(int i) {
-    return _comfProd[i];
+    return _orden.confirmacion[i];
   }
 
   List comfProdLista() {
-    return _comfProd;
+    return _orden.confirmacion;
   }
 
   void setComfProd(int i) {
-    _comfProd[i] = !_comfProd[i];
+    _orden.confirmacion[i] = !_orden.confirmacion[i];
     notifyListeners();
   }
 
   String id() {
-    return _id;
+    return '${_orden.id}';
   }
 
   String rem() {
-    return _rem;
+    return _orden.remitente;
   }
 
   String est() {
-    return _est;
+    return _orden.estado;
+  }
+
+  String fecha() {
+    return _orden.fechaOrden;
   }
 
   String mod() {
-    return _mod;
+    return _orden.ultimaModificacion;
   }
 
   String loc() {
-    return _loc;
+    return _orden.locacion;
   }
 }

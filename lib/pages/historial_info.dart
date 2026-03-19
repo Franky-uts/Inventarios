@@ -84,8 +84,12 @@ class _HistorialInfoState extends State<HistorialInfo> {
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Textos.textoTilulo(
-                              ('$cantidadPerdida'.split('.')[1] == '0')
-                                  ? 'Perdidas: $cantidadPerdida'.split('.')[0]
+                              ('$cantidadPerdida'.split('.').length > 1)
+                                  ? ('$cantidadPerdida'.split('.')[1] == '0')
+                                        ? 'Perdidas: $cantidadPerdida'.split(
+                                            '.',
+                                          )[0]
+                                        : 'Perdidas: $cantidadPerdida'
                                   : 'Perdidas: $cantidadPerdida',
                               20,
                             ),
@@ -149,7 +153,6 @@ class _HistorialInfoState extends State<HistorialInfo> {
                               : 'Perdidas: $cantidadPerdida'
                         : 'Perdidas: $cantidadPerdida',
                   ],
-                  [],
                   cantidadPerdida > 0
                       ? Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
@@ -157,42 +160,53 @@ class _HistorialInfoState extends State<HistorialInfo> {
                           ['#', 'Cantidad perdida', 'Razón de perdida'],
                         )
                       : Textos.textoTilulo('', 30),
-                  cantidadPerdida > 0
-                      ? ListView.separated(
-                          itemCount: widget.historialInfo.cantidades.length,
-                          scrollDirection: Axis.vertical,
-                          separatorBuilder: (context, index) => Container(
-                            height: 2,
-                            decoration: BoxDecoration(color: Color(0xFFFDC930)),
-                          ),
-                          itemBuilder: (context, index) {
-                            String cantidad =
-                                '${widget.historialInfo.cantidades[index]}';
-                            return Container(
-                              width: MediaQuery.sizeOf(context).width,
+                  SizedBox(
+                    height: MediaQuery.sizeOf(context).height-220,
+                    child: cantidadPerdida > 0
+                        ? ListView.separated(
+                            itemCount: widget.historialInfo.cantidades.length,
+                            scrollDirection: Axis.vertical,
+                            separatorBuilder: (context, index) => Container(
+                              height: 2,
                               decoration: BoxDecoration(
-                                color: Color(0xFFFFFFFF),
+                                color: Color(0xFFFDC930),
                               ),
-                              child: Tablas.barraDatos(
-                                MediaQuery.sizeOf(context).width,
-                                [.05, .15, .6],
-                                [
-                                  '${index + 1}',
-                                  (cantidad.split('.').length > 1)
-                                      ? (cantidad.split('.')[1] == '0')
-                                            ? cantidad.split('.')[0]
-                                            : cantidad
-                                      : cantidad,
-                                  widget.historialInfo.razones[index],
-                                ],
-                                [],
-                                2,
-                              ),
-                            );
-                          },
-                        )
-                      : Textos.textoTilulo('No hay perdidas registradas', 30),
-                  [Botones.btnCirRos('Cerrar', () => ventana.tabla(false))],
+                            ),
+                            itemBuilder: (context, index) {
+                              String cantidad =
+                                  '${widget.historialInfo.cantidades[index]}';
+                              return Container(
+                                width: MediaQuery.sizeOf(context).width,
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFFFFFFF),
+                                ),
+                                child: Tablas.barraDatos(
+                                  MediaQuery.sizeOf(context).width,
+                                  [.05, .15, .6],
+                                  [
+                                    '${index + 1}',
+                                    (cantidad.split('.').length > 1)
+                                        ? (cantidad.split('.')[1] == '0')
+                                              ? cantidad.split('.')[0]
+                                              : cantidad
+                                        : cantidad,
+                                    widget.historialInfo.razones[index],
+                                  ],
+                                  [],
+                                  2,
+                                ),
+                              );
+                            },
+                          )
+                        : Textos.textoTilulo('No hay perdidas registradas', 30),
+                  ),
+                  Row(
+                    spacing: 7.5,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Botones.btnCirRos('Cerrar', () => ventana.tabla(false)),
+                    ],
+                  ),
                 );
               },
             ),

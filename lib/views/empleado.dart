@@ -3,6 +3,7 @@ import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/historial.dart';
 import 'package:inventarios/pages/historial_ordenes.dart';
@@ -26,13 +27,14 @@ class _EmpleadoState extends State<Empleado> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: Consumer<Carga>(
-        builder: (ctx, carga, child) {
+      bottomNavigationBar: Consumer2<Carga, Ventanas>(
+        builder: (ctx, carga, ventana, child) {
           return NavigationBar(
             height: 55,
             onDestinationSelected: (int index) async {
+              carga.cargaBool(true);
+              ventana.cerrarVentanas();
               if (Carga.getValido()) {
-                carga.cargaBool(true);
                 Textos.limpiarLista();
                 if (index == 2) {
                   CampoTexto.seleccionFiltro = Filtros.id;

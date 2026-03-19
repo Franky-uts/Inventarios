@@ -23,9 +23,10 @@ class Ventanas with ChangeNotifier {
     Function btnNo,
     Function btnSi, {
     Widget? widget,
+    bool? visible,
   }) {
     return Visibility(
-      visible: _emergente,
+      visible: visible ?? _emergente,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
         decoration: BoxDecoration(color: Colors.black38),
@@ -49,8 +50,8 @@ class Ventanas with ChangeNotifier {
                     mainAxisAlignment: MainAxisAlignment.end,
                     spacing: 15,
                     children: [
-                      Botones.btnCirRos(no, () => btnNo()),
-                      Botones.btnCirRos(si, () => btnSi()),
+                      if (no.isNotEmpty) Botones.btnCirRos(no, () => btnNo()),
+                      if (si.isNotEmpty) Botones.btnCirRos(si, () => btnSi()),
                     ],
                   ),
                 ],
@@ -66,33 +67,18 @@ class Ventanas with ChangeNotifier {
     double alto,
     double ancho,
     List<String> tituloTexto,
-    List<String> footerTexto,
     Widget tablaInfo,
-    Widget tablaListView,
-    List<Widget> botones,
-  ) {
+    SizedBox tablaListView,
+    Widget botones, {
+    bool? visible,
+  }) {
     List<Widget> titulos = [];
     List<Widget> footer = [];
     for (String titulo in tituloTexto) {
       titulos.add(Textos.textoTilulo(titulo, 20));
     }
-    if (footerTexto.isNotEmpty) {
-      for (String texto in footerTexto) {
-        footer.add(
-          Textos.textoGeneral(
-            texto,
-            false,
-            1,
-            alignment: (footerTexto.length > 1)
-                ? TextAlign.start
-                : TextAlign.center,
-            size: (footerTexto.length > 1) ? 15 : 20,
-          ),
-        );
-      }
-    }
     return Visibility(
-      visible: _tabla,
+      visible: visible ?? _tabla,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
         decoration: BoxDecoration(color: Colors.black38),
@@ -118,15 +104,7 @@ class Ventanas with ChangeNotifier {
                   Column(
                     children: [
                       tablaInfo,
-                      (tablaListView.runtimeType == ListView)
-                          ? Container(
-                              width: ancho,
-                              height:
-                                  alto - ((footerTexto.length > 1) ? 168 : 153)-65,
-                              margin: EdgeInsets.zero,
-                              child: tablaListView,
-                            )
-                          : tablaListView,
+                      tablaListView,
                     ],
                   ),
                   Row(
@@ -136,13 +114,9 @@ class Ventanas with ChangeNotifier {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: footer,
                       ),
-                      Row(
-                        spacing: 7.5,
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: botones,
-                      ),
                     ],
                   ),
+                  botones,
                 ],
               ),
             ),
@@ -207,9 +181,14 @@ class Ventanas with ChangeNotifier {
     );
   }
 
-  static Widget ventanaScan(BuildContext ctx, Function(String valor) accion) {
+  static Widget ventanaScan(
+    BuildContext ctx,
+    Function btnAccion,
+    Function(String valor) accion, {
+    bool? visible,
+  }) {
     return Visibility(
-      visible: _scan,
+      visible: visible ?? _scan,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
         decoration: BoxDecoration(color: Colors.black38),
@@ -274,12 +253,7 @@ class Ventanas with ChangeNotifier {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     spacing: 15,
-                    children: [
-                      Botones.btnCirRos(
-                        'Volver',
-                        () => ctx.read<Ventanas>().scan(false),
-                      ),
-                    ],
+                    children: [Botones.btnCirRos('Volver', () => btnAccion())],
                   ),
                 ],
               ),
@@ -290,6 +264,73 @@ class Ventanas with ChangeNotifier {
     );
   }
 
+  /*static Widget ventanaProducto(BuildContext ctx, ProductoModel producto) {
+    return Visibility(
+      visible: _producto,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+        decoration: BoxDecoration(color: Colors.black38),
+        child: Center(
+          child: Container(
+            padding: EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadiusGeometry.circular(25),
+              border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
+            ),
+            child: SingleChildScrollView(
+              child: SizedBox(
+                width: MediaQuery.of(ctx).size.width,
+                height: MediaQuery.of(ctx).size.height,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Textos.textoTilulo(producto.nombre, 30),
+                    tipoTexto(producto.tipo),
+                    contenedorInfo(
+                      ' que entraron:',
+                      producto.entrada,
+                      0,
+                    ),
+                    contenedorInfo(
+                      ' que salieron:',
+                      producto.salida,
+                      1,
+                    ),
+                    contenedorInfoPerdidas(productosPerdido, 2),
+                    Botones.icoCirMor(
+                        'Guardar movimientos',
+                        Icons.save_rounded,
+                            () => enviarDatos(context),
+                            () => Textos.toast('No hay hay cambios.', false),
+                        false,
+                        true
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        footer([
+                          'Ultima modificación:',
+                          producto.ultimaModificacion,
+                        ]),
+                        footer([
+                          'Modificada por:',
+                          producto.ultimoUsuario,
+                        ]),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+*/
   void tabla(bool booleano) {
     _tabla = booleano;
     notifyListeners();
@@ -308,6 +349,14 @@ class Ventanas with ChangeNotifier {
   void scan(bool booleano) {
     _scan = booleano;
     focus.requestFocus();
+    notifyListeners();
+  }
+
+  void cerrarVentanas() {
+    _emergente = false;
+    _tabla = false;
+    _cambio = false;
+    _scan = false;
     notifyListeners();
   }
 

@@ -9,7 +9,7 @@ import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/historial_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/add_producto.dart';
-import 'package:inventarios/pages/articulo_info.dart';
+import 'package:inventarios/pages/articulo.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -102,8 +102,8 @@ class RecDrawer {
     List<String> headers = [
       'id',
       'Nombre',
-      'Area',
       'Tipo',
+      'Área',
       'Unidades',
       'Cantidad por unidad',
       'Total',
@@ -155,6 +155,53 @@ class RecDrawer {
         i + 1,
         TextCellValue('${item.ultimaModificacion}: ${item.ultimaModificacion}'),
       );
+    }
+    String mensaje = "Se canceló el proceso";
+    String fecha =
+        '${DateTime.now().day}-${DateTime.now().month}-${DateTime.now().year}';
+    if (kIsWeb) {
+      List<int>? fileBytes = excel.save(fileName: '$fecha.xlsx');
+      if (fileBytes != null) mensaje = 'Descargando el archivo';
+    } else {
+      var status = await Permission.manageExternalStorage.request();
+      if (status.isDenied) await Permission.manageExternalStorage.request();
+      if (status.isPermanentlyDenied) openAppSettings();
+      if (status.isGranted) {
+        final path = '/storage/emulated/0/Download/Inventarios';
+        List<int>? fileBytes = excel.save();
+        if (fileBytes != null) {
+          File('$path/$fecha.xlsx')
+            ..createSync(recursive: true)
+            ..writeAsBytesSync(fileBytes, flush: true);
+          mensaje = 'Archivo guardado en: $path/$fecha.xlsx';
+        }
+      }
+    }
+    Textos.toast(mensaje, true);
+    if (context.mounted) context.read<Carga>().cargaBool(false);
+  }
+
+  static Future<void> articulosExcel(BuildContext context) async {
+    context.read<Carga>().cargaBool(true);
+    Navigator.of(context).pop();
+    List<ArticulosModel> productos = await ArticulosModel.getArticulos(
+      'id',
+      '',
+    );
+    var excel = Excel.createExcel();
+    Sheet sheetObject = excel['Inventario'];
+    excel.delete('Sheet1');
+    List<String> headers = ['id', 'Nombre', 'Tipo', 'Área', 'Código de barras'];
+    for (int i = 0; i < headers.length; i++) {
+      establecerCelda(sheetObject, i, 0, TextCellValue(headers[i]));
+    }
+    for (int i = 0; i < productos.length; i++) {
+      ArticulosModel item = productos[i];
+      establecerCelda(sheetObject, 0, i + 1, IntCellValue(item.id));
+      establecerCelda(sheetObject, 1, i + 1, TextCellValue(item.nombre));
+      establecerCelda(sheetObject, 2, i + 1, TextCellValue(item.tipo));
+      establecerCelda(sheetObject, 3, i + 1, TextCellValue(item.area));
+      establecerCelda(sheetObject, 4, i + 1, TextCellValue(item.codigoBarras));
     }
     String mensaje = "Se canceló el proceso";
     String fecha =
@@ -342,24 +389,8 @@ class RecDrawer {
         flag = false;
         if (ctx.mounted) {
           ctx.read<Ventanas>().scan(false);
-          Navigator.of(ctx).push(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) =>
-                  Producto(productoInfo: productos[i]),
-              transitionsBuilder:
-                  (context, animation, secondaryAnimation, child) {
-                    return SlideTransition(
-                      position: animation.drive(
-                        Tween(
-                          begin: Offset(1.0, 0.0),
-                          end: Offset.zero,
-                        ).chain(CurveTween(curve: Curves.ease)),
-                      ),
-                      child: child,
-                    );
-                  },
-            ),
-          );
+          ctx.read<Producto>().setProducto(productos[i]);
+          ctx.read<Producto>().producto(true);
           ctx.read<Carga>().cargaBool(false);
         }
       }
@@ -389,7 +420,8 @@ class RecDrawer {
         flag = false;
         if (ctx.mounted) {
           ctx.read<Ventanas>().scan(false);
-          pushAnim(ArticuloInfo(articulo: articulos[i]), ctx);
+          ctx.read<Articulo>().articulo(articulos[i]);
+          ctx.read<Articulo>().art(true);
           ctx.read<Carga>().cargaBool(false);
         }
       }

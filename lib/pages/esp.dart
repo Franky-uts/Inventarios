@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:inventarios/components/rec_drawer.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/components/carga.dart';
@@ -20,6 +21,11 @@ class ESP extends StatefulWidget {
 }
 
 class _ESPState extends State<ESP> {
+  List<TextEditingController> controllerSal = [];
+  List<TextEditingController> controllerEnt = [];
+  int textoVentana = 0;
+  ProductoModel producto = ProductoModel.dummy('');
+
   @override
   void initState() {
     super.initState();
@@ -28,6 +34,45 @@ class _ESPState extends State<ESP> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  void listas(int length) {
+    List<String> entradas = (LocalStorage.localLista('entradas') != null)
+        ? LocalStorage.localLista('entradas')!
+        : List.filled(length, '', growable: true);
+    List<String> salidas = (LocalStorage.localLista('salidas') != null)
+        ? LocalStorage.localLista('salidas')!
+        : List.filled(length, '', growable: true);
+    for (String cantidad in salidas) {
+      controllerSal.add(TextEditingController(text: cantidad));
+    }
+    for (String cantidad in entradas) {
+      controllerEnt.add(TextEditingController(text: cantidad));
+    }
+  }
+
+  void enviarMovimientos(BuildContext ctx) async {
+    List<ProductoModel> listaProductos = await getProductos('id', '');
+    List<double> entradas = [];
+    List<double> salidas = [];
+    for (ProductoModel producto in listaProductos) {
+      String ent = controllerEnt[producto.id - 1].text;
+      String sal = controllerSal[producto.id - 1].text;
+      controllerEnt[producto.id - 1].text = '';
+      controllerSal[producto.id - 1].text = '';
+      (ent.isNotEmpty)
+          ? (ent.split('.').length < 2)
+                ? entradas.add(double.parse('$ent.0'))
+                : entradas.add(double.parse(ent))
+          : entradas.add(0.0);
+      (sal.isNotEmpty)
+          ? (sal.split('.').length < 2)
+                ? salidas.add(double.parse('$sal.0'))
+                : salidas.add(double.parse(sal))
+          : salidas.add(0.0);
+    }
+    LocalStorage.eliminar('unidades');
+    Textos.toast('Se envio el reporte correctamente', true);
   }
 
   Future<List<ProductoModel>> getProductos(
@@ -42,24 +87,10 @@ class _ESPState extends State<ESP> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.of(ctx).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      Producto(productoInfo: producto),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                        return SlideTransition(
-                          position: animation.drive(
-                            Tween(
-                              begin: Offset(1.0, 0.0),
-                              end: Offset.zero,
-                            ).chain(CurveTween(curve: Curves.ease)),
-                          ),
-                          child: child,
-                        );
-                      },
-                ),
-              ),
+              {
+                ctx.read<Producto>().setProducto(producto),
+                ctx.read<Producto>().producto(true),
+              },
           }
         : Textos.toast(producto.mensaje, true);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -140,6 +171,7 @@ class _ESPState extends State<ESP> {
               Icons.refresh_rounded,
               () => {
                 Navigator.of(context).pop(),
+                textoVentana = 2,
                 context.read<Ventanas>().emergente(true),
               },
               () => Textos.toast('Espera a que los datos carguen.', false),
@@ -192,7 +224,7 @@ class _ESPState extends State<ESP> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, .25, .08, .175, .15, .075, .075, .075],
+                          [.1, .25, .075, .175, .15, .1, .1, .05],
                           [
                             'id',
                             'Nombre',
@@ -201,7 +233,7 @@ class _ESPState extends State<ESP> {
                             'Tipo',
                             'Entrada',
                             'Salida',
-                            'Perdida',
+                            'Información',
                           ],
                         ),
                         SizedBox(
@@ -233,28 +265,50 @@ class _ESPState extends State<ESP> {
                 ),
               ),
             ),
+            Consumer<Producto>(
+              builder: (context, producto, child) {
+                return producto.productoInfo(context);
+              },
+            ),
             Consumer2<Ventanas, Carga>(
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaEmergente(
-                  '¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?',
-                  'No, volver',
-                  'Si, continuar',
+                  [
+                    '¿Seguro quieres establecer todas las entradas, salidas y perdidas en 0?',
+                    '¿Seguro quieres guardar los movimientos? Una vez enviados, no se pueden modificar.',
+                    '¿Seguro quieres comenzar de nuevo?',
+                    producto.nombre,
+                  ][textoVentana],
+                  (textoVentana != 3) ? 'No, volver' : 'Cerrar',
+                  (textoVentana != 3) ? 'Si, continuar' : '',
                   () => ventanas.emergente(false),
-                  () async => {
+                  () => {
                     ventanas.emergente(false),
                     carga.cargaBool(true),
-                    Textos.toast(await ProductoModel.reiniciarESP(), true),
-                    if (context.mounted)
-                      {
-                        context.read<Tablas>().datos(
-                          await getProductos(
-                            CampoTexto.filtroTexto(),
-                            CampoTexto.busquedaTexto.text,
+                    [
+                      () async => {
+                        Textos.toast(await ProductoModel.reiniciarESP(), true),
+                        if (context.mounted)
+                          context.read<Tablas>().datos(
+                            await getProductos(
+                              CampoTexto.filtroTexto(),
+                              CampoTexto.busquedaTexto.text,
+                            ),
                           ),
-                        ),
-                        carga.cargaBool(false),
                       },
+                      () async => enviarMovimientos(context),
+                      () async => {
+                        for (int i = 0; i < controllerEnt.length; i++)
+                          {
+                            controllerEnt[i].text = '',
+                            controllerSal[i].text = '',
+                          },
+                      },
+                      () => {},
+                    ][textoVentana],
+                    if (context.mounted) carga.cargaBool(false),
                   },
+                  widget: (textoVentana == 3) ? Column(children: []) : null,
                 );
               },
             ),
@@ -276,6 +330,7 @@ class _ESPState extends State<ESP> {
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaScan(
                   context,
+                  () => ventanas.scan(false),
                   (texto) => RecDrawer.rutaProducto(texto, context),
                 );
               },
@@ -299,8 +354,15 @@ class _ESPState extends State<ESP> {
           () => Scaffold.of(context).openDrawer(),
           size: 35,
         ),
+        Botones.btnRctMor(
+          'Enviar',
+          Icons.task_alt_rounded,
+          false,
+          () => {textoVentana = 1, context.read<Ventanas>().emergente(true)},
+          size: 35,
+        ),
         Container(
-          width: MediaQuery.of(context).size.width * .875,
+          width: MediaQuery.of(context).size.width * .775,
           margin: EdgeInsets.symmetric(vertical: 10),
           child: Consumer2<Tablas, CampoTexto>(
             builder: (context, tablas, campoTexto, child) {
@@ -324,6 +386,13 @@ class _ESPState extends State<ESP> {
   }
 
   ListView listaPrincipal(List lista, ScrollController controller) {
+    if (controllerEnt.isEmpty || controllerSal.isEmpty) {
+      int len = 0;
+      for (var prod in lista) {
+        if (prod.id > len) len = prod.id;
+      }
+      listas(len);
+    }
     return ListView.separated(
       controller: controller,
       itemCount: lista.length,
@@ -346,7 +415,7 @@ class _ESPState extends State<ESP> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, .25, .08, .175, .15, .075, .075, .075],
+            [.1, .25, .075, .175, .15, .1, .1, .05],
             [
               "${lista[index].id}",
               lista[index].nombre,
@@ -357,21 +426,55 @@ class _ESPState extends State<ESP> {
                   : unidad,
               lista[index].area,
               lista[index].tipo,
-              (entrada.split('.').length > 1)
-                  ? (entrada.split('.')[1] == '0')
-                        ? entrada.split('.')[0]
-                        : entrada
-                  : entrada,
-              (salida.split('.').length > 1)
-                  ? (salida.split('.')[1] == '0')
-                        ? salida.split('.')[0]
-                        : salida
-                  : salida,
-              '${lista[index].perdidaCantidad.length}',
+              Consumer<Textos>(
+                builder: (context, textos, child) {
+                  return CampoTexto.inputTexto(
+                    MediaQuery.sizeOf(context).width * .1,
+                    '',
+                    entrada,
+                    controllerEnt[lista[index].id - 1],
+                    true,
+                    false,
+                    () => {},
+                    borderColor: Color(0xFF8A03A9),
+                    formato: FilteringTextInputFormatter.allow(
+                      RegExp(r'(^\d*\.?\d{0,3})'),
+                    ),
+                    inputType: TextInputType.numberWithOptions(decimal: true),
+                    fontSize: 17.5,
+                    align: TextAlign.center,
+                  );
+                },
+              ),
+              Consumer<Textos>(
+                builder: (context, textos, child) {
+                  return CampoTexto.inputTexto(
+                    MediaQuery.sizeOf(context).width * .1,
+                    '',
+                    salida,
+                    controllerSal[lista[index].id - 1],
+                    true,
+                    false,
+                    () => {},
+                    borderColor: Color(0xFF8A03A9),
+                    formato: FilteringTextInputFormatter.allow(
+                      RegExp(r'(^\d*\.?\d{0,3})'),
+                    ),
+                    inputType: TextInputType.numberWithOptions(decimal: true),
+                    fontSize: 17.5,
+                    align: TextAlign.center,
+                  );
+                },
+              ),
+              Botones.btnRctMor(
+                'Info. de ${lista[index].nombre}',
+                Icons.info_rounded,
+                false,
+                () async => await getProductoInfo(context, lista[index].id),
+              ),
             ],
             colores,
             2,
-            extra: () async => await getProductoInfo(context, lista[index].id),
           ),
         );
       },

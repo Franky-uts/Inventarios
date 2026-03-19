@@ -8,8 +8,10 @@ import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/botones.dart';
-import 'package:provider/provider.dart';
 import 'package:printing/printing.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:pdf/pdf.dart';
+import 'package:provider/provider.dart';
 import '../models/orden_model.dart';
 
 class Acc extends Intent {
@@ -32,9 +34,8 @@ class _OrdenesState extends State<Ordenes> {
   ];
   List canCubOrg = [];
   TextEditingController controller = TextEditingController();
-  String filtro = 'id', accion = '', titulo = '', btnNo = '', btnSi = '';
-  int id = 0;
-  List<Widget> wid = [];
+  String filtro = 'id', accion = '';
+  int id = 0, venNum = 0;
 
   @override
   void initState() {
@@ -45,7 +46,6 @@ class _OrdenesState extends State<Ordenes> {
   void dispose() {
     colores.clear();
     controller.dispose();
-    wid.clear();
     super.dispose();
   }
 
@@ -61,24 +61,7 @@ class _OrdenesState extends State<Ordenes> {
             if (ctx.mounted)
               {
                 canCubOrg.clear(),
-                ctx.read<VenDatos>().setDatos(
-                  orden.idProductos,
-                  orden.articulos,
-                  orden.cantidades,
-                  orden.areas,
-                  orden.tipos,
-                  orden.cantidadesCubiertas,
-                  orden.cantidadAlmacen,
-                  orden.comentariosTienda,
-                  orden.comentariosProveedor,
-                  orden.comentariosFinales,
-                  orden.confirmacion,
-                  '${orden.id}',
-                  orden.remitente,
-                  orden.estado,
-                  orden.ultimaModificacion,
-                  orden.locacion,
-                ),
+                ctx.read<VenDatos>().setDatos(orden),
                 Textos.crearLista(orden.cantArticulos, Color(0xFF8A03A9)),
                 canCubOrg.addAll(ctx.read<VenDatos>().canCubLista()),
                 ctx.read<Ventanas>().tabla(true),
@@ -89,10 +72,7 @@ class _OrdenesState extends State<Ordenes> {
   }
 
   void cambiarEstado(String accion) {
-    wid = [];
-    titulo = '¿Segur@ que quieres $accion la orden?';
-    btnNo = 'No, volver';
-    btnSi = 'Si, $accion';
+    venNum = 0;
     this.accion = accion;
     context.read<Ventanas>().emergente(true);
   }
@@ -114,52 +94,7 @@ class _OrdenesState extends State<Ordenes> {
     String comProv,
     String comFin,
   ) {
-    titulo = 'Comentarios de $nombre';
-    btnNo = 'Volver';
-    btnSi = 'Guardar';
     accion = 'confirmar';
-    wid = [
-      Textos.textoTilulo('Comentarios de la tienda:', 20),
-      Textos.textoGeneral(
-        comTienda,
-        true,
-        5,
-        size: 20,
-        alignment: TextAlign.center,
-      ),
-      if (estado == 'En proceso')
-        CampoTexto.inputTexto(
-          MediaQuery.sizeOf(context).width,
-          'Comentarios del Proveedor',
-          controller,
-          true,
-          false,
-          () => {},
-          icono: Icons.message_rounded,
-        ),
-      if (estado != 'En proceso')
-        Textos.textoTilulo('Comentarios del proveedor:', 20),
-      if (estado != 'En proceso')
-        Textos.textoGeneral(
-          comProv,
-          true,
-          5,
-          size: 20,
-          alignment: TextAlign.center,
-        ),
-      if (context.read<VenDatos>().est() == 'Finalizado' ||
-          context.read<VenDatos>().est() == 'Incompleto')
-        Textos.textoTilulo('Comentarios finales:', 20),
-      if (context.read<VenDatos>().est() == 'Finalizado' ||
-          context.read<VenDatos>().est() == 'Incompleto')
-        Textos.textoGeneral(
-          comFin,
-          true,
-          5,
-          size: 20,
-          alignment: TextAlign.center,
-        ),
-    ];
     controller.text = (estado == 'En proceso')
         ? (comProv == 'Sin comentarios')
               ? ''
@@ -231,10 +166,350 @@ class _OrdenesState extends State<Ordenes> {
     return datos;
   }
 
-  void imprimir(int id) async {
-    Printing.pickPrinter(context: context, title: 'hola');
-    //await Printing.directPrintPdf(printer: printer, onLayout: onLayout)
-    Textos.toast('prueba', true);
+  void imprimir(
+    BuildContext ctx,
+    List<String> tituloTexto,
+    OrdenModel orden,
+  ) async {
+    ctx.read<Carga>().cargaBool(true);
+    PdfPageFormat formato = PdfPageFormat.standard;
+    final doc = pw.Document();
+    List<pw.Widget> titulos = [];
+    List<pw.Widget> listaArticulos = [];
+    for (String titulo in tituloTexto) {
+      titulos.add(
+        pw.Text(
+          titulo,
+          textAlign: pw.TextAlign.center,
+          maxLines: 2,
+          style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+        ),
+      );
+    }
+    for (int i = 0; i < orden.cantArticulos; i++) {
+      listaArticulos.add(
+        pw.Column(
+          children: [
+            pw.Divider(height: 1, thickness: 1),
+            pw.Row(
+              mainAxisAlignment: pw.MainAxisAlignment.center,
+              crossAxisAlignment: pw.CrossAxisAlignment.center,
+              children: [
+                pw.Container(
+                  width: formato.availableWidth * .4,
+                  child: pw.Text(
+                    orden.articulos[i],
+                    textAlign: pw.TextAlign.start,
+                    style: pw.TextStyle(fontSize: 10),
+                  ),
+                ),
+                pw.Container(
+                  width: formato.availableWidth * .175,
+                  child: pw.Text(
+                    orden.tipos[i],
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(fontSize: 10),
+                  ),
+                ),
+                pw.Container(
+                  width: formato.availableWidth * .2,
+                  child: pw.Text(
+                    orden.areas[i],
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(fontSize: 10),
+                  ),
+                ),
+                pw.Container(
+                  width: formato.availableWidth * .1,
+                  child: pw.Text(
+                    '${orden.cantidades[i]}',
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(fontSize: 10),
+                  ),
+                ),
+                pw.Container(
+                  width: formato.availableWidth * .1,
+                  child: pw.Text(
+                    '[      ]',
+                    textAlign: pw.TextAlign.center,
+                    style: pw.TextStyle(fontSize: 10),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+      if (orden.comentariosTienda[i] != 'Sin comentarios') {
+        listaArticulos.add(
+          pw.Container(
+            width: formato.availableWidth * .9,
+            child: pw.Text(
+              'Comentario: ${orden.comentariosTienda[i]}',
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(fontSize: 10),
+            ),
+          ),
+        );
+      }
+    }
+    int cantPag =
+        ((listaArticulos.length - (listaArticulos.length / 55).floor() * 55) >
+            50)
+        ? (listaArticulos.length / 55).ceil() + 1
+        : (listaArticulos.length / 55).ceil();
+    for (int i = 0; i < (orden.cantArticulos / 55).ceil(); i++) {
+      doc.addPage(
+        pw.Page(
+          pageFormat: formato,
+          build: (pw.Context context) {
+            return pw.Stack(
+              children: [
+                pw.Container(
+                  width: formato.availableWidth,
+                  alignment: pw.Alignment.topCenter,
+                  child: pw.Column(
+                    mainAxisSize: pw.MainAxisSize.min,
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                    children: [
+                      pw.Row(
+                        mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                        children: titulos,
+                      ),
+                      pw.Column(
+                        children: [
+                          pw.Container(
+                            padding: pw.EdgeInsets.only(bottom: 5),
+                            child: pw.Row(
+                              mainAxisAlignment: pw.MainAxisAlignment.center,
+                              crossAxisAlignment: pw.CrossAxisAlignment.center,
+                              children: [
+                                pw.Container(
+                                  decoration: pw.BoxDecoration(
+                                    border: pw.Border.all(
+                                      color: PdfColor(0, 0, 0),
+                                      width: .5,
+                                    ),
+                                  ),
+                                  width: formato.availableWidth * .4,
+                                  child: pw.Text(
+                                    'Nombre del articulo',
+                                    textAlign: pw.TextAlign.center,
+                                    style: pw.TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                                pw.Container(
+                                  decoration: pw.BoxDecoration(
+                                    border: pw.Border.all(
+                                      color: PdfColor(0, 0, 0),
+                                      width: .5,
+                                    ),
+                                  ),
+                                  width: formato.availableWidth * .175,
+                                  child: pw.Text(
+                                    'Tipo',
+                                    textAlign: pw.TextAlign.center,
+                                    style: pw.TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                                pw.Container(
+                                  decoration: pw.BoxDecoration(
+                                    border: pw.Border.all(
+                                      color: PdfColor(0, 0, 0),
+                                      width: .5,
+                                    ),
+                                  ),
+                                  width: formato.availableWidth * .2,
+                                  child: pw.Text(
+                                    'Área',
+                                    textAlign: pw.TextAlign.center,
+                                    style: pw.TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                                pw.Container(
+                                  decoration: pw.BoxDecoration(
+                                    border: pw.Border.all(
+                                      color: PdfColor(0, 0, 0),
+                                      width: .5,
+                                    ),
+                                  ),
+                                  width: formato.availableWidth * .1,
+                                  child: pw.Text(
+                                    'Cantidad',
+                                    textAlign: pw.TextAlign.center,
+                                    style: pw.TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                                pw.Container(
+                                  decoration: pw.BoxDecoration(
+                                    border: pw.Border.all(
+                                      color: PdfColor(0, 0, 0),
+                                      width: .5,
+                                    ),
+                                  ),
+                                  width: formato.availableWidth * .1,
+                                  child: pw.Text(
+                                    'Conf.',
+                                    textAlign: pw.TextAlign.center,
+                                    style: pw.TextStyle(fontSize: 10),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          pw.Column(
+                            children: listaArticulos.sublist(
+                              i * 55,
+                              (i != (listaArticulos.length / 55).ceil() - 1)
+                                  ? ((i + 1) * 55)
+                                  : listaArticulos.length,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (i == (listaArticulos.length / 55).ceil() - 1)
+                        pw.Container(
+                          padding: pw.EdgeInsets.only(top: 50),
+                          child: pw.Row(
+                            mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                            children: [
+                              pw.Column(
+                                children: [
+                                  pw.Text(
+                                    '____________________________________',
+                                    textAlign: pw.TextAlign.center,
+                                    maxLines: 1,
+                                    style: pw.TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: pw.FontWeight.bold,
+                                    ),
+                                  ),
+                                  pw.Text(
+                                    'Almacen',
+                                    textAlign: pw.TextAlign.center,
+                                    maxLines: 2,
+                                    style: pw.TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                              pw.Column(
+                                children: [
+                                  pw.Text(
+                                    '____________________________________',
+                                    textAlign: pw.TextAlign.center,
+                                    maxLines: 1,
+                                    style: pw.TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: pw.FontWeight.bold,
+                                    ),
+                                  ),
+                                  pw.Text(
+                                    'Empleado',
+                                    textAlign: pw.TextAlign.center,
+                                    maxLines: 1,
+                                    style: pw.TextStyle(fontSize: 10),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                pw.Container(
+                  width: formato.availableWidth,
+                  height: formato.availableHeight,
+                  alignment: pw.Alignment.bottomRight,
+                  child: pw.Text(
+                    '${i + 1} de $cantPag',
+                    textAlign: pw.TextAlign.end,
+                    maxLines: 1,
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    }
+    if ((listaArticulos.length - (listaArticulos.length / 55).floor() * 55) >
+        50) {
+      doc.addPage(
+        pw.Page(
+          pageFormat: formato,
+          build: (pw.Context context) {
+            return pw.Stack(
+              children: [
+                pw.Container(
+                  padding: pw.EdgeInsets.only(top: 30),
+                  child: pw.Row(
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                    children: [
+                      pw.Column(
+                        children: [
+                          pw.Text(
+                            '____________________________________',
+                            textAlign: pw.TextAlign.center,
+                            maxLines: 1,
+                            style: pw.TextStyle(
+                              fontSize: 10,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.Text(
+                            'Almacen',
+                            textAlign: pw.TextAlign.center,
+                            maxLines: 2,
+                            style: pw.TextStyle(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                      pw.Column(
+                        children: [
+                          pw.Text(
+                            '____________________________________',
+                            textAlign: pw.TextAlign.center,
+                            maxLines: 1,
+                            style: pw.TextStyle(
+                              fontSize: 10,
+                              fontWeight: pw.FontWeight.bold,
+                            ),
+                          ),
+                          pw.Text(
+                            'Empleado',
+                            textAlign: pw.TextAlign.center,
+                            maxLines: 1,
+                            style: pw.TextStyle(fontSize: 10),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                pw.Container(
+                  width: formato.availableWidth,
+                  height: formato.availableHeight,
+                  alignment: pw.Alignment.bottomRight,
+                  child: pw.Text(
+                    '$cantPag de $cantPag',
+                    textAlign: pw.TextAlign.end,
+                    maxLines: 1,
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      );
+    }
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => doc.save(),
+    ).whenComplete(() {
+      if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+    });
   }
 
   Future<void> filtroTexto(int valor) async {
@@ -319,7 +594,7 @@ class _OrdenesState extends State<Ordenes> {
                               'Estado',
                               'Remitente',
                               'Locacion',
-                              'Última modificación',
+                              'Ordenado el:',
                             ],
                           ),
                           SizedBox(
@@ -353,11 +628,6 @@ class _OrdenesState extends State<Ordenes> {
                       'Id de la orden: ${venDatos.id()}',
                       'Estado: ${venDatos.est()}',
                     ],
-                    [
-                      'Locación: ${venDatos.loc()}',
-                      'Remitente: ${venDatos.rem()}',
-                      'Última modificación: ${venDatos.mod()}',
-                    ],
                     Tablas.contenedorInfo(
                       MediaQuery.sizeOf(context).width,
                       [.1, .25, .1, .125, .1, .155, .045, .045],
@@ -372,80 +642,234 @@ class _OrdenesState extends State<Ordenes> {
                         '☑️',
                       ],
                     ),
-                    ListView.separated(
-                      itemCount: venDatos.length(),
-                      scrollDirection: Axis.vertical,
-                      separatorBuilder: (context, index) => Container(
-                        height: 2,
-                        decoration: BoxDecoration(color: Color(0xFFFDC930)),
-                      ),
-                      itemBuilder: (context, index) {
-                        String cantidad = '${venDatos.can(index)}';
-                        return SingleChildScrollView(
-                          child: Container(
-                            width: MediaQuery.sizeOf(context).width,
-                            height: 40,
-                            decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-                            child: Tablas.barraDatos(
-                              MediaQuery.sizeOf(context).width,
-                              [.1, .25, .1, .125, .1, .245],
-                              [
-                                '${venDatos.idArt(index)}',
-                                venDatos.art(index),
-                                venDatos.tip(index),
-                                venDatos.are(index),
-                                cantidad.split('.').length > 1
-                                    ? cantidad.split('.')[1] == '0'
-                                          ? cantidad.split('.')[0]
-                                          : cantidad
-                                    : cantidad,
-                                '',
-                              ],
-                              [],
-                              1,
-                              extraWid: botones(index),
+                    SizedBox(
+                      height: MediaQuery.sizeOf(context).height-240,
+                      child: ListView.separated(
+                        itemCount: venDatos.length(),
+                        scrollDirection: Axis.vertical,
+                        separatorBuilder: (context, index) => Container(
+                          height: 2,
+                          decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                        ),
+                        itemBuilder: (context, index) {
+                          String cantidad = '${venDatos.can(index)}';
+                          return SingleChildScrollView(
+                            child: Container(
+                              width: MediaQuery.sizeOf(context).width,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFFFFFF),
+                              ),
+                              child: Tablas.barraDatos(
+                                MediaQuery.sizeOf(context).width,
+                                [.1, .25, .1, .125, .1, .155, .045, .045],
+                                [
+                                  '${venDatos.idArt(index)}',
+                                  venDatos.art(index),
+                                  venDatos.tip(index),
+                                  venDatos.are(index),
+                                  cantidad.split('.').length > 1
+                                      ? cantidad.split('.')[1] == '0'
+                                            ? cantidad.split('.')[0]
+                                            : cantidad
+                                      : cantidad,
+                                  Consumer2<Textos, VenDatos>(
+                                    builder:
+                                        (context, textos, venDatos, child) {
+                                          return SizedBox(
+                                            width:
+                                                MediaQuery.sizeOf(
+                                                  context,
+                                                ).width *
+                                                .155,
+                                            child: Botones.botonesSumaResta(
+                                              venDatos.art(index),
+                                              venDatos.canCub(index),
+                                              Textos.getColor(index),
+                                              () => {
+                                                if (venDatos.est() ==
+                                                    'En proceso')
+                                                  {
+                                                    textos.setColor(
+                                                      index,
+                                                      Color(0xFFFF0000),
+                                                    ),
+                                                    if (venDatos.canCub(index) >
+                                                        0)
+                                                      {
+                                                        textos.setColor(
+                                                          index,
+                                                          Color(0xFF8A03A9),
+                                                        ),
+                                                        context
+                                                            .read<VenDatos>()
+                                                            .canCubSub(index),
+                                                      },
+                                                  },
+                                              },
+                                              () => {
+                                                if (venDatos.canCub(index) <
+                                                        venDatos.can(index) &&
+                                                    venDatos.est() ==
+                                                        'En proceso')
+                                                  {
+                                                    textos.setColor(
+                                                      index,
+                                                      Color(0xFF8A03A9),
+                                                    ),
+                                                    venDatos.canCubAdd(index),
+                                                  },
+                                              },
+                                            ),
+                                          );
+                                        },
+                                  ),
+                                  Consumer<VenDatos>(
+                                    builder: (context, venDatos, child) {
+                                      return SizedBox(
+                                        width:
+                                            MediaQuery.sizeOf(context).width *
+                                            .045,
+                                        child: Botones.btnRctMor(
+                                          'Ver comentarios',
+                                          Icons.comment_rounded,
+                                          false,
+                                          () => {
+                                            id = index,
+                                            verComentarios(
+                                              venDatos.art(index),
+                                              venDatos.est(),
+                                              venDatos.comTienda(index),
+                                              venDatos.comProv(index),
+                                              venDatos.comFin(index),
+                                            ),
+                                          },
+                                          alert:
+                                              venDatos.comTienda(index) !=
+                                                  'Sin comentarios' ||
+                                              venDatos.comFin(index) !=
+                                                  'Sin comentarios',
+                                          size: 20,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  Consumer<VenDatos>(
+                                    builder: (context, venDatos, child) {
+                                      return SizedBox(
+                                        width:
+                                            MediaQuery.sizeOf(context).width *
+                                            .045,
+                                        child: Botones.btnRctMor(
+                                          'Confirmar',
+                                          venDatos.comfProd(index)
+                                              ? Icons.check_box_rounded
+                                              : Icons
+                                                    .check_box_outline_blank_rounded,
+                                          false,
+                                          () => {},
+                                          size: 20,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                                [],
+                                1,
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                    [
-                      /*if (venDatos.est() == 'En proceso')
-                        Botones.btnCirRos(
-                          'Imprimir',
-                          () => imprimir(
-                            int.parse(context.read<VenDatos>().id()),
-                          ),
-                        ),*/
-                      Botones.btnCirRos(
-                        'Cerrar',
-                        () => context.read<Ventanas>().tabla(false),
+                          );
+                        },
                       ),
-                      if (venDatos.est() == 'En proceso')
-                        Botones.btnCirRos(
-                          'Guardar',
-                          () => guardar(context.read<VenDatos>().canCubLista()),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Column(
+                          children: [
+                            Textos.textoGeneral(
+                              'Destino: ${venDatos.loc()}',
+                              false,
+                              1,
+                              alignment: TextAlign.center,
+                            ),
+                            Textos.textoGeneral(
+                              'Remitente: ${venDatos.rem()}',
+                              false,
+                              1,
+                              alignment: TextAlign.center,
+                            ),
+                            Textos.textoGeneral(
+                              'Última modificación: ${venDatos.mod()}',
+                              false,
+                              1,
+                              alignment: TextAlign.center,
+                            ),
+                          ],
                         ),
-                      if (venDatos.est() == 'En proceso')
-                        Botones.btnCirRos(
-                          'Denegar',
-                          () => cambiarEstado('denegar'),
+                        Column(
+                          spacing: 7.5,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Row(
+                              spacing: 7.5,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Botones.btnCirRos(
+                                  'Imprimir',
+                                  () => imprimir(context, [
+                                    'Id de la orden: ${venDatos.id()}',
+                                    'Pide: ${venDatos.loc()}',
+                                    'Para: ${venDatos.rem()}',
+                                    'Fecha: ${venDatos.mod().split(' ')[0]}',
+                                  ], venDatos.getDatos()),
+                                ),
+                                Botones.btnCirRos(
+                                  'Cerrar',
+                                  () => context.read<Ventanas>().tabla(false),
+                                ),
+                                if (venDatos.est() == 'En proceso')
+                                  Botones.btnCirRos(
+                                    'Guardar',
+                                    () => guardar(
+                                      context.read<VenDatos>().canCubLista(),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            if (venDatos.est() == 'En proceso')
+                              Row(
+                                spacing: 7.5,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Botones.btnCirRos(
+                                    'Denegar',
+                                    () => cambiarEstado('denegar'),
+                                  ),
+
+                                  Botones.btnCirRos(
+                                    'Entregar',
+                                    () => cambiarEstado('entregar'),
+                                  ),
+                                ],
+                              ),
+                          ],
                         ),
-                      if (venDatos.est() == 'En proceso')
-                        Botones.btnCirRos(
-                          'Entregar',
-                          () => cambiarEstado('entregar'),
-                        ),
-                    ],
+                      ],
+                    ),
                   );
                 },
               ),
               Consumer4<Ventanas, Carga, VenDatos, Tablas>(
                 builder: (context, ventana, carga, venDatos, tablas, child) {
                   return Ventanas.ventanaEmergente(
-                    titulo,
-                    btnNo,
-                    btnSi,
+                    [
+                      '¿Segur@ que quieres $accion la orden?',
+                      'Comentarios de ${id != 0 ? venDatos.art(id) : ''}',
+                    ][venNum],
+                    ['No, volver', 'Volver'][venNum],
+                    ['Si, $accion', 'Guardar'][venNum],
                     () => ventana.emergente(false),
                     () async => {
                       ventana.emergente(false),
@@ -456,7 +880,63 @@ class _OrdenesState extends State<Ordenes> {
                         accion == 'guardar' || accion == 'confirmar',
                       ),
                     },
-                    widget: Column(children: wid),
+                    widget: (venNum == 1)
+                        ? Column(
+                            children: [
+                              Textos.textoTilulo(
+                                'Comentarios de la tienda:',
+                                20,
+                              ),
+                              Textos.textoGeneral(
+                                venDatos.comTienda(id),
+                                true,
+                                5,
+                                size: 20,
+                                alignment: TextAlign.center,
+                              ),
+                              if (venDatos.est() == 'En proceso')
+                                CampoTexto.inputTexto(
+                                  MediaQuery.sizeOf(context).width,
+                                  'Comentarios del Proveedor',
+                                  '',
+                                  controller,
+                                  true,
+                                  false,
+                                  () => {},
+                                  icono: Icons.message_rounded,
+                                ),
+                              if (venDatos.est() != 'En proceso')
+                                Textos.textoTilulo(
+                                  'Comentarios del proveedor:',
+                                  20,
+                                ),
+                              if (venDatos.est() != 'En proceso')
+                                Textos.textoGeneral(
+                                  venDatos.comProv(id),
+                                  true,
+                                  5,
+                                  size: 20,
+                                  alignment: TextAlign.center,
+                                ),
+                              if (context.read<VenDatos>().est() ==
+                                      'Finalizado' ||
+                                  context.read<VenDatos>().est() ==
+                                      'Incompleto')
+                                Textos.textoTilulo('Comentarios finales:', 20),
+                              if (context.read<VenDatos>().est() ==
+                                      'Finalizado' ||
+                                  context.read<VenDatos>().est() ==
+                                      'Incompleto')
+                                Textos.textoGeneral(
+                                  venDatos.comFin(id),
+                                  true,
+                                  5,
+                                  size: 20,
+                                  alignment: TextAlign.center,
+                                ),
+                            ],
+                          )
+                        : null,
                   );
                 },
               ),
@@ -509,84 +989,6 @@ class _OrdenesState extends State<Ordenes> {
     );
   }
 
-  SizedBox botones(int index) {
-    return SizedBox(
-      width: MediaQuery.sizeOf(context).width * .245,
-      child: Consumer2<Textos, VenDatos>(
-        builder: (context, textos, venDatos, child) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: MediaQuery.sizeOf(context).width * .155,
-                child: Botones.botonesSumaResta(
-                  venDatos.art(index),
-                  venDatos.canCub(index),
-                  Textos.getColor(index),
-                  () => {
-                    if (venDatos.est() == 'En proceso')
-                      {
-                        textos.setColor(index, Color(0xFFFF0000)),
-                        if (venDatos.canCub(index) > 0)
-                          {
-                            textos.setColor(index, Color(0xFF8A03A9)),
-                            context.read<VenDatos>().canCubSub(index),
-                          },
-                      },
-                  },
-                  () => {
-                    if (venDatos.canCub(index) < venDatos.can(index) &&
-                        venDatos.est() == 'En proceso')
-                      {
-                        textos.setColor(index, Color(0xFFFF0000)),
-                        if (venDatos.canAlm(index) - 1 >= 0)
-                          {
-                            textos.setColor(index, Color(0xFF8A03A9)),
-                            venDatos.canCubAdd(index),
-                          },
-                      },
-                  },
-                ),
-              ),
-              SizedBox(
-                width: MediaQuery.sizeOf(context).width * .045,
-                child: Botones.btnRctMor(
-                  'Ver comentarios',
-                  Icons.comment_rounded,
-                  false,
-                  () => {
-                    id = index,
-                    verComentarios(
-                      venDatos.art(index),
-                      venDatos.est(),
-                      venDatos.comTienda(index),
-                      venDatos.comProv(index),
-                      venDatos.comFin(index),
-                    ),
-                  },
-                  size: 20,
-                ),
-              ),
-              SizedBox(
-                width: MediaQuery.sizeOf(context).width * .045,
-                child: Botones.btnRctMor(
-                  'Confirmar',
-                  venDatos.comfProd(index)
-                      ? Icons.check_box_rounded
-                      : Icons.check_box_outline_blank_rounded,
-                  false,
-                  () => {},
-                  size: 20,
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
   ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
       controller: controller,
@@ -614,7 +1016,7 @@ class _OrdenesState extends State<Ordenes> {
                   lista[index].estado,
                   lista[index].remitente,
                   lista[index].locacion,
-                  lista[index].ultimaModificacion,
+                  lista[index].fechaOrden,
                 ],
                 coloresLista,
                 1,

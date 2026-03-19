@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
@@ -22,30 +21,21 @@ class Inicio extends StatefulWidget {
 class _InicioState extends State<Inicio> {
   late UsuarioModel usuarioMod;
   bool verContr = true;
-  late List<TextEditingController> controller = [];
-  late List<FocusNode> focus = [];
-  late List<Color> color = [];
-  String ip = (LocalStorage.preferencias.getString('conexion') == null)
-      ? '189.187.125.214'
-      : LocalStorage.local(
-          'conexion',
-        ).substring(7, LocalStorage.local('conexion').length - 5);
+  late List<TextEditingController> controller = [
+    TextEditingController(),
+    TextEditingController(),
+  ];
+  late FocusNode focus = FocusNode();
+  late List<Color> color = [Color(0x00FFFFFF), Color(0x00FFFFFF)];
 
   @override
   void initState() {
-    for (int i = 0; i < 6; i++) {
-      controller.add(TextEditingController());
-      focus.add(FocusNode());
-      color.add(Color(0x00FFFFFF));
-    }
-    setIp();
     super.initState();
   }
 
   @override
   void dispose() {
     controller.clear();
-    focus.clear();
     color.clear();
     super.dispose();
   }
@@ -70,11 +60,9 @@ class _InicioState extends State<Inicio> {
       usuarioMod = await UsuarioModel.getUsuario(
         controller[0].text,
         controller[1].text,
-        ip,
       );
       mensaje = usuarioMod.puesto;
       if (usuarioMod.nombre != 'error') {
-        await LocalStorage.set('conexion', 'http://$ip:3000');
         mensaje = '';
         if (usuarioMod.puesto == 'El usuario no existe') {
           setState(() {
@@ -125,81 +113,6 @@ class _InicioState extends State<Inicio> {
     }
   }
 
-  void setIp() {
-    List<String> texto = ip.split('.');
-    for (int i = 0; i < 4; i++) {
-      controller[i + 2].text = texto[i];
-    }
-  }
-
-  void clearColoresIp() {
-    for (int i = 0; i < 4; i++) {
-      setState(() {
-        color[i + 2] = Color(0x00FFFFFF);
-      });
-    }
-  }
-
-  void cambiarIp() {
-    bool valido = true;
-    String texto = '';
-    clearColoresIp();
-    for (int i = 0; i < 4; i++) {
-      texto = '$texto${controller[i + 2].text}.';
-      if (controller[i + 2].text.isEmpty ||
-          int.parse(controller[i + 2].text) > 255) {
-        valido = false;
-        setState(() {
-          color[i + 2] = Color(0xFFFF0000);
-        });
-      }
-    }
-    if (valido) {
-      ip = texto.substring(0, texto.length - 1);
-      Textos.toast('Se cambio la ip a: $ip', true);
-      setIp();
-      context.read<Ventanas>().emergente(false);
-    }
-  }
-
-  List<Widget> ipCampos() {
-    List<Widget> lista = [];
-    for (int i = 0; i < 3; i++) {
-      lista.add(
-        CampoTexto.inputTexto(
-          MediaQuery.of(context).size.width * .125,
-          '',
-          controller[i + 2],
-          true,
-          false,
-          () => focus[i + 3].requestFocus(),
-          errorColor: color[i + 2],
-          focus: focus[i + 2],
-          formato: LengthLimitingTextInputFormatter(3),
-          inputType: TextInputType.numberWithOptions(),
-          align: TextAlign.center,
-        ),
-      );
-      lista.add(Textos.textoTilulo('.', 20));
-    }
-    lista.add(
-      CampoTexto.inputTexto(
-        MediaQuery.of(context).size.width * .125,
-        '',
-        controller[5],
-        true,
-        false,
-        () => cambiarIp(),
-        focus: focus[5],
-        errorColor: color[5],
-        formato: LengthLimitingTextInputFormatter(3),
-        inputType: TextInputType.numberWithOptions(),
-        align: TextAlign.center,
-      ),
-    );
-    return lista;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -230,10 +143,11 @@ class _InicioState extends State<Inicio> {
                     CampoTexto.inputTexto(
                       MediaQuery.of(context).size.width * .75,
                       'Usuario',
+                      '',
                       controller[0],
                       true,
                       false,
-                      () => focus[1].requestFocus(),
+                      () => focus.requestFocus(),
                       icono: Icons.person_rounded,
                       errorColor: color[0],
                     ),
@@ -244,13 +158,14 @@ class _InicioState extends State<Inicio> {
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * (.75 * .925),
                           'Contraseña',
+                          '',
                           controller[1],
                           true,
                           verContr,
                           () => verificar(context),
                           icono: Icons.lock_rounded,
                           errorColor: color[1],
-                          focus: focus[1],
+                          focus: focus,
                         ),
                         SizedBox(
                           width:
@@ -277,35 +192,6 @@ class _InicioState extends State<Inicio> {
                     ),
                   ],
                 ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.all(10),
-              alignment: Alignment.topLeft,
-              child: Botones.btnRctMor(
-                'Ajustes',
-                Icons.settings,
-                false,
-                () => setState(() {
-                  context.read<Ventanas>().emergente(true);
-                }),
-                size: 35,
-              ),
-            ),
-            Ventanas.ventanaEmergente(
-              'Cambio de dirección ip',
-              'Cancelar',
-              'Guardar',
-              () => setState(() {
-                clearColoresIp();
-                setIp();
-                context.read<Ventanas>().emergente(false);
-              }),
-              () => cambiarIp(),
-              widget: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 5,
-                children: ipCampos(),
               ),
             ),
             Carga.ventanaCarga(),

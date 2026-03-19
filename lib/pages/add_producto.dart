@@ -143,6 +143,7 @@ class _AddproductoState extends State<AddProducto> {
                             CampoTexto.inputTexto(
                               MediaQuery.of(context).size.width * .365,
                               'Tipo',
+                              '',
                               control[1],
                               false,
                               false,
@@ -153,6 +154,7 @@ class _AddproductoState extends State<AddProducto> {
                             CampoTexto.inputTexto(
                               MediaQuery.of(context).size.width * .365,
                               'Cantidad por unidad',
+                              '',
                               control[2],
                               false,
                               false,
@@ -165,6 +167,7 @@ class _AddproductoState extends State<AddProducto> {
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75,
                           'Limite minimo de productos',
+                          '',
                           control[0],
                           true,
                           false,

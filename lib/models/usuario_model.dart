@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:inventarios/main.dart';
 import 'dart:convert';
 
 import 'package:inventarios/services/local_storage.dart';
@@ -16,15 +17,11 @@ class UsuarioModel {
     required this.locacion,
   });
 
-  static Future<UsuarioModel> getUsuario(
-    String usuario,
-    String contr,
-    String ip,
-  ) async {
+  static Future<UsuarioModel> getUsuario(String usuario, String contr) async {
     UsuarioModel usuarioFuture;
     try {
       final res = await http.get(
-        Uri.parse('http://$ip:3000/usuarios/$usuario/$contr'),
+        Uri.parse('${MyApp.url}:3000/usuarios/$usuario/$contr'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -73,12 +70,12 @@ class UsuarioModel {
 
   static Future<String> cambiarInfo(String columna, String dato) async {
     String mensaje = '';
-    String conexion = LocalStorage.local('conexion');
     String usuario = LocalStorage.local('usuario');
     try {
       final res = await http.put(
-        Uri.parse('$conexion/usuarios/$usuario/$columna'),
+        Uri.parse('${MyApp.url}:3000/usuarios/$usuario/$columna'),
         headers: {
+          "Access-Control-Allow-Origin": "*",
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
         },

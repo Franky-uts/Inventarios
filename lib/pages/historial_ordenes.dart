@@ -26,9 +26,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     Color(0xFFFFFFFF),
   ];
   TextEditingController controller = TextEditingController();
-  String titulo = '', btnNo = '', btnSi = '', datos = '';
-  List<Widget> wid = [];
-  late int indexComentario;
+  int venNum = 0;
+  String datos = '';
+  int? indexComentario;
 
   @override
   void initState() {
@@ -37,7 +37,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
 
   @override
   void dispose() {
-    wid.clear();
     colores.clear();
     super.dispose();
   }
@@ -52,24 +51,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         ? {
             if (ctx.mounted)
               {
-                ctx.read<VenDatos>().setDatos(
-                  orden.idProductos,
-                  orden.articulos,
-                  orden.cantidades,
-                  orden.areas,
-                  orden.tipos,
-                  orden.cantidadesCubiertas,
-                  orden.cantidadAlmacen,
-                  orden.comentariosTienda,
-                  orden.comentariosProveedor,
-                  orden.comentariosFinales,
-                  orden.confirmacion,
-                  '${orden.id}',
-                  orden.remitente,
-                  orden.estado,
-                  orden.ultimaModificacion,
-                  orden.locacion,
-                ),
+                ctx.read<VenDatos>().setDatos(orden),
                 ctx.read<Ventanas>().tabla(true),
               },
           }
@@ -78,7 +60,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   }
 
   Future<void> filtroTexto(int valor) async {
-    colores = List.filled(3, Color(0xFFFFFFFF));
+    colores = List.filled(3, Color(0xFFFFFFFF),growable: true);
     colores[valor] = Color(0xFF8A03A9);
     switch (valor) {
       case (0):
@@ -96,11 +78,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     switch (context.read<VenDatos>().est()) {
       case ('En proceso'):
         mensaje = '';
-        titulo = '¿Segur@ que quieres cancelar la orden?';
-        btnNo = 'No, volver';
-        btnSi = 'Si, cancelalo';
+        venNum = 0;
         datos = 'Cancelado';
-        wid = [];
         context.read<Ventanas>().emergente(true);
         break;
       case ('Cancelado'):
@@ -118,64 +97,13 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     for (bool obj in lista) {
       if (!obj) datos = 'Incompleto';
     }
-    titulo = '¿Segur@ que ya marcaste todos los productos que recibiste?';
-    btnNo = 'No, volver';
-    btnSi = 'Si, confirmo';
-    wid = [];
+    venNum = 1;
     context.read<Ventanas>().emergente(true);
   }
 
-  void verComentarios(
-    String nombre,
-    String comTienda,
-    String comProv,
-    String comFin,
-    int index,
-  ) {
-    titulo = 'Comentarios de $nombre';
-    btnNo = 'Cerrar';
-    btnSi = 'Confirmar';
+  void verComentarios(String comFin, int index) {
     indexComentario = index;
-    wid = [
-      Textos.textoTilulo('Comentarios de la tienda:', 20),
-      Textos.textoGeneral(
-        comTienda,
-        true,
-        5,
-        size: 20,
-        alignment: TextAlign.center,
-      ),
-      Textos.textoTilulo('Comentarios del almacenista:', 20),
-      Textos.textoGeneral(
-        comProv,
-        true,
-        5,
-        size: 20,
-        alignment: TextAlign.center,
-      ),
-      if (context.read<VenDatos>().est() == 'Entregado')
-        CampoTexto.inputTexto(
-          MediaQuery.sizeOf(context).width,
-          'Comentarios finales:',
-          controller,
-          true,
-          false,
-          () => guardarComentario(context),
-          icono: Icons.message_rounded,
-        ),
-      if (context.read<VenDatos>().est() == 'Finalizado' ||
-          context.read<VenDatos>().est() == 'Incompleto')
-        Textos.textoTilulo('Comentarios finales:', 20),
-      if (context.read<VenDatos>().est() == 'Finalizado' ||
-          context.read<VenDatos>().est() == 'Incompleto')
-        Textos.textoGeneral(
-          comFin,
-          true,
-          5,
-          size: 20,
-          alignment: TextAlign.center,
-        ),
-    ];
+    venNum = 2;
     controller.text = (context.read<VenDatos>().est() == 'Entregado')
         ? (comFin == 'Sin comentarios')
               ? ''
@@ -188,9 +116,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     String datos;
     List<String> listaDatos = [];
     ctx.read<Carga>().cargaBool(true);
-    if (controller.text != ctx.read<VenDatos>().comFin(indexComentario)) {
+    if (controller.text != ctx.read<VenDatos>().comFin(indexComentario!)) {
       ctx.read<Ventanas>().emergente(false);
-      ctx.read<VenDatos>().setComFin(indexComentario, controller.text);
+      ctx.read<VenDatos>().setComFin(indexComentario!, controller.text);
       for (int i = 0; i < ctx.read<VenDatos>().length(); i++) {
         String texto = "'${ctx.read<VenDatos>().comFin(i)}'";
         if (ctx.read<VenDatos>().comProv(i).isEmpty) {
@@ -268,7 +196,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                       'Art. ordenados',
                       'Estado',
                       'Remitente',
-                      'Última modificación',
+                      'Ordenado el:',
                     ],
                   ),
                   SizedBox(
@@ -292,29 +220,12 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
             ),
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
-                List<Widget> botones = [
-                  Botones.btnCirRos('Cerrar', () => ventana.tabla(false)),
-                  Botones.btnCirRos('Cancelar', () => cambiarEstado()),
-                ];
-                if (venDatos.est() == 'Entregado') {
-                  botones.add(
-                    Botones.btnCirRos(
-                      'Confirmar',
-                      () => confirmarEntragas(venDatos.comfProdLista()),
-                    ),
-                  );
-                }
                 return Ventanas.ventanaTabla(
                   MediaQuery.of(context).size.height,
                   MediaQuery.of(context).size.width,
                   [
                     'Id de la orden: ${venDatos.id()}',
                     'Estado: ${venDatos.est()}',
-                  ],
-                  [
-                    'Destino: ${venDatos.loc()}',
-                    'Remitente: ${venDatos.rem()}',
-                    'Última modificación: ${venDatos.mod()}',
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
@@ -330,103 +241,140 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                       '☑️',
                     ],
                   ),
-                  ListView.separated(
-                    itemCount: venDatos.length(),
-                    scrollDirection: Axis.vertical,
-                    separatorBuilder: (context, index) => Container(
-                      height: 2,
-                      decoration: BoxDecoration(color: Color(0xFFFDC930)),
-                    ),
-                    itemBuilder: (context, index) {
-                      String cantidad = '${venDatos.can(index)}';
-                      return Container(
-                        width: MediaQuery.sizeOf(context).width,
-                        decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-                        child: Tablas.barraDatos(
-                          MediaQuery.sizeOf(context).width,
-                          [.05, .225, .15, .1, .125, .115, .09],
-                          [
-                            '${venDatos.idArt(index)}',
-                            venDatos.art(index),
-                            venDatos.are(index),
-                            venDatos.tip(index),
-                            cantidad.split('.').length > 1
-                                ? cantidad.split('.')[1] == '0'
-                                      ? cantidad.split('.')[0]
-                                      : cantidad
-                                : cantidad,
-                            '${venDatos.canCub(index)}',
-                            '',
-                          ],
-                          [],
-                          2,
-                          extraWid: SizedBox(
-                            width: MediaQuery.sizeOf(context).width * .09,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                SizedBox(
-                                  width:
-                                      MediaQuery.sizeOf(context).width * .045,
-                                  child: Botones.btnRctMor(
-                                    'Ver comentarios ${venDatos.art(index)}',
-                                    Icons.comment_rounded,
-                                    false,
-                                    alert:
-                                        venDatos.comTienda(index) !=
-                                            'Sin comentarios' ||
-                                        venDatos.comProv(index) !=
-                                            'Sin comentarios' ||
-                                        venDatos.comFin(index) !=
-                                            'Sin comentarios',
-                                    () => verComentarios(
-                                      venDatos.art(index),
-                                      venDatos.comTienda(index),
-                                      venDatos.comProv(index),
-                                      venDatos.comFin(index),
-                                      index,
-                                    ),
+                  SizedBox(
+                    height: MediaQuery.sizeOf(context).height-220,
+                    child: ListView.separated(
+                      itemCount: venDatos.length(),
+                      scrollDirection: Axis.vertical,
+                      separatorBuilder: (context, index) => Container(
+                        height: 2,
+                        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                      ),
+                      itemBuilder: (context, index) {
+                        String cantidad = '${venDatos.can(index)}';
+                        return Container(
+                          width: MediaQuery.sizeOf(context).width,
+                          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+                          child: Tablas.barraDatos(
+                            MediaQuery.sizeOf(context).width,
+                            [.05, .225, .15, .1, .125, .115, .045, .045],
+                            [
+                              '${venDatos.idArt(index)}',
+                              venDatos.art(index),
+                              venDatos.are(index),
+                              venDatos.tip(index),
+                              cantidad.split('.').length > 1
+                                  ? cantidad.split('.')[1] == '0'
+                                        ? cantidad.split('.')[0]
+                                        : cantidad
+                                  : cantidad,
+                              '${venDatos.canCub(index)}',
+                              SizedBox(
+                                width: MediaQuery.sizeOf(context).width * .045,
+                                child: Botones.btnRctMor(
+                                  'Ver comentarios ${venDatos.art(index)}',
+                                  Icons.comment_rounded,
+                                  false,
+                                  alert:
+                                      venDatos.comTienda(index) !=
+                                          'Sin comentarios' ||
+                                      venDatos.comProv(index) !=
+                                          'Sin comentarios' ||
+                                      venDatos.comFin(index) !=
+                                          'Sin comentarios',
+                                  () => verComentarios(
+                                    venDatos.comFin(index),
+                                    index,
+                                  ),
 
-                                    size: 20,
-                                  ),
+                                  size: 20,
                                 ),
-                                SizedBox(
-                                  width:
-                                      MediaQuery.sizeOf(context).width * .045,
-                                  child: Botones.btnRctMor(
-                                    'Confirmar ${venDatos.art(index)}',
-                                    venDatos.comfProd(index)
-                                        ? Icons.check_box_rounded
-                                        : Icons.check_box_outline_blank_rounded,
-                                    false,
-                                    () => {
-                                      if (venDatos.est() == 'Entregado')
-                                        venDatos.setComfProd(index),
-                                    },
-                                    size: 20,
-                                  ),
+                              ),
+                              SizedBox(
+                                width: MediaQuery.sizeOf(context).width * .045,
+                                child: Botones.btnRctMor(
+                                  'Confirmar ${venDatos.art(index)}',
+                                  venDatos.comfProd(index)
+                                      ? Icons.check_box_rounded
+                                      : Icons.check_box_outline_blank_rounded,
+                                  false,
+                                  () => {
+                                    if (venDatos.est() == 'Entregado')
+                                      venDatos.setComfProd(index),
+                                  },
+                                  size: 20,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
+                            [],
+                            2,
                           ),
-                        ),
-                      );
-                    },
+                        );
+                      },
+                    ),
                   ),
-                  botones,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Column(
+                        children: [
+                          Textos.textoGeneral(
+                            'Destino: ${venDatos.loc()}',
+                            false,
+                            1,
+                            alignment: TextAlign.center,
+                          ),
+                          Textos.textoGeneral(
+                            'Remitente: ${venDatos.rem()}',
+                            false,
+                            1,
+                            alignment: TextAlign.center,
+                          ),
+                          Textos.textoGeneral(
+                            'Última modificación: ${venDatos.mod()}',
+                            false,
+                            1,
+                            alignment: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                      Row(
+                        spacing: 7.5,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Botones.btnCirRos(
+                            'Cerrar',
+                            () => ventana.tabla(false),
+                          ),
+                          Botones.btnCirRos('Cancelar', () => cambiarEstado()),
+                          if (venDatos.est() == 'Entregado')
+                            Botones.btnCirRos(
+                              'Confirmar',
+                              () => confirmarEntragas(venDatos.comfProdLista()),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
                 );
               },
             ),
             Consumer3<Ventanas, Carga, VenDatos>(
               builder: (context, ventana, carga, venDatos, child) {
                 return Ventanas.ventanaEmergente(
-                  titulo,
-                  btnNo,
-                  btnSi,
+                  [
+                    '¿Segur@ que quieres cancelar la orden?',
+                    '¿Segur@ que ya marcaste todos los productos que recibiste?',
+                    indexComentario != null
+                        ? 'Comentarios de ${venDatos.art(indexComentario!)}'
+                        : '',
+                  ][venNum],
+                  ['No, volver', 'No, volver', 'Cerrar'][venNum],
+                  ['Si, cancelalo', 'Si, confirmo', 'Confirmar'][venNum],
                   () => ventana.emergente(false),
                   () async => {
-                    if (btnSi != 'Confirmar')
+                    if (venNum != 2)
                       {
                         carga.cargaBool(true),
                         ventana.tabla(false),
@@ -458,7 +406,62 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                           guardarComentario(context),
                       },
                   },
-                  widget: Column(children: wid),
+                  widget: (venNum == 2)
+                      ? Column(
+                          children: [
+                            Textos.textoTilulo('Comentarios de la tienda:', 20),
+                            Textos.textoGeneral(
+                              indexComentario != null
+                                  ? venDatos.comTienda(indexComentario!)
+                                  : '',
+                              true,
+                              5,
+                              size: 20,
+                              alignment: TextAlign.center,
+                            ),
+                            Textos.textoTilulo(
+                              'Comentarios del almacenista:',
+                              20,
+                            ),
+                            Textos.textoGeneral(
+                              indexComentario != null
+                                  ? venDatos.comProv(indexComentario!)
+                                  : '',
+                              true,
+                              5,
+                              size: 20,
+                              alignment: TextAlign.center,
+                            ),
+                            if (context.read<VenDatos>().est() == 'Entregado')
+                              CampoTexto.inputTexto(
+                                MediaQuery.sizeOf(context).width,
+                                'Comentarios finales:',
+                                '',
+                                controller,
+                                true,
+                                false,
+                                () => guardarComentario(context),
+                                icono: Icons.message_rounded,
+                              ),
+                            if (context.read<VenDatos>().est() ==
+                                    'Finalizado' ||
+                                context.read<VenDatos>().est() == 'Incompleto')
+                              Textos.textoTilulo('Comentarios finales:', 20),
+                            if (context.read<VenDatos>().est() ==
+                                    'Finalizado' ||
+                                context.read<VenDatos>().est() == 'Incompleto')
+                              Textos.textoGeneral(
+                                indexComentario != null
+                                    ? venDatos.comFin(indexComentario!)
+                                    : '',
+                                true,
+                                5,
+                                size: 20,
+                                alignment: TextAlign.center,
+                              ),
+                          ],
+                        )
+                      : null,
                 );
               },
             ),
@@ -546,7 +549,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               '${lista[index].cantArticulos}',
               lista[index].estado,
               lista[index].remitente,
-              lista[index].ultimaModificacion,
+              lista[index].fechaOrden,
             ],
             coloresLista,
             1,

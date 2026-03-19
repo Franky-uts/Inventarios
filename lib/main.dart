@@ -6,6 +6,8 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/ven_datos.dart';
+import 'package:inventarios/pages/articulo.dart';
+import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/views/empleado.dart';
 import 'package:inventarios/pages/inicio.dart';
 import 'package:inventarios/services/local_storage.dart';
@@ -30,6 +32,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => CampoTexto()),
         ChangeNotifierProvider(create: (_) => Textos()),
         ChangeNotifierProvider(create: (_) => VenDatos()),
+        ChangeNotifierProvider(create: (_) => Producto()),
+        ChangeNotifierProvider(create: (_) => Articulo()),
       ],
       child: MyApp(),
     ),
@@ -39,9 +43,16 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static String url = 'http://tocumbo-server.ddns.net';
+  //static String url = 'http://localhost';
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(debugShowCheckedModeBanner: false, home: ruta());
+    return MaterialApp(
+      title: 'Inventarios',
+      debugShowCheckedModeBanner: false,
+      home: ruta(),
+    );
   }
 
   Widget ruta() {

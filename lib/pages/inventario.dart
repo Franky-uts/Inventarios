@@ -20,9 +20,7 @@ class Inventario extends StatefulWidget {
 
 class _InventarioState extends State<Inventario> {
   List<TextEditingController> controllerUni = [];
-  List<TextEditingController> controllerPie = [];
-  List<Color> colorUni = [];
-  List<Color> colorPie = [];
+  int textoVentana = 0;
 
   Future<List<ProductoModel>> getProductos(
     String filtro,
@@ -30,12 +28,37 @@ class _InventarioState extends State<Inventario> {
   ) async => await ProductoModel.getProductos(filtro, busqueda);
 
   void listas(int length) {
-    for (int i = 0; i < length; i++) {
-      colorUni.add(Color(0xFF8A03A9));
-      colorPie.add(Color(0xFF8A03A9));
-      controllerUni.add(TextEditingController(text: '0'));
-      controllerPie.add(TextEditingController(text: '0'));
+    List<String> unidades = (LocalStorage.localLista('unidades') != null)
+        ? LocalStorage.localLista('unidades')!
+        : List.filled(length, '', growable: true);
+    for (String cantidad in unidades) {
+      controllerUni.add(TextEditingController(text: cantidad));
     }
+  }
+
+  void guardarregistro(BuildContext ctx) {
+    List<String> unidades = [];
+    for (TextEditingController controller in controllerUni) {
+      unidades.add(controller.text);
+    }
+    LocalStorage.setLista('unidades', unidades);
+    Textos.toast('Se guardo el reporte correctamente', true);
+  }
+
+  void enviarRegistro(BuildContext ctx) async {
+    List<ProductoModel> listaProductos = await getProductos('id', '');
+    List<double> unidades = [];
+    for (ProductoModel producto in listaProductos) {
+      String uni = controllerUni[producto.id - 1].text;
+      controllerUni[producto.id - 1].text = '';
+      (uni.isNotEmpty)
+          ? (uni.split('.').length < 2)
+                ? unidades.add(double.parse('$uni.0'))
+                : unidades.add(double.parse(uni))
+          : unidades.add(0.0);
+    }
+    LocalStorage.eliminar('unidades');
+    Textos.toast('Se envio el reporte correctamente', true);
   }
 
   @override
@@ -60,6 +83,49 @@ class _InventarioState extends State<Inventario> {
               );
             },
           ),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              'Reiniciar registro',
+              Icons.refresh_rounded,
+              () => {
+                Navigator.of(context).pop(),
+                textoVentana = 0,
+                context.read<Ventanas>().emergente(true),
+              },
+              () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
+              Carga.getValido(),
+            );
+          },
+        ),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              'Añadir un producto',
+              Icons.edit_note_rounded,
+              () async => {
+                carga.cargaBool(true),
+                await RecDrawer.getListas(context),
+              },
+              () => Textos.toast('Espera a que los datos carguen.', false),
+              false,
+              Carga.getValido(),
+            );
+          },
+        ),
+        Consumer<Carga>(
+          builder: (ctx, carga, child) {
+            return Botones.icoCirMor(
+              'Guardar información',
+              Icons.save_rounded,
+              () => guardarregistro(ctx),
+              () => Textos.toast('Espera a que los datos carguen.', false),
+              true,
+              Carga.getValido(),
+            );
+          },
+        ),
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -75,19 +141,8 @@ class _InventarioState extends State<Inventario> {
                     barraSuperior(context),
                     Tablas.contenedorInfo(
                       MediaQuery.sizeOf(context).width,
-                      [.1, .275, .175, .17, .135, .135],
-                      [
-                        'id',
-                        'Nombre',
-                        //'Unidades',
-                        'Área',
-                        'Tipo',
-                        //'Entrada',
-                        //'Salida',
-                        //'Perdida',
-                        'Unidades/Kilos',
-                        'Piezas/Gramos',
-                      ],
+                      [.1, .3, .2, .2, .15],
+                      ['id', 'Nombre', 'Área', 'Tipo', 'Unidades/Kilos'],
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -130,6 +185,31 @@ class _InventarioState extends State<Inventario> {
                   );
                 },
               ),
+            Consumer2<Ventanas, Carga>(
+              builder: (context, ventanas, carga, child) {
+                return Ventanas.ventanaEmergente(
+                  [
+                    '¿Seguro quieres comenzar de nuevo?',
+                    '¿Seguro quieres enviar el reporte? Una vez enviado, no se puede modificar.',
+                  ][textoVentana],
+                  'No, volver',
+                  'Si, continuar',
+                  () => ventanas.emergente(false),
+                  () async => {
+                    ventanas.emergente(false),
+                    carga.cargaBool(true),
+                    [
+                      () async => {
+                        for (int i = 0; i < controllerUni.length; i++)
+                          {controllerUni[i].text = ''},
+                      },
+                      () async => enviarRegistro(context),
+                    ][textoVentana],
+                    if (context.mounted) carga.cargaBool(false),
+                  },
+                );
+              },
+            ),
             Carga.ventanaCarga(),
           ],
         ),
@@ -150,10 +230,10 @@ class _InventarioState extends State<Inventario> {
           size: 35,
         ),
         Botones.btnRctMor(
-          'Registrar',
+          'Enviar',
           Icons.task_alt_rounded,
           false,
-          () => Scaffold.of(context).openDrawer(),
+          () => {textoVentana = 1, context.read<Ventanas>().emergente(true)},
           size: 35,
         ),
         Container(
@@ -181,7 +261,13 @@ class _InventarioState extends State<Inventario> {
   }
 
   ListView listaPrincipal(List lista, ScrollController controller) {
-    listas(lista.last.id);
+    if (controllerUni.isEmpty) {
+      int len = 0;
+      for (var prod in lista) {
+        if (prod.id > len) len = prod.id;
+      }
+      listas(len);
+    }
     return ListView.separated(
       controller: controller,
       itemCount: lista.length,
@@ -196,57 +282,35 @@ class _InventarioState extends State<Inventario> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, .275, .175, .17, .27],
+            [.1, .3, .2, .2, .15],
             [
               "${lista[index].id}",
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,
-              '',
+              Consumer<Textos>(
+                builder: (context, textos, child) {
+                  return CampoTexto.inputTexto(
+                    MediaQuery.sizeOf(context).width * .13,
+                    '',
+                    '0',
+                    controllerUni[lista[index].id - 1],
+                    true,
+                    false,
+                    () => {},
+                    borderColor: Color(0xFF8A03A9),
+                    formato: FilteringTextInputFormatter.allow(
+                      RegExp(r'(^\d*\.?\d{0,3})'),
+                    ),
+                    inputType: TextInputType.numberWithOptions(decimal: true),
+                    fontSize: 17.5,
+                    align: TextAlign.center,
+                  );
+                },
+              ),
             ],
             [],
             2,
-            extraWid: Consumer<Textos>(
-              builder: (context, textos, child) {
-                return Row(
-                  children: [
-                    CampoTexto.inputTexto(
-                      MediaQuery.sizeOf(context).width * .135,
-                      '',
-                      controllerUni[lista[index].id - 1],
-                      true,
-                      false,
-                      () => {},
-                      borderColor: colorUni[lista[index].id],
-                      formato: FilteringTextInputFormatter.allow(
-                        RegExp(r'(^\d*\.?\d{0,3})'),
-                      ),
-                      inputType: TextInputType.numberWithOptions(decimal: true),
-                      fontSize: 17.5,
-                      align: TextAlign.center,
-                    ),
-                    CampoTexto.inputTexto(
-                      MediaQuery.sizeOf(context).width * .135,
-                      '',
-                      controllerPie[lista[index].id - 1],
-                      !(lista[index].tipo == 'Pieza' ||
-                          lista[index].tipo == 'Litro' ||
-                          lista[index].tipo == 'Galón'),
-                      false,
-                      () => {},
-                      borderColor: colorPie[lista[index].id],
-                      formato: FilteringTextInputFormatter.allow(
-                        RegExp(r'(^\d*\.?\d{0,3})'),
-                      ),
-                      inputType: TextInputType.numberWithOptions(decimal: true),
-                      fontSize: 17.5,
-                      align: TextAlign.center,
-                      disabledColor: Color(0xFF8A58A5),
-                    ),
-                  ],
-                );
-              },
-            ),
           ),
         );
       },

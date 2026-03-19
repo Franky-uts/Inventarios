@@ -229,6 +229,7 @@ class _AddproductoState extends State<Addarticulo> {
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .675,
                           'Nombre',
+                          '',
                           controller[0],
                           true,
                           false,
@@ -302,6 +303,7 @@ class _AddproductoState extends State<Addarticulo> {
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .365,
                           'Cantidad por unidades',
+                          '',
                           controller[1],
                           cantidad,
                           false,
@@ -319,6 +321,7 @@ class _AddproductoState extends State<Addarticulo> {
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .365,
                           'Precio',
+                          '',
                           controller[3],
                           true,
                           false,
@@ -342,6 +345,7 @@ class _AddproductoState extends State<Addarticulo> {
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75 * .925,
                           'Codigo de barras',
+                          '',
                           controller[2],
                           false,
                           false,
@@ -376,6 +380,7 @@ class _AddproductoState extends State<Addarticulo> {
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaScan(
                   context,
+                  () => ventanas.scan(false),
                   (texto) => scanCod(context, texto),
                 );
               },

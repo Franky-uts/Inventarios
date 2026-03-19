@@ -31,24 +31,10 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.of(ctx).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      Producto(productoInfo: producto),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                    return SlideTransition(
-                      position: animation.drive(
-                        Tween(
-                          begin: Offset(1.0, 0.0),
-                          end: Offset.zero,
-                        ).chain(CurveTween(curve: Curves.ease)),
-                      ),
-                      child: child,
-                    );
-                  },
-                ),
-              ),
+              {
+                ctx.read<Producto>().setProducto(producto),
+                ctx.read<Producto>().producto(true),
+              },
           }
         : Textos.toast(producto.mensaje, true);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
@@ -254,11 +240,14 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaScan(
                   context,
-                  (texto) => RecDrawer.rutaProducto(
-                    texto,
-                    context,
-                  ),
+                  () => ventanas.scan(false),
+                  (texto) => RecDrawer.rutaProducto(texto, context),
                 );
+              },
+            ),
+            Consumer<Producto>(
+              builder: (context, producto, child) {
+                return producto.productoInfo(context);
               },
             ),
             Carga.ventanaCarga(),

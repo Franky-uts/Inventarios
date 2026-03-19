@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:inventarios/main.dart';
 import 'dart:convert';
 import '../services/local_storage.dart';
 
@@ -29,7 +30,7 @@ class ArticulosModel {
 
   static List<String> getInventarios() => [
     'Árbol Grande',
-    'Bicentenario'
+    'Bicentenario',
     'Café',
     'Cedis',
     'Faja de Oro',
@@ -55,7 +56,6 @@ class ArticulosModel {
     String filtro,
     String busqueda,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     List<ArticulosModel> articulosFuture = [];
     if (locacion.isEmpty || locacion == 'null') {
@@ -63,7 +63,7 @@ class ArticulosModel {
     } else {
       try {
         var res = await http.get(
-          Uri.parse('$conexion/articulos/$filtro/$busqueda'),
+          Uri.parse('${MyApp.url}:3000/articulos/$filtro/$busqueda'),
           headers: {
             'Accept': 'application/json',
             'content-type': 'application/json; charset=UTF-8',
@@ -103,11 +103,10 @@ class ArticulosModel {
   }
 
   static Future<ArticulosModel> getArticulo(int id) async {
-    String conexion = LocalStorage.local('conexion');
     ArticulosModel articulo;
     try {
       var res = await http.get(
-        Uri.parse('$conexion/articulos/Articulo/$id'),
+        Uri.parse('${MyApp.url}:3000/articulos/Articulo/$id'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -154,7 +153,7 @@ class ArticulosModel {
     late String articulosFuture;
     try {
       final res = await http.post(
-        Uri.parse('${LocalStorage.local('conexion')}/articulos'),
+        Uri.parse('${MyApp.url}:3000/articulos'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -190,7 +189,7 @@ class ArticulosModel {
     late String articulosFuture;
     try {
       final res = await http.put(
-        Uri.parse('${LocalStorage.local('conexion')}/articulos/$id'),
+        Uri.parse('${MyApp.url}:3000/articulos/$id'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:inventarios/main.dart';
 import 'dart:convert';
 import '../services/local_storage.dart';
 
@@ -11,7 +12,6 @@ class OrdenModel {
   List<String> tipos;
   List<String> areas;
   List<int> cantidadesCubiertas;
-  List<double> cantidadAlmacen;
   List<String> comentariosTienda;
   List<String> comentariosProveedor;
   List<String> comentariosFinales;
@@ -20,6 +20,7 @@ class OrdenModel {
   int cantArticulos;
   String estado;
   String remitente;
+  String fechaOrden;
   String ultimaModificacion;
   String locacion;
   String mensaje;
@@ -31,7 +32,6 @@ class OrdenModel {
     required this.tipos,
     required this.areas,
     required this.cantidadesCubiertas,
-    required this.cantidadAlmacen,
     required this.comentariosProveedor,
     required this.comentariosFinales,
     required this.comentariosTienda,
@@ -40,6 +40,7 @@ class OrdenModel {
     required this.cantArticulos,
     required this.estado,
     required this.remitente,
+    required this.fechaOrden,
     required this.ultimaModificacion,
     required this.locacion,
     required this.mensaje,
@@ -53,7 +54,6 @@ class OrdenModel {
       tipos: [],
       areas: [],
       cantidadesCubiertas: [],
-      cantidadAlmacen: [],
       comentariosProveedor: [],
       comentariosTienda: [],
       comentariosFinales: [],
@@ -62,6 +62,7 @@ class OrdenModel {
       cantArticulos: 0,
       estado: '',
       remitente: '',
+      fechaOrden: '',
       ultimaModificacion: '',
       locacion: '',
       mensaje: mensaje,
@@ -72,11 +73,10 @@ class OrdenModel {
     String filtro,
     String locacion,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     List<OrdenModel> ordenesFuture = [];
     try {
       var res = await http.get(
-        Uri.parse('$conexion/ordenes/$filtro/$locacion'),
+        Uri.parse('${MyApp.url}:3000/ordenes/$filtro/$locacion'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -93,7 +93,6 @@ class OrdenModel {
               tipos: [],
               areas: [],
               cantidadesCubiertas: [],
-              cantidadAlmacen: [],
               comentariosProveedor: [],
               comentariosTienda: [],
               comentariosFinales: [],
@@ -102,6 +101,7 @@ class OrdenModel {
               cantArticulos: item['CantArticulos'],
               estado: item['Estado'],
               remitente: item['Remitente'],
+              fechaOrden: item['FechaOrden'],
               ultimaModificacion: item['UltimaModificación'],
               locacion: '',
               mensaje: '',
@@ -124,11 +124,10 @@ class OrdenModel {
   }
 
   static Future<List<OrdenModel>> getAllOrdenes(String filtro) async {
-    String conexion = LocalStorage.local('conexion');
     List<OrdenModel> ordenesFuture = [];
     try {
       var res = await http.get(
-        Uri.parse('$conexion/ordenes/$filtro'),
+        Uri.parse('${MyApp.url}:3000/ordenes/$filtro'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -145,7 +144,6 @@ class OrdenModel {
               tipos: [],
               areas: [],
               cantidadesCubiertas: [],
-              cantidadAlmacen: [],
               comentariosProveedor: [],
               comentariosTienda: [],
               comentariosFinales: [],
@@ -154,6 +152,7 @@ class OrdenModel {
               cantArticulos: item['CantArticulos'],
               estado: item['Estado'],
               remitente: item['Remitente'],
+              fechaOrden: item['FechaOrden'],
               ultimaModificacion: item['UltimaModificación'],
               locacion: item['Locacion'],
               mensaje: '',
@@ -176,11 +175,10 @@ class OrdenModel {
   }
 
   static Future<OrdenModel> getOrden(int id) async {
-    String conexion = LocalStorage.local('conexion');
     OrdenModel orden;
     try {
       var res = await http.get(
-        Uri.parse('$conexion/ordenes/Orden/$id'),
+        Uri.parse('${MyApp.url}:3000/ordenes/Orden/$id'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -190,13 +188,37 @@ class OrdenModel {
       orden = dummy(res.body);
       if (res.statusCode == 200) {
         for (var item in datos) {
-          List<double> doublelist = [];
-          for (double cantidad in item['CantidadAlmacen']) {
-            String dob = '$cantidad';
-            if (dob.split('.').length < 2) {
-              dob = '$dob.0';
-            }
-            doublelist.add(double.parse(dob));
+          List<OrdenListas> listas = [];
+          for (int i = 0; i < item['CantArticulos']; i++) {
+            listas.add(
+              OrdenListas(
+                art: item['Articulos'][i],
+                cant: item['Cantidades'][i],
+                tipo: item['Tipos'][i],
+                area: item['Areas'][i],
+                cantCub: item['CantidadesCubiertas'][i],
+                comTienda: item['ComentariosTienda'][i],
+                comProv: item['ComentariosProveedor'][i],
+                comFin: item['ComentariosFinales'][i],
+                conf: item['Confirmacion'][i],
+                id: item['idProductos'][i],
+              ),
+            );
+          }
+          listas.sort((a, b) {
+            return a.art.toLowerCase().compareTo(b.art.toLowerCase());
+          });
+          for (int i = 0; i < item['CantArticulos']; i++) {
+            item['Articulos'][i] = listas[i].art;
+            item['Cantidades'][i] = listas[i].cant;
+            item['Tipos'][i] = listas[i].tipo;
+            item['Areas'][i] = listas[i].area;
+            item['CantidadesCubiertas'][i] = listas[i].cantCub;
+            item['ComentariosTienda'][i] = listas[i].comTienda;
+            item['ComentariosProveedor'][i] = listas[i].comProv;
+            item['ComentariosFinales'][i] = listas[i].comFin;
+            item['Confirmacion'][i] = listas[i].conf;
+            item['idProductos'][i] = listas[i].id;
           }
           orden = OrdenModel(
             id: item['id'],
@@ -205,7 +227,6 @@ class OrdenModel {
             tipos: List<String>.from(item['Tipos']),
             areas: List<String>.from(item['Areas']),
             cantidadesCubiertas: List<int>.from(item['CantidadesCubiertas']),
-            cantidadAlmacen: doublelist,
             comentariosTienda: List<String>.from(item['ComentariosTienda']),
             comentariosProveedor: List<String>.from(
               item['ComentariosProveedor'],
@@ -216,6 +237,7 @@ class OrdenModel {
             cantArticulos: item['CantArticulos'],
             estado: item['Estado'],
             remitente: item['Remitente'],
+            fechaOrden: item['FechaOrden'],
             ultimaModificacion: item['UltimaModificación'],
             locacion: item['Locacion'],
             mensaje: '',
@@ -243,7 +265,7 @@ class OrdenModel {
     String productoFuture = '';
     try {
       final res = await http.post(
-        Uri.parse('${LocalStorage.local('conexion')}/ordenes/'),
+        Uri.parse('${MyApp.url}:3000/ordenes/'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -275,7 +297,7 @@ class OrdenModel {
     }
     try {
       final res = await http.put(
-        Uri.parse('${LocalStorage.local('conexion')}/ordenes/$id/$columna'),
+        Uri.parse('${MyApp.url}:3000/ordenes/$id/$columna'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -303,7 +325,7 @@ class OrdenModel {
     String respuesta = '';
     try {
       final res = await http.put(
-        Uri.parse('${LocalStorage.local('conexion')}/ordenes/$id/confirmacion'),
+        Uri.parse('${MyApp.url}:3000/ordenes/$id/confirmacion'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -322,4 +344,30 @@ class OrdenModel {
     }
     return respuesta;
   }
+}
+
+class OrdenListas {
+  String art;
+  int cant;
+  String tipo;
+  String area;
+  int cantCub;
+  String comTienda;
+  String comProv;
+  String comFin;
+  bool conf;
+  int id;
+
+  OrdenListas({
+    required this.art,
+    required this.cant,
+    required this.tipo,
+    required this.area,
+    required this.cantCub,
+    required this.comTienda,
+    required this.comProv,
+    required this.comFin,
+    required this.conf,
+    required this.id,
+  });
 }

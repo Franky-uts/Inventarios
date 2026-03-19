@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
+import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/pages/articulos.dart';
 import 'package:inventarios/pages/historial.dart';
 import 'package:inventarios/pages/esp.dart';
@@ -26,13 +27,14 @@ class _ProveedorState extends State<Proveedor> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: Consumer<Carga>(
-        builder: (ctx, carga, child) {
+      bottomNavigationBar: Consumer2<Carga,Ventanas>(
+        builder: (ctx, carga, ventanas, child) {
           return NavigationBar(
             height: 55,
             onDestinationSelected: (int index) async {
+              carga.cargaBool(true);
+              ventanas.cerrarVentanas();
               if (Carga.getValido()) {
-                carga.cargaBool(true);
                 setState(() {
                   currentPage = index;
                 });

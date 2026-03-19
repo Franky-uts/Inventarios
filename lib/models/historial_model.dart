@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:inventarios/main.dart';
 import 'package:inventarios/services/local_storage.dart';
 
 class HistorialModel {
@@ -62,14 +63,13 @@ class HistorialModel {
     String filtro,
     String busqueda,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     List<HistorialModel> historialFuture = [];
     if (locacion.isEmpty || locacion == 'null') {
       historialFuture.add(dummy('No hay locación establecida'));
     } else {
       try {
-        String url = '$conexion/historial/$locacion/$filtro';
+        String url = '${MyApp.url}:3000/historial/$locacion/$filtro';
         if (fechaInicial.isNotEmpty) url = '$url/$fechaInicial/$fechaFinal';
         url = '$url/$busqueda';
         var res = await http.get(
@@ -121,12 +121,13 @@ class HistorialModel {
     String fechaInicial,
     String fechaFinal,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     List<HistorialModel> historialFuture = [];
     try {
       var res = await http.get(
-        Uri.parse('$conexion/historial/$locacion/id/$fechaInicial/$fechaFinal'),
+        Uri.parse(
+          '${MyApp.url}:3000/historial/$locacion/id/$fechaInicial/$fechaFinal',
+        ),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -173,13 +174,12 @@ class HistorialModel {
     String fechaInicial,
     String fechaFinal,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     List<HistorialModel> historialFuture = [];
     try {
       var res = await http.get(
         Uri.parse(
-          '$conexion/historial/$locacion/Fecha/$fechaInicial/$fechaFinal',
+          '${MyApp.url}:3000/historial/$locacion/Fecha/$fechaInicial/$fechaFinal',
         ),
         headers: {
           'Accept': 'application/json',
@@ -254,12 +254,11 @@ class HistorialModel {
   }
 
   static Future<HistorialModel> getHistorialDatos(int id, String fecha) async {
-    String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     HistorialModel historial;
     try {
       var res = await http.get(
-        Uri.parse('$conexion/historial/Historial/$locacion/$id/$fecha'),
+        Uri.parse('${MyApp.url}:3000/historial/Historial/$locacion/$id/$fecha'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -303,12 +302,11 @@ class HistorialModel {
     int id,
     String fecha,
   ) async {
-    String conexion = LocalStorage.local('conexion');
     String locacion = LocalStorage.local('locación');
     List<HistorialModel> historial;
     try {
       var res = await http.get(
-        Uri.parse('$conexion/historial/Historial/$locacion/$id/$fecha'),
+        Uri.parse('${MyApp.url}:3000/historial/Historial/$locacion/$id/$fecha'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',

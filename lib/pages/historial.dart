@@ -20,7 +20,7 @@ class Historial extends StatefulWidget {
 }
 
 class _HistorialState extends State<Historial> {
-  bool reporte = false;
+  bool reporte = false, registros = false;
   String fecIni = '';
   String fecFin = '';
   List<TextEditingController> fecIniCont = [
@@ -312,6 +312,7 @@ class _HistorialState extends State<Historial> {
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
                             'Dia',
+                            '',
                             fecIniCont[0],
                             true,
                             false,
@@ -322,6 +323,7 @@ class _HistorialState extends State<Historial> {
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
                             'Mes',
+                            '',
                             fecIniCont[1],
                             true,
                             false,
@@ -333,6 +335,7 @@ class _HistorialState extends State<Historial> {
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
                             'Año',
+                            '',
                             fecIniCont[2],
                             true,
                             false,
@@ -357,6 +360,7 @@ class _HistorialState extends State<Historial> {
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
                             'Dia',
+                            '',
                             fecFinCont[0],
                             true,
                             false,
@@ -368,6 +372,7 @@ class _HistorialState extends State<Historial> {
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
                             'Mes',
+                            '',
                             fecFinCont[1],
                             true,
                             false,
@@ -379,6 +384,7 @@ class _HistorialState extends State<Historial> {
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
                             'Año',
+                            '',
                             fecFinCont[2],
                             true,
                             false,
@@ -437,6 +443,19 @@ class _HistorialState extends State<Historial> {
             ),
           },
           size: 35,
+        ),
+        Consumer<Tablas>(
+          builder: (context, tablas, child) {
+            return Botones.btnRctMor(
+              (registros) ? 'Ver movimientos' : 'Ver registros',
+              (registros)
+                  ? Icons.checklist_rtl_rounded
+                  : Icons.inventory_rounded,
+              false,
+              () => {registros = !registros},
+              size: 35,
+            );
+          },
         ),
         Container(
           width: MediaQuery.of(context).size.width * .7,

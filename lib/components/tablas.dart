@@ -142,23 +142,22 @@ class Tablas with ChangeNotifier {
   static Widget barraDatos(
     double grosor,
     List<double> grosores,
-    List<String> textos,
+    List info,
     List<Color> colores,
     int maxLines, {
     Function? extra,
-    Widget? extraWid,
   }) {
     List<Widget> lista = [];
-    for (int i = 0; i < textos.length; i++) {
+    for (int i = 0; i < info.length; i++) {
       lista.add(
-        textos[i].isEmpty
-            ? SizedBox(width: grosor * grosores[i], child: extraWid!)
-            : _barraDato(
+        info[i].runtimeType == String
+            ? _barraDato(
                 grosor * grosores[i],
-                textos[i],
+                info[i],
                 colores.isNotEmpty ? colores[i] : Colors.transparent,
                 maxLines,
-              ),
+              )
+            : SizedBox(width: grosor * grosores[i], child: info[i]),
       );
       lista.add(_divider());
     }
@@ -168,7 +167,7 @@ class Tablas with ChangeNotifier {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: lista,
     );
-    if (extra!=null) {
+    if (extra != null) {
       wid = TextButton(
         onPressed: () => extra(),
         style: TextButton.styleFrom(
