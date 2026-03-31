@@ -53,25 +53,45 @@ class _ESPState extends State<ESP> {
 
   void enviarMovimientos(BuildContext ctx) async {
     List<ProductoModel> listaProductos = await getProductos('id', '');
+    List<int> idProductos = [];
     List<double> entradas = [];
     List<double> salidas = [];
-    for (ProductoModel producto in listaProductos) {
-      String ent = controllerEnt[producto.id - 1].text;
-      String sal = controllerSal[producto.id - 1].text;
-      controllerEnt[producto.id - 1].text = '';
-      controllerSal[producto.id - 1].text = '';
-      (ent.isNotEmpty)
-          ? (ent.split('.').length < 2)
-                ? entradas.add(double.parse('$ent.0'))
-                : entradas.add(double.parse(ent))
-          : entradas.add(0.0);
-      (sal.isNotEmpty)
-          ? (sal.split('.').length < 2)
-                ? salidas.add(double.parse('$sal.0'))
-                : salidas.add(double.parse(sal))
-          : salidas.add(0.0);
+    for (ProductoModel prod in listaProductos) {
+      String ent = controllerEnt[prod.id - 1].text;
+      String sal = controllerSal[prod.id - 1].text;
+      if (ent.isNotEmpty) {
+        (ent.split('.').length < 2)
+            ? entradas.add(double.parse('$ent.0'))
+            : entradas.add(double.parse(ent));
+        if (sal.isEmpty) {
+          entradas.add(0.0);
+        }
+      }
+      if (sal.isNotEmpty) {
+        (sal.split('.').length < 2)
+            ? salidas.add(double.parse('$sal.0'))
+            : salidas.add(double.parse(sal));
+        if (ent.isEmpty) {
+          salidas.add(0.0);
+        }
+      }
+      if (ent.isNotEmpty || sal.isNotEmpty) {
+        idProductos.add(prod.id);
+      }
     }
-    LocalStorage.eliminar('unidades');
+    String mensaje = await ProductoModel.guardarESCompleto(
+      idProductos,
+      entradas,
+      salidas,
+    );
+    if (mensaje.split(':')[0] != 'Error') {
+      LocalStorage.eliminar('entradas');
+      LocalStorage.eliminar('salidas');
+      for (ProductoModel prod in listaProductos) {
+        controllerEnt[prod.id - 1].text = '';
+        controllerSal[prod.id - 1].text = '';
+      }
+    }
     Textos.toast('Se envio el reporte correctamente', true);
   }
 
@@ -224,7 +244,7 @@ class _ESPState extends State<ESP> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, .25, .075, .175, .15, .1, .1, .05],
+                          [.075, .25, .075, .175, .15, .1, .1, .075],
                           [
                             'id',
                             'Nombre',
@@ -238,7 +258,7 @@ class _ESPState extends State<ESP> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 144,
+                          height: MediaQuery.of(context).size.height - 143.5,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -267,7 +287,7 @@ class _ESPState extends State<ESP> {
             ),
             Consumer<Producto>(
               builder: (context, producto, child) {
-                return producto.productoInfo(context);
+                return producto.productoInfo();
               },
             ),
             Consumer2<Ventanas, Carga>(
@@ -343,45 +363,48 @@ class _ESPState extends State<ESP> {
   }
 
   Widget barraSuperior(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Botones.btnRctMor(
-          'Abrir menú',
-          Icons.menu_rounded,
-          false,
-          () => Scaffold.of(context).openDrawer(),
-          size: 35,
-        ),
-        Botones.btnRctMor(
-          'Enviar',
-          Icons.task_alt_rounded,
-          false,
-          () => {textoVentana = 1, context.read<Ventanas>().emergente(true)},
-          size: 35,
-        ),
-        Container(
-          width: MediaQuery.of(context).size.width * .775,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: Consumer2<Tablas, CampoTexto>(
-            builder: (context, tablas, campoTexto, child) {
-              return CampoTexto.barraBusqueda(
-                () async => {
-                  tablas.datos(
-                    await getProductos(
-                      CampoTexto.filtroTexto(),
-                      CampoTexto.busquedaTexto.text,
-                    ),
-                  ),
-                },
-                true,
-                false,
-              );
-            },
+    return SizedBox(
+      height: 70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Botones.btnRctMor(
+            'Abrir menú',
+            Icons.menu_rounded,
+            false,
+            () => Scaffold.of(context).openDrawer(),
+            size: 35,
           ),
-        ),
-      ],
+          Botones.btnRctMor(
+            'Enviar',
+            Icons.task_alt_rounded,
+            false,
+            () => {textoVentana = 1, context.read<Ventanas>().emergente(true)},
+            size: 35,
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width * .775,
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Consumer2<Tablas, CampoTexto>(
+              builder: (context, tablas, campoTexto, child) {
+                return CampoTexto.barraBusqueda(
+                  () async => {
+                    tablas.datos(
+                      await getProductos(
+                        CampoTexto.filtroTexto(),
+                        CampoTexto.busquedaTexto.text,
+                      ),
+                    ),
+                  },
+                  true,
+                  false,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -410,20 +433,25 @@ class _ESPState extends State<ESP> {
         String unidad = '${lista[index].unidades}';
         String entrada = '${lista[index].entrada}';
         String salida = '${lista[index].salida}';
+        if (unidad.split('.').length > 1) {
+          if (unidad.split('.')[1] == '0') unidad = unidad.split('.')[0];
+        }
+        if (entrada.split('.').length > 1) {
+          if (entrada.split('.')[1] == '0') entrada = entrada.split('.')[0];
+        }
+        if (salida.split('.').length > 1) {
+          if (salida.split('.')[1] == '0') salida = salida.split('.')[0];
+        }
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, .25, .075, .175, .15, .1, .1, .05],
+            [.075, .25, .075, .175, .15, .1, .1, .075],
             [
               "${lista[index].id}",
               lista[index].nombre,
-              (unidad.split('.').length > 1)
-                  ? (unidad.split('.')[1] == '0')
-                        ? unidad.split('.')[0]
-                        : unidad
-                  : unidad,
+              unidad,
               lista[index].area,
               lista[index].tipo,
               Consumer<Textos>(
@@ -435,7 +463,6 @@ class _ESPState extends State<ESP> {
                     controllerEnt[lista[index].id - 1],
                     true,
                     false,
-                    () => {},
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),
@@ -455,7 +482,6 @@ class _ESPState extends State<ESP> {
                     controllerSal[lista[index].id - 1],
                     true,
                     false,
-                    () => {},
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),

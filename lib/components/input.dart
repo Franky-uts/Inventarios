@@ -15,9 +15,10 @@ class CampoTexto with ChangeNotifier {
     String hint,
     TextEditingController controller,
     bool enabled,
-    bool password,
-    Function accion, {
+    bool password, {
     IconData? icono,
+    Function? accion,
+    Function? cambio,
     Color? borderColor,
     Color? errorColor,
     double? fontSize,
@@ -44,7 +45,8 @@ class CampoTexto with ChangeNotifier {
               extentOffset: controller.text.length,
             ),
         },
-        onSubmitted: (event) => accion(),
+        onSubmitted: (event) => accion?.call(),
+        onChanged: (event) => cambio?.call(),
         onTapOutside: (event) => FocusManager.instance.primaryFocus?.unfocus(),
         enabled: enabled,
         textAlign: align ?? TextAlign.start,

@@ -276,7 +276,7 @@ class Articulo extends ChangeNotifier {
                                   ],
                                 ),
                                 SizedBox(
-                                  height: _lista.length * 35,
+                                  height: _lista.length * 39,
                                   child: _lista.isNotEmpty
                                       ? listaPrincipal(_lista)
                                       : Carga.carga(),
@@ -343,7 +343,7 @@ class Articulo extends ChangeNotifier {
                   controller,
                   numVen != 0,
                   false,
-                  () => cambioColumna(context),
+                  accion: () => cambioColumna(context),
                   icono: Icons.mode_edit_outline_rounded,
                   errorColor: color,
                   formato: FilteringTextInputFormatter.allow(

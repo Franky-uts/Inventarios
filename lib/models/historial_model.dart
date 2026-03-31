@@ -253,7 +253,7 @@ class HistorialModel {
     return historialFuture;
   }
 
-  static Future<HistorialModel> getHistorialDatos(int id, String fecha) async {
+  static Future<HistorialModel> getHistorialInfo(int id, String fecha) async {
     String locacion = LocalStorage.local('locación');
     HistorialModel historial;
     try {
@@ -265,54 +265,6 @@ class HistorialModel {
         },
       );
       historial = dummy(res.body);
-      if (res.statusCode == 200) {
-        final datos = json.decode(res.body);
-        for (var item in datos) {
-          historial = HistorialModel(
-            id: item['id'],
-            fecha: item['Fecha'],
-            nombre: item['Nombre'],
-            area: item['Area'],
-            movimientos: item['Movimientos'],
-            unidades: [],
-            entradas: [],
-            salidas: [],
-            perdidas: [],
-            razones: [],
-            cantidades: [],
-            horasModificacion: [],
-            usuarioModificacion: [],
-            mensaje: '',
-          );
-        }
-      }
-    } on TimeoutException catch (e) {
-      historial = dummy('${e.message}');
-    } on SocketException catch (e) {
-      historial = dummy(e.message);
-    } on http.ClientException catch (e) {
-      historial = dummy(e.message);
-    } on Error catch (e) {
-      historial = dummy('$e');
-    }
-    return historial;
-  }
-
-  static Future<List<HistorialModel>> getHistorialInfo(
-    int id,
-    String fecha,
-  ) async {
-    String locacion = LocalStorage.local('locación');
-    List<HistorialModel> historial;
-    try {
-      var res = await http.get(
-        Uri.parse('${MyApp.url}:3000/historial/Historial/$locacion/$id/$fecha'),
-        headers: {
-          'Accept': 'application/json',
-          'content-type': 'application/json; charset=UTF-8',
-        },
-      );
-      historial = [dummy(res.body)];
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
@@ -344,36 +296,34 @@ class HistorialModel {
             entradaslist.add(double.parse(ent));
             salidaslist.add(double.parse(sal));
           }
-          historial = [
-            HistorialModel(
-              id: 0,
-              fecha: '',
-              nombre: '',
-              area: '',
-              movimientos: item['Movimientos'],
-              unidades: unidadeslist,
-              entradas: entradaslist,
-              salidas: salidaslist,
-              perdidas: List<int>.from(item['Perdidas']),
-              razones: List<String>.from(item['PerdidaRazon']),
-              cantidades: doublelist,
-              horasModificacion: List<String>.from(item['ModificacionHoras']),
-              usuarioModificacion: List<String>.from(
-                item['ModificacionUsuario'],
-              ),
-              mensaje: '',
+          historial = HistorialModel(
+            id: item['id'],
+            fecha: item['Fecha'],
+            nombre: item['Nombre'],
+            area: item['Area'],
+            movimientos: item['Movimientos'],
+            unidades: unidadeslist,
+            entradas: entradaslist,
+            salidas: salidaslist,
+            perdidas: List<int>.from(item['Perdidas']),
+            razones: List<String>.from(item['PerdidaRazon']),
+            cantidades: doublelist,
+            horasModificacion: List<String>.from(item['ModificacionHoras']),
+            usuarioModificacion: List<String>.from(
+              item['ModificacionUsuario'],
             ),
-          ];
+            mensaje: '',
+          );
         }
       }
     } on TimeoutException catch (e) {
-      historial = [dummy('${e.message}')];
+      historial = dummy('${e.message}');
     } on SocketException catch (e) {
-      historial = [dummy(e.message)];
+      historial = dummy(e.message);
     } on http.ClientException catch (e) {
-      historial = [dummy(e.message)];
+      historial = dummy(e.message);
     } on Error catch (e) {
-      historial = [dummy('$e')];
+      historial = dummy('$e');
     }
     return historial;
   }

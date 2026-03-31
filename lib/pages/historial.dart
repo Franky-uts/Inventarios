@@ -8,6 +8,7 @@ import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/historial_model.dart';
+import 'package:inventarios/models/registro_model.dart';
 import 'package:inventarios/pages/historial_info.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
@@ -41,42 +42,49 @@ class _HistorialState extends State<Historial> {
     FocusNode(),
   ];
 
-  Future<List<HistorialModel>> getHistorial(
-    String filtro,
-    String busqueda,
-  ) async =>
-      await HistorialModel.getHistorial(fecIni, fecFin, filtro, busqueda);
+  Future<List<Object>> getHistorial(String filtro, String busqueda) async =>
+      registros
+      ? await RegistroModel.getRegistros(fecIni, fecFin, 'Fecha', busqueda)
+      : await HistorialModel.getHistorial(fecIni, fecFin, filtro, busqueda);
 
   Future<void> getHistorialInfo(BuildContext ctx, int id, String fecha) async {
     ctx.read<Carga>().cargaBool(true);
-    HistorialModel historial = await HistorialModel.getHistorialDatos(
-      id,
-      fecha,
-    );
+    HistorialModel historial = await HistorialModel.getHistorialInfo(id, fecha);
     (historial.mensaje.isEmpty)
         ? {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
-              Navigator.of(ctx).push(
-                PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      HistorialInfo(historialInfo: historial),
-                  transitionsBuilder:
-                      (context, animation, secondaryAnimation, child) {
-                        return SlideTransition(
-                          position: animation.drive(
-                            Tween(
-                              begin: Offset(1.0, 0.0),
-                              end: Offset.zero,
-                            ).chain(CurveTween(curve: Curves.ease)),
-                          ),
-                          child: child,
-                        );
-                      },
-                ),
-              ),
+              {
+                ctx.read<HistorialInfo>().setHisotrial(historial),
+                ctx.read<HistorialInfo>().esp(true),
+              },
           }
         : Textos.toast(historial.mensaje, true);
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+  }
+
+  Future<void> getRegistroInfo(
+    BuildContext ctx,
+    String fecha,
+    String hora,
+    String usuario,
+  ) async {
+    ctx.read<Carga>().cargaBool(true);
+    RegistroModel registro = await RegistroModel.getRegistro(
+      fecha,
+      hora,
+      usuario,
+    );
+    (registro.mensaje.isEmpty)
+        ? {
+            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            if (ctx.mounted)
+              {
+                ctx.read<HistorialInfo>().setRegistro(registro),
+                ctx.read<HistorialInfo>().reg(true),
+              },
+          }
+        : Textos.toast(registro.mensaje, true);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -85,14 +93,15 @@ class _HistorialState extends State<Historial> {
     bool valido = true;
     String mensaje = '';
     for (int i = 0; i < 2; i++) {
-      (valido)
-          ? valido = !(fecIniCont[i].text.isEmpty || fecFinCont[i].text.isEmpty)
-          : {
-              if (fecIniCont[i].text.length < 2)
-                fecIniCont[i].text = '0${fecIniCont[i].text}',
-              if (fecFinCont[i].text.length < 2)
-                fecFinCont[i].text = '0${fecFinCont[i].text}',
-            };
+      valido = !(fecIniCont[i].text.isEmpty || fecFinCont[i].text.isEmpty);
+      if (valido) {
+        if (fecIniCont[i].text.length < 2) {
+          fecIniCont[i].text = '0${fecIniCont[i].text}';
+        }
+        if (fecFinCont[i].text.length < 2) {
+          fecFinCont[i].text = '0${fecFinCont[i].text}';
+        }
+      }
     }
     valido =
         valido &&
@@ -104,7 +113,7 @@ class _HistorialState extends State<Historial> {
       DateTime ff = DateTime.parse(
         '${fecFinCont[2].text}-${fecFinCont[1].text}-${fecFinCont[0].text}',
       );
-      (ff.isAfter(fi))
+      (ff.isAfter(fi) || ff.isAtSameMomentAs(fi))
           ? {
               fecIni =
                   '${fecIniCont[0].text}-${fecIniCont[1].text}-${fecIniCont[2].text}',
@@ -240,14 +249,28 @@ class _HistorialState extends State<Historial> {
                     barraSuperior(context),
                     Column(
                       children: [
-                        Tablas.contenedorInfo(
-                          MediaQuery.sizeOf(context).width,
-                          [.2, .1, .25, .175, .125],
-                          ['Fecha', 'id', 'Nombre', 'Area', 'Movimientos'],
+                        Consumer<Tablas>(
+                          builder: (context, tablas, child) {
+                            return Tablas.contenedorInfo(
+                              MediaQuery.sizeOf(context).width,
+                              registros
+                                  ? [.3, .3, .3]
+                                  : [.2, .1, .25, .175, .125],
+                              registros
+                                  ? ['Fecha', 'Hora', 'Usuario']
+                                  : [
+                                      'Fecha',
+                                      'id',
+                                      'Nombre',
+                                      'Area',
+                                      'Movimientos',
+                                    ],
+                            );
+                          },
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 144,
+                          height: MediaQuery.of(context).size.height - 143.5,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -316,7 +339,7 @@ class _HistorialState extends State<Historial> {
                             fecIniCont[0],
                             true,
                             false,
-                            () => focus[0].requestFocus(),
+                            accion: () => focus[0].requestFocus(),
                             formato: LengthLimitingTextInputFormatter(2),
                             inputType: TextInputType.number,
                           ),
@@ -327,7 +350,7 @@ class _HistorialState extends State<Historial> {
                             fecIniCont[1],
                             true,
                             false,
-                            () => focus[1].requestFocus(),
+                            accion: () => focus[1].requestFocus(),
                             focus: focus[0],
                             formato: LengthLimitingTextInputFormatter(2),
                             inputType: TextInputType.number,
@@ -339,7 +362,7 @@ class _HistorialState extends State<Historial> {
                             fecIniCont[2],
                             true,
                             false,
-                            () => focus[2].requestFocus(),
+                            accion: () => focus[2].requestFocus(),
                             focus: focus[1],
                             formato: LengthLimitingTextInputFormatter(4),
                             inputType: TextInputType.number,
@@ -364,7 +387,7 @@ class _HistorialState extends State<Historial> {
                             fecFinCont[0],
                             true,
                             false,
-                            () => focus[3].requestFocus(),
+                            accion: () => focus[3].requestFocus(),
                             focus: focus[2],
                             formato: LengthLimitingTextInputFormatter(2),
                             inputType: TextInputType.number,
@@ -376,7 +399,7 @@ class _HistorialState extends State<Historial> {
                             fecFinCont[1],
                             true,
                             false,
-                            () => focus[4].requestFocus(),
+                            accion: () => focus[4].requestFocus(),
                             focus: focus[3],
                             formato: LengthLimitingTextInputFormatter(2),
                             inputType: TextInputType.number,
@@ -388,7 +411,7 @@ class _HistorialState extends State<Historial> {
                             fecFinCont[2],
                             true,
                             false,
-                            () async => await setFecha(context),
+                            accion: () async => await setFecha(context),
                             focus: focus[4],
                             formato: LengthLimitingTextInputFormatter(4),
                             inputType: TextInputType.number,
@@ -397,7 +420,29 @@ class _HistorialState extends State<Historial> {
                       ),
                     ],
                   ),
+                  extraButton: Botones.btnCirRos(
+                    'Restablecer fechas',
+                    () async => {
+                      for (int i = 0; i < 3; i++)
+                        {fecIniCont[i].text = '', fecFinCont[i].text = ''},
+                      fecIni = '',
+                      fecFin = '',
+                      context.read<Tablas>().datos(
+                        await getHistorial(
+                          CampoTexto.filtroTexto(),
+                          CampoTexto.busquedaTexto.text,
+                        ),
+                      ),
+                    },
+                  ),
                 );
+              },
+            ),
+            Consumer<HistorialInfo>(
+              builder: (context, historial, child) {
+                return registros
+                    ? historial.regInfo(context)
+                    : historial.espInfo(context);
               },
             ),
             Carga.ventanaCarga(),
@@ -408,74 +453,59 @@ class _HistorialState extends State<Historial> {
   }
 
   Widget barraSuperior(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Botones.btnRctMor(
-          'Abrir menú',
-          Icons.menu_rounded,
-          false,
-          () => Scaffold.of(context).openDrawer(),
-          size: 35,
-        ),
-        Botones.btnRctMor(
-          'Establecer rango de fechas',
-          Icons.date_range_rounded,
-          false,
-          () => {context.read<Ventanas>().emergente(true), reporte = false},
-          size: 35,
-        ),
-        Botones.btnRctMor(
-          'Restablecer fechas',
-          Icons.calendar_month_rounded,
-          false,
-          () async => {
-            for (int i = 0; i < 3; i++)
-              {fecIniCont[i].text = '', fecFinCont[i].text = ''},
-            fecIni = '',
-            fecFin = '',
-            context.read<Tablas>().datos(
-              await getHistorial(
-                CampoTexto.filtroTexto(),
-                CampoTexto.busquedaTexto.text,
-              ),
-            ),
-          },
-          size: 35,
-        ),
-        Consumer<Tablas>(
-          builder: (context, tablas, child) {
-            return Botones.btnRctMor(
-              (registros) ? 'Ver movimientos' : 'Ver registros',
-              (registros)
-                  ? Icons.checklist_rtl_rounded
-                  : Icons.inventory_rounded,
-              false,
-              () => {registros = !registros},
-              size: 35,
-            );
-          },
-        ),
-        Container(
-          width: MediaQuery.of(context).size.width * .7,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: Consumer2<Tablas, CampoTexto>(
-            builder: (context, tablas, campoTexto, child) {
-              return CampoTexto.barraBusqueda(
-                () async => tablas.datos(
-                  await getHistorial(
-                    CampoTexto.filtroTexto(),
-                    CampoTexto.busquedaTexto.text,
-                  ),
-                ),
+    return SizedBox(
+      height: 70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Botones.btnRctMor(
+            'Abrir menú',
+            Icons.menu_rounded,
+            false,
+            () => Scaffold.of(context).openDrawer(),
+            size: 35,
+          ),
+          Botones.btnRctMor(
+            'Establecer rango de fechas',
+            Icons.date_range_rounded,
+            false,
+            () => {context.read<Ventanas>().emergente(true), reporte = false},
+            size: 35,
+          ),
+          Consumer<Tablas>(
+            builder: (context, tablas, child) {
+              return Botones.btnRctMor(
+                (registros) ? 'Ver movimientos' : 'Ver registros',
+                (registros)
+                    ? Icons.checklist_rtl_rounded
+                    : Icons.inventory_rounded,
                 false,
-                true,
+                () => {registros = !registros, tablas.datos([])},
+                size: 35,
               );
             },
           ),
-        ),
-      ],
+          Container(
+            width: MediaQuery.of(context).size.width * .8,
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Consumer2<Tablas, CampoTexto>(
+              builder: (context, tablas, campoTexto, child) {
+                return CampoTexto.barraBusqueda(
+                  () async => tablas.datos(
+                    await getHistorial(
+                      CampoTexto.filtroTexto(),
+                      CampoTexto.busquedaTexto.text,
+                    ),
+                  ),
+                  false,
+                  true,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -494,21 +524,30 @@ class _HistorialState extends State<Historial> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.2, .1, .25, .175, .125],
-            [
-              lista[index].fecha,
-              "${lista[index].id}",
-              lista[index].nombre,
-              lista[index].area,
-              '${lista[index].movimientos}',
-            ],
+            registros ? [.3, .3, .3] : [.2, .1, .25, .175, .125],
+            registros
+                ? [lista[index].fecha, lista[index].hora, lista[index].usuario]
+                : [
+                    lista[index].fecha,
+                    "${lista[index].id}",
+                    lista[index].nombre,
+                    lista[index].area,
+                    '${lista[index].movimientos}',
+                  ],
             [],
             1,
-            extra: () async => await getHistorialInfo(
-              context,
-              lista[index].id,
-              lista[index].fecha,
-            ),
+            extra: registros
+                ? () async => await getRegistroInfo(
+                    context,
+                    lista[index].fecha,
+                    lista[index].hora,
+                    lista[index].usuario,
+                  )
+                : () async => await getHistorialInfo(
+                    context,
+                    lista[index].id,
+                    lista[index].fecha,
+                  ),
           ),
         );
       },

@@ -3,14 +3,65 @@ import 'package:inventarios/models/orden_model.dart';
 
 class VenDatos with ChangeNotifier {
   static OrdenModel _orden = OrdenModel.dummy('');
+  static List<OrdenListas> _listas = [];
+  static bool _edit = false;
 
   void setDatos(OrdenModel orden) {
     _orden = orden;
+    _listas.clear();
+    for (int i = 0; i < _orden.cantArticulos; i++) {
+      _listas.add(
+        OrdenListas(
+          art: _orden.articulos[i],
+          cant: _orden.cantidades[i],
+          tipo: _orden.tipos[i],
+          area: _orden.areas[i],
+          cantCub: _orden.cantidadesCubiertas[i],
+          comTienda: _orden.comentariosTienda[i],
+          comProv: _orden.comentariosProveedor[i],
+          comFin: _orden.comentariosFinales[i],
+          conf: _orden.confirmacion[i],
+          id: _orden.idProductos[i],
+        ),
+      );
+    }
     notifyListeners();
+  }
+
+  void ordenarPor(bool nom) {
+    nom
+        ? _listas.sort((a, b) {
+      return a.art.toLowerCase().compareTo(b.art.toLowerCase());
+    })
+        : _listas.sort((a, b) {
+      return a.id.compareTo(b.id);
+    });
+    for (int i = 0; i < _orden.cantArticulos; i++) {
+      _orden.idProductos[i] = _listas[i].id;
+      _orden.articulos[i] = _listas[i].art;
+      _orden.cantidades[i] = _listas[i].cant;
+      _orden.cantidadesCubiertas[i] = _listas[i].cantCub;
+      _orden.tipos[i] = _listas[i].tipo;
+      _orden.areas[i] = _listas[i].area;
+      _orden.comentariosTienda[i] = _listas[i].comTienda;
+      _orden.comentariosProveedor[i] = _listas[i].comProv;
+      _orden.comentariosFinales[i] = _listas[i].comFin;
+      _orden.confirmacion[i] = _listas[i].conf;
+    }
+    if (nom) notifyListeners();
   }
 
   OrdenModel getDatos() {
     return _orden;
+  }
+
+  bool edit() {
+    return _edit;
+  }
+
+  void setEdit(bool bool) {
+    _edit = bool;
+    notifyListeners();
   }
 
   int length() {
@@ -25,7 +76,7 @@ class VenDatos with ChangeNotifier {
     return _orden.articulos[i];
   }
 
-  int can(int i) {
+  double can(int i) {
     return _orden.cantidades[i];
   }
 
@@ -37,17 +88,13 @@ class VenDatos with ChangeNotifier {
     return _orden.tipos[i];
   }
 
-  int canCub(int i) {
+  double canCub(int i) {
     return _orden.cantidadesCubiertas[i];
   }
 
-  void canCubSub(int i) {
-    _orden.cantidadesCubiertas[i]--;
-    notifyListeners();
-  }
-
-  void canCubAdd(int i) {
-    _orden.cantidadesCubiertas[i]++;
+  void canCubChange(int i, double cant) {
+    _listas[i].cantCub = cant;
+    _orden.cantidadesCubiertas[i] = cant;
     notifyListeners();
   }
 
@@ -68,6 +115,7 @@ class VenDatos with ChangeNotifier {
   }
 
   void setComProv(int i, String comentario) {
+    _listas[i].comProv = comentario;
     _orden.comentariosProveedor[i] = comentario;
     notifyListeners();
   }
@@ -77,6 +125,7 @@ class VenDatos with ChangeNotifier {
   }
 
   void setComFin(int i, String comentario) {
+    _listas[i].comFin = comentario;
     _orden.comentariosFinales[i] = comentario;
     notifyListeners();
   }
@@ -90,6 +139,7 @@ class VenDatos with ChangeNotifier {
   }
 
   void setComfProd(int i) {
+    _listas[i].conf = !_listas[i].conf;
     _orden.confirmacion[i] = !_orden.confirmacion[i];
     notifyListeners();
   }

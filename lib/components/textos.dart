@@ -50,7 +50,7 @@ class Textos with ChangeNotifier {
     return Text(
       texto,
       textAlign: TextAlign.center,
-      style: TextStyle(fontSize: size, color: Color(0xFFFFFFFF)),
+      style: TextStyle(fontSize: size, color: Color(0xFFFFFFFF),),
     );
   }
 

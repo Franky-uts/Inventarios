@@ -60,7 +60,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   }
 
   Future<void> filtroTexto(int valor) async {
-    colores = List.filled(3, Color(0xFFFFFFFF),growable: true);
+    colores = List.filled(3, Color(0xFFFFFFFF), growable: true);
     colores[valor] = Color(0xFF8A03A9);
     switch (valor) {
       case (0):
@@ -115,6 +115,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   Future<void> guardarComentario(BuildContext ctx) async {
     String datos;
     List<String> listaDatos = [];
+    ctx.read<VenDatos>().ordenarPor(false);
     ctx.read<Carga>().cargaBool(true);
     if (controller.text != ctx.read<VenDatos>().comFin(indexComentario!)) {
       ctx.read<Ventanas>().emergente(false);
@@ -137,7 +138,10 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
       datos = 'Error: No hay datos.';
     }
     if (datos.split(': ')[0] == 'Error') datos = datos.split(': ')[1];
-    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+    if (ctx.mounted) {
+      ctx.read<Carga>().cargaBool(false);
+      ctx.read<VenDatos>().ordenarPor(true);
+    }
     Textos.toast(datos, true);
   }
 
@@ -201,7 +205,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ),
                   SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height: MediaQuery.of(context).size.height - 137,
+                    height: MediaQuery.of(context).size.height - 143.5,
                     child: Consumer<Tablas>(
                       builder: (context, tablas, child) {
                         return Tablas.listaFutura(
@@ -221,7 +225,10 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
                 return Ventanas.ventanaTabla(
-                  MediaQuery.of(context).size.height,
+                  (venDatos.length() * 44 + 135 <
+                          MediaQuery.sizeOf(context).height)
+                      ? venDatos.length() * 44 + 135
+                      : MediaQuery.sizeOf(context).height,
                   MediaQuery.of(context).size.width,
                   [
                     'Id de la orden: ${venDatos.id()}',
@@ -242,7 +249,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                     ],
                   ),
                   SizedBox(
-                    height: MediaQuery.sizeOf(context).height-220,
+                    height:
+                        (venDatos.length() * 44 <
+                            MediaQuery.sizeOf(context).height - 220)
+                        ? venDatos.length() * 44
+                        : MediaQuery.sizeOf(context).height - 220,
                     child: ListView.separated(
                       itemCount: venDatos.length(),
                       scrollDirection: Axis.vertical,
@@ -252,6 +263,17 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                       ),
                       itemBuilder: (context, index) {
                         String cantidad = '${venDatos.can(index)}';
+                        String cantidadCub = '${venDatos.canCub(index)}';
+                        if (cantidad.split('.').length > 1) {
+                          if (cantidad.split('.')[1] == '0') {
+                            cantidad = cantidad.split('.')[0];
+                          }
+                        }
+                        if (cantidadCub.split('.').length > 1) {
+                          if (cantidadCub.split('.')[1] == '0') {
+                            cantidadCub = cantidadCub.split('.')[0];
+                          }
+                        }
                         return Container(
                           width: MediaQuery.sizeOf(context).width,
                           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
@@ -263,12 +285,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                               venDatos.art(index),
                               venDatos.are(index),
                               venDatos.tip(index),
-                              cantidad.split('.').length > 1
-                                  ? cantidad.split('.')[1] == '0'
-                                        ? cantidad.split('.')[0]
-                                        : cantidad
-                                  : cantidad,
-                              '${venDatos.canCub(index)}',
+                              cantidad,
+                              cantidadCub,
                               SizedBox(
                                 width: MediaQuery.sizeOf(context).width * .045,
                                 child: Botones.btnRctMor(
@@ -286,25 +304,33 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                     venDatos.comFin(index),
                                     index,
                                   ),
-
                                   size: 20,
                                 ),
                               ),
-                              SizedBox(
-                                width: MediaQuery.sizeOf(context).width * .045,
-                                child: Botones.btnRctMor(
-                                  'Confirmar ${venDatos.art(index)}',
-                                  venDatos.comfProd(index)
-                                      ? Icons.check_box_rounded
-                                      : Icons.check_box_outline_blank_rounded,
-                                  false,
-                                  () => {
-                                    if (venDatos.est() == 'Entregado')
-                                      venDatos.setComfProd(index),
-                                  },
-                                  size: 20,
-                                ),
-                              ),
+                              venDatos.est() == 'Entregado' || venDatos.edit()
+                                  ? SizedBox(
+                                      width:
+                                          MediaQuery.sizeOf(context).width *
+                                          .045,
+                                      child: Botones.btnRctMor(
+                                        'Confirmar ${venDatos.art(index)}',
+                                        venDatos.comfProd(index)
+                                            ? Icons.check_box_rounded
+                                            : Icons
+                                                  .check_box_outline_blank_rounded,
+                                        false,
+                                        () => venDatos.setComfProd(index),
+                                        size: 20,
+                                      ),
+                                    )
+                                  : Icon(
+                                      venDatos.comfProd(index)
+                                          ? Icons.check_box_rounded
+                                          : Icons
+                                                .check_box_outline_blank_rounded,
+                                      color: Color(0xFF8A03A9),
+                                      size: 30,
+                                    ),
                             ],
                             [],
                             2,
@@ -343,15 +369,35 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         spacing: 7.5,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Botones.btnCirRos(
+                          Botones.btnRctMor(
                             'Cerrar',
-                            () => ventana.tabla(false),
+                            Icons.clear_rounded,
+                            false,
+                            () => {
+                              venDatos.setEdit(false),
+                              ventana.tabla(false),
+                            },
                           ),
-                          Botones.btnCirRos('Cancelar', () => cambiarEstado()),
-                          if (venDatos.est() == 'Entregado')
-                            Botones.btnCirRos(
+                          Botones.btnRctMor(
+                            'Cancelar',
+                            Icons.cancel_schedule_send_rounded,
+                            false,
+                            () => cambiarEstado(),
+                          ),
+                          if (venDatos.est() == 'Entregado' || venDatos.edit())
+                            Botones.btnRctMor(
                               'Confirmar',
+                              Icons.check_circle_rounded,
+                              false,
                               () => confirmarEntragas(venDatos.comfProdLista()),
+                            ),
+                          if (venDatos.est() == 'Incompleto' &&
+                              !venDatos.edit())
+                            Botones.btnRctMor(
+                              'Editar confirmaciones',
+                              Icons.edit_note_rounded,
+                              false,
+                              () => venDatos.setEdit(true),
                             ),
                         ],
                       ),
@@ -379,6 +425,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         carga.cargaBool(true),
                         ventana.tabla(false),
                         ventana.emergente(false),
+                        venDatos.ordenarPor(false),
+                        venDatos.setEdit(false),
                         (datos != 'Cancelado')
                             ? Textos.toast(
                                 await OrdenModel.editarOrdenConfirmacion(
@@ -397,7 +445,10 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                 true,
                               ),
                         if (context.mounted)
-                          context.read<Tablas>().datos(await getOrdenes()),
+                          {
+                            venDatos.ordenarPor(false),
+                            context.read<Tablas>().datos(await getOrdenes()),
+                          },
                         carga.cargaBool(false),
                       }
                     else
@@ -432,7 +483,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                               size: 20,
                               alignment: TextAlign.center,
                             ),
-                            if (context.read<VenDatos>().est() == 'Entregado')
+                            if (venDatos.est() == 'Entregado')
                               CampoTexto.inputTexto(
                                 MediaQuery.sizeOf(context).width,
                                 'Comentarios finales:',
@@ -440,16 +491,14 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                 controller,
                                 true,
                                 false,
-                                () => guardarComentario(context),
+                                accion: () => guardarComentario(context),
                                 icono: Icons.message_rounded,
                               ),
-                            if (context.read<VenDatos>().est() ==
-                                    'Finalizado' ||
-                                context.read<VenDatos>().est() == 'Incompleto')
+                            if (venDatos.est() == 'Finalizado' ||
+                                venDatos.est() == 'Incompleto')
                               Textos.textoTilulo('Comentarios finales:', 20),
-                            if (context.read<VenDatos>().est() ==
-                                    'Finalizado' ||
-                                context.read<VenDatos>().est() == 'Incompleto')
+                            if (venDatos.est() == 'Finalizado' ||
+                                venDatos.est() == 'Incompleto')
                               Textos.textoGeneral(
                                 indexComentario != null
                                     ? venDatos.comFin(indexComentario!)
@@ -474,6 +523,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
 
   Widget opciones(BuildContext ctx) {
     return Container(
+      height: 70,
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 25),
       child: Consumer2<Tablas, Carga>(
         builder: (ctx, tablas, carga, child) {

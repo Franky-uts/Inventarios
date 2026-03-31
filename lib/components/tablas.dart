@@ -18,11 +18,12 @@ class Tablas with ChangeNotifier {
       lista.add(
         _barraSuperior(grosor * grosores[i], textos[i], (grosores[i] > 0.075)),
       );
-      lista.add(_divider());
+      lista.add(_divider(color: Color(0xFF8A03A9)));
     }
     lista.removeLast();
     return Container(
       width: grosor,
+      height: 17.5,
       decoration: BoxDecoration(color: Color(0xFF8A03A9)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -76,7 +77,7 @@ class Tablas with ChangeNotifier {
               if (_datos.last.mensaje == '') {
                 wid = Scrollbar(
                   controller: controller,
-                  thickness: 17.5,
+                  thickness: 10,
                   thumbVisibility: true,
                   interactive: true,
                   trackVisibility: true,
@@ -180,11 +181,11 @@ class Tablas with ChangeNotifier {
     return wid;
   }
 
-  static VerticalDivider _divider() {
+  static VerticalDivider _divider({Color? color}) {
     return VerticalDivider(
       thickness: 2,
       width: 0,
-      color: Color(0xFFFDC930),
+      color: color ?? Color(0xFFFDC930),
       indent: 5,
       endIndent: 5,
     );

@@ -14,10 +14,6 @@ import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import '../models/orden_model.dart';
 
-class Acc extends Intent {
-  const Acc();
-}
-
 class Ordenes extends StatefulWidget {
   const Ordenes({super.key});
 
@@ -33,6 +29,7 @@ class _OrdenesState extends State<Ordenes> {
     Color(0xFFFFFFFF),
   ];
   List canCubOrg = [];
+  List<TextEditingController> cantidades = [];
   TextEditingController controller = TextEditingController();
   String filtro = 'id', accion = '';
   int id = 0, venNum = 0;
@@ -64,6 +61,15 @@ class _OrdenesState extends State<Ordenes> {
                 ctx.read<VenDatos>().setDatos(orden),
                 Textos.crearLista(orden.cantArticulos, Color(0xFF8A03A9)),
                 canCubOrg.addAll(ctx.read<VenDatos>().canCubLista()),
+                cantidades.clear(),
+                for (int i = 0; i < orden.cantArticulos; i++)
+                  {
+                    cantidades.add(
+                      TextEditingController(
+                        text: '${ctx.read<VenDatos>().canCub(i)}',
+                      ),
+                    ),
+                  },
                 ctx.read<Ventanas>().tabla(true),
               },
           }
@@ -79,10 +85,8 @@ class _OrdenesState extends State<Ordenes> {
 
   void guardar(List lista) {
     bool guardar = false;
-    int i = 0;
-    while (i < canCubOrg.length) {
+    for (int i = 0; i < canCubOrg.length; i++) {
       if (!guardar) guardar = (lista[i] != canCubOrg[i]);
-      i++;
     }
     guardar ? cambiarEstado('guardar') : Textos.toast('No hay cambios', true);
   }
@@ -107,6 +111,7 @@ class _OrdenesState extends State<Ordenes> {
     String columna = 'Estado';
     String datos = accion;
     List listaDatos = [];
+    ctx.read<VenDatos>().ordenarPor(false);
     switch (accion) {
       case ('guardar'):
         columna = 'CantidadesCubiertas';
@@ -144,7 +149,6 @@ class _OrdenesState extends State<Ordenes> {
               ctx.read<Tablas>().datos(await OrdenModel.getAllOrdenes(filtro)),
           }
         : datos = 'No hay cambios';
-
     if ((accion == 'guardar' ||
         (accion == 'confirmar' && datos != 'confirmar'))) {
       (datos.split(': ')[0] != 'Error')
@@ -153,15 +157,18 @@ class _OrdenesState extends State<Ordenes> {
                 {
                   canCubOrg.clear(),
                   if (ctx.mounted)
-                    for (
-                      int i = 0;
-                      i < ctx.read<VenDatos>().canCubLista().length;
-                      i++
-                    )
-                      {canCubOrg.add(ctx.read<VenDatos>().canCub(i))},
+                    for (int valor in ctx.read<VenDatos>().canCubLista())
+                      canCubOrg.add(valor),
                 },
             }
           : datos = datos.split(': ')[1];
+    }
+    if (ctx.mounted) {
+      ctx.read<VenDatos>().ordenarPor(true);
+      if (accion == 'entregar') {
+        accion = 'guardar';
+        datos = await guardarDatos(ctx);
+      }
     }
     return datos;
   }
@@ -533,416 +540,369 @@ class _OrdenesState extends State<Ordenes> {
     return Scaffold(
       drawer: RecDrawer.drawer(context, [
         /*Consumer<Carga>(
-          builder: (context, carga, child) {
+          builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              'Ver artículos',
-              Icons.list,
-              () => {
-                carga.cargaBool(true),
-                if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                  CampoTexto.seleccionFiltro = Filtros.id,
-                RecDrawer.pushAnim(Articulos(), context),
-                carga.cargaBool(false),
-              },
-              () => {},
+              'Descargar reporte',
+              Icons.download_rounded,
+              () async => await RecDrawer.orden(context),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               false,
-              true,
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (context, carga, child) {
-            return Botones.icoCirMor(
-              'Ver almacen',
-              Icons.inventory_rounded,
-              () => {
-                carga.cargaBool(true),
-                RecDrawer.pushAnim(OrdenesInventario(), context),
-                carga.cargaBool(false),
-              },
-              () => {},
-              true,
-              true,
+              Carga.getValido(),
             );
           },
         ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
-      body: Shortcuts(
-        shortcuts: <ShortcutActivator, Intent>{
-          SingleActivator(LogicalKeyboardKey.escape): Acc(),
-        },
-        child: PopScope(
-          canPop: false,
-          child: Stack(
-            children: [
-              Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: PopScope(
+        canPop: false,
+        child: Stack(
+          children: [
+            Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    opciones(context),
+                    Column(
+                      children: [
+                        Tablas.contenedorInfo(
+                          MediaQuery.sizeOf(context).width,
+                          [.05, .125, .15, .2, .2, .25],
+                          [
+                            'id',
+                            'Art. ordenados',
+                            'Estado',
+                            'Remitente',
+                            'Locacion',
+                            'Ordenado el:',
+                          ],
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height - 143.5,
+                          child: Consumer<Tablas>(
+                            builder: (context, tablas, child) {
+                              return Tablas.listaFutura(
+                                listaPrincipal,
+                                'Todo está en orden, no hay órdenes entrantes.',
+                                'No se recuperaron órdenes.',
+                                () => getOrdenes(),
+                                accionRefresh: () async =>
+                                    tablas.datos(await getOrdenes()),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Consumer2<Ventanas, VenDatos>(
+              builder: (context, ventana, venDatos, child) {
+                return Ventanas.ventanaTabla(
+                  (venDatos.length() * 44 + 150 <
+                          MediaQuery.sizeOf(context).height)
+                      ? venDatos.length() * 44 + 150
+                      : MediaQuery.sizeOf(context).height,
+                  MediaQuery.of(context).size.width,
+                  [
+                    'Id de la orden: ${venDatos.id()}',
+                    'Estado: ${venDatos.est()}',
+                  ],
+                  Tablas.contenedorInfo(
+                    MediaQuery.sizeOf(context).width,
+                    [.1, .25, .1, .125, .1, .1, .045, .045],
+                    [
+                      'id',
+                      'Nombre del articulo',
+                      'Tipo',
+                      'Área',
+                      'Cant. orden',
+                      'Cant. cubierta',
+                      '💬',
+                      '☑️',
+                    ],
+                  ),
+                  SizedBox(
+                    height:
+                        (venDatos.length() * 44 <
+                            MediaQuery.sizeOf(context).height - 250)
+                        ? venDatos.length() * 44
+                        : MediaQuery.sizeOf(context).height - 250,
+                    child: ListView.separated(
+                      itemCount: venDatos.length(),
+                      scrollDirection: Axis.vertical,
+                      separatorBuilder: (context, index) => Container(
+                        height: 2,
+                        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                      ),
+                      itemBuilder: (context, index) {
+                        String cantidad = '${venDatos.can(index)}';
+                        String cantidadCub = '${venDatos.canCub(index)}';
+                        if (cantidad.split('.').length > 1) {
+                          if (cantidad.split('.')[1] == '0') {
+                            cantidad = cantidad.split('.')[0];
+                          }
+                        }
+                        if (cantidadCub.split('.').length > 1) {
+                          if (cantidadCub.split('.')[1] == '0') {
+                            cantidadCub = cantidadCub.split('.')[0];
+                          }
+                        }
+                        return SingleChildScrollView(
+                          child: Container(
+                            width: MediaQuery.sizeOf(context).width,
+                            height: 40,
+                            decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+                            child: Tablas.barraDatos(
+                              MediaQuery.sizeOf(context).width,
+                              [.1, .25, .1, .125, .1, .1, .045, .045],
+                              [
+                                '${venDatos.idArt(index)}',
+                                venDatos.art(index),
+                                venDatos.tip(index),
+                                venDatos.are(index),
+                                cantidad,
+                                (venDatos.est() == 'En proceso')
+                                    ? Consumer2<Textos, VenDatos>(
+                                        builder: (context, textos, venDatos, child) {
+                                          return CampoTexto.inputTexto(
+                                            MediaQuery.sizeOf(context).width *
+                                                .1,
+                                            '',
+                                            cantidadCub,
+                                            cantidades[index],
+                                            true,
+                                            false,
+                                            cambio: () => venDatos.canCubChange(
+                                              index,
+                                              cantidades[index].text.isNotEmpty
+                                                  ? double.parse(
+                                                      cantidades[index].text,
+                                                    )
+                                                  : canCubOrg[index],
+                                            ),
+                                            borderColor: Color(0xFF8A03A9),
+                                            formato:
+                                                FilteringTextInputFormatter.allow(
+                                                  RegExp(r'(^\d*\.?\d{0,3})'),
+                                                ),
+                                            inputType:
+                                                TextInputType.numberWithOptions(
+                                                  decimal: true,
+                                                ),
+                                            fontSize: 17.5,
+                                            align: TextAlign.center,
+                                          );
+                                        },
+                                      )
+                                    : cantidadCub,
+                                Consumer<VenDatos>(
+                                  builder: (context, venDatos, child) {
+                                    return SizedBox(
+                                      width:
+                                          MediaQuery.sizeOf(context).width *
+                                          .045,
+                                      child: Botones.btnRctMor(
+                                        'Ver comentarios',
+                                        Icons.comment_rounded,
+                                        false,
+                                        () => {
+                                          id = index,
+                                          verComentarios(
+                                            venDatos.art(index),
+                                            venDatos.est(),
+                                            venDatos.comTienda(index),
+                                            venDatos.comProv(index),
+                                            venDatos.comFin(index),
+                                          ),
+                                        },
+                                        alert:
+                                            venDatos.comTienda(index) !=
+                                                'Sin comentarios' ||
+                                            venDatos.comFin(index) !=
+                                                'Sin comentarios',
+                                        size: 20,
+                                      ),
+                                    );
+                                  },
+                                ),
+                                Icon(
+                                  venDatos.comfProd(index)
+                                      ? Icons.check_box_rounded
+                                      : Icons.check_box_outline_blank_rounded,
+                                  color: Color(0xFF8A03A9),
+                                  size: 30,
+                                ),
+                              ],
+                              [],
+                              1,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      opciones(context),
                       Column(
                         children: [
-                          Tablas.contenedorInfo(
-                            MediaQuery.sizeOf(context).width,
-                            [.05, .125, .15, .2, .2, .25],
-                            [
-                              'id',
-                              'Art. ordenados',
-                              'Estado',
-                              'Remitente',
-                              'Locacion',
-                              'Ordenado el:',
-                            ],
+                          Textos.textoGeneral(
+                            'Destino: ${venDatos.loc()}',
+                            false,
+                            1,
+                            alignment: TextAlign.center,
                           ),
-                          SizedBox(
-                            width: MediaQuery.of(context).size.width,
-                            height: MediaQuery.of(context).size.height - 137,
-                            child: Consumer<Tablas>(
-                              builder: (context, tablas, child) {
-                                return Tablas.listaFutura(
-                                  listaPrincipal,
-                                  'Todo está en orden, no hay órdenes entrantes.',
-                                  'No se recuperaron órdenes.',
-                                  () => getOrdenes(),
-                                  accionRefresh: () async =>
-                                      tablas.datos(await getOrdenes()),
-                                );
-                              },
-                            ),
+                          Textos.textoGeneral(
+                            'Remitente: ${venDatos.rem()}',
+                            false,
+                            1,
+                            alignment: TextAlign.center,
+                          ),
+                          Textos.textoGeneral(
+                            'Última modificación: ${venDatos.mod()}',
+                            false,
+                            1,
+                            alignment: TextAlign.center,
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              Consumer2<Ventanas, VenDatos>(
-                builder: (context, ventana, venDatos, child) {
-                  return Ventanas.ventanaTabla(
-                    MediaQuery.of(context).size.height,
-                    MediaQuery.of(context).size.width,
-                    [
-                      'Id de la orden: ${venDatos.id()}',
-                      'Estado: ${venDatos.est()}',
-                    ],
-                    Tablas.contenedorInfo(
-                      MediaQuery.sizeOf(context).width,
-                      [.1, .25, .1, .125, .1, .155, .045, .045],
-                      [
-                        'id',
-                        'Nombre del articulo',
-                        'Tipo',
-                        'Área',
-                        'Cant. orden',
-                        'Cant. cubierta',
-                        '💬',
-                        '☑️',
-                      ],
-                    ),
-                    SizedBox(
-                      height: MediaQuery.sizeOf(context).height-240,
-                      child: ListView.separated(
-                        itemCount: venDatos.length(),
-                        scrollDirection: Axis.vertical,
-                        separatorBuilder: (context, index) => Container(
-                          height: 2,
-                          decoration: BoxDecoration(color: Color(0xFFFDC930)),
-                        ),
-                        itemBuilder: (context, index) {
-                          String cantidad = '${venDatos.can(index)}';
-                          return SingleChildScrollView(
-                            child: Container(
-                              width: MediaQuery.sizeOf(context).width,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: Color(0xFFFFFFFF),
+                      Column(
+                        spacing: 7.5,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Row(
+                            spacing: 7.5,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Botones.btnRctMor(
+                                'Imprimir',
+                                Icons.print_rounded,
+                                false,
+                                () => imprimir(context, [
+                                  'Id de la orden: ${venDatos.id()}',
+                                  'Pide: ${venDatos.loc()}',
+                                  'Para: ${venDatos.rem()}',
+                                  'Fecha: ${venDatos.mod().split(' ')[0]}',
+                                ], venDatos.getDatos()),
                               ),
-                              child: Tablas.barraDatos(
-                                MediaQuery.sizeOf(context).width,
-                                [.1, .25, .1, .125, .1, .155, .045, .045],
-                                [
-                                  '${venDatos.idArt(index)}',
-                                  venDatos.art(index),
-                                  venDatos.tip(index),
-                                  venDatos.are(index),
-                                  cantidad.split('.').length > 1
-                                      ? cantidad.split('.')[1] == '0'
-                                            ? cantidad.split('.')[0]
-                                            : cantidad
-                                      : cantidad,
-                                  Consumer2<Textos, VenDatos>(
-                                    builder:
-                                        (context, textos, venDatos, child) {
-                                          return SizedBox(
-                                            width:
-                                                MediaQuery.sizeOf(
-                                                  context,
-                                                ).width *
-                                                .155,
-                                            child: Botones.botonesSumaResta(
-                                              venDatos.art(index),
-                                              venDatos.canCub(index),
-                                              Textos.getColor(index),
-                                              () => {
-                                                if (venDatos.est() ==
-                                                    'En proceso')
-                                                  {
-                                                    textos.setColor(
-                                                      index,
-                                                      Color(0xFFFF0000),
-                                                    ),
-                                                    if (venDatos.canCub(index) >
-                                                        0)
-                                                      {
-                                                        textos.setColor(
-                                                          index,
-                                                          Color(0xFF8A03A9),
-                                                        ),
-                                                        context
-                                                            .read<VenDatos>()
-                                                            .canCubSub(index),
-                                                      },
-                                                  },
-                                              },
-                                              () => {
-                                                if (venDatos.canCub(index) <
-                                                        venDatos.can(index) &&
-                                                    venDatos.est() ==
-                                                        'En proceso')
-                                                  {
-                                                    textos.setColor(
-                                                      index,
-                                                      Color(0xFF8A03A9),
-                                                    ),
-                                                    venDatos.canCubAdd(index),
-                                                  },
-                                              },
-                                            ),
-                                          );
-                                        },
-                                  ),
-                                  Consumer<VenDatos>(
-                                    builder: (context, venDatos, child) {
-                                      return SizedBox(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                            .045,
-                                        child: Botones.btnRctMor(
-                                          'Ver comentarios',
-                                          Icons.comment_rounded,
-                                          false,
-                                          () => {
-                                            id = index,
-                                            verComentarios(
-                                              venDatos.art(index),
-                                              venDatos.est(),
-                                              venDatos.comTienda(index),
-                                              venDatos.comProv(index),
-                                              venDatos.comFin(index),
-                                            ),
-                                          },
-                                          alert:
-                                              venDatos.comTienda(index) !=
-                                                  'Sin comentarios' ||
-                                              venDatos.comFin(index) !=
-                                                  'Sin comentarios',
-                                          size: 20,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                  Consumer<VenDatos>(
-                                    builder: (context, venDatos, child) {
-                                      return SizedBox(
-                                        width:
-                                            MediaQuery.sizeOf(context).width *
-                                            .045,
-                                        child: Botones.btnRctMor(
-                                          'Confirmar',
-                                          venDatos.comfProd(index)
-                                              ? Icons.check_box_rounded
-                                              : Icons
-                                                    .check_box_outline_blank_rounded,
-                                          false,
-                                          () => {},
-                                          size: 20,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                                [],
-                                1,
+                              Botones.btnRctMor(
+                                'Cerrar',
+                                Icons.clear_rounded,
+                                false,
+                                () => ventana.tabla(false),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Column(
-                          children: [
-                            Textos.textoGeneral(
-                              'Destino: ${venDatos.loc()}',
-                              false,
-                              1,
-                              alignment: TextAlign.center,
-                            ),
-                            Textos.textoGeneral(
-                              'Remitente: ${venDatos.rem()}',
-                              false,
-                              1,
-                              alignment: TextAlign.center,
-                            ),
-                            Textos.textoGeneral(
-                              'Última modificación: ${venDatos.mod()}',
-                              false,
-                              1,
-                              alignment: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                        Column(
-                          spacing: 7.5,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                              if (venDatos.est() == 'En proceso')
+                                Botones.btnRctMor(
+                                  'Guardar',
+                                  Icons.save_rounded,
+                                  false,
+                                  () => guardar(venDatos.canCubLista()),
+                                ),
+                            ],
+                          ),
+                          if (venDatos.est() == 'En proceso')
                             Row(
                               spacing: 7.5,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Botones.btnCirRos(
-                                  'Imprimir',
-                                  () => imprimir(context, [
-                                    'Id de la orden: ${venDatos.id()}',
-                                    'Pide: ${venDatos.loc()}',
-                                    'Para: ${venDatos.rem()}',
-                                    'Fecha: ${venDatos.mod().split(' ')[0]}',
-                                  ], venDatos.getDatos()),
+                                Botones.btnRctMor(
+                                  'Denegar',
+                                  Icons.cancel_schedule_send_rounded,
+                                  false,
+                                  () => cambiarEstado('denegar'),
                                 ),
-                                Botones.btnCirRos(
-                                  'Cerrar',
-                                  () => context.read<Ventanas>().tabla(false),
+                                Botones.btnRctMor(
+                                  'Entregar',
+                                  Icons.store_rounded,
+                                  false,
+                                  () => cambiarEstado('entregar'),
                                 ),
-                                if (venDatos.est() == 'En proceso')
-                                  Botones.btnCirRos(
-                                    'Guardar',
-                                    () => guardar(
-                                      context.read<VenDatos>().canCubLista(),
-                                    ),
-                                  ),
                               ],
                             ),
-                            if (venDatos.est() == 'En proceso')
-                              Row(
-                                spacing: 7.5,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Botones.btnCirRos(
-                                    'Denegar',
-                                    () => cambiarEstado('denegar'),
-                                  ),
-
-                                  Botones.btnCirRos(
-                                    'Entregar',
-                                    () => cambiarEstado('entregar'),
-                                  ),
-                                ],
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-              Consumer4<Ventanas, Carga, VenDatos, Tablas>(
-                builder: (context, ventana, carga, venDatos, tablas, child) {
-                  return Ventanas.ventanaEmergente(
-                    [
-                      '¿Segur@ que quieres $accion la orden?',
-                      'Comentarios de ${id != 0 ? venDatos.art(id) : ''}',
-                    ][venNum],
-                    ['No, volver', 'Volver'][venNum],
-                    ['Si, $accion', 'Guardar'][venNum],
-                    () => ventana.emergente(false),
-                    () async => {
-                      ventana.emergente(false),
-                      carga.cargaBool(true),
-                      Textos.toast(await guardarDatos(context), false),
-                      carga.cargaBool(false),
-                      ventana.tabla(
-                        accion == 'guardar' || accion == 'confirmar',
+                        ],
                       ),
-                    },
-                    widget: (venNum == 1)
-                        ? Column(
-                            children: [
+                    ],
+                  ),
+                );
+              },
+            ),
+            Consumer4<Ventanas, Carga, VenDatos, Tablas>(
+              builder: (context, ventana, carga, venDatos, tablas, child) {
+                return Ventanas.ventanaEmergente(
+                  [
+                    '¿Segur@ que quieres $accion la orden?',
+                    'Comentarios de ${id != 0 ? venDatos.art(id) : ''}',
+                  ][venNum],
+                  ['No, volver', 'Volver'][venNum],
+                  ['Si, $accion', 'Guardar'][venNum],
+                  () => ventana.emergente(false),
+                  () async => {
+                    ventana.emergente(false),
+                    carga.cargaBool(true),
+                    Textos.toast(await guardarDatos(context), false),
+                    carga.cargaBool(false),
+                    ventana.tabla(accion == 'guardar' || accion == 'confirmar'),
+                  },
+                  widget: (venNum == 1)
+                      ? Column(
+                          children: [
+                            Textos.textoTilulo('Comentarios de la tienda:', 20),
+                            Textos.textoGeneral(
+                              venDatos.comTienda(id),
+                              true,
+                              5,
+                              size: 20,
+                              alignment: TextAlign.center,
+                            ),
+                            if (venDatos.est() == 'En proceso')
+                              CampoTexto.inputTexto(
+                                MediaQuery.sizeOf(context).width,
+                                'Comentarios del Proveedor',
+                                '',
+                                controller,
+                                true,
+                                false,
+                                icono: Icons.message_rounded,
+                              ),
+                            if (venDatos.est() != 'En proceso')
                               Textos.textoTilulo(
-                                'Comentarios de la tienda:',
+                                'Comentarios del proveedor:',
                                 20,
                               ),
+                            if (venDatos.est() != 'En proceso')
                               Textos.textoGeneral(
-                                venDatos.comTienda(id),
+                                venDatos.comProv(id),
                                 true,
                                 5,
                                 size: 20,
                                 alignment: TextAlign.center,
                               ),
-                              if (venDatos.est() == 'En proceso')
-                                CampoTexto.inputTexto(
-                                  MediaQuery.sizeOf(context).width,
-                                  'Comentarios del Proveedor',
-                                  '',
-                                  controller,
-                                  true,
-                                  false,
-                                  () => {},
-                                  icono: Icons.message_rounded,
-                                ),
-                              if (venDatos.est() != 'En proceso')
-                                Textos.textoTilulo(
-                                  'Comentarios del proveedor:',
-                                  20,
-                                ),
-                              if (venDatos.est() != 'En proceso')
-                                Textos.textoGeneral(
-                                  venDatos.comProv(id),
-                                  true,
-                                  5,
-                                  size: 20,
-                                  alignment: TextAlign.center,
-                                ),
-                              if (context.read<VenDatos>().est() ==
-                                      'Finalizado' ||
-                                  context.read<VenDatos>().est() ==
-                                      'Incompleto')
-                                Textos.textoTilulo('Comentarios finales:', 20),
-                              if (context.read<VenDatos>().est() ==
-                                      'Finalizado' ||
-                                  context.read<VenDatos>().est() ==
-                                      'Incompleto')
-                                Textos.textoGeneral(
-                                  venDatos.comFin(id),
-                                  true,
-                                  5,
-                                  size: 20,
-                                  alignment: TextAlign.center,
-                                ),
-                            ],
-                          )
-                        : null,
-                  );
-                },
-              ),
-              Carga.ventanaCarga(),
-            ],
-          ),
+                            if (venDatos.est() == 'Finalizado' ||
+                                venDatos.est() == 'Incompleto')
+                              Textos.textoTilulo('Comentarios finales:', 20),
+                            if (venDatos.est() == 'Finalizado' ||
+                                venDatos.est() == 'Incompleto')
+                              Textos.textoGeneral(
+                                venDatos.comFin(id),
+                                true,
+                                5,
+                                size: 20,
+                                alignment: TextAlign.center,
+                              ),
+                          ],
+                        )
+                      : null,
+                );
+              },
+            ),
+            Carga.ventanaCarga(),
+          ],
         ),
       ),
     );
@@ -950,6 +910,7 @@ class _OrdenesState extends State<Ordenes> {
 
   Widget opciones(BuildContext context) {
     return Container(
+      height: 70,
       padding: EdgeInsets.symmetric(vertical: 5, horizontal: 25),
       child: Consumer2<Tablas, Carga>(
         builder: (context, tablas, carga, child) {

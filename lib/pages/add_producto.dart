@@ -15,7 +15,7 @@ class AddProducto extends StatefulWidget {
   const AddProducto({
     super.key,
     required this.listaArticulos,
-    required this.areas
+    required this.areas,
   });
 
   @override
@@ -61,7 +61,7 @@ class _AddproductoState extends State<AddProducto> {
 
   void registrarProducto(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
-    colorCampo = List.filled(3, Color(0x00FFFFFF));
+    colorCampo = List.filled(3, Color(0x00FFFFFF), growable: true);
     if (control[0].text.isEmpty) colorCampo[2] = Color(0xFFFF0000);
     if (articuloValor == 'Artículos') colorCampo[1] = Color(0xFFFF0000);
     if (areaValor == 'Áreas') colorCampo[0] = Color(0xFFFF0000);
@@ -147,7 +147,7 @@ class _AddproductoState extends State<AddProducto> {
                               control[1],
                               false,
                               false,
-                              () =>
+                              accion: () =>
                                   FocusManager.instance.primaryFocus?.unfocus(),
                               icono: Icons.file_copy_rounded,
                             ),
@@ -158,7 +158,7 @@ class _AddproductoState extends State<AddProducto> {
                               control[2],
                               false,
                               false,
-                              () =>
+                              accion: () =>
                                   FocusManager.instance.primaryFocus?.unfocus(),
                               icono: Icons.question_mark_rounded,
                             ),
@@ -171,7 +171,7 @@ class _AddproductoState extends State<AddProducto> {
                           control[0],
                           true,
                           false,
-                          () => registrarProducto(context),
+                          accion: () => registrarProducto(context),
                           icono: Icons.production_quantity_limits_rounded,
                           errorColor: colorCampo[2],
                           inputType: TextInputType.number,

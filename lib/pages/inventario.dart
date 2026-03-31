@@ -47,18 +47,25 @@ class _InventarioState extends State<Inventario> {
 
   void enviarRegistro(BuildContext ctx) async {
     List<ProductoModel> listaProductos = await getProductos('id', '');
+    List<int> idProductos = [];
     List<double> unidades = [];
-    for (ProductoModel producto in listaProductos) {
-      String uni = controllerUni[producto.id - 1].text;
-      controllerUni[producto.id - 1].text = '';
-      (uni.isNotEmpty)
-          ? (uni.split('.').length < 2)
-                ? unidades.add(double.parse('$uni.0'))
-                : unidades.add(double.parse(uni))
-          : unidades.add(0.0);
+    for(ProductoModel prod in listaProductos){
+      String uni = controllerUni[prod.id - 1].text;
+      if (uni.isNotEmpty) {
+        (uni.split('.').length < 2)
+            ? unidades.add(double.parse('$uni.0'))
+            : unidades.add(double.parse(uni));
+        idProductos.add(prod.id);
+      }
     }
-    LocalStorage.eliminar('unidades');
-    Textos.toast('Se envio el reporte correctamente', true);
+    String mensaje = await ProductoModel.registroCompleto(idProductos, unidades);
+    if(mensaje.split(':')[0]!='Error'){
+      LocalStorage.eliminar('unidades');
+      for(ProductoModel prod in listaProductos){
+        controllerUni[prod.id - 1].text = '';
+      }
+    }
+    Textos.toast(mensaje, true);
   }
 
   @override
@@ -146,7 +153,7 @@ class _InventarioState extends State<Inventario> {
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height - 144,
+                      height: MediaQuery.of(context).size.height - 143.5,
                       child: Consumer<Tablas>(
                         builder: (context, tablas, child) {
                           return Tablas.listaFutura(
@@ -218,45 +225,48 @@ class _InventarioState extends State<Inventario> {
   }
 
   Widget barraSuperior(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Botones.btnRctMor(
-          'Abrir menú',
-          Icons.menu_rounded,
-          false,
-          () => Scaffold.of(context).openDrawer(),
-          size: 35,
-        ),
-        Botones.btnRctMor(
-          'Enviar',
-          Icons.task_alt_rounded,
-          false,
-          () => {textoVentana = 1, context.read<Ventanas>().emergente(true)},
-          size: 35,
-        ),
-        Container(
-          width: MediaQuery.of(context).size.width * .775,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: Consumer2<Tablas, CampoTexto>(
-            builder: (context, tablas, campoTexto, child) {
-              return CampoTexto.barraBusqueda(
-                () async => {
-                  tablas.datos(
-                    await getProductos(
-                      CampoTexto.filtroTexto(),
-                      CampoTexto.busquedaTexto.text,
-                    ),
-                  ),
-                },
-                true,
-                false,
-              );
-            },
+    return SizedBox(
+      height: 70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Botones.btnRctMor(
+            'Abrir menú',
+            Icons.menu_rounded,
+            false,
+            () => Scaffold.of(context).openDrawer(),
+            size: 35,
           ),
-        ),
-      ],
+          Botones.btnRctMor(
+            'Enviar',
+            Icons.task_alt_rounded,
+            false,
+            () => {textoVentana = 1, context.read<Ventanas>().emergente(true)},
+            size: 35,
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width * .775,
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Consumer2<Tablas, CampoTexto>(
+              builder: (context, tablas, campoTexto, child) {
+                return CampoTexto.barraBusqueda(
+                  () async => {
+                    tablas.datos(
+                      await getProductos(
+                        CampoTexto.filtroTexto(),
+                        CampoTexto.busquedaTexto.text,
+                      ),
+                    ),
+                  },
+                  true,
+                  false,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -297,7 +307,6 @@ class _InventarioState extends State<Inventario> {
                     controllerUni[lista[index].id - 1],
                     true,
                     false,
-                    () => {},
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),

@@ -86,7 +86,11 @@ class _AddproductoState extends State<Addarticulo> {
     setState(() {
       context.read<Carga>().cargaBool(true);
     });
-    colorCampo = List.filled(colorCampo.length, Color(0x00FFFFFF));
+    colorCampo = List.filled(
+      colorCampo.length,
+      Color(0x00FFFFFF),
+      growable: true,
+    );
     if (controller[0].text.isEmpty) colorCampo[0] = Color(0xFFFF0000);
     if (controller[1].text.isEmpty) colorCampo[3] = Color(0xFFFF0000);
     if (controller[3].text.isEmpty) colorCampo[4] = Color(0xFFFF0000);
@@ -233,7 +237,8 @@ class _AddproductoState extends State<Addarticulo> {
                           controller[0],
                           true,
                           false,
-                          () => FocusManager.instance.primaryFocus?.unfocus(),
+                          accion: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
                           icono: Icons.file_copy_rounded,
                           errorColor: colorCampo[0],
                         ),
@@ -307,13 +312,14 @@ class _AddproductoState extends State<Addarticulo> {
                           controller[1],
                           cantidad,
                           false,
-                          () => FocusManager.instance.primaryFocus?.unfocus(),
                           icono: Icons.numbers_rounded,
                           errorColor: colorCampo[3],
                           margin: EdgeInsets.symmetric(horizontal: 10),
                           formato: FilteringTextInputFormatter.allow(
                             RegExp(r'(^\d*\.?\d{0,3})'),
                           ),
+                          accion: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
                           inputType: TextInputType.numberWithOptions(
                             decimal: true,
                           ),
@@ -325,7 +331,8 @@ class _AddproductoState extends State<Addarticulo> {
                           controller[3],
                           true,
                           false,
-                          () => FocusManager.instance.primaryFocus?.unfocus(),
+                          accion: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
                           icono: Icons.numbers_rounded,
                           errorColor: colorCampo[4],
                           margin: EdgeInsets.symmetric(horizontal: 10),
@@ -349,7 +356,6 @@ class _AddproductoState extends State<Addarticulo> {
                           controller[2],
                           false,
                           false,
-                          () => {},
                           icono: Icons.barcode_reader,
                         ),
                         SizedBox(

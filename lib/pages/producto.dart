@@ -106,27 +106,6 @@ class Producto with ChangeNotifier {
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
-  /*Future enviarDatos(BuildContext context) async {
-    context.read<Carga>().cargaBool(true);
-    String mensaje = await ProductoModel.guardarES(entr, sali, productoInfo.id);
-    if (mensaje.split(": ")[0] != 'Error') {
-      ProductoModel producto = await ProductoModel.getProducto(productoInfo.id);
-      (producto.mensaje.isEmpty)
-          ? setState(() {
-              productoInfo = producto;
-              productosPerdido = calcularPerdidas(producto.perdidaCantidad);
-              entr = 0;
-              sali = 0;
-              color[0] = Color(0xFF8A03A9);
-              color[1] = Color(0xFF8A03A9);
-            })
-          : mensaje =
-                'Se guardó la información, pero no se pudo actualizar el producto';
-    }
-    if (context.mounted) context.read<Carga>().cargaBool(false);
-    Textos.toast(mensaje, true);
-  }*/
-
   Future enviarDatos(BuildContext context) async {
     context.read<Carga>().cargaBool(true);
     double ent, sal;
@@ -303,13 +282,21 @@ class Producto with ChangeNotifier {
     if (mensaje.isNotEmpty) Textos.toast(mensaje, true);
   }
 
-  Widget productoInfo(BuildContext context) {
+  Widget productoInfo() {
+    String entrada = '${_prod.entrada}';
+    String salida = '${_prod.salida}';
+    if (entrada.split('.').length > 1) {
+      if (entrada.split('.')[1] == '0') entrada = entrada.split('.')[0];
+    }
+    if (salida.split('.').length > 1) {
+      if (salida.split('.')[1] == '0') salida = salida.split('.')[0];
+    }
     return Visibility(
       visible: _producto,
       child: Stack(
         children: [
           Consumer<Carga>(
-            builder: (context, carga, child) {
+            builder: (ctx, carga, child) {
               return Container(
                 padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
                 decoration: BoxDecoration(color: Colors.black38),
@@ -332,28 +319,14 @@ class Producto with ChangeNotifier {
                           spacing: 20,
                           children: [
                             Textos.textoTilulo(_prod.nombre, 30),
-                            tipoTexto(_prod.tipo, context),
-                            contenedorInfo(
-                              ' que entraron:',
-                              _prod.entrada,
-                              0,
-                              context,
-                            ),
-                            contenedorInfo(
-                              ' que salieron:',
-                              _prod.salida,
-                              1,
-                              context,
-                            ),
-                            contenedorInfoPerdidas(
-                              productosPerdido,
-                              2,
-                              context,
-                            ),
+                            tipoTexto(ctx),
+                            contenedorInfo(' que entraron:', entrada, 0, ctx),
+                            contenedorInfo(' que salieron:', salida, 1, ctx),
+                            contenedorInfoPerdidas(productosPerdido, 2, ctx),
                             Botones.icoCirMor(
                               'Guardar movimientos',
                               Icons.save_rounded,
-                              () => enviarDatos(context),
+                              () => enviarDatos(ctx),
                               () => Textos.toast('No hay hay cambios.', false),
                               false,
                               true,
@@ -362,14 +335,20 @@ class Producto with ChangeNotifier {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                footer([
-                                  'Ultima modificación:',
-                                  _prod.ultimaModificacion,
-                                ], context),
-                                footer([
-                                  'Modificada por:',
-                                  _prod.ultimoUsuario,
-                                ], context),
+                                Textos.textoGeneral(
+                                  'Ultima modificación: \n${_prod.ultimaModificacion}',
+                                  false,
+                                  2,
+                                  size: 15,
+                                  alignment: TextAlign.center,
+                                ),
+                                Textos.textoGeneral(
+                                  'Modificada por:  \n${_prod.ultimoUsuario}',
+                                  false,
+                                  2,
+                                  size: 15,
+                                  alignment: TextAlign.center,
+                                ),
                                 Botones.btnCirRos(
                                   'Cerrar',
                                   () => producto(false),
@@ -385,177 +364,168 @@ class Producto with ChangeNotifier {
               );
             },
           ),
-          Visibility(
-            visible: _tabla,
-            child: Consumer<VenDatos>(
-              builder: (context, venDatos, child) {
-                return Ventanas.ventanaTabla(
-                  (productosPerdido > 0)
-                      ? (120 + _prod.perdidaCantidad.length * 30 <
+          Consumer<VenDatos>(
+            builder: (context, venDatos, child) {
+              return Ventanas.ventanaTabla(
+                (productosPerdido > 0)
+                    ? (120 + _prod.perdidaCantidad.length * 30 <
+                              MediaQuery.of(context).size.height * .7)
+                          ? 120 + _prod.perdidaCantidad.length * 30
+                          : MediaQuery.of(context).size.height * .7
+                    : null,
+                MediaQuery.of(context).size.width,
+                ['Perdidas: $productosPerdido'],
+                (productosPerdido > 0)
+                    ? Tablas.contenedorInfo(
+                        MediaQuery.sizeOf(context).width,
+                        [.05, .15, .6],
+                        ['#', 'Cantidad perdida', 'Razón de perdida'],
+                      )
+                    : Textos.textoTilulo('No hay perdidas registradas.', 30),
+                (productosPerdido > 0)
+                    ? SizedBox(
+                        height:
+                            (_prod.perdidaCantidad.length * 30 <
                                 MediaQuery.of(context).size.height * .7)
-                            ? 120 + _prod.perdidaCantidad.length * 30
-                            : MediaQuery.of(context).size.height * .7
-                      : MediaQuery.of(context).size.height * .175,
-                  MediaQuery.of(context).size.width,
-                  ['Perdidas: $productosPerdido'],
-                  (productosPerdido > 0)
-                      ? Tablas.contenedorInfo(
-                          MediaQuery.sizeOf(context).width,
-                          [.05, .15, .6],
-                          ['#', 'Cantidad perdida', 'Razón de perdida'],
-                        )
-                      : Textos.textoTilulo('No hay perdidas registradas.', 30),
-                  (productosPerdido > 0)
-                      ? SizedBox(
-                          height:
-                              (_prod.perdidaCantidad.length * 30 <
-                                  MediaQuery.of(context).size.height * .7)
-                              ? _prod.perdidaCantidad.length * 30
-                              : MediaQuery.of(context).size.height * .7,
-                          child: ListView.separated(
-                            itemCount: _prod.perdidaCantidad.length,
-                            scrollDirection: Axis.vertical,
-                            separatorBuilder: (context, index) => Container(
-                              height: 2,
+                            ? _prod.perdidaCantidad.length * 30
+                            : MediaQuery.of(context).size.height * .7,
+                        child: ListView.separated(
+                          itemCount: _prod.perdidaCantidad.length,
+                          scrollDirection: Axis.vertical,
+                          separatorBuilder: (context, index) => Container(
+                            height: 2,
+                            decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                          ),
+                          itemBuilder: (context, index) {
+                            String cantidad = '${_prod.perdidaCantidad[index]}';
+                            return Container(
+                              width: MediaQuery.sizeOf(context).width,
                               decoration: BoxDecoration(
-                                color: Color(0xFFFDC930),
+                                color: Color(0xFFFFFFFF),
                               ),
-                            ),
-                            itemBuilder: (context, index) {
-                              String cantidad =
-                                  '${_prod.perdidaCantidad[index]}';
-                              return Container(
-                                width: MediaQuery.sizeOf(context).width,
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFFFFFFF),
-                                ),
-                                child: Tablas.barraDatos(
-                                  MediaQuery.sizeOf(context).width,
-                                  [.05, .15, .6],
-                                  [
-                                    '${index + 1}',
-                                    (cantidad.split('.').length > 1)
-                                        ? (cantidad.split('.')[1] == '0')
-                                              ? cantidad.split('.')[0]
-                                              : cantidad
-                                        : cantidad,
-                                    _prod.perdidaRazones[index],
-                                  ],
-                                  [],
-                                  2,
-                                ),
-                              );
-                            },
-                          ),
-                        )
-                      : SizedBox(
-                          child: Botones.btnCirRos(
-                            'Agregar perdida',
-                            () => {
-                              controllerPerdidas[0].text = '',
-                              controllerPerdidas[1].text = '',
-                              color[3] = Color(0x00000000),
-                              color[4] = Color(0x00000000),
-                              notifyListeners(),
-                              emergente(true),
-                              tabla(false),
-                            },
-                          ),
+                              child: Tablas.barraDatos(
+                                MediaQuery.sizeOf(context).width,
+                                [.05, .15, .6],
+                                [
+                                  '${index + 1}',
+                                  (cantidad.split('.').length > 1)
+                                      ? (cantidad.split('.')[1] == '0')
+                                            ? cantidad.split('.')[0]
+                                            : cantidad
+                                      : cantidad,
+                                  _prod.perdidaRazones[index],
+                                ],
+                                [],
+                                2,
+                              ),
+                            );
+                          },
                         ),
-                  Container(
-                    padding: EdgeInsets.only(right: 10),
-                    child: Row(
-                      spacing: 7.5,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Botones.btnCirRos('Cerrar', () => tabla(false)),
-                        if (productosPerdido > 0)
-                          Botones.btnCirRos(
-                            'Agregar perdida',
-                            () => {
-                              controllerPerdidas[0].text = '',
-                              controllerPerdidas[1].text = '',
-                              color[3] = Color(0x00000000),
-                              color[4] = Color(0x00000000),
-                              notifyListeners(),
-                              emergente(true),
-                              tabla(false),
-                            },
-                          ),
-                      ],
-                    ),
+                      )
+                    : SizedBox(
+                        child: Botones.btnCirRos(
+                          'Agregar perdida',
+                          () => {
+                            controllerPerdidas[0].text = '',
+                            controllerPerdidas[1].text = '',
+                            color[3] = Color(0x00000000),
+                            color[4] = Color(0x00000000),
+                            notifyListeners(),
+                            emergente(true),
+                            tabla(false),
+                          },
+                        ),
+                      ),
+                Container(
+                  padding: EdgeInsets.only(right: 10),
+                  child: Row(
+                    spacing: 7.5,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Botones.btnCirRos('Cerrar', () => tabla(false)),
+                      if (productosPerdido > 0)
+                        Botones.btnCirRos(
+                          'Agregar perdida',
+                          () => {
+                            controllerPerdidas[0].text = '',
+                            controllerPerdidas[1].text = '',
+                            color[3] = Color(0x00000000),
+                            color[4] = Color(0x00000000),
+                            notifyListeners(),
+                            emergente(true),
+                            tabla(false),
+                          },
+                        ),
+                    ],
                   ),
-                  visible: _tabla,
-                );
-              },
-            ),
+                ),
+                visible: _tabla,
+              );
+            },
           ),
-          Visibility(
-            visible: _emergente,
-            child: Consumer2<Carga, Tablas>(
-              builder: (context, carga, tablas, child) {
-                return Ventanas.ventanaEmergente(
-                  [
-                    '¿Cuánto se perdió y por qué?',
-                    'Confirma el nuevo límite de productos.',
-                  ][ventanaNum],
-                  'Volver',
-                  'Guardar',
-                  () => {
-                    emergente(false),
-                    color[3] = Color(0x00000000),
-                    color[4] = Color(0x00000000),
-                    notifyListeners(),
-                    tabla(ventanaNum == 0),
-                  },
-                  () async => {
-                    (ventanaNum == 0)
-                        ? guardarPerdidas(context)
-                        : editarLimite(context),
-                  },
-                  widget: SingleChildScrollView(
-                    child: Column(
-                      spacing: 10,
-                      children: [
+          Consumer2<Carga, Tablas>(
+            builder: (context, carga, tablas, child) {
+              return Ventanas.ventanaEmergente(
+                [
+                  '¿Cuánto se perdió y por qué?',
+                  'Confirma el nuevo límite de productos.',
+                ][ventanaNum],
+                'Volver',
+                'Guardar',
+                () => {
+                  emergente(false),
+                  color[3] = Color(0x00000000),
+                  color[4] = Color(0x00000000),
+                  notifyListeners(),
+                  tabla(ventanaNum == 0),
+                },
+                () async => {
+                  (ventanaNum == 0)
+                      ? guardarPerdidas(context)
+                      : editarLimite(context),
+                },
+                widget: SingleChildScrollView(
+                  child: Column(
+                    spacing: 10,
+                    children: [
+                      CampoTexto.inputTexto(
+                        MediaQuery.of(context).size.width * .75,
+                        'Cantidad',
+                        '',
+                        controllerPerdidas[0],
+                        true,
+                        false,
+                        accion: () => (ventanaNum == 0)
+                            ? focus.requestFocus()
+                            : editarLimite(context),
+                        icono: Icons.numbers_rounded,
+                        errorColor: color[3],
+                        formato: FilteringTextInputFormatter.allow(
+                          RegExp(r'(^\d*\.?\d{0,3})'),
+                        ),
+                        inputType: TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                      ),
+                      if (ventanaNum == 0)
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .75,
-                          'Cantidad',
+                          'Razón de la perdida',
                           '',
-                          controllerPerdidas[0],
+                          controllerPerdidas[1],
                           true,
                           false,
-                          () => (ventanaNum == 0)
-                              ? focus.requestFocus()
-                              : editarLimite(context),
-                          icono: Icons.numbers_rounded,
-                          errorColor: color[3],
-                          formato: FilteringTextInputFormatter.allow(
-                            RegExp(r'(^\d*\.?\d{0,3})'),
-                          ),
-                          inputType: TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
+                          accion: () => guardarPerdidas(context),
+                          icono: Icons.message_rounded,
+                          errorColor: color[4],
+                          focus: focus,
                         ),
-                        if (ventanaNum == 0)
-                          CampoTexto.inputTexto(
-                            MediaQuery.of(context).size.width * .75,
-                            'Razón de la perdida',
-                            '',
-                            controllerPerdidas[1],
-                            true,
-                            false,
-                            () => guardarPerdidas(context),
-                            icono: Icons.message_rounded,
-                            errorColor: color[4],
-                            focus: focus,
-                          ),
-                      ],
-                    ),
+                    ],
                   ),
-                  visible: _emergente,
-                );
-              },
-            ),
+                ),
+                visible: _emergente,
+              );
+            },
           ),
         ],
       ),
@@ -563,6 +533,10 @@ class Producto with ChangeNotifier {
   }
 
   Widget productorInfo(BuildContext context) {
+    String unidad = '${_prod.unidades}';
+    if (unidad.split('.').length > 1) {
+      if (unidad.split('.')[1] == '0') unidad = unidad.split('.')[0];
+    }
     return Visibility(
       visible: _prov,
       child: Stack(
@@ -618,19 +592,7 @@ class Producto with ChangeNotifier {
                                           alignment: TextAlign.center,
                                         ),
                                         Textos.recuadroCantidad(
-                                          ('${_prod.unidades}'
-                                                      .split('.')
-                                                      .length >
-                                                  1)
-                                              ? ('${_prod.unidades}'.split(
-                                                          '.',
-                                                        )[1] ==
-                                                        '0')
-                                                    ? '${_prod.unidades}'.split(
-                                                        '.',
-                                                      )[0]
-                                                    : '${_prod.unidades}'
-                                              : '${_prod.unidades}',
+                                          unidad,
                                           Textos.colorLimite(
                                             _prod.limiteProd,
                                             _prod.unidades.floor(),
@@ -658,7 +620,7 @@ class Producto with ChangeNotifier {
                                           ],
                                         )
                                       : Textos.textoTilulo(
-                                          'Perdidas: $productosPerdido',
+                                          'No hay perdidas registradas',
                                           20,
                                         ),
                                   if (productosPerdido > 0)
@@ -755,7 +717,7 @@ class Producto with ChangeNotifier {
                           controller[0],
                           true,
                           false,
-                          () => focus.requestFocus(),
+                          accion: () => focus.requestFocus(),
                           icono: Icons.numbers_rounded,
                           errorColor: color[0],
                           formato: FilteringTextInputFormatter.allow(
@@ -772,7 +734,7 @@ class Producto with ChangeNotifier {
                           controller[1],
                           true,
                           false,
-                          () => guardarPerdidasProv(context),
+                          accion: () => guardarPerdidasProv(context),
                           icono: Icons.message_rounded,
                           errorColor: color[1],
                           focus: focus,
@@ -790,23 +752,25 @@ class Producto with ChangeNotifier {
     );
   }
 
-  SizedBox tipoTexto(String tipo, BuildContext ctx) {
-    String titulo = '${tipo}s:';
+  SizedBox tipoTexto(BuildContext ctx) {
+    String titulo = '${_prod.tipo}s:';
     String cantidad = '${_prod.cantidadPorUnidad}';
     if (cantidad.split('.').length > 1) {
       if (cantidad.split('.')[1] == '0') cantidad = cantidad.split('.')[0];
     }
-    if (tipo == 'Granel') {
+    if (_prod.tipo == 'Granel') {
       titulo = 'Kilos:';
-    } else if (tipo == 'Costal') {
+    } else if (_prod.tipo == 'Costal') {
       titulo = 'Unidades:';
       cantidad = 'Kilos por unidad: $cantidad';
-    } else if (tipo == 'Bote') {
+    } else if (_prod.tipo == 'Bote') {
       titulo = 'Unidades:';
       cantidad = 'Kilos/Piezas por unidad: $cantidad';
-    } else if (tipo == 'Caja' || tipo == 'Bulto' || tipo == 'Paquete') {
-      cantidad = 'Productos por $tipo: $cantidad';
-    } else if (tipo == 'Galón') {
+    } else if (_prod.tipo == 'Caja' ||
+        _prod.tipo == 'Bulto' ||
+        _prod.tipo == 'Paquete') {
+      cantidad = 'Productos por $_prod.tipo: $cantidad';
+    } else if (_prod.tipo == 'Galón') {
       titulo = 'Galones:';
     }
     String unidades = '${_prod.unidades + entr - sali}';
@@ -958,7 +922,7 @@ class Producto with ChangeNotifier {
 
   static SizedBox contenedorInfo(
     String textoInfo,
-    double textoValor,
+    String textoValor,
     int valor,
     BuildContext ctx,
   ) {
@@ -977,7 +941,7 @@ class Producto with ChangeNotifier {
             controller[valor],
             true,
             false,
-            () => FocusManager.instance.primaryFocus?.unfocus(),
+            accion: () => FocusManager.instance.primaryFocus?.unfocus(),
             icono: Icons.info_outline_rounded,
             errorColor: color[valor],
             formato: FilteringTextInputFormatter.allow(
@@ -986,12 +950,7 @@ class Producto with ChangeNotifier {
             inputType: TextInputType.numberWithOptions(decimal: true),
             borderColor: Color(0xFF8A03A9),
           ),
-          Textos.recuadroCantidad(
-            '$textoValor',
-            Color(0xFF8A03A9),
-            1,
-            size: 20,
-          ),
+          Textos.recuadroCantidad(textoValor, Color(0xFF8A03A9), 1, size: 20),
         ],
       ),
     );
@@ -1045,22 +1004,6 @@ class Producto with ChangeNotifier {
             ],
           ),
         ],
-      ),
-    );
-  }
-
-  SizedBox footer(List<String> textos, BuildContext ctx) {
-    List<Widget> lista = [];
-    for (String txt in textos) {
-      lista.add(Textos.textoGeneral(txt, false, 1, size: 15));
-    }
-    return SizedBox(
-      width: MediaQuery.of(ctx).size.width * .35,
-      height: 35,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: lista,
       ),
     );
   }

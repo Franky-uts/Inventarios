@@ -23,6 +23,7 @@ class Ventanas with ChangeNotifier {
     Function btnNo,
     Function btnSi, {
     Widget? widget,
+    Widget? extraButton,
     bool? visible,
   }) {
     return Visibility(
@@ -50,6 +51,7 @@ class Ventanas with ChangeNotifier {
                     mainAxisAlignment: MainAxisAlignment.end,
                     spacing: 15,
                     children: [
+                      ?extraButton,
                       if (no.isNotEmpty) Botones.btnCirRos(no, () => btnNo()),
                       if (si.isNotEmpty) Botones.btnCirRos(si, () => btnSi()),
                     ],
@@ -64,7 +66,7 @@ class Ventanas with ChangeNotifier {
   }
 
   static Widget ventanaTabla(
-    double alto,
+    double? alto,
     double ancho,
     List<String> tituloTexto,
     Widget tablaInfo,
@@ -101,12 +103,7 @@ class Ventanas with ChangeNotifier {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: titulos,
                   ),
-                  Column(
-                    children: [
-                      tablaInfo,
-                      tablaListView,
-                    ],
-                  ),
+                  Column(children: [tablaInfo, tablaListView]),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [

@@ -64,17 +64,17 @@ class _EmpleadoState extends State<Empleado> {
             selectedIndex: currentPage,
             destinations: [
               Botones.botonBarNav(
-                'Inventario',
-                Icons.inventory_rounded,
+                'Movimientos',
+                Icons.checklist_rtl_rounded,
                 () => {
                   if (CampoTexto.seleccionFiltro == Filtros.fecha)
                     CampoTexto.seleccionFiltro = Filtros.id,
                 },
               ),
               Botones.botonBarNav(
-                'Movimientos',
-                Icons.checklist_rtl_rounded,
-                    () => {
+                'Inventario',
+                Icons.inventory_rounded,
+                () => {
                   if (CampoTexto.seleccionFiltro == Filtros.fecha)
                     CampoTexto.seleccionFiltro = Filtros.id,
                 },
@@ -113,8 +113,8 @@ class _EmpleadoState extends State<Empleado> {
         },
       ),
       body: [
-        Inventario(),
         ESP(),
+        Inventario(),
         OrdenSalida(),
         HistorialOrdenes(),
         Historial(),

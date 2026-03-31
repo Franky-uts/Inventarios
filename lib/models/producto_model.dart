@@ -82,7 +82,7 @@ class ProductoModel {
           final datos = json.decode(res.body);
           for (var item in datos) {
             List<double> doublelist = [];
-            for (double perdida in item['PerdidaCantidad']) {
+            for (var perdida in item['PerdidaCantidad']) {
               String dob = '$perdida';
               if (dob.split('.').length < 2) {
                 dob = '$dob.0';
@@ -143,7 +143,7 @@ class ProductoModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          for (double perdida in item['PerdidaCantidad']) {
+          for (var perdida in item['PerdidaCantidad']) {
             String dob = '$perdida';
             if (dob.split('.').length < 2) {
               dob = '$dob.0';
@@ -202,7 +202,7 @@ class ProductoModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          for (double perdida in item['PerdidaCantidad']) {
+          for (var perdida in item['PerdidaCantidad']) {
             String dob = '$perdida';
             if (dob.split('.').length < 2) {
               dob = '$dob.0';
@@ -254,11 +254,9 @@ class ProductoModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          for (double perdida in item['PerdidaCantidad']) {
+          for (var perdida in item['PerdidaCantidad']) {
             String dob = '$perdida';
-            if (dob.split('.').length < 2) {
-              dob = '$dob.0';
-            }
+            if (dob.split('.').length < 2) dob = '$dob.0';
             doublelist.add(double.parse(dob));
           }
           productoModel.add(
@@ -309,6 +307,37 @@ class ProductoModel {
           'id': id,
           'locacion': LocalStorage.local('locación'),
           'limite': limite,
+          'usuario': LocalStorage.local('usuario'),
+        }),
+      );
+      mensaje = res.body;
+    } on TimeoutException catch (e) {
+      mensaje = 'Error: ${e.message}';
+    } on SocketException catch (e) {
+      mensaje = 'Error: ${e.message}';
+    } on http.ClientException catch (e) {
+      mensaje = 'Error: ${e.message}';
+    } on Error catch (e) {
+      mensaje = 'Error: $e';
+    }
+    return mensaje;
+  }
+
+  static Future<String> registroCompleto(
+    List<int> idProductos,
+    List<double> cantidades,
+  ) async {
+    String mensaje = '';
+    try {
+      final res = await http.put(
+        Uri.parse('${MyApp.url}:3000/almacen/Registro'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'productos': idProductos,
+          'cantidades': cantidades,
           'usuario': LocalStorage.local('usuario'),
         }),
       );
@@ -386,6 +415,39 @@ class ProductoModel {
       texto = 'Error: $e';
     }
     return texto;
+  }
+
+  static Future<String> guardarESCompleto(
+    List<int> idProductos,
+    List<double> entradas,
+    List<double> salidas,
+  ) async {
+    String mensaje = '';
+    try {
+      final res = await http.put(
+        Uri.parse('${MyApp.url}:3000/almacen/ES/Multiple'),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+        body: jsonEncode({
+          'productos': idProductos,
+          'entradas': entradas,
+          'salidas': salidas,
+          'usuario': LocalStorage.local('usuario'),
+        }),
+      );
+      mensaje = res.body;
+    } on TimeoutException catch (e) {
+      mensaje = 'Error: ${e.message}';
+    } on SocketException catch (e) {
+      mensaje = 'Error: ${e.message}';
+    } on http.ClientException catch (e) {
+      mensaje = 'Error: ${e.message}';
+    } on Error catch (e) {
+      mensaje = 'Error: $e';
+    }
+    return mensaje;
   }
 
   static Future<String> guardarPerdidas(

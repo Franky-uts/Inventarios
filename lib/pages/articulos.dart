@@ -21,9 +21,10 @@ class Articulos extends StatefulWidget {
 }
 
 class _ArticulosState extends State<Articulos> {
-  Future<List<ArticulosModel>> getArticulos(String filtro,
-      String busqueda,) async =>
-      await ArticulosModel.getArticulos(filtro, busqueda);
+  Future<List<ArticulosModel>> getArticulos(
+    String filtro,
+    String busqueda,
+  ) async => await ArticulosModel.getArticulos(filtro, busqueda);
 
   Future<void> getArticuloInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
@@ -51,27 +52,27 @@ class _ArticulosState extends State<Articulos> {
     (texto.isNotEmpty)
         ? Textos.toast(texto, false)
         : {
-      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
-      if (ctx.mounted)
-        Navigator.of(ctx).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                Addarticulo(listaArea: areas, listaTipo: tipos),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return SlideTransition(
-                position: animation.drive(
-                  Tween(
-                    begin: Offset(1.0, 0.0),
-                    end: Offset.zero,
-                  ).chain(CurveTween(curve: Curves.ease)),
+            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            if (ctx.mounted)
+              Navigator.of(ctx).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      Addarticulo(listaArea: areas, listaTipo: tipos),
+                  transitionsBuilder:
+                      (context, animation, secondaryAnimation, child) {
+                        return SlideTransition(
+                          position: animation.drive(
+                            Tween(
+                              begin: Offset(1.0, 0.0),
+                              end: Offset.zero,
+                            ).chain(CurveTween(curve: Curves.ease)),
+                          ),
+                          child: child,
+                        );
+                      },
                 ),
-                child: child,
-              );
-            },
-          ),
-        ),
-    };
+              ),
+          };
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -85,8 +86,8 @@ class _ArticulosState extends State<Articulos> {
             return Botones.icoCirMor(
               'Añadir un artículo',
               Icons.edit_note_rounded,
-                  () async => await _getListas(context),
-                  () => Textos.toast('Espera a que los datos carguen.', false),
+              () async => await _getListas(context),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               false,
               Carga.getValido(),
             );
@@ -97,8 +98,8 @@ class _ArticulosState extends State<Articulos> {
             return Botones.icoCirMor(
               'Descargar articulos',
               Icons.download_rounded,
-                  () async => await RecDrawer.articulosExcel(context),
-                  () => Textos.toast('Espera a que los datos carguen.', false),
+              () async => await RecDrawer.articulosExcel(context),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               false,
               Carga.getValido(),
             );
@@ -109,8 +110,8 @@ class _ArticulosState extends State<Articulos> {
             return Botones.icoCirMor(
               'Escanear artículo',
               Icons.barcode_reader,
-                  () async => RecDrawer.scanArticulo(context),
-                  () => Textos.toast('Espera a que los datos carguen.', false),
+              () async => RecDrawer.scanArticulo(context),
+              () => Textos.toast('Espera a que los datos carguen.', false),
               true,
               Carga.getValido(),
             );
@@ -154,53 +155,42 @@ class _ArticulosState extends State<Articulos> {
         child: Stack(
           children: [
             Builder(
-              builder: (context) =>
-                  SingleChildScrollView(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        barraSuperior(context),
-                        Tablas.contenedorInfo(
-                          MediaQuery
-                              .sizeOf(context)
-                              .width,
-                          [.1, .4, .2, .2],
-                          ['id', 'Nombre', 'Área', 'Tipo'],
-                        ),
-                        SizedBox(
-                          width: MediaQuery
-                              .of(context)
-                              .size
-                              .width,
-                          height: MediaQuery
-                              .of(context)
-                              .size
-                              .height - 144,
-                          child: Consumer<Tablas>(
-                            builder: (context, tablas, child) {
-                              return Tablas.listaFutura(
-                                listaPrincipal,
-                                'No hay productos registrados.',
-                                'No hay coincidencias.',
-                                    () =>
-                                    getArticulos(
-                                      CampoTexto.filtroTexto(),
-                                      CampoTexto.busquedaTexto.text,
-                                    ),
-                                accionRefresh: () async =>
-                                    tablas.datos(
-                                      await getArticulos(
-                                        CampoTexto.filtroTexto(),
-                                        CampoTexto.busquedaTexto.text,
-                                      ),
-                                    ),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+              builder: (context) => SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    barraSuperior(context),
+                    Tablas.contenedorInfo(
+                      MediaQuery.sizeOf(context).width,
+                      [.1, .4, .2, .2],
+                      ['id', 'Nombre', 'Área', 'Tipo'],
                     ),
-                  ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      height: MediaQuery.of(context).size.height - 143.5,
+                      child: Consumer<Tablas>(
+                        builder: (context, tablas, child) {
+                          return Tablas.listaFutura(
+                            listaPrincipal,
+                            'No hay productos registrados.',
+                            'No hay coincidencias.',
+                            () => getArticulos(
+                              CampoTexto.filtroTexto(),
+                              CampoTexto.busquedaTexto.text,
+                            ),
+                            accionRefresh: () async => tablas.datos(
+                              await getArticulos(
+                                CampoTexto.filtroTexto(),
+                                CampoTexto.busquedaTexto.text,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
             Consumer<Articulo>(
               builder: (context, articulo, child) {
@@ -211,8 +201,8 @@ class _ArticulosState extends State<Articulos> {
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaScan(
                   context,
-                      () => ventanas.scan(false),
-                      (texto) => RecDrawer.rutaArticulo(texto, context),
+                  () => ventanas.scan(false),
+                  (texto) => RecDrawer.rutaArticulo(texto, context),
                 );
               },
             ),
@@ -224,40 +214,39 @@ class _ArticulosState extends State<Articulos> {
   }
 
   Widget barraSuperior(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Botones.btnRctMor(
-          'Abrir menú',
-          Icons.menu_rounded,
-          false,
-              () => Scaffold.of(context).openDrawer(),
-          size: 35,
-        ),
-        Container(
-          width: MediaQuery
-              .of(context)
-              .size
-              .width * .875,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: Consumer2<Tablas, CampoTexto>(
-            builder: (context, tablas, campoTexto, child) {
-              return CampoTexto.barraBusqueda(
-                    () async =>
-                    tablas.datos(
-                      await getArticulos(
-                        CampoTexto.filtroTexto(),
-                        CampoTexto.busquedaTexto.text,
-                      ),
-                    ),
-                false,
-                false,
-              );
-            },
+    return SizedBox(
+      height: 70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Botones.btnRctMor(
+            'Abrir menú',
+            Icons.menu_rounded,
+            false,
+            () => Scaffold.of(context).openDrawer(),
+            size: 35,
           ),
-        ),
-      ],
+          Container(
+            width: MediaQuery.of(context).size.width * .875,
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Consumer2<Tablas, CampoTexto>(
+              builder: (context, tablas, campoTexto, child) {
+                return CampoTexto.barraBusqueda(
+                  () async => tablas.datos(
+                    await getArticulos(
+                      CampoTexto.filtroTexto(),
+                      CampoTexto.busquedaTexto.text,
+                    ),
+                  ),
+                  false,
+                  false,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -266,21 +255,16 @@ class _ArticulosState extends State<Articulos> {
       controller: controller,
       itemCount: lista.length,
       scrollDirection: Axis.vertical,
-      separatorBuilder: (context, index) =>
-          Container(
-            height: 2,
-            decoration: BoxDecoration(color: Color(0xFFFDC930)),
-          ),
+      separatorBuilder: (context, index) => Container(
+        height: 2,
+        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+      ),
       itemBuilder: (context, index) {
         return Container(
-          width: MediaQuery
-              .sizeOf(context)
-              .width,
+          width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
-            MediaQuery
-                .sizeOf(context)
-                .width,
+            MediaQuery.sizeOf(context).width,
             [.1, .4, .2, .2],
             [
               '${lista[index].id}',

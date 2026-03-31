@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
@@ -19,11 +20,12 @@ class OrdenSalida extends StatefulWidget {
 }
 
 class _OrdenSalidaState extends State<OrdenSalida> {
-  List<int> cantidad = [];
+  List<TextEditingController> cantidad = [];
   List<ProductoModel> listaProd = [];
   List<String> comentarios = [];
   String comTit = '';
   int comid = 0;
+  bool valido = true;
   TextEditingController controller = TextEditingController();
 
   @override
@@ -46,11 +48,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   ) async => await ProductoModel.getProductos(filtro, busqueda);
 
   Future<void> addOrden(BuildContext ctx) async {
-    List<int> cantidades = [];
+    valido = true;
+    List<double> cantidades = [];
     List<int> idProductos = [];
     ctx.read<Carga>().cargaBool(true);
     for (ProductoModel prod in listaProd) {
-      cantidades.add(cantidad[prod.id - 1]);
+      cantidades.add(double.parse(cantidad[prod.id - 1].text));
       idProductos.add(prod.id);
     }
     for (int i = 0; i < cantidades.length; i++) {
@@ -62,11 +65,14 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       comentarios,
     );
     if (respuesta.split(': ')[0] != 'Error') {
-      if (ctx.mounted) {
-        ctx.read<Textos>().setAllColor(Color(0xFFFDC930));
-        ctx.read<Ventanas>().tabla(false);
-      }
-      cantidad.addAll(List.filled(cantidad.length, 0));
+      if (ctx.mounted) ctx.read<Ventanas>().tabla(false);
+      cantidad.addAll(
+        List.filled(
+          cantidad.length,
+          TextEditingController(text: ''),
+          growable: true,
+        ),
+      );
       listaProd.clear();
       comentarios.clear();
     }
@@ -76,31 +82,37 @@ class _OrdenSalidaState extends State<OrdenSalida> {
 
   void listas(int length) {
     if (cantidad.isEmpty) {
-      cantidad.addAll(List.filled(length, 0));
+      for (int i = 0; i < length; i++) {
+        cantidad.add(TextEditingController(text: ''));
+      }
     }
   }
 
   void generarTabla(BuildContext ctx) async {
-    List<ProductoModel> lista = await getProductos('id', '');
-    String mensaje = 'Espera a que los datos carguen.';
-    listaProd.clear();
-    comentarios.clear();
-    if (Carga.getValido()) {
-      mensaje = '';
-      int j = 0;
-      for (int i = 0; i < cantidad.length; i++) {
-        if (cantidad[i] > 0) {
-          while (i + 1 != lista[j].id) {
-            j++;
+    if (valido) {
+      valido = false;
+      List<ProductoModel> lista = await getProductos('id', '');
+      String mensaje = 'Espera a que los datos carguen.';
+      listaProd.clear();
+      comentarios.clear();
+      if (Carga.getValido()) {
+        mensaje = '';
+        int j = 0;
+        for (int i = 0; i < cantidad.length; i++) {
+          if (cantidad[i].text.isNotEmpty &&
+              double.parse(cantidad[i].text) > 0) {
+            while (i + 1 != lista[j].id) {
+              j++;
+            }
+            listaProd.add(lista[j]);
+            comentarios.add('');
           }
-          listaProd.add(lista[j]);
-          comentarios.add('');
         }
+        if (listaProd.isEmpty) mensaje = 'No hay productos seleccionados.';
       }
-      if (listaProd.isEmpty) mensaje = 'No hay productos seleccionados.';
+      if (ctx.mounted) ctx.read<Ventanas>().tabla(listaProd.isNotEmpty);
+      if (mensaje.isNotEmpty) Textos.toast(mensaje, false);
     }
-    if (ctx.mounted) ctx.read<Ventanas>().tabla(listaProd.isNotEmpty);
-    if (mensaje.isNotEmpty) Textos.toast(mensaje, false);
   }
 
   @override
@@ -157,7 +169,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, .25, .175, .175, .08, .2],
+                          [.1, .25, .175, .175, .08, .1],
                           [
                             'id',
                             'Nombre',
@@ -169,7 +181,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 144,
+                          height: MediaQuery.of(context).size.height - 143.5,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -199,10 +211,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
             Consumer2<Ventanas, Carga>(
               builder: (context, ventana, carga, child) {
                 return Ventanas.ventanaTabla(
-                  MediaQuery.of(context).size.height * .9,
+                  (listaProd.length * 44 + 120 <
+                          MediaQuery.sizeOf(context).height - 100)
+                      ? listaProd.length * 44 + 120
+                      : MediaQuery.sizeOf(context).height - 100,
                   MediaQuery.of(context).size.width,
                   ['Productos seleccionados:'],
-
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
                     [.045, .215, .15, .105, .075, .075, .075, .05],
@@ -218,7 +232,11 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     ],
                   ),
                   SizedBox(
-                    height: MediaQuery.sizeOf(context).height-220,
+                    height:
+                        (listaProd.length * 44 <
+                            MediaQuery.sizeOf(context).height - 220)
+                        ? listaProd.length * 44
+                        : MediaQuery.sizeOf(context).height - 220,
                     child: ListView.separated(
                       itemCount: listaProd.length,
                       scrollDirection: Axis.vertical,
@@ -235,13 +253,15 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                             );
                             colores[4] = Textos.colorLimite(
                               listaProd[index].limiteProd,
-                              cantidad[listaProd[index].id - 1] +
+                              double.parse(
+                                    cantidad[listaProd[index].id - 1].text,
+                                  ).round() +
                                   listaProd[index].unidades.floor(),
                             );
                             String cantUni =
                                 '${listaProd[index].cantidadPorUnidad}';
                             String total =
-                                '${cantidad[listaProd[index].id - 1] * listaProd[index].cantidadPorUnidad}';
+                                '${double.parse(cantidad[listaProd[index].id - 1].text) * listaProd[index].cantidadPorUnidad}';
                             return Container(
                               width: MediaQuery.sizeOf(context).width,
                               decoration: BoxDecoration(
@@ -255,7 +275,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                                   listaProd[index].nombre,
                                   listaProd[index].area,
                                   listaProd[index].tipo,
-                                  '${cantidad[listaProd[index].id - 1]}',
+                                  cantidad[listaProd[index].id - 1].text,
                                   (cantUni.split('.').length > 1)
                                       ? (cantUni.split('.')[1] == '0')
                                             ? cantUni.split('.')[0]
@@ -277,6 +297,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                                       context.read<Ventanas>().emergente(true),
                                     },
                                     size: 15,
+                                    alert: comentarios[index].isNotEmpty,
                                   ),
                                 ],
                                 colores,
@@ -307,6 +328,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         Botones.btnCirRos(
                           'No',
                           () => {
+                            valido = true,
                             listaProd.clear(),
                             comentarios.clear(),
                             ventana.tabla(false),
@@ -343,7 +365,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     controller,
                     true,
                     false,
-                    () => {
+                    accion: () => {
                       if (controller.text.isNotEmpty &&
                           controller.text != comentarios[comid])
                         Textos.toast('Comentario añadido', false),
@@ -363,47 +385,50 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   }
 
   Widget barraDeBusqueda(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Botones.btnRctMor(
-          'Regresar',
-          Icons.menu_rounded,
-          false,
-          () => Scaffold.of(context).openDrawer(),
-          size: 35,
-        ),
-        Botones.btnRctMor(
-          'Revisar orden',
-          Icons.task_rounded,
-          false,
-          () async => {
-            context.read<Carga>().cargaBool(true),
-            generarTabla(context),
-            if (context.mounted) context.read<Carga>().cargaBool(false),
-          },
-          size: 35,
-        ),
-        Container(
-          width: MediaQuery.of(context).size.width * .775,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: Consumer<Tablas>(
-            builder: (context, tablas, child) {
-              return CampoTexto.barraBusqueda(
-                () async => tablas.datos(
-                  await getProductos(
-                    CampoTexto.filtroTexto(),
-                    CampoTexto.busquedaTexto.text,
-                  ),
-                ),
-                true,
-                false,
-              );
-            },
+    return SizedBox(
+      height: 70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Botones.btnRctMor(
+            'Regresar',
+            Icons.menu_rounded,
+            false,
+            () => Scaffold.of(context).openDrawer(),
+            size: 35,
           ),
-        ),
-      ],
+          Botones.btnRctMor(
+            'Revisar orden',
+            Icons.task_rounded,
+            false,
+            () async => {
+              context.read<Carga>().cargaBool(true),
+              generarTabla(context),
+              if (context.mounted) context.read<Carga>().cargaBool(false),
+            },
+            size: 35,
+          ),
+          Container(
+            width: MediaQuery.of(context).size.width * .775,
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Consumer<Tablas>(
+              builder: (context, tablas, child) {
+                return CampoTexto.barraBusqueda(
+                  () async => tablas.datos(
+                    await getProductos(
+                      CampoTexto.filtroTexto(),
+                      CampoTexto.busquedaTexto.text,
+                    ),
+                  ),
+                  true,
+                  false,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -429,7 +454,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, .25, .175, .175, .08, .2],
+            [.1, .25, .175, .175, .08, .1],
             [
               '${lista[index].id}',
               lista[index].nombre,
@@ -440,32 +465,27 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         ? unidad.split('.')[0]
                         : unidad
                   : unidad,
-              SizedBox(
-                width: MediaQuery.sizeOf(context).width * .2,
-                child: Consumer<Textos>(
-                  builder: (context, textos, child) {
-                    return Botones.botonesSumaResta(
-                      lista[index].nombre,
+              Consumer<Textos>(
+                builder: (ctx, textos, child) {
+                  return SizedBox(
+                    width: MediaQuery.sizeOf(context).width * .1,
+                    child: CampoTexto.inputTexto(
+                      MediaQuery.sizeOf(context).width * .1,
+                      '',
+                      '0',
                       cantidad[lista[index].id - 1],
-                      Textos.getColor(lista[index].id - 1),
-                      () => {
-                        textos.setColor(lista[index].id - 1, Color(0xFFFF0000)),
-                        if ((cantidad[lista[index].id - 1] - 1) > -1)
-                          {
-                            textos.setColor(
-                              lista[index].id - 1,
-                              Color(0xFFFDC930),
-                            ),
-                            cantidad[lista[index].id - 1] -= 1,
-                          },
-                      },
-                      () => {
-                        textos.setColor(lista[index].id - 1, Color(0xFFFDC930)),
-                        cantidad[lista[index].id - 1] += 1,
-                      },
-                    );
-                  },
-                ),
+                      true,
+                      false,
+                      borderColor: Color(0xFF8A03A9),
+                      formato: FilteringTextInputFormatter.allow(
+                        RegExp(r'(^\d*\.?\d{0,3})'),
+                      ),
+                      inputType: TextInputType.numberWithOptions(decimal: true),
+                      fontSize: 17.5,
+                      align: TextAlign.center,
+                    ),
+                  );
+                },
               ),
             ],
             colores,

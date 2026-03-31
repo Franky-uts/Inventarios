@@ -7,6 +7,7 @@ import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/pages/articulo.dart';
+import 'package:inventarios/pages/historial_info.dart';
 import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/views/empleado.dart';
 import 'package:inventarios/pages/inicio.dart';
@@ -34,6 +35,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => VenDatos()),
         ChangeNotifierProvider(create: (_) => Producto()),
         ChangeNotifierProvider(create: (_) => Articulo()),
+        ChangeNotifierProvider(create: (_) => HistorialInfo()),
       ],
       child: MyApp(),
     ),

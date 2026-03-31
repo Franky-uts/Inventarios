@@ -247,7 +247,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             ),
             Consumer<Producto>(
               builder: (context, producto, child) {
-                return producto.productoInfo(context);
+                return producto.productoInfo();
               },
             ),
             Carga.ventanaCarga(),

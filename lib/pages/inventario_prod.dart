@@ -134,7 +134,7 @@ class _InventarioProdState extends State<InventarioProd> {
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
-                          height: MediaQuery.of(context).size.height - 144,
+                          height: MediaQuery.of(context).size.height - 143.5,
                           child: Consumer<Tablas>(
                             builder: (context, tablas, child) {
                               return Tablas.listaFutura(
@@ -183,38 +183,41 @@ class _InventarioProdState extends State<InventarioProd> {
   }
 
   Widget barraSuperior(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Botones.btnRctMor(
-          'Abrir menú',
-          Icons.menu_rounded,
-          false,
-          () => Scaffold.of(context).openDrawer(),
-          size: 35,
-        ),
-        Container(
-          width: MediaQuery.of(context).size.width * .875,
-          margin: EdgeInsets.symmetric(vertical: 10),
-          child: Consumer2<Tablas, CampoTexto>(
-            builder: (context, tablas, campoTexto, child) {
-              return CampoTexto.barraBusqueda(
-                () async => {
-                  tablas.datos(
-                    await getProductos(
-                      CampoTexto.filtroTexto(),
-                      CampoTexto.busquedaTexto.text,
-                    ),
-                  ),
-                },
-                true,
-                false,
-              );
-            },
+    return SizedBox(
+      height: 70,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Botones.btnRctMor(
+            'Abrir menú',
+            Icons.menu_rounded,
+            false,
+            () => Scaffold.of(context).openDrawer(),
+            size: 35,
           ),
-        ),
-      ],
+          Container(
+            width: MediaQuery.of(context).size.width * .875,
+            margin: EdgeInsets.symmetric(vertical: 10),
+            child: Consumer2<Tablas, CampoTexto>(
+              builder: (context, tablas, campoTexto, child) {
+                return CampoTexto.barraBusqueda(
+                  () async => {
+                    tablas.datos(
+                      await getProductos(
+                        CampoTexto.filtroTexto(),
+                        CampoTexto.busquedaTexto.text,
+                      ),
+                    ),
+                  },
+                  true,
+                  false,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -27,7 +27,7 @@ class _ProveedorState extends State<Proveedor> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      bottomNavigationBar: Consumer2<Carga,Ventanas>(
+      bottomNavigationBar: Consumer2<Carga, Ventanas>(
         builder: (ctx, carga, ventanas, child) {
           return NavigationBar(
             height: 55,
@@ -51,16 +51,16 @@ class _ProveedorState extends State<Proveedor> {
                 () => {},
               ),
               Botones.botonBarNav(
-                'Inventario',
-                Icons.inventory_rounded,
+                'Movimientos',
+                Icons.checklist_rtl_rounded,
                 () => {
                   if (CampoTexto.seleccionFiltro == Filtros.fecha)
                     CampoTexto.seleccionFiltro = Filtros.id,
                 },
               ),
               Botones.botonBarNav(
-                'Movimientos',
-                Icons.checklist_rtl_rounded,
+                'Inventario',
+                Icons.inventory_rounded,
                 () => {
                   if (CampoTexto.seleccionFiltro == Filtros.fecha)
                     CampoTexto.seleccionFiltro = Filtros.id,
@@ -104,8 +104,8 @@ class _ProveedorState extends State<Proveedor> {
       ),
       body: [
         Ordenes(),
-        Inventario(),
         ESP(),
+        Inventario(),
         Articulos(),
         Historial(),
       ][currentPage],
