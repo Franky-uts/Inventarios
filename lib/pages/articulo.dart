@@ -281,22 +281,6 @@ class Articulo extends ChangeNotifier {
                                       ? listaPrincipal(_lista)
                                       : Carga.carga(),
                                 ),
-                                /*SizedBox(
-                                  width: MediaQuery.of(context).size.width,
-                                  height: MediaQuery.of(context).size.height*.3,
-                                  child: Consumer2<Tablas, Articulo>(
-                                    builder:
-                                        (context, tablas, articulo, child) {
-                                          return Tablas.listaFutura(
-
-                                            'No hay productos registrados.',
-                                            'No hay coincidencias.',
-                                            () => await lista(),
-                                            accionRefresh: () => {},
-                                          );
-                                        },
-                                  ),
-                                ),*/
                                 Container(
                                   padding: EdgeInsets.symmetric(horizontal: 10),
                                   child: Row(

@@ -25,6 +25,17 @@ class OrdenModel {
   String locacion;
   String mensaje;
 
+  static List<String> listaEstados() {
+    return [
+      'Cancelado',
+      'Denegado',
+      'En proceso',
+      'Entregado',
+      'Finalizado',
+      'Incompleto',
+    ];
+  }
+
   OrdenModel({
     required this.id,
     required this.articulos,
@@ -72,11 +83,16 @@ class OrdenModel {
   static Future<List<OrdenModel>> getOrdenes(
     String filtro,
     String locacion,
+    List<bool> filtros,
   ) async {
     List<OrdenModel> ordenesFuture = [];
+    List<String> estados = [];
+    for (int i = 0; i < filtros.length; i++) {
+      if (filtros[i]) estados.add("'${listaEstados()[i]}'");
+    }
     try {
       var res = await http.get(
-        Uri.parse('${MyApp.url}:3000/ordenes/$filtro/$locacion'),
+        Uri.parse('${MyApp.url}:3000/ordenes/$filtro/$locacion/$estados'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -123,11 +139,18 @@ class OrdenModel {
     return ordenesFuture;
   }
 
-  static Future<List<OrdenModel>> getAllOrdenes(String filtro) async {
+  static Future<List<OrdenModel>> getAllOrdenes(
+    String filtro,
+    List<bool> filtros,
+  ) async {
     List<OrdenModel> ordenesFuture = [];
+    List<String> estados = [];
+    for (int i = 0; i < filtros.length; i++) {
+      if (filtros[i]) estados.add("'${listaEstados()[i]}'");
+    }
     try {
       var res = await http.get(
-        Uri.parse('${MyApp.url}:3000/ordenes/$filtro'),
+        Uri.parse('${MyApp.url}:3000/ordenes/$filtro/$estados'),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',

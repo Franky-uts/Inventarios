@@ -28,6 +28,7 @@ class _OrdenesState extends State<Ordenes> {
     Color(0xFFFFFFFF),
     Color(0xFFFFFFFF),
   ];
+  List<bool> filtros = List.filled(6, true, growable: true);
   List canCubOrg = [];
   List<TextEditingController> cantidades = [];
   TextEditingController controller = TextEditingController();
@@ -47,33 +48,33 @@ class _OrdenesState extends State<Ordenes> {
   }
 
   Future<List<OrdenModel>> getOrdenes() async =>
-      await OrdenModel.getAllOrdenes(filtro);
+      await OrdenModel.getAllOrdenes(filtro, filtros);
 
   Future<void> getOrdenInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     OrdenModel orden = await OrdenModel.getOrden(id);
-    (orden.mensaje.isEmpty)
-        ? {
-            Textos.limpiarLista(),
-            if (ctx.mounted)
-              {
-                canCubOrg.clear(),
-                ctx.read<VenDatos>().setDatos(orden),
-                Textos.crearLista(orden.cantArticulos, Color(0xFF8A03A9)),
-                canCubOrg.addAll(ctx.read<VenDatos>().canCubLista()),
-                cantidades.clear(),
-                for (int i = 0; i < orden.cantArticulos; i++)
-                  {
-                    cantidades.add(
-                      TextEditingController(
-                        text: '${ctx.read<VenDatos>().canCub(i)}',
-                      ),
-                    ),
-                  },
-                ctx.read<Ventanas>().tabla(true),
-              },
+    if (orden.mensaje.isEmpty) {
+      Textos.limpiarLista();
+      if (ctx.mounted) {
+        canCubOrg.clear();
+        ctx.read<VenDatos>().setDatos(orden);
+        Textos.crearLista(orden.cantArticulos, Color(0xFF8A03A9));
+        canCubOrg.addAll(ctx.read<VenDatos>().canCubLista());
+        cantidades.clear();
+        for (int i = 0; i < orden.cantArticulos; i++) {
+          String cantidadCub = '${ctx.read<VenDatos>().canCub(i)}';
+          if (cantidadCub.split('.').length > 1) {
+            if (cantidadCub.split('.')[1] == '0') {
+              cantidadCub = cantidadCub.split('.')[0];
+            }
           }
-        : Textos.toast(orden.mensaje, true);
+          cantidades.add(TextEditingController(text: cantidadCub));
+        }
+        ctx.read<Ventanas>().tabla(true);
+      }
+    } else {
+      Textos.toast(orden.mensaje, true);
+    }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -146,7 +147,9 @@ class _OrdenesState extends State<Ordenes> {
               datos,
             ),
             if (ctx.mounted)
-              ctx.read<Tablas>().datos(await OrdenModel.getAllOrdenes(filtro)),
+              ctx.read<Tablas>().datos(
+                await OrdenModel.getAllOrdenes(filtro, filtros),
+              ),
           }
         : datos = 'No hay cambios';
     if ((accion == 'guardar' ||
@@ -157,7 +160,7 @@ class _OrdenesState extends State<Ordenes> {
                 {
                   canCubOrg.clear(),
                   if (ctx.mounted)
-                    for (int valor in ctx.read<VenDatos>().canCubLista())
+                    for (double valor in ctx.read<VenDatos>().canCubLista())
                       canCubOrg.add(valor),
                 },
             }
@@ -168,6 +171,7 @@ class _OrdenesState extends State<Ordenes> {
       if (accion == 'entregar') {
         accion = 'guardar';
         datos = await guardarDatos(ctx);
+        accion = 'entregar';
       }
     }
     return datos;
@@ -538,20 +542,7 @@ class _OrdenesState extends State<Ordenes> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: RecDrawer.drawer(context, [
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Descargar reporte',
-              Icons.download_rounded,
-              () async => await RecDrawer.orden(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
-              Carga.getValido(),
-            );
-          },
-        ),*/
-      ]),
+      drawer: RecDrawer.drawer(context, []),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
@@ -603,9 +594,9 @@ class _OrdenesState extends State<Ordenes> {
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
                 return Ventanas.ventanaTabla(
-                  (venDatos.length() * 44 + 150 <
+                  (venDatos.length() * 44 + 160 <
                           MediaQuery.sizeOf(context).height)
-                      ? venDatos.length() * 44 + 150
+                      ? venDatos.length() * 44 + 160
                       : MediaQuery.sizeOf(context).height,
                   MediaQuery.of(context).size.width,
                   [
@@ -832,6 +823,15 @@ class _OrdenesState extends State<Ordenes> {
                 );
               },
             ),
+            Consumer2<Ventanas, Tablas>(
+              builder: (context, ventanas, tablas, child) {
+                return ventanas.ventanaFiltroOrden(
+                  context,
+                  filtros,
+                  () async => tablas.datos(await getOrdenes()),
+                );
+              },
+            ),
             Consumer4<Ventanas, Carga, VenDatos, Tablas>(
               builder: (context, ventana, carga, venDatos, tablas, child) {
                 return Ventanas.ventanaEmergente(
@@ -847,7 +847,7 @@ class _OrdenesState extends State<Ordenes> {
                     carga.cargaBool(true),
                     Textos.toast(await guardarDatos(context), false),
                     carga.cargaBool(false),
-                    ventana.tabla(accion == 'guardar' || accion == 'confirmar'),
+                    ventana.tabla(accion == 'guardar'),
                   },
                   widget: (venNum == 1)
                       ? Column(
@@ -921,6 +921,17 @@ class _OrdenesState extends State<Ordenes> {
               false,
               () => Scaffold.of(context).openDrawer(),
               size: 35,
+            ),
+            Consumer<Ventanas>(
+              builder: (context, ventanas, child) {
+                return Botones.btnRctMor(
+                  'Filtro de estado',
+                  Icons.filter_list_rounded,
+                  false,
+                  () => ventanas.ordenFiltro(true),
+                  size: 35,
+                );
+              },
             ),
           ];
           List<String> txt = ['id', 'Estado', 'Remitente', 'Locación'];

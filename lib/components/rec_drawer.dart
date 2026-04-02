@@ -229,14 +229,19 @@ class RecDrawer {
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
-  static Future<void> orden(BuildContext context) async {
+  static Future<void> orden(BuildContext context, List<bool> estados) async {
     context.read<Carga>().cargaBool(true);
     Navigator.of(context).pop();
-    List<OrdenModel> ordenes = await OrdenModel.getAllOrdenes('id');
+    List<OrdenModel> ordenes = await OrdenModel.getAllOrdenes('id', estados);
     var excel = Excel.createExcel();
     Sheet sheetObject = excel['Inventario'];
     excel.delete('Sheet1');
-    List<String> headers = ['id', 'Locación', 'Cant. Articulos', 'Fecha de orden'];
+    List<String> headers = [
+      'id',
+      'Locación',
+      'Cant. Articulos',
+      'Fecha de orden',
+    ];
     for (int i = 0; i < headers.length; i++) {
       establecerCelda(sheetObject, i, 0, TextCellValue(headers[i]));
     }

@@ -29,6 +29,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   int venNum = 0;
   String datos = '';
   int? indexComentario;
+  List<bool> filtros = List.filled(6, true, growable: true);
 
   @override
   void initState() {
@@ -41,8 +42,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     super.dispose();
   }
 
-  Future<List<OrdenModel>> getOrdenes() async =>
-      await OrdenModel.getOrdenes(filtro, LocalStorage.local('locación'));
+  Future<List<OrdenModel>> getOrdenes() async => await OrdenModel.getOrdenes(
+    filtro,
+    LocalStorage.local('locación'),
+    filtros,
+  );
 
   Future<void> getOrdenInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
@@ -406,6 +410,15 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 );
               },
             ),
+            Consumer2<Ventanas, Tablas>(
+              builder: (context, ventanas, tablas, child) {
+                return ventanas.ventanaFiltroOrden(
+                  context,
+                  filtros,
+                  () async => tablas.datos(await getOrdenes()),
+                );
+              },
+            ),
             Consumer3<Ventanas, Carga, VenDatos>(
               builder: (context, ventana, carga, venDatos, child) {
                 return Ventanas.ventanaEmergente(
@@ -532,8 +545,19 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               'Abrir menú',
               Icons.menu_rounded,
               false,
-              () => Scaffold.of(context).openDrawer(),
+              () => Scaffold.of(ctx).openDrawer(),
               size: 35,
+            ),
+            Consumer<Ventanas>(
+              builder: (context, ventanas, child) {
+                return Botones.btnRctMor(
+                  'Filtro de estado',
+                  Icons.filter_list_rounded,
+                  false,
+                  () => ventanas.ordenFiltro(true),
+                  size: 35,
+                );
+              },
             ),
           ];
           /*filtroList.add(

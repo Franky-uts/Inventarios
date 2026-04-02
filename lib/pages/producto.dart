@@ -64,21 +64,6 @@ class Producto with ChangeNotifier {
     notifyListeners();
   }
 
-  /*@override
-  void initState() {
-    productosPerdido = calcularPerdidas(productoInfo.perdidaCantidad);
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    controllerPerdidas.clear();
-    controller.clear();
-    timer?.cancel();
-    color.clear();
-    super.dispose();
-  }*/
-
   double calcularPerdidas(List<double> lista) {
     double perdida = 0;
     for (double obj in lista) {

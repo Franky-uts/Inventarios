@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/input.dart';
+import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/models/articulos_model.dart';
+import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
@@ -10,10 +12,11 @@ import 'carga.dart';
 
 class Ventanas with ChangeNotifier {
   static FocusNode focus = FocusNode();
-  static bool _emergente = false;
-  static bool _tabla = false;
-  static bool _cambio = false;
-  static bool _scan = false;
+  static bool _emergente = false,
+      _tabla = false,
+      _cambio = false,
+      _scan = false,
+      _ordenFiltro = false;
   static String _inventario = LocalStorage.local('locación');
 
   static Widget ventanaEmergente(
@@ -261,14 +264,19 @@ class Ventanas with ChangeNotifier {
     );
   }
 
-  /*static Widget ventanaProducto(BuildContext ctx, ProductoModel producto) {
+  Widget ventanaFiltroOrden(
+    BuildContext ctx,
+    List<bool> lista,
+    Function accion,
+  ) {
     return Visibility(
-      visible: _producto,
+      visible: _ordenFiltro,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+        padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
         decoration: BoxDecoration(color: Colors.black38),
         child: Center(
           child: Container(
+            width: 315,
             padding: EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
               color: Colors.white,
@@ -276,50 +284,76 @@ class Ventanas with ChangeNotifier {
               border: BoxBorder.all(color: Color(0xFFFDC930), width: 2.5),
             ),
             child: SingleChildScrollView(
-              child: SizedBox(
-                width: MediaQuery.of(ctx).size.width,
-                height: MediaQuery.of(ctx).size.height,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Textos.textoTilulo(producto.nombre, 30),
-                    tipoTexto(producto.tipo),
-                    contenedorInfo(
-                      ' que entraron:',
-                      producto.entrada,
-                      0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                spacing: 5,
+                children: [
+                  Textos.textoTilulo('Filtro de estados', 20),
+                  SizedBox(
+                    width: 315,
+                    height: MediaQuery.of(ctx).size.height * .45 < 250
+                        ? MediaQuery.of(ctx).size.height * .45
+                        : 250,
+                    child: ListView.separated(
+                      itemCount: OrdenModel.listaEstados().length,
+                      scrollDirection: Axis.vertical,
+                      separatorBuilder: (context, index) => Container(
+                        height: 2,
+                        decoration: BoxDecoration(color: Color(0xFFFDC930)),
+                      ),
+                      itemBuilder: (context, index) {
+                        return Container(
+                          width: 315,
+                          height: 40,
+                          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+                          child: Tablas.barraDatos(
+                            315,
+                            [0.75, 0.15],
+                            [
+                              OrdenModel.listaEstados()[index],
+                              Botones.btnRctMor(
+                                'Ver ${OrdenModel.listaEstados()[index]}',
+                                lista[index]
+                                    ? Icons.check_box_rounded
+                                    : Icons.check_box_outline_blank_rounded,
+                                false,
+                                () async => {
+                                  lista[index] = !lista[index],
+                                  lista.contains(true)
+                                      ? accion()
+                                      : {
+                                          lista[index] = !lista[index],
+                                          Textos.toast(
+                                            'Debe de haber al menos 1 filtro seleccionado.',
+                                            true,
+                                          ),
+                                        },
+                                },
+                                size: 20,
+                              ),
+                            ],
+                            [
+                              Textos.colorEstado(
+                                OrdenModel.listaEstados()[index],
+                              ),
+                              Colors.transparent,
+                            ],
+                            2,
+                          ),
+                        );
+                      },
                     ),
-                    contenedorInfo(
-                      ' que salieron:',
-                      producto.salida,
-                      1,
+                  ),
+                  Container(
+                    alignment: AlignmentDirectional.centerEnd,
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Botones.btnCirRos(
+                      'Cerrar',
+                      () => ctx.read<Ventanas>().ordenFiltro(false),
                     ),
-                    contenedorInfoPerdidas(productosPerdido, 2),
-                    Botones.icoCirMor(
-                        'Guardar movimientos',
-                        Icons.save_rounded,
-                            () => enviarDatos(context),
-                            () => Textos.toast('No hay hay cambios.', false),
-                        false,
-                        true
-                    ),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        footer([
-                          'Ultima modificación:',
-                          producto.ultimaModificacion,
-                        ]),
-                        footer([
-                          'Modificada por:',
-                          producto.ultimoUsuario,
-                        ]),
-                      ],
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -327,7 +361,7 @@ class Ventanas with ChangeNotifier {
       ),
     );
   }
-*/
+
   void tabla(bool booleano) {
     _tabla = booleano;
     notifyListeners();
@@ -349,11 +383,17 @@ class Ventanas with ChangeNotifier {
     notifyListeners();
   }
 
+  void ordenFiltro(bool booleano) {
+    _ordenFiltro = booleano;
+    notifyListeners();
+  }
+
   void cerrarVentanas() {
     _emergente = false;
     _tabla = false;
     _cambio = false;
     _scan = false;
+    _ordenFiltro = false;
     notifyListeners();
   }
 
