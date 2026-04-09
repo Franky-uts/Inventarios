@@ -238,9 +238,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   }
                 }
                 return Ventanas.ventanaTabla(
-                  (venDatos.length() * 44 + cantDiv * 17.5 + 135 <
+                  (venDatos.length() * 42 + cantDiv * 17.5 + 135 <
                           MediaQuery.sizeOf(context).height)
-                      ? venDatos.length() * 44 + cantDiv * 17.5 + 135
+                      ? venDatos.length() * 42 + cantDiv * 17.5 + 135
                       : MediaQuery.sizeOf(context).height,
                   MediaQuery.of(context).size.width,
                   [
@@ -249,11 +249,10 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.05, .225, .15, .1, .125, .115, .045, .045],
+                    [.05, .35, .175, .125, .125, .05, .05],
                     [
                       'id',
                       'Nombre del articulo',
-                      'Área',
                       'Tipo',
                       'Cant. ordenada',
                       'Cant. cubierta',
@@ -263,9 +262,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ),
                   SizedBox(
                     height:
-                        (venDatos.length() * 44 + cantDiv * 17.5 <
+                        (venDatos.length() * 42 + cantDiv * 17.5 <
                             MediaQuery.sizeOf(context).height - 220)
-                        ? venDatos.length() * 44 + cantDiv * 17.5
+                        ? venDatos.length() * 42 + cantDiv * 17.5
                         : MediaQuery.sizeOf(context).height - 220,
                     child: ListView.separated(
                       itemCount: venDatos.length(),
@@ -289,11 +288,10 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         }
                         Widget data = Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.05, .225, .15, .1, .125, .115, .045, .045],
+                          [.05, .35, .175, .125, .125, .05, .05],
                           [
                             '${venDatos.idArt(index)}',
                             venDatos.art(index),
-                            venDatos.are(index),
                             venDatos.tip(index),
                             cantidad,
                             cantidadCub,
@@ -344,6 +342,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         );
                         return Container(
                           width: MediaQuery.sizeOf(context).width,
+                          height: venDatos.getMensaje(index).isEmpty
+                              ? 40
+                              : 57.5,
                           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
                           child: venDatos.getMensaje(index).isEmpty
                               ? data
@@ -354,7 +355,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                       [.5],
                                       [venDatos.getMensaje(index)],
                                     ),
-                                    data,
+                                    SizedBox(height: 40, child: data),
                                   ],
                                 ),
                         );

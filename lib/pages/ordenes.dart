@@ -184,6 +184,7 @@ class _OrdenesState extends State<Ordenes> {
   ) async {
     ctx.read<Carga>().cargaBool(true);
     PdfPageFormat formato = PdfPageFormat.standard;
+    String area = '';
     final doc = pw.Document();
     List<pw.Widget> titulos = [];
     List<pw.Widget> listaArticulos = [];
@@ -198,16 +199,29 @@ class _OrdenesState extends State<Ordenes> {
       );
     }
     for (int i = 0; i < orden.cantArticulos; i++) {
+      if (area != orden.areas[i]) {
+        listaArticulos.add(
+          pw.Container(
+            decoration: pw.BoxDecoration(color: PdfColor(.85, .85, .85, .25)),
+            width: formato.availableWidth,
+            child: pw.Text(
+              orden.areas[i],
+              textAlign: pw.TextAlign.center,
+              style: pw.TextStyle(fontSize: 10),
+            ),
+          ),
+        );
+        area = orden.areas[i];
+      }
       listaArticulos.add(
         pw.Column(
           children: [
-            pw.Divider(height: 1, thickness: 1),
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.center,
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Container(
-                  width: formato.availableWidth * .4,
+                  width: formato.availableWidth * .5,
                   child: pw.Text(
                     orden.articulos[i],
                     textAlign: pw.TextAlign.start,
@@ -215,7 +229,7 @@ class _OrdenesState extends State<Ordenes> {
                   ),
                 ),
                 pw.Container(
-                  width: formato.availableWidth * .175,
+                  width: formato.availableWidth * .2,
                   child: pw.Text(
                     orden.tipos[i],
                     textAlign: pw.TextAlign.center,
@@ -223,15 +237,7 @@ class _OrdenesState extends State<Ordenes> {
                   ),
                 ),
                 pw.Container(
-                  width: formato.availableWidth * .2,
-                  child: pw.Text(
-                    orden.areas[i],
-                    textAlign: pw.TextAlign.center,
-                    style: pw.TextStyle(fontSize: 10),
-                  ),
-                ),
-                pw.Container(
-                  width: formato.availableWidth * .1,
+                  width: formato.availableWidth * .15,
                   child: pw.Text(
                     '${orden.cantidades[i]}',
                     textAlign: pw.TextAlign.center,
@@ -239,15 +245,16 @@ class _OrdenesState extends State<Ordenes> {
                   ),
                 ),
                 pw.Container(
-                  width: formato.availableWidth * .1,
+                  width: formato.availableWidth * .15,
                   child: pw.Text(
-                    '[      ]',
+                    '[           ]',
                     textAlign: pw.TextAlign.center,
                     style: pw.TextStyle(fontSize: 10),
                   ),
                 ),
               ],
             ),
+            pw.Divider(height: 1, thickness: 1),
           ],
         ),
       );
@@ -269,182 +276,173 @@ class _OrdenesState extends State<Ordenes> {
             50)
         ? (listaArticulos.length / 55).ceil() + 1
         : (listaArticulos.length / 55).ceil();
-    for (int i = 0; i < (orden.cantArticulos / 55).ceil(); i++) {
-      doc.addPage(
-        pw.Page(
-          pageFormat: formato,
-          build: (pw.Context context) {
-            return pw.Stack(
-              children: [
-                pw.Container(
-                  width: formato.availableWidth,
-                  alignment: pw.Alignment.topCenter,
-                  child: pw.Column(
-                    mainAxisSize: pw.MainAxisSize.min,
-                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                    children: [
-                      pw.Row(
-                        mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-                        children: titulos,
-                      ),
-                      pw.Column(
-                        children: [
+    for (int i = 0; i < (listaArticulos.length / 55).ceil(); i++) {
+      if ((listaArticulos.length / 55).ceil() > i) {
+        doc.addPage(
+          pw.Page(
+            pageFormat: formato,
+            build: (pw.Context context) {
+              return pw.Stack(
+                children: [
+                  pw.Container(
+                    width: formato.availableWidth,
+                    alignment: pw.Alignment.topCenter,
+                    child: pw.Column(
+                      mainAxisSize: pw.MainAxisSize.min,
+                      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                      children: [
+                        pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+                          children: titulos,
+                        ),
+                        pw.Column(
+                          children: [
+                            pw.Container(
+                              padding: pw.EdgeInsets.only(bottom: 5),
+                              child: pw.Row(
+                                mainAxisAlignment: pw.MainAxisAlignment.center,
+                                crossAxisAlignment:
+                                    pw.CrossAxisAlignment.center,
+                                children: [
+                                  pw.Container(
+                                    decoration: pw.BoxDecoration(
+                                      border: pw.Border.all(
+                                        color: PdfColor(0, 0, 0),
+                                        width: .5,
+                                      ),
+                                    ),
+                                    width: formato.availableWidth * .5,
+                                    child: pw.Text(
+                                      'Nombre del articulo',
+                                      textAlign: pw.TextAlign.center,
+                                      style: pw.TextStyle(fontSize: 10),
+                                    ),
+                                  ),
+                                  pw.Container(
+                                    decoration: pw.BoxDecoration(
+                                      border: pw.Border.all(
+                                        color: PdfColor(0, 0, 0),
+                                        width: .5,
+                                      ),
+                                    ),
+                                    width: formato.availableWidth * .2,
+                                    child: pw.Text(
+                                      'Tipo',
+                                      textAlign: pw.TextAlign.center,
+                                      style: pw.TextStyle(fontSize: 10),
+                                    ),
+                                  ),
+                                  pw.Container(
+                                    decoration: pw.BoxDecoration(
+                                      border: pw.Border.all(
+                                        color: PdfColor(0, 0, 0),
+                                        width: .5,
+                                      ),
+                                    ),
+                                    width: formato.availableWidth * .15,
+                                    child: pw.Text(
+                                      'Cantidad',
+                                      textAlign: pw.TextAlign.center,
+                                      style: pw.TextStyle(fontSize: 10),
+                                    ),
+                                  ),
+                                  pw.Container(
+                                    decoration: pw.BoxDecoration(
+                                      border: pw.Border.all(
+                                        color: PdfColor(0, 0, 0),
+                                        width: .5,
+                                      ),
+                                    ),
+                                    width: formato.availableWidth * .15,
+                                    child: pw.Text(
+                                      'Conf.',
+                                      textAlign: pw.TextAlign.center,
+                                      style: pw.TextStyle(fontSize: 10),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            pw.Column(
+                              children: listaArticulos.sublist(
+                                i * 55,
+                                (i != (listaArticulos.length / 55).ceil() - 1)
+                                    ? ((i + 1) * 55)
+                                    : listaArticulos.length,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (i == (listaArticulos.length / 55).ceil() - 1)
                           pw.Container(
-                            padding: pw.EdgeInsets.only(bottom: 5),
+                            padding: pw.EdgeInsets.only(top: 50),
                             child: pw.Row(
-                              mainAxisAlignment: pw.MainAxisAlignment.center,
-                              crossAxisAlignment: pw.CrossAxisAlignment.center,
+                              mainAxisAlignment:
+                                  pw.MainAxisAlignment.spaceEvenly,
                               children: [
-                                pw.Container(
-                                  decoration: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      color: PdfColor(0, 0, 0),
-                                      width: .5,
+                                pw.Column(
+                                  children: [
+                                    pw.Text(
+                                      '____________________________________',
+                                      textAlign: pw.TextAlign.center,
+                                      maxLines: 1,
+                                      style: pw.TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  width: formato.availableWidth * .4,
-                                  child: pw.Text(
-                                    'Nombre del articulo',
-                                    textAlign: pw.TextAlign.center,
-                                    style: pw.TextStyle(fontSize: 10),
-                                  ),
+                                    pw.Text(
+                                      'Almacen',
+                                      textAlign: pw.TextAlign.center,
+                                      maxLines: 2,
+                                      style: pw.TextStyle(fontSize: 10),
+                                    ),
+                                  ],
                                 ),
-                                pw.Container(
-                                  decoration: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      color: PdfColor(0, 0, 0),
-                                      width: .5,
+                                pw.Column(
+                                  children: [
+                                    pw.Text(
+                                      '____________________________________',
+                                      textAlign: pw.TextAlign.center,
+                                      maxLines: 1,
+                                      style: pw.TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: pw.FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                  width: formato.availableWidth * .175,
-                                  child: pw.Text(
-                                    'Tipo',
-                                    textAlign: pw.TextAlign.center,
-                                    style: pw.TextStyle(fontSize: 10),
-                                  ),
-                                ),
-                                pw.Container(
-                                  decoration: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      color: PdfColor(0, 0, 0),
-                                      width: .5,
+                                    pw.Text(
+                                      'Empleado',
+                                      textAlign: pw.TextAlign.center,
+                                      maxLines: 1,
+                                      style: pw.TextStyle(fontSize: 10),
                                     ),
-                                  ),
-                                  width: formato.availableWidth * .2,
-                                  child: pw.Text(
-                                    'Área',
-                                    textAlign: pw.TextAlign.center,
-                                    style: pw.TextStyle(fontSize: 10),
-                                  ),
-                                ),
-                                pw.Container(
-                                  decoration: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      color: PdfColor(0, 0, 0),
-                                      width: .5,
-                                    ),
-                                  ),
-                                  width: formato.availableWidth * .1,
-                                  child: pw.Text(
-                                    'Cantidad',
-                                    textAlign: pw.TextAlign.center,
-                                    style: pw.TextStyle(fontSize: 10),
-                                  ),
-                                ),
-                                pw.Container(
-                                  decoration: pw.BoxDecoration(
-                                    border: pw.Border.all(
-                                      color: PdfColor(0, 0, 0),
-                                      width: .5,
-                                    ),
-                                  ),
-                                  width: formato.availableWidth * .1,
-                                  child: pw.Text(
-                                    'Conf.',
-                                    textAlign: pw.TextAlign.center,
-                                    style: pw.TextStyle(fontSize: 10),
-                                  ),
+                                  ],
                                 ),
                               ],
                             ),
                           ),
-                          pw.Column(
-                            children: listaArticulos.sublist(
-                              i * 55,
-                              (i != (listaArticulos.length / 55).ceil() - 1)
-                                  ? ((i + 1) * 55)
-                                  : listaArticulos.length,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (i == (listaArticulos.length / 55).ceil() - 1)
-                        pw.Container(
-                          padding: pw.EdgeInsets.only(top: 50),
-                          child: pw.Row(
-                            mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
-                            children: [
-                              pw.Column(
-                                children: [
-                                  pw.Text(
-                                    '____________________________________',
-                                    textAlign: pw.TextAlign.center,
-                                    maxLines: 1,
-                                    style: pw.TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: pw.FontWeight.bold,
-                                    ),
-                                  ),
-                                  pw.Text(
-                                    'Almacen',
-                                    textAlign: pw.TextAlign.center,
-                                    maxLines: 2,
-                                    style: pw.TextStyle(fontSize: 10),
-                                  ),
-                                ],
-                              ),
-                              pw.Column(
-                                children: [
-                                  pw.Text(
-                                    '____________________________________',
-                                    textAlign: pw.TextAlign.center,
-                                    maxLines: 1,
-                                    style: pw.TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: pw.FontWeight.bold,
-                                    ),
-                                  ),
-                                  pw.Text(
-                                    'Empleado',
-                                    textAlign: pw.TextAlign.center,
-                                    maxLines: 1,
-                                    style: pw.TextStyle(fontSize: 10),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                pw.Container(
-                  width: formato.availableWidth,
-                  height: formato.availableHeight,
-                  alignment: pw.Alignment.bottomRight,
-                  child: pw.Text(
-                    '${i + 1} de $cantPag',
-                    textAlign: pw.TextAlign.end,
-                    maxLines: 1,
-                    style: pw.TextStyle(fontSize: 9),
+                  pw.Container(
+                    width: formato.availableWidth,
+                    height: formato.availableHeight,
+                    alignment: pw.Alignment.bottomRight,
+                    child: pw.Text(
+                      '${i + 1} de $cantPag',
+                      textAlign: pw.TextAlign.end,
+                      maxLines: 1,
+                      style: pw.TextStyle(fontSize: 9),
+                    ),
                   ),
-                ),
-              ],
-            );
-          },
-        ),
-      );
+                ],
+              );
+            },
+          ),
+        );
+      }
     }
+
     if ((listaArticulos.length - (listaArticulos.length / 55).floor() * 55) >
         50) {
       doc.addPage(
@@ -516,6 +514,7 @@ class _OrdenesState extends State<Ordenes> {
         ),
       );
     }
+
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => doc.save(),
     ).whenComplete(() {
@@ -603,9 +602,9 @@ class _OrdenesState extends State<Ordenes> {
                   }
                 }
                 return Ventanas.ventanaTabla(
-                  (venDatos.length() * 44 + cantDiv * 17.5 + 160 <
+                  (venDatos.length() * 42 + cantDiv * 17.5 + 160 <
                           MediaQuery.sizeOf(context).height)
-                      ? venDatos.length() * 44 + cantDiv * 17.5 + 160
+                      ? venDatos.length() * 42 + cantDiv * 17.5 + 160
                       : MediaQuery.sizeOf(context).height,
                   MediaQuery.of(context).size.width,
                   [
@@ -614,12 +613,11 @@ class _OrdenesState extends State<Ordenes> {
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.1, .25, .1, .125, .1, .1, .045, .045],
+                    [.05, .35, .175, .125, .125, .05, .05],
                     [
                       'id',
                       'Nombre del articulo',
                       'Tipo',
-                      'Área',
                       'Cant. orden',
                       'Cant. cubierta',
                       '💬',
@@ -628,9 +626,9 @@ class _OrdenesState extends State<Ordenes> {
                   ),
                   SizedBox(
                     height:
-                        (venDatos.length() * 44 + cantDiv * 17.5 <
+                        (venDatos.length() * 42 + cantDiv * 17.5 <
                             MediaQuery.sizeOf(context).height - 250)
-                        ? venDatos.length() * 44 + cantDiv * 17.5
+                        ? venDatos.length() * 42 + cantDiv * 17.5
                         : MediaQuery.sizeOf(context).height - 250,
                     child: ListView.separated(
                       itemCount: venDatos.length(),
@@ -654,12 +652,11 @@ class _OrdenesState extends State<Ordenes> {
                         }
                         Widget data = Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.1, .25, .1, .125, .1, .1, .045, .045],
+                          [.05, .35, .175, .125, .125, .05, .05],
                           [
                             '${venDatos.idArt(index)}',
                             venDatos.art(index),
                             venDatos.tip(index),
-                            venDatos.are(index),
                             cantidad,
                             (venDatos.est() == 'En proceso')
                                 ? Consumer2<Textos, VenDatos>(
@@ -751,7 +748,7 @@ class _OrdenesState extends State<Ordenes> {
                                         [.5],
                                         [venDatos.getMensaje(index)],
                                       ),
-                                      data,
+                                      SizedBox(height: 40, child: data),
                                     ],
                                   ),
                           ),
