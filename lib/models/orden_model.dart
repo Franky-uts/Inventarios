@@ -233,11 +233,15 @@ class OrdenModel {
                 comFin: item['ComentariosFinales'][i],
                 conf: item['Confirmacion'][i],
                 id: item['idProductos'][i],
+                mensaje: ''
               ),
             );
           }
           listas.sort((a, b) {
             return a.art.toLowerCase().compareTo(b.art.toLowerCase());
+          });
+          listas.sort((a, b) {
+            return a.area.toLowerCase().compareTo(b.area.toLowerCase());
           });
           for (int i = 0; i < item['CantArticulos']; i++) {
             item['Articulos'][i] = listas[i].art;
@@ -254,10 +258,10 @@ class OrdenModel {
           orden = OrdenModel(
             id: item['id'],
             articulos: List<String>.from(item['Articulos']),
-            cantidades: cant,
+            cantidades: List<double>.from(item['Cantidades']),
             tipos: List<String>.from(item['Tipos']),
             areas: List<String>.from(item['Areas']),
-            cantidadesCubiertas: cantCub,
+            cantidadesCubiertas: List<double>.from(item['CantidadesCubiertas']),
             comentariosTienda: List<String>.from(item['ComentariosTienda']),
             comentariosProveedor: List<String>.from(
               item['ComentariosProveedor'],
@@ -388,6 +392,7 @@ class OrdenListas {
   String comFin;
   bool conf;
   int id;
+  String mensaje;
 
   OrdenListas({
     required this.art,
@@ -400,5 +405,6 @@ class OrdenListas {
     required this.comFin,
     required this.conf,
     required this.id,
+    required this.mensaje
   });
 }

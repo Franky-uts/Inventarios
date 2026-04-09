@@ -272,7 +272,7 @@ class Ventanas with ChangeNotifier {
     return Visibility(
       visible: _ordenFiltro,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
+        padding: EdgeInsets.symmetric(horizontal: 90),
         decoration: BoxDecoration(color: Colors.black38),
         child: Center(
           child: Container(
@@ -292,8 +292,8 @@ class Ventanas with ChangeNotifier {
                   Textos.textoTilulo('Filtro de estados', 20),
                   SizedBox(
                     width: 315,
-                    height: MediaQuery.of(ctx).size.height * .45 < 250
-                        ? MediaQuery.of(ctx).size.height * .45
+                    height: MediaQuery.of(ctx).size.height * .35 < 250
+                        ? MediaQuery.of(ctx).size.height * .35
                         : 250,
                     child: ListView.separated(
                       itemCount: OrdenModel.listaEstados().length,

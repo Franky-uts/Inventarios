@@ -228,10 +228,19 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
             ),
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
+                String area = '';
+                double cantDiv = 0;
+                for (int i = 0; i < venDatos.length(); i++) {
+                  if (area != venDatos.are(i)) {
+                    venDatos.setMen(i, venDatos.are(i));
+                    area = venDatos.are(i);
+                    cantDiv += 1;
+                  }
+                }
                 return Ventanas.ventanaTabla(
-                  (venDatos.length() * 44 + 135 <
+                  (venDatos.length() * 44 + cantDiv * 17.5 + 135 <
                           MediaQuery.sizeOf(context).height)
-                      ? venDatos.length() * 44 + 135
+                      ? venDatos.length() * 44 + cantDiv * 17.5 + 135
                       : MediaQuery.sizeOf(context).height,
                   MediaQuery.of(context).size.width,
                   [
@@ -254,9 +263,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ),
                   SizedBox(
                     height:
-                        (venDatos.length() * 44 <
+                        (venDatos.length() * 44 + cantDiv * 17.5 <
                             MediaQuery.sizeOf(context).height - 220)
-                        ? venDatos.length() * 44
+                        ? venDatos.length() * 44 + cantDiv * 17.5
                         : MediaQuery.sizeOf(context).height - 220,
                     child: ListView.separated(
                       itemCount: venDatos.length(),
@@ -278,67 +287,76 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                             cantidadCub = cantidadCub.split('.')[0];
                           }
                         }
-                        return Container(
-                          width: MediaQuery.sizeOf(context).width,
-                          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-                          child: Tablas.barraDatos(
-                            MediaQuery.sizeOf(context).width,
-                            [.05, .225, .15, .1, .125, .115, .045, .045],
-                            [
-                              '${venDatos.idArt(index)}',
-                              venDatos.art(index),
-                              venDatos.are(index),
-                              venDatos.tip(index),
-                              cantidad,
-                              cantidadCub,
-                              SizedBox(
-                                width: MediaQuery.sizeOf(context).width * .045,
-                                child: Botones.btnRctMor(
-                                  'Ver comentarios ${venDatos.art(index)}',
-                                  Icons.comment_rounded,
-                                  false,
-                                  alert:
-                                      venDatos.comTienda(index) !=
-                                          'Sin comentarios' ||
-                                      venDatos.comProv(index) !=
-                                          'Sin comentarios' ||
-                                      venDatos.comFin(index) !=
-                                          'Sin comentarios',
-                                  () => verComentarios(
-                                    venDatos.comFin(index),
-                                    index,
-                                  ),
-                                  size: 20,
+                        Widget data = Tablas.barraDatos(
+                          MediaQuery.sizeOf(context).width,
+                          [.05, .225, .15, .1, .125, .115, .045, .045],
+                          [
+                            '${venDatos.idArt(index)}',
+                            venDatos.art(index),
+                            venDatos.are(index),
+                            venDatos.tip(index),
+                            cantidad,
+                            cantidadCub,
+                            SizedBox(
+                              width: MediaQuery.sizeOf(context).width * .045,
+                              child: Botones.btnRctMor(
+                                'Ver comentarios ${venDatos.art(index)}',
+                                Icons.comment_rounded,
+                                false,
+                                alert:
+                                    venDatos.comTienda(index) !=
+                                        'Sin comentarios' ||
+                                    venDatos.comProv(index) !=
+                                        'Sin comentarios' ||
+                                    venDatos.comFin(index) != 'Sin comentarios',
+                                () => verComentarios(
+                                  venDatos.comFin(index),
+                                  index,
                                 ),
+                                size: 20,
                               ),
-                              venDatos.est() == 'Entregado' || venDatos.edit()
-                                  ? SizedBox(
-                                      width:
-                                          MediaQuery.sizeOf(context).width *
-                                          .045,
-                                      child: Botones.btnRctMor(
-                                        'Confirmar ${venDatos.art(index)}',
-                                        venDatos.comfProd(index)
-                                            ? Icons.check_box_rounded
-                                            : Icons
-                                                  .check_box_outline_blank_rounded,
-                                        false,
-                                        () => venDatos.setComfProd(index),
-                                        size: 20,
-                                      ),
-                                    )
-                                  : Icon(
+                            ),
+                            venDatos.est() == 'Entregado' || venDatos.edit()
+                                ? SizedBox(
+                                    width:
+                                        MediaQuery.sizeOf(context).width * .045,
+                                    child: Botones.btnRctMor(
+                                      'Confirmar ${venDatos.art(index)}',
                                       venDatos.comfProd(index)
                                           ? Icons.check_box_rounded
                                           : Icons
                                                 .check_box_outline_blank_rounded,
-                                      color: Color(0xFF8A03A9),
-                                      size: 30,
+                                      false,
+                                      () => venDatos.setComfProd(index),
+                                      size: 20,
                                     ),
-                            ],
-                            [],
-                            2,
-                          ),
+                                  )
+                                : Icon(
+                                    venDatos.comfProd(index)
+                                        ? Icons.check_box_rounded
+                                        : Icons.check_box_outline_blank_rounded,
+                                    color: Color(0xFF8A03A9),
+                                    size: 30,
+                                  ),
+                          ],
+                          [],
+                          2,
+                        );
+                        return Container(
+                          width: MediaQuery.sizeOf(context).width,
+                          decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
+                          child: venDatos.getMensaje(index).isEmpty
+                              ? data
+                              : Column(
+                                  children: [
+                                    Tablas.contenedorInfo(
+                                      MediaQuery.sizeOf(context).width,
+                                      [.5],
+                                      [venDatos.getMensaje(index)],
+                                    ),
+                                    data,
+                                  ],
+                                ),
                         );
                       },
                     ),

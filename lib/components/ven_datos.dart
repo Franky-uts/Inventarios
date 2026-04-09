@@ -22,6 +22,7 @@ class VenDatos with ChangeNotifier {
           comFin: _orden.comentariosFinales[i],
           conf: _orden.confirmacion[i],
           id: _orden.idProductos[i],
+          mensaje: ''
         ),
       );
     }
@@ -30,12 +31,17 @@ class VenDatos with ChangeNotifier {
 
   void ordenarPor(bool nom) {
     nom
-        ? _listas.sort((a, b) {
-      return a.art.toLowerCase().compareTo(b.art.toLowerCase());
-    })
+        ? {
+            _listas.sort((a, b) {
+              return a.art.toLowerCase().compareTo(b.art.toLowerCase());
+            }),
+            _listas.sort((a, b) {
+              return a.area.toLowerCase().compareTo(b.area.toLowerCase());
+            }),
+          }
         : _listas.sort((a, b) {
-      return a.id.compareTo(b.id);
-    });
+            return a.id.compareTo(b.id);
+          });
     for (int i = 0; i < _orden.cantArticulos; i++) {
       _orden.idProductos[i] = _listas[i].id;
       _orden.articulos[i] = _listas[i].art;
@@ -142,6 +148,14 @@ class VenDatos with ChangeNotifier {
     _listas[i].conf = !_listas[i].conf;
     _orden.confirmacion[i] = !_orden.confirmacion[i];
     notifyListeners();
+  }
+
+  void setMen(int i, String mensaje) {
+    _listas[i].mensaje = mensaje;
+  }
+
+  String getMensaje(int i) {
+    return _listas[i].mensaje;
   }
 
   String id() {

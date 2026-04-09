@@ -593,10 +593,19 @@ class _OrdenesState extends State<Ordenes> {
             ),
             Consumer2<Ventanas, VenDatos>(
               builder: (context, ventana, venDatos, child) {
+                String area = '';
+                double cantDiv = 0;
+                for (int i = 0; i < venDatos.length(); i++) {
+                  if (area != venDatos.are(i)) {
+                    venDatos.setMen(i, venDatos.are(i));
+                    area = venDatos.are(i);
+                    cantDiv += 1;
+                  }
+                }
                 return Ventanas.ventanaTabla(
-                  (venDatos.length() * 44 + 160 <
+                  (venDatos.length() * 44 + cantDiv * 17.5 + 160 <
                           MediaQuery.sizeOf(context).height)
-                      ? venDatos.length() * 44 + 160
+                      ? venDatos.length() * 44 + cantDiv * 17.5 + 160
                       : MediaQuery.sizeOf(context).height,
                   MediaQuery.of(context).size.width,
                   [
@@ -619,9 +628,9 @@ class _OrdenesState extends State<Ordenes> {
                   ),
                   SizedBox(
                     height:
-                        (venDatos.length() * 44 <
+                        (venDatos.length() * 44 + cantDiv * 17.5 <
                             MediaQuery.sizeOf(context).height - 250)
-                        ? venDatos.length() * 44
+                        ? venDatos.length() * 44 + cantDiv * 17.5
                         : MediaQuery.sizeOf(context).height - 250,
                     child: ListView.separated(
                       itemCount: venDatos.length(),
@@ -643,95 +652,108 @@ class _OrdenesState extends State<Ordenes> {
                             cantidadCub = cantidadCub.split('.')[0];
                           }
                         }
+                        Widget data = Tablas.barraDatos(
+                          MediaQuery.sizeOf(context).width,
+                          [.1, .25, .1, .125, .1, .1, .045, .045],
+                          [
+                            '${venDatos.idArt(index)}',
+                            venDatos.art(index),
+                            venDatos.tip(index),
+                            venDatos.are(index),
+                            cantidad,
+                            (venDatos.est() == 'En proceso')
+                                ? Consumer2<Textos, VenDatos>(
+                                    builder: (context, textos, venDatos, child) {
+                                      return CampoTexto.inputTexto(
+                                        MediaQuery.sizeOf(context).width * .1,
+                                        '',
+                                        cantidadCub,
+                                        cantidades[index],
+                                        true,
+                                        false,
+                                        cambio: () => venDatos.canCubChange(
+                                          index,
+                                          cantidades[index].text.isNotEmpty
+                                              ? double.parse(
+                                                  cantidades[index].text,
+                                                )
+                                              : canCubOrg[index],
+                                        ),
+                                        borderColor: Color(0xFF8A03A9),
+                                        formato:
+                                            FilteringTextInputFormatter.allow(
+                                              RegExp(r'(^\d*\.?\d{0,3})'),
+                                            ),
+                                        inputType:
+                                            TextInputType.numberWithOptions(
+                                              decimal: true,
+                                            ),
+                                        fontSize: 17.5,
+                                        align: TextAlign.center,
+                                      );
+                                    },
+                                  )
+                                : cantidadCub,
+                            Consumer<VenDatos>(
+                              builder: (context, venDatos, child) {
+                                return SizedBox(
+                                  width:
+                                      MediaQuery.sizeOf(context).width * .045,
+                                  child: Botones.btnRctMor(
+                                    'Ver comentarios',
+                                    Icons.comment_rounded,
+                                    false,
+                                    () => {
+                                      venNum = 1,
+                                      id = index,
+                                      verComentarios(
+                                        venDatos.art(index),
+                                        venDatos.est(),
+                                        venDatos.comTienda(index),
+                                        venDatos.comProv(index),
+                                        venDatos.comFin(index),
+                                      ),
+                                    },
+                                    alert:
+                                        venDatos.comTienda(index) !=
+                                            'Sin comentarios' ||
+                                        venDatos.comFin(index) !=
+                                            'Sin comentarios',
+                                    size: 20,
+                                  ),
+                                );
+                              },
+                            ),
+                            Icon(
+                              venDatos.comfProd(index)
+                                  ? Icons.check_box_rounded
+                                  : Icons.check_box_outline_blank_rounded,
+                              color: Color(0xFF8A03A9),
+                              size: 30,
+                            ),
+                          ],
+                          [],
+                          1,
+                        );
                         return SingleChildScrollView(
                           child: Container(
                             width: MediaQuery.sizeOf(context).width,
-                            height: 40,
+                            height: venDatos.getMensaje(index).isEmpty
+                                ? 40
+                                : 57.5,
                             decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
-                            child: Tablas.barraDatos(
-                              MediaQuery.sizeOf(context).width,
-                              [.1, .25, .1, .125, .1, .1, .045, .045],
-                              [
-                                '${venDatos.idArt(index)}',
-                                venDatos.art(index),
-                                venDatos.tip(index),
-                                venDatos.are(index),
-                                cantidad,
-                                (venDatos.est() == 'En proceso')
-                                    ? Consumer2<Textos, VenDatos>(
-                                        builder: (context, textos, venDatos, child) {
-                                          return CampoTexto.inputTexto(
-                                            MediaQuery.sizeOf(context).width *
-                                                .1,
-                                            '',
-                                            cantidadCub,
-                                            cantidades[index],
-                                            true,
-                                            false,
-                                            cambio: () => venDatos.canCubChange(
-                                              index,
-                                              cantidades[index].text.isNotEmpty
-                                                  ? double.parse(
-                                                      cantidades[index].text,
-                                                    )
-                                                  : canCubOrg[index],
-                                            ),
-                                            borderColor: Color(0xFF8A03A9),
-                                            formato:
-                                                FilteringTextInputFormatter.allow(
-                                                  RegExp(r'(^\d*\.?\d{0,3})'),
-                                                ),
-                                            inputType:
-                                                TextInputType.numberWithOptions(
-                                                  decimal: true,
-                                                ),
-                                            fontSize: 17.5,
-                                            align: TextAlign.center,
-                                          );
-                                        },
-                                      )
-                                    : cantidadCub,
-                                Consumer<VenDatos>(
-                                  builder: (context, venDatos, child) {
-                                    return SizedBox(
-                                      width:
-                                          MediaQuery.sizeOf(context).width *
-                                          .045,
-                                      child: Botones.btnRctMor(
-                                        'Ver comentarios',
-                                        Icons.comment_rounded,
-                                        false,
-                                        () => {
-                                          id = index,
-                                          verComentarios(
-                                            venDatos.art(index),
-                                            venDatos.est(),
-                                            venDatos.comTienda(index),
-                                            venDatos.comProv(index),
-                                            venDatos.comFin(index),
-                                          ),
-                                        },
-                                        alert:
-                                            venDatos.comTienda(index) !=
-                                                'Sin comentarios' ||
-                                            venDatos.comFin(index) !=
-                                                'Sin comentarios',
-                                        size: 20,
+                            child: venDatos.getMensaje(index).isEmpty
+                                ? data
+                                : Column(
+                                    children: [
+                                      Tablas.contenedorInfo(
+                                        MediaQuery.sizeOf(context).width,
+                                        [.5],
+                                        [venDatos.getMensaje(index)],
                                       ),
-                                    );
-                                  },
-                                ),
-                                Icon(
-                                  venDatos.comfProd(index)
-                                      ? Icons.check_box_rounded
-                                      : Icons.check_box_outline_blank_rounded,
-                                  color: Color(0xFF8A03A9),
-                                  size: 30,
-                                ),
-                              ],
-                              [],
-                              1,
-                            ),
+                                      data,
+                                    ],
+                                  ),
                           ),
                         );
                       },
