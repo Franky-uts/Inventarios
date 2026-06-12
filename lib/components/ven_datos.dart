@@ -22,7 +22,7 @@ class VenDatos with ChangeNotifier {
           comFin: _orden.comentariosFinales[i],
           conf: _orden.confirmacion[i],
           id: _orden.idProductos[i],
-          mensaje: ''
+          mensaje: '',
         ),
       );
     }

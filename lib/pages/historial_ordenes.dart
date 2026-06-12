@@ -28,7 +28,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   TextEditingController controller = TextEditingController();
   int venNum = 0;
   String datos = '';
-  int? indexComentario;
+  int indexComentario = 0;
   List<bool> filtros = List.filled(6, true, growable: true);
 
   @override
@@ -119,17 +119,14 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   Future<void> guardarComentario(BuildContext ctx) async {
     String datos;
     List<String> listaDatos = [];
-    ctx.read<VenDatos>().ordenarPor(false);
     ctx.read<Carga>().cargaBool(true);
-    if (controller.text != ctx.read<VenDatos>().comFin(indexComentario!)) {
+    if (controller.text.isEmpty) controller.text = 'Sin comentarios';
+    if (controller.text != ctx.read<VenDatos>().comFin(indexComentario)) {
       ctx.read<Ventanas>().emergente(false);
-      ctx.read<VenDatos>().setComFin(indexComentario!, controller.text);
+      ctx.read<VenDatos>().setComFin(indexComentario, controller.text);
+      ctx.read<VenDatos>().ordenarPor(false);
       for (int i = 0; i < ctx.read<VenDatos>().length(); i++) {
-        String texto = "'${ctx.read<VenDatos>().comFin(i)}'";
-        if (ctx.read<VenDatos>().comProv(i).isEmpty) {
-          texto = "'Sin comentarios'";
-        }
-        listaDatos.add(texto);
+        listaDatos.add("'${ctx.read<VenDatos>().comFin(i)}'");
       }
       datos = 'Array$listaDatos';
       datos = await OrdenModel.editarOrden(
@@ -137,6 +134,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         'ComentariosFinales',
         datos,
       );
+      indexComentario = 0;
       if (ctx.mounted) ctx.read<Tablas>().datos(await getOrdenes());
     } else {
       datos = 'Error: No hay datos.';
@@ -153,40 +151,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
-      drawer: RecDrawer.drawer(context, [
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Nueva orden',
-              Icons.add_shopping_cart_rounded,
-              () async => {
-                carga.cargaBool(true),
-                await RecDrawer.salidaOrdenes(context),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Ver almacen',
-              Icons.inventory_rounded,
-              () => {
-                carga.cargaBool(true),
-                Textos.limpiarLista(),
-                RecDrawer.pushAnim(Inventario(), context),
-                carga.cargaBool(false),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              true,
-              Carga.getValido(),
-            );
-          },
-        ),*/
-      ]),
+      drawer: RecDrawer.drawer(context, []),
       body: PopScope(
         canPop: false,
         child: Stack(
@@ -249,7 +214,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.05, .35, .175, .125, .125, .05, .05],
+                    [.05, .3, .15, .125, .125, .045, .045],
                     [
                       'id',
                       'Nombre del articulo',
@@ -288,7 +253,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         }
                         Widget data = Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.05, .35, .175, .125, .125, .05, .05],
+                          [.05, .3, .15, .125, .125, .045, .045],
                           [
                             '${venDatos.idArt(index)}',
                             venDatos.art(index),
@@ -444,13 +409,13 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   [
                     '¿Segur@ que quieres cancelar la orden?',
                     '¿Segur@ que ya marcaste todos los productos que recibiste?',
-                    indexComentario != null
-                        ? 'Comentarios de ${venDatos.art(indexComentario!)}'
+                    indexComentario != 0
+                        ? 'Comentarios de ${venDatos.art(indexComentario)}'
                         : '',
                   ][venNum],
                   ['No, volver', 'No, volver', 'Cerrar'][venNum],
                   ['Si, cancelalo', 'Si, confirmo', 'Confirmar'][venNum],
-                  () => ventana.emergente(false),
+                  () => {indexComentario = 0, ventana.emergente(false)},
                   () async => {
                     if (venNum != 2)
                       {
@@ -494,8 +459,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                           children: [
                             Textos.textoTilulo('Comentarios de la tienda:', 20),
                             Textos.textoGeneral(
-                              indexComentario != null
-                                  ? venDatos.comTienda(indexComentario!)
+                              indexComentario != 0
+                                  ? venDatos.comTienda(indexComentario)
                                   : '',
                               true,
                               5,
@@ -507,8 +472,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                               20,
                             ),
                             Textos.textoGeneral(
-                              indexComentario != null
-                                  ? venDatos.comProv(indexComentario!)
+                              indexComentario != 0
+                                  ? venDatos.comProv(indexComentario)
                                   : '',
                               true,
                               5,
@@ -532,8 +497,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                             if (venDatos.est() == 'Finalizado' ||
                                 venDatos.est() == 'Incompleto')
                               Textos.textoGeneral(
-                                indexComentario != null
-                                    ? venDatos.comFin(indexComentario!)
+                                indexComentario != 0
+                                    ? venDatos.comFin(indexComentario)
                                     : '',
                                 true,
                                 5,
