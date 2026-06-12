@@ -61,15 +61,14 @@ class _OrdenesState extends State<Ordenes> {
         Textos.crearLista(orden.cantArticulos, Color(0xFF8A03A9));
         canCubOrg.addAll(ctx.read<VenDatos>().canCubLista());
         cantidades.clear();
-        for (int i = 0; i < orden.cantArticulos; i++) {
-          String cantidadCub = '${ctx.read<VenDatos>().canCub(i)}';
-          if (cantidadCub.split('.').length > 1) {
-            if (cantidadCub.split('.')[1] == '0') {
-              cantidadCub = cantidadCub.split('.')[0];
-            }
-          }
-          cantidades.add(TextEditingController(text: cantidadCub));
-        }
+        cantidades.addAll(
+          List.filled(
+            orden.cantArticulos,
+            TextEditingController(),
+            growable: true,
+          ),
+        );
+        for (int i = 0; i < orden.cantArticulos; i++) {}
         ctx.read<Ventanas>().tabla(true);
       }
     } else {
@@ -111,10 +110,10 @@ class _OrdenesState extends State<Ordenes> {
   Future<String> guardarDatos(BuildContext ctx) async {
     String columna = 'Estado';
     String datos = accion;
-    List listaDatos = [];
-    ctx.read<VenDatos>().ordenarPor(false);
+    List<String> listaDatos = [];
     switch (accion) {
       case ('guardar'):
+        ctx.read<VenDatos>().ordenarPor(false);
         columna = 'CantidadesCubiertas';
         datos = 'Array${ctx.read<VenDatos>().canCubLista()}';
         break;
@@ -125,15 +124,13 @@ class _OrdenesState extends State<Ordenes> {
         datos = "'Denegado'";
         break;
       case ('confirmar'):
+        if (controller.text.isEmpty) controller.text = 'Sin comentarios';
         if (controller.text != ctx.read<VenDatos>().comProv(id)) {
           columna = 'ComentariosProveedor';
           ctx.read<VenDatos>().setComProv(id, controller.text);
+          ctx.read<VenDatos>().ordenarPor(false);
           for (int i = 0; i < ctx.read<VenDatos>().length(); i++) {
-            String texto = "'${ctx.read<VenDatos>().comProv(i)}'";
-            if (ctx.read<VenDatos>().comProv(i).isEmpty) {
-              texto = "'Sin comentarios'";
-            }
-            listaDatos.add(texto);
+            listaDatos.add("'${ctx.read<VenDatos>().comProv(i)}'");
           }
           datos = 'Array$listaDatos';
         }
@@ -146,10 +143,11 @@ class _OrdenesState extends State<Ordenes> {
               columna,
               datos,
             ),
-            if (ctx.mounted)
-              ctx.read<Tablas>().datos(
-                await OrdenModel.getAllOrdenes(filtro, filtros),
-              ),
+            if (accion != 'confirmar')
+              if (ctx.mounted)
+                ctx.read<Tablas>().datos(
+                  await OrdenModel.getAllOrdenes(filtro, filtros),
+                ),
           }
         : datos = 'No hay cambios';
     if ((accion == 'guardar' ||
@@ -714,6 +712,8 @@ class _OrdenesState extends State<Ordenes> {
                                     alert:
                                         venDatos.comTienda(index) !=
                                             'Sin comentarios' ||
+                                        venDatos.comProv(index) !=
+                                            'Sin comentarios' ||
                                         venDatos.comFin(index) !=
                                             'Sin comentarios',
                                     size: 20,
@@ -798,7 +798,7 @@ class _OrdenesState extends State<Ordenes> {
                                   'Id de la orden: ${venDatos.id()}',
                                   'Pide: ${venDatos.loc()}',
                                   'Para: ${venDatos.rem()}',
-                                  'Fecha: ${venDatos.mod().split(' ')[0]}',
+                                  'Fecha: ${venDatos.fecha().split(' ')[0]}',
                                 ], venDatos.getDatos()),
                               ),
                               Botones.btnRctMor(
@@ -860,13 +860,14 @@ class _OrdenesState extends State<Ordenes> {
                   ][venNum],
                   ['No, volver', 'Volver'][venNum],
                   ['Si, $accion', 'Guardar'][venNum],
-                  () => ventana.emergente(false),
+                  () => {id = 0, ventana.emergente(false)},
                   () async => {
                     ventana.emergente(false),
                     carga.cargaBool(true),
                     Textos.toast(await guardarDatos(context), false),
                     carga.cargaBool(false),
-                    ventana.tabla(accion == 'guardar'),
+                    ventana.tabla(accion == 'guardar' || accion == 'confirmar'),
+                    id = 0,
                   },
                   widget: (venNum == 1)
                       ? Column(
