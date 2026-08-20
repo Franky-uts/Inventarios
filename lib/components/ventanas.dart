@@ -326,7 +326,6 @@ class Ventanas with ChangeNotifier {
                                           lista[index] = !lista[index],
                                           Textos.toast(
                                             'Debe de haber al menos 1 filtro seleccionado.',
-                                            true,
                                           ),
                                         },
                                 },
@@ -420,7 +419,7 @@ class Ventanas with ChangeNotifier {
           }
         : mensaje = mensaje.split(':')[1];
 
-    Textos.toast(mensaje, true);
+    Textos.toast(mensaje);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 }

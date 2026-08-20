@@ -59,7 +59,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 ctx.read<Ventanas>().tabla(true),
               },
           }
-        : Textos.toast(orden.mensaje, true);
+        : Textos.toast(orden.mensaje);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -93,7 +93,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
         mensaje = 'La orden ya esta denegada.';
         break;
     }
-    if (mensaje.isNotEmpty) Textos.toast(mensaje, false);
+    if (mensaje.isNotEmpty) Textos.toast(mensaje);
   }
 
   void confirmarEntragas(List lista) {
@@ -144,7 +144,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
       ctx.read<Carga>().cargaBool(false);
       ctx.read<VenDatos>().ordenarPor(true);
     }
-    Textos.toast(datos, true);
+    Textos.toast(datos);
   }
 
   @override
@@ -431,7 +431,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                   datos,
                                   venDatos.comfProdLista(),
                                 ),
-                                true,
                               )
                             : Textos.toast(
                                 await OrdenModel.editarOrden(
@@ -439,7 +438,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                   'Estado',
                                   "'Cancelado'",
                                 ),
-                                true,
                               ),
                         if (context.mounted)
                           {

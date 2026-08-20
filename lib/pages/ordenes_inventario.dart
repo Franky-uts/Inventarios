@@ -36,7 +36,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 ctx.read<Producto>().producto(true),
               },
           }
-        : Textos.toast(producto.mensaje, true);
+        : Textos.toast(producto.mensaje);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -53,7 +53,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 carga.cargaBool(true),
                 await RecDrawer.getListas(context),
               },
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -65,7 +65,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               'Descargar reporte',
               Icons.download_rounded,
               () async => await RecDrawer.datosExcel(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -77,7 +77,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
               'Escanear producto',
               Icons.barcode_reader,
               () => RecDrawer.scanProducto(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -113,7 +113,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                 Navigator.of(context).pop(),
                 context.read<Ventanas>().emergente(true),
               },
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -221,7 +221,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                   () async => {
                     ventanas.emergente(false),
                     carga.cargaBool(true),
-                    Textos.toast(await ProductoModel.reiniciarESP(), true),
+                    Textos.toast(await ProductoModel.reiniciarESP()),
                     if (context.mounted)
                       {
                         context.read<Tablas>().datos(

@@ -125,11 +125,11 @@ class HistorialInfo extends ChangeNotifier {
                               children: [
                                 Tablas.contenedorInfo(
                                   MediaQuery.sizeOf(context).width,
-                                  [.2, .2, .1, .1, .1, .1],
+                                  [.2, .2, /*.1,*/ .1, .1, .1],
                                   [
                                     'Hora',
                                     'Usuario',
-                                    'Unidades',
+                                    /*'Unidades',*/
                                     'Entradas',
                                     'Salidas',
                                     'Perdidas',
@@ -153,8 +153,8 @@ class HistorialInfo extends ChangeNotifier {
                                           ),
                                         ),
                                     itemBuilder: (context, index) {
-                                      String unidad =
-                                          '${_historialInfo.unidades[index]}';
+                                      /*String unidad =
+                                          '${_historialInfo.unidades[index]}';*/
                                       String entrada =
                                           '${_historialInfo.entradas[index]}';
                                       String salida =
@@ -166,17 +166,17 @@ class HistorialInfo extends ChangeNotifier {
                                         ),
                                         child: Tablas.barraDatos(
                                           MediaQuery.sizeOf(context).width,
-                                          [.2, .2, .1, .1, .1, .1],
+                                          [.2, .2,/* .1,*/ .1, .1, .1],
                                           [
                                             _historialInfo
                                                 .horasModificacion[index],
                                             _historialInfo
                                                 .usuarioModificacion[index],
-                                            (unidad.split('.').length > 1)
+                                            /*(unidad.split('.').length > 1)
                                                 ? (unidad.split('.')[1] == '0')
                                                       ? unidad.split('.')[0]
                                                       : unidad
-                                                : unidad,
+                                                : unidad,*/
                                             (entrada.split('.').length > 1)
                                                 ? (entrada.split('.')[1] == '0')
                                                       ? entrada.split('.')[0]

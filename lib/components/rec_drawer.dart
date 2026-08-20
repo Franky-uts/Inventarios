@@ -105,9 +105,9 @@ class RecDrawer {
       'Nombre',
       'Tipo',
       'Área',
-      'Unidades',
+      //'Unidades',
       'Cantidad por unidad',
-      'Total',
+      //'Total',
       'Mínimo de productos',
       'Entrada',
       'Salida',
@@ -133,23 +133,23 @@ class RecDrawer {
       establecerCelda(sheetObject, 1, i + 1, TextCellValue(item.nombre));
       establecerCelda(sheetObject, 2, i + 1, TextCellValue(item.tipo));
       establecerCelda(sheetObject, 3, i + 1, TextCellValue(item.area));
-      establecerCelda(sheetObject, 4, i + 1, DoubleCellValue(item.unidades));
+      //establecerCelda(sheetObject, 4, i + 1, DoubleCellValue(item.unidades));
       establecerCelda(
         sheetObject,
-        5,
+        4,
         i + 1,
         DoubleCellValue(item.cantidadPorUnidad),
       );
-      establecerCelda(
+      /*establecerCelda(
         sheetObject,
         6,
         i + 1,
         DoubleCellValue((item.unidades * item.cantidadPorUnidad)),
-      );
-      establecerCelda(sheetObject, 7, i + 1, IntCellValue(item.limiteProd));
-      establecerCelda(sheetObject, 8, i + 1, DoubleCellValue(item.entrada));
-      establecerCelda(sheetObject, 9, i + 1, DoubleCellValue(item.salida));
-      establecerCelda(sheetObject, 10, i + 1, TextCellValue(perdidas));
+      );*/
+      establecerCelda(sheetObject, 5, i + 1, IntCellValue(item.limiteProd));
+      establecerCelda(sheetObject, 6, i + 1, DoubleCellValue(item.entrada));
+      establecerCelda(sheetObject, 7, i + 1, DoubleCellValue(item.salida));
+      establecerCelda(sheetObject, 8, i + 1, TextCellValue(perdidas));
       establecerCelda(
         sheetObject,
         11,
@@ -178,7 +178,7 @@ class RecDrawer {
         }
       }
     }
-    Textos.toast(mensaje, true);
+    Textos.toast(mensaje);
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
@@ -225,7 +225,7 @@ class RecDrawer {
         }
       }
     }
-    Textos.toast(mensaje, true);
+    Textos.toast(mensaje);
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
@@ -273,7 +273,7 @@ class RecDrawer {
         }
       }
     }
-    Textos.toast(mensaje, true);
+    Textos.toast(mensaje);
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
@@ -296,7 +296,7 @@ class RecDrawer {
         'id',
         'Nombre',
         'Fecha',
-        'Unidades',
+        //'Unidades',
         'Entradas',
         'Salidas',
         'Perdidas',
@@ -309,7 +309,7 @@ class RecDrawer {
       }
       for (int i = 0; i < historial.length; i++) {
         contador += 1;
-        int cantidad = contador + historial[i].unidades.length - 1;
+        int cantidad = contador + historial[i].movimientos - 1;
         HistorialModel item = historial[i];
         String perdidas = 'No hay perdidas registradas';
         if (item.cantidades.isNotEmpty) {
@@ -323,7 +323,7 @@ class RecDrawer {
         establecerCelda(sheetObject, 0, contador, IntCellValue(item.id));
         establecerCelda(sheetObject, 1, contador, TextCellValue(item.nombre));
         establecerCelda(sheetObject, 2, contador, TextCellValue(item.fecha));
-        establecerCelda(sheetObject, 7, contador, TextCellValue(perdidas));
+        establecerCelda(sheetObject, 6, contador, TextCellValue(perdidas));
         sheetObject.merge(
           CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: contador),
           CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: cantidad),
@@ -337,43 +337,43 @@ class RecDrawer {
           CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: cantidad),
         );
         sheetObject.merge(
-          CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: contador),
-          CellIndex.indexByColumnRow(columnIndex: 9, rowIndex: cantidad),
+          CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: contador),
+          CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: cantidad),
         );
-        for (int j = 0; j < item.unidades.length; j++) {
-          establecerCelda(
+        for (int j = 0; j < item.movimientos; j++) {
+          /*establecerCelda(
             sheetObject,
             3,
             j + contador,
             DoubleCellValue(item.unidades[j]),
-          );
+          );*/
           establecerCelda(
             sheetObject,
-            4,
+            3,
             j + contador,
             DoubleCellValue(item.entradas[j]),
           );
           establecerCelda(
             sheetObject,
-            5,
+            4,
             j + contador,
             DoubleCellValue(item.salidas[j]),
           );
           establecerCelda(
             sheetObject,
-            6,
+            5,
             j + contador,
             IntCellValue(item.perdidas[j]),
           );
           establecerCelda(
             sheetObject,
-            8,
+            7,
             j + contador,
             TextCellValue(item.horasModificacion[j]),
           );
           establecerCelda(
             sheetObject,
-            9,
+            8,
             j + contador,
             TextCellValue(item.usuarioModificacion[j]),
           );
@@ -444,7 +444,7 @@ class RecDrawer {
         }
       }
     }
-    if (flag) Textos.toast('No se reconocio el codigo.', false);
+    if (flag) Textos.toast('No se reconocio el codigo.');
   }
 
   static void scanArticulo(BuildContext ctx) async {
@@ -475,7 +475,7 @@ class RecDrawer {
         }
       }
     }
-    if (flag) Textos.toast('No se reconocio el codigo.', false);
+    if (flag) Textos.toast('No se reconocio el codigo.');
   }
 
   static Future<void> getListas(BuildContext ctx) async {
@@ -490,7 +490,7 @@ class RecDrawer {
     if (articulos.last.mensaje != '') texto = articulos.last.mensaje;
     if (areas.last.split(': ')[0] == 'Error') texto = areas.last.split(': ')[1];
     (texto.isNotEmpty)
-        ? Textos.toast(texto, false)
+        ? Textos.toast(texto)
         : {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)

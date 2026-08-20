@@ -72,6 +72,22 @@ class Producto with ChangeNotifier {
     return perdida;
   }
 
+  String tipoUnidad() {
+    String objeto = '${_prod.tipo}s';
+    switch (_prod.tipo) {
+      case 'Costal' || 'Kilo(s)':
+        objeto = 'Kilos';
+        break;
+      case 'Bote' || 'Galón':
+        objeto = 'Litros';
+        break;
+      case 'Caja' || 'Bulto' || 'Paquete':
+        objeto = 'Piezas';
+        break;
+    }
+    return objeto;
+  }
+
   void recarga(BuildContext context) async {
     context.read<Carga>().cargaBool(true);
     String mensaje = 'Se actualizó el producto.';
@@ -87,7 +103,7 @@ class Producto with ChangeNotifier {
             notifyListeners(),
           }
         : mensaje = producto.mensaje;
-    Textos.toast(mensaje, false);
+    Textos.toast(mensaje);
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
@@ -122,7 +138,7 @@ class Producto with ChangeNotifier {
         }
       }
     }
-    Textos.toast(mensaje, true);
+    Textos.toast(mensaje);
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
@@ -130,24 +146,27 @@ class Producto with ChangeNotifier {
     Color col = Color(0xFFFF0000);
     entrada
         ? {
-            if ((entr + _prod.entrada + valor) >= _prod.entrada)
+            if (valor > 0) {col = Color(0xFF8A03A9), entr += valor},
+            /*if ((entr + _prod.entrada + valor) >= _prod.entrada)
               {
                 col = Color(0xFF8A03A9),
                 entr += valor,
                 if (valor < 0 && _prod.unidades + entr - sali < 0)
                   {sali += valor, if (sali == 0) color[1] = Color(0xFF8A03A9)},
-              },
+              },*/
             if (entr + _prod.entrada != _prod.entrada) col = Color(0xFF00be00),
           }
         : {
-            if ((sali + _prod.salida + valor) >= _prod.salida)
+            if (valor > 0) {col = Color(0xFF8A03A9), sali += valor},
+            /*if ((sali + _prod.salida + valor) >= _prod.salida)
               {
                 col = Color(0xFF8A03A9),
                 if ((_prod.unidades + entr - (sali + valor)) >= 0)
                   sali += valor,
                 if (sali + _prod.salida != _prod.salida)
                   col = Color(0xFF00be00),
-              },
+              },*/
+            if (sali + _prod.salida != _prod.salida) col = Color(0xFF00be00),
           };
     color[entrada ? 0 : 1] = col;
     notifyListeners();
@@ -166,35 +185,35 @@ class Producto with ChangeNotifier {
     notifyListeners();
     if (valido) {
       double perdidas = double.parse(controllerPerdidas[0].text);
-      double unidades = double.parse(
+      /*double unidades = double.parse(
         (_prod.unidades - (perdidas / _prod.cantidadPorUnidad)).toStringAsFixed(
           3,
         ),
+      );*/
+      //String mensaje = 'Error: Las perdidas exceden la cantidad almacenada';
+      //if (unidades >= 0) {
+      String mensaje = await ProductoModel.guardarPerdidas(
+        controllerPerdidas[1].text,
+        perdidas,
+        _prod.id,
       );
-      String mensaje = 'Error: Las perdidas exceden la cantidad almacenada';
-      if (unidades >= 0) {
-        mensaje = await ProductoModel.guardarPerdidas(
-          controllerPerdidas[1].text,
-          perdidas,
-          _prod.id,
-        );
-        if (mensaje.split(": ")[0] != 'Error') {
-          ProductoModel producto = await ProductoModel.getProducto(_prod.id);
-          (producto.mensaje.isEmpty)
-              ? {
-                  productosPerdido += perdidas,
-                  _prod = producto,
-                  notifyListeners(),
-                }
-              : mensaje =
-                    'Se guardó la información, pero no se pudo actualizar el producto';
-        }
-        if (context.mounted) {
-          emergente(mensaje.split(':')[0] == 'Error');
-          tabla(mensaje.split(':')[0] != 'Error');
-        }
-        Textos.toast(mensaje, true);
+      if (mensaje.split(": ")[0] != 'Error') {
+        ProductoModel producto = await ProductoModel.getProducto(_prod.id);
+        (producto.mensaje.isEmpty)
+            ? {
+                productosPerdido += perdidas,
+                _prod = producto,
+                notifyListeners(),
+              }
+            : mensaje =
+                  'Se guardó la información, pero no se pudo actualizar el producto';
       }
+      if (context.mounted) {
+        emergente(mensaje.split(':')[0] == 'Error');
+        tabla(mensaje.split(':')[0] != 'Error');
+      }
+      Textos.toast(mensaje);
+      //}
     }
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
@@ -210,12 +229,12 @@ class Producto with ChangeNotifier {
     }
     if (controller[1].text.isNotEmpty || controller[1].text.isNotEmpty) {
       double perdidas = double.parse(controller[0].text);
-      double unidades = double.parse(
+      /*double unidades = double.parse(
         (perdidas / _prod.cantidadPorUnidad).toStringAsFixed(3),
-      );
-      String mensaje = 'Error: Las perdidas exceden la cantidad almacenada';
-      if (_prod.unidades - unidades >= 0) {
-        mensaje = await ProductoModel.guardarPerdidas(
+      );*/
+      String mensaje = 'Error: No puedes perder menos de 0 (Buen intento).';
+      if (perdidas > 0) {
+        String mensaje = await ProductoModel.guardarPerdidas(
           controller[1].text,
           perdidas,
           _prod.id,
@@ -232,7 +251,7 @@ class Producto with ChangeNotifier {
         emergente(mensaje.split(':')[0] == 'Error');
         tabla(mensaje.split(':')[0] != 'Error');
       }
-      Textos.toast(mensaje, true);
+      Textos.toast(mensaje);
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
@@ -264,7 +283,7 @@ class Producto with ChangeNotifier {
                   {emergente(false), context.read<Carga>().cargaBool(false)},
               },
           };
-    if (mensaje.isNotEmpty) Textos.toast(mensaje, true);
+    if (mensaje.isNotEmpty) Textos.toast(mensaje);
   }
 
   Widget productoInfo() {
@@ -305,14 +324,24 @@ class Producto with ChangeNotifier {
                           children: [
                             Textos.textoTilulo(_prod.nombre, 30),
                             tipoTexto(ctx),
-                            contenedorInfo(' que entraron:', entrada, 0, ctx),
-                            contenedorInfo(' que salieron:', salida, 1, ctx),
+                            contenedorInfo(
+                              '${_prod.tipo}s que entraron:',
+                              entrada,
+                              0,
+                              ctx,
+                            ),
+                            contenedorInfo(
+                              '${tipoUnidad()} que salieron:',
+                              salida,
+                              1,
+                              ctx,
+                            ),
                             contenedorInfoPerdidas(productosPerdido, 2, ctx),
                             Botones.icoCirMor(
                               'Guardar movimientos',
                               Icons.save_rounded,
                               () => enviarDatos(ctx),
-                              () => Textos.toast('No hay hay cambios.', false),
+                              () => Textos.toast('No hay hay cambios.'),
                               false,
                               true,
                             ),
@@ -383,6 +412,18 @@ class Producto with ChangeNotifier {
                           ),
                           itemBuilder: (context, index) {
                             String cantidad = '${_prod.perdidaCantidad[index]}';
+                            if (cantidad.split('.').length > 1) {
+                              if (cantidad.split('.')[1] == '0') {
+                                cantidad = cantidad.split('.')[0];
+                              }
+                            }
+                            cantidad = '$cantidad ${tipoUnidad()}';
+                            if (_prod.perdidaCantidad[index] == 1) {
+                              cantidad = cantidad.substring(
+                                0,
+                                cantidad.length - 1,
+                              );
+                            }
                             return Container(
                               width: MediaQuery.sizeOf(context).width,
                               decoration: BoxDecoration(
@@ -393,11 +434,11 @@ class Producto with ChangeNotifier {
                                 [.05, .15, .6],
                                 [
                                   '${index + 1}',
-                                  (cantidad.split('.').length > 1)
+                                  '${(cantidad.split('.').length > 1)
                                       ? (cantidad.split('.')[1] == '0')
                                             ? cantidad.split('.')[0]
                                             : cantidad
-                                      : cantidad,
+                                      : cantidad} ${tipoUnidad()}',
                                   _prod.perdidaRazones[index],
                                 ],
                                 [],
@@ -518,10 +559,10 @@ class Producto with ChangeNotifier {
   }
 
   Widget productorInfo(BuildContext context) {
-    String unidad = '${_prod.unidades}';
+    /*String unidad = '${_prod.unidades}';
     if (unidad.split('.').length > 1) {
       if (unidad.split('.')[1] == '0') unidad = unidad.split('.')[0];
-    }
+    }*/
     return Visibility(
       visible: _prov,
       child: Stack(
@@ -576,7 +617,7 @@ class Producto with ChangeNotifier {
                                           size: 20,
                                           alignment: TextAlign.center,
                                         ),
-                                        Textos.recuadroCantidad(
+                                        /*Textos.recuadroCantidad(
                                           unidad,
                                           Textos.colorLimite(
                                             _prod.limiteProd,
@@ -584,7 +625,7 @@ class Producto with ChangeNotifier {
                                           ),
                                           1,
                                           size: 20,
-                                        ),
+                                        ),*/
                                       ],
                                     ),
                                   ),
@@ -635,7 +676,7 @@ class Producto with ChangeNotifier {
                                               [.05, .15, .6],
                                               [
                                                 '${index + 1}',
-                                                '${_prod.perdidaCantidad[index]}',
+                                                '${_prod.perdidaCantidad[index]} ${tipoUnidad()}',
                                                 _prod.perdidaRazones[index],
                                               ],
                                               [],
@@ -738,48 +779,52 @@ class Producto with ChangeNotifier {
   }
 
   SizedBox tipoTexto(BuildContext ctx) {
-    String titulo = '${_prod.tipo}s:';
+    //String titulo = '${_prod.tipo}s:';
     String cantidad = '${_prod.cantidadPorUnidad}';
     if (cantidad.split('.').length > 1) {
       if (cantidad.split('.')[1] == '0') cantidad = cantidad.split('.')[0];
     }
-    if (_prod.tipo == 'Granel') {
+    /*if (_prod.tipo == 'Granel') {
       titulo = 'Kilos:';
-    } else if (_prod.tipo == 'Costal') {
-      titulo = 'Unidades:';
-      cantidad = 'Kilos por unidad: $cantidad';
-    } else if (_prod.tipo == 'Bote') {
-      titulo = 'Unidades:';
-      cantidad = 'Kilos/Piezas por unidad: $cantidad';
-    } else if (_prod.tipo == 'Caja' ||
-        _prod.tipo == 'Bulto' ||
-        _prod.tipo == 'Paquete') {
-      cantidad = 'Productos por $_prod.tipo: $cantidad';
-    } else if (_prod.tipo == 'Galón') {
-      titulo = 'Galones:';
+    } else*/
+    switch (_prod.tipo) {
+      case 'Costal':
+        //titulo = 'Unidades:';
+        cantidad = 'Kilos por unidad: $cantidad';
+        break;
+      case 'Bote':
+        //titulo = 'Unidades:';
+        cantidad = 'Litros por unidad: $cantidad';
+        break;
+      case 'Caja' || 'Bulto' || 'Paquete':
+        cantidad = 'Productos por ${_prod.tipo}: $cantidad';
+        break;
     }
-    String unidades = '${_prod.unidades + entr - sali}';
+    /*else if (_prod.tipo == 'Galón') {
+      titulo = 'Galones:';
+    }*/
+    /*String unidades = '${_prod.unidades + entr - sali}';
     if (unidades.split('.').length > 1) {
       if (unidades.split('.')[1] == '0') unidades = unidades.split('.')[0];
-    }
+    }*/
     return SizedBox(
       width: MediaQuery.of(ctx).size.width * .5,
       height: 90,
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Textos.textoGeneral(
+              /*Textos.textoGeneral(
                 titulo,
                 true,
                 1,
                 size: 20,
                 alignment: TextAlign.center,
-              ),
+              ),*/
               if (_prod.cantidadPorUnidad != 1)
                 Textos.textoGeneral(cantidad, true, 1, size: 15),
               Row(
@@ -810,7 +855,7 @@ class Producto with ChangeNotifier {
               ),
             ],
           ),
-          Textos.recuadroCantidad(
+          /*Textos.recuadroCantidad(
             unidades,
             Textos.colorLimite(
               _prod.limiteProd,
@@ -818,7 +863,7 @@ class Producto with ChangeNotifier {
             ),
             1,
             size: 20,
-          ),
+          ),*/
         ],
       ),
     );
@@ -911,7 +956,7 @@ class Producto with ChangeNotifier {
     int valor,
     BuildContext ctx,
   ) {
-    String text = 'Kilos ${_prod.tipo}s$textoInfo';
+    //String text = '${_prod.tipo}s$textoInfo';
     return SizedBox(
       width: MediaQuery.of(ctx).size.width * .55,
       height: 45,
@@ -921,7 +966,7 @@ class Producto with ChangeNotifier {
         children: [
           CampoTexto.inputTexto(
             MediaQuery.sizeOf(ctx).width * .3575,
-            text,
+            textoInfo,
             '',
             controller[valor],
             true,
@@ -946,12 +991,12 @@ class Producto with ChangeNotifier {
     int valor,
     BuildContext ctx,
   ) {
-    String text = 'Productos perdidos:';
-    if (_prod.tipo == 'Granel' || _prod.tipo == 'Costal') {
+    String text = 'Perdidas registradas:';
+    /*if (_prod.tipo == 'Granel' || _prod.tipo == 'Costal') {
       text = 'Kilos perdidos:';
     } else if (_prod.tipo == 'Bote') {
       text = 'Gramos/Piezas perdidos:';
-    }
+    }*/
     return SizedBox(
       width: MediaQuery.of(ctx).size.width * .55,
       height: 40,

@@ -47,7 +47,7 @@ class _ProductorState extends State<Productor> {
                             ),
                         }
                       : {
-                          Textos.toast(productos.last.mensaje, true),
+                          Textos.toast(productos.last.mensaje),
                           index = currentPage,
                         };
                 }
@@ -55,7 +55,7 @@ class _ProductorState extends State<Productor> {
                   currentPage = index;
                 });
               } else {
-                Textos.toast('Espera a que los datos carguen.', false);
+                Textos.toast('Espera a que los datos carguen.');
               }
               if (context.mounted) context.read<Carga>().cargaBool(false);
             },

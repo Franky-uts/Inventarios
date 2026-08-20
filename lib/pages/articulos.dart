@@ -36,7 +36,7 @@ class _ArticulosState extends State<Articulos> {
         ctx.read<Articulo>().art(true);
       }
     } else {
-      Textos.toast(articulo.mensaje, true);
+      Textos.toast(articulo.mensaje);
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
@@ -50,7 +50,7 @@ class _ArticulosState extends State<Articulos> {
     if (tipos.last.split(': ')[0] == 'Error') texto = tipos.last.split(': ')[1];
     if (areas.last.split(': ')[0] == 'Error') texto = areas.last.split(': ')[1];
     (texto.isNotEmpty)
-        ? Textos.toast(texto, false)
+        ? Textos.toast(texto)
         : {
             await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
@@ -87,7 +87,7 @@ class _ArticulosState extends State<Articulos> {
               'Añadir un artículo',
               Icons.edit_note_rounded,
               () async => await _getListas(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -99,7 +99,7 @@ class _ArticulosState extends State<Articulos> {
               'Descargar articulos',
               Icons.download_rounded,
               () async => await RecDrawer.articulosExcel(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -111,7 +111,7 @@ class _ArticulosState extends State<Articulos> {
               'Escanear artículo',
               Icons.barcode_reader,
               () async => RecDrawer.scanArticulo(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               true,
               Carga.getValido(),
             );

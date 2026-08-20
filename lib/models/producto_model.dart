@@ -12,7 +12,7 @@ class ProductoModel {
   String tipo;
   String codigoBarras;
   double cantidadPorUnidad;
-  double unidades;
+  //double unidades;
   int limiteProd;
   double entrada;
   double salida;
@@ -29,7 +29,7 @@ class ProductoModel {
     required this.tipo,
     required this.codigoBarras,
     required this.cantidadPorUnidad,
-    required this.unidades,
+    //required this.unidades,
     required this.limiteProd,
     required this.entrada,
     required this.salida,
@@ -48,7 +48,7 @@ class ProductoModel {
       tipo: '',
       codigoBarras: '',
       cantidadPorUnidad: 0,
-      unidades: 0,
+      //unidades: 0,
       limiteProd: 0,
       entrada: 0,
       salida: 0,
@@ -94,7 +94,7 @@ class ProductoModel {
                 id: item['id'],
                 nombre: item['Nombre'],
                 tipo: item['Tipo'],
-                unidades: item['Unidades'].toDouble(),
+                //unidades: item['Unidades'].toDouble(),
                 ultimaModificacion: item['UltimaModificación'],
                 cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
                 area: item['Area'],
@@ -155,7 +155,7 @@ class ProductoModel {
               id: item['id'],
               nombre: item['Nombre'],
               tipo: item['Tipo'],
-              unidades: item['Unidades'].toDouble(),
+              //unidades: item['Unidades'].toDouble(),
               ultimaModificacion: item['UltimaModificación'],
               cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
               area: item['Area'],
@@ -213,7 +213,7 @@ class ProductoModel {
             id: item['id'],
             nombre: item['Nombre'],
             tipo: item['Tipo'],
-            unidades: item['Unidades'].toDouble(),
+            //unidades: item['Unidades'].toDouble(),
             ultimaModificacion: item['UltimaModificación'],
             cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
             area: item['Area'],
@@ -265,7 +265,7 @@ class ProductoModel {
               nombre: item['inventarioNom'],
               area: '',
               tipo: '',
-              unidades: double.parse('${item['Unidades']}'),
+              //unidades: double.parse('${item['Unidades']}'),
               cantidadPorUnidad: 0,
               entrada: item['Entradas'].toDouble(),
               salida: item['Salidas'].toDouble(),

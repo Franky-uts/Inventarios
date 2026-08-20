@@ -77,7 +77,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       comentarios.clear();
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
-    Textos.toast(respuesta, true);
+    Textos.toast(respuesta);
   }
 
   void listas(int length) {
@@ -111,7 +111,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         if (listaProd.isEmpty) mensaje = 'No hay productos seleccionados.';
       }
       if (ctx.mounted) ctx.read<Ventanas>().tabla(listaProd.isNotEmpty);
-      if (mensaje.isNotEmpty) Textos.toast(mensaje, false);
+      if (mensaje.isNotEmpty) Textos.toast(mensaje);
     }
   }
 
@@ -169,13 +169,13 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, .25, .175, .175, .08, .1],
+                          [.1, .25, .175, .175, /*.08,*/ .1],
                           [
                             'id',
                             'Nombre',
                             'Área',
                             'Tipo',
-                            'Unidades',
+                            //'Unidades',
                             'Acciones',
                           ],
                         ),
@@ -251,13 +251,14 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                               8,
                               Color(0x00000000),
                             );
-                            colores[4] = Textos.colorLimite(
+                            //Revisar como puedo usar en un futuro la función de los limites
+                            /*colores[4] = Textos.colorLimite(
                               listaProd[index].limiteProd,
                               double.parse(
                                     cantidad[listaProd[index].id - 1].text,
                                   ).round() +
                                   listaProd[index].unidades.floor(),
-                            );
+                            );*/
                             String cantUni =
                                 '${listaProd[index].cantidadPorUnidad}';
                             String total =
@@ -354,7 +355,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                   () => {
                     if (controller.text.isNotEmpty &&
                         controller.text != comentarios[comid])
-                      Textos.toast('Comentario añadido', false),
+                      Textos.toast('Comentario añadido'),
                     comentarios[comid] = controller.text,
                     context.read<Ventanas>().emergente(false),
                   },
@@ -368,7 +369,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     accion: () => {
                       if (controller.text.isNotEmpty &&
                           controller.text != comentarios[comid])
-                        Textos.toast('Comentario añadido', false),
+                        Textos.toast('Comentario añadido'),
                       comentarios[comid] = controller.text,
                       context.read<Ventanas>().emergente(false),
                     },
@@ -444,27 +445,27 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       ),
       itemBuilder: (context, index) {
         List<Color> colores = List.filled(6, Colors.transparent);
-        colores[4] = Textos.colorLimite(
+        /*colores[4] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),
-        );
-        String unidad = '${lista[index].unidades}';
+        );*/
+        //String unidad = '${lista[index].unidades}';
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, .25, .175, .175, .08, .1],
+            [.1, .25, .175, .175,/* .08,*/ .1],
             [
               '${lista[index].id}',
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,
-              (unidad.split('.').length > 1)
+              /*(unidad.split('.').length > 1)
                   ? (unidad.split('.')[1] == '0')
                         ? unidad.split('.')[0]
                         : unidad
-                  : unidad,
+                  : unidad,*/
               Consumer<Textos>(
                 builder: (ctx, textos, child) {
                   return SizedBox(

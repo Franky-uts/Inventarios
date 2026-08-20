@@ -49,7 +49,7 @@ class _EmpleadoState extends State<Empleado> {
                             ),
                         }
                       : {
-                          Textos.toast(productos.last.mensaje, true),
+                          Textos.toast(productos.last.mensaje),
                           index = currentPage,
                         };
                 }
@@ -57,7 +57,7 @@ class _EmpleadoState extends State<Empleado> {
                   currentPage = index;
                 });
               } else {
-                Textos.toast('Espera a que los datos carguen.', false);
+                Textos.toast('Espera a que los datos carguen.');
               }
               if (context.mounted) context.read<Carga>().cargaBool(false);
             },
@@ -71,14 +71,14 @@ class _EmpleadoState extends State<Empleado> {
                     CampoTexto.seleccionFiltro = Filtros.id,
                 },
               ),
-              Botones.botonBarNav(
+              /*Botones.botonBarNav(
                 'Inventario',
                 Icons.inventory_rounded,
                 () => {
                   if (CampoTexto.seleccionFiltro == Filtros.fecha)
                     CampoTexto.seleccionFiltro = Filtros.id,
                 },
-              ),
+              ),*/
               Botones.botonBarNav(
                 'Nueva Orden',
                 Icons.add_shopping_cart_rounded,
@@ -114,7 +114,7 @@ class _EmpleadoState extends State<Empleado> {
       ),
       body: [
         ESP(),
-        Inventario(),
+        //Inventario(),
         OrdenSalida(),
         HistorialOrdenes(),
         Historial(),

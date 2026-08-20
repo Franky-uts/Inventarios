@@ -119,7 +119,7 @@ class _AddproductoState extends State<Addarticulo> {
         valorTipo = listaTipo.first;
         valorArea = listaArea.first;
       }
-      Textos.toast(respuesta, true);
+      Textos.toast(respuesta);
     }
     setState(() {
       context.read<Carga>().cargaBool(false);
@@ -149,7 +149,7 @@ class _AddproductoState extends State<Addarticulo> {
       for (ArticulosModel articulo in lista) {
         if (articulo.codigoBarras == texto) flag = false;
       }
-      if (!flag) Textos.toast('El código ya esta registrado', flag);
+      if (!flag) Textos.toast('El código ya esta registrado');
     }
     setState(() {
       controller[2].text = texto;

@@ -36,7 +36,7 @@ Future<void> getProductoInfo(BuildContext ctx, int id) async {
               ctx.read<Producto>().prov(true),
             },
         }
-      : Textos.toast(producto.mensaje, true);
+      : Textos.toast(producto.mensaje);
   if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
 }
 
@@ -66,7 +66,7 @@ void rutaProducto(String prod, BuildContext ctx) async {
         ctx.read<Producto>().producto(true);
       }
     }
-    if (flag) Textos.toast('No se reconocio el codigo.', false);
+    if (flag) Textos.toast('No se reconocio el codigo.');
     ctx.read<Carga>().cargaBool(false);
   }
 }
@@ -82,7 +82,7 @@ class _InventarioProdState extends State<InventarioProd> {
               'Escanear codigo',
               Icons.barcode_reader,
               () => scanProd(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               true,
               Carga.getValido(),
             );

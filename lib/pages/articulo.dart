@@ -68,7 +68,7 @@ class Articulo extends ChangeNotifier {
               : {emergente(true), ctx.read<Carga>().cargaBool(false)};
         }
       } else {
-        Textos.toast('El código ya esta registrado', flag);
+        Textos.toast('El código ya esta registrado');
       }
     }
   }
@@ -99,7 +99,7 @@ class Articulo extends ChangeNotifier {
         }
         notifyListeners();
       }
-      Textos.toast(mensaje, true);
+      Textos.toast(mensaje);
       if (ctx.mounted) {
         emergente(false);
         ctx.read<Carga>().cargaBool(false);

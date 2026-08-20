@@ -42,14 +42,14 @@ class _InventarioState extends State<Inventario> {
       unidades.add(controller.text);
     }
     LocalStorage.setLista('unidades', unidades);
-    Textos.toast('Se guardo el reporte correctamente', true);
+    Textos.toast('Se guardo el reporte correctamente');
   }
 
   void enviarRegistro(BuildContext ctx) async {
     List<ProductoModel> listaProductos = await getProductos('id', '');
     List<int> idProductos = [];
     List<double> unidades = [];
-    for(ProductoModel prod in listaProductos){
+    for (ProductoModel prod in listaProductos) {
       String uni = controllerUni[prod.id - 1].text;
       if (uni.isNotEmpty) {
         (uni.split('.').length < 2)
@@ -58,14 +58,17 @@ class _InventarioState extends State<Inventario> {
         idProductos.add(prod.id);
       }
     }
-    String mensaje = await ProductoModel.registroCompleto(idProductos, unidades);
-    if(mensaje.split(':')[0]!='Error'){
+    String mensaje = await ProductoModel.registroCompleto(
+      idProductos,
+      unidades,
+    );
+    if (mensaje.split(':')[0] != 'Error') {
       LocalStorage.eliminar('unidades');
-      for(ProductoModel prod in listaProductos){
+      for (ProductoModel prod in listaProductos) {
         controllerUni[prod.id - 1].text = '';
       }
     }
-    Textos.toast(mensaje, true);
+    Textos.toast(mensaje);
   }
 
   @override
@@ -84,7 +87,7 @@ class _InventarioState extends State<Inventario> {
                   ctx.read<Ventanas>().cambio(true),
                   carga.cargaBool(false),
                 },
-                () => Textos.toast('Espera a que los datos carguen.', false),
+                () => Textos.toast('Espera a que los datos carguen.'),
                 false,
                 Carga.getValido(),
               );
@@ -100,7 +103,7 @@ class _InventarioState extends State<Inventario> {
                 textoVentana = 0,
                 context.read<Ventanas>().emergente(true),
               },
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -115,7 +118,7 @@ class _InventarioState extends State<Inventario> {
                 carga.cargaBool(true),
                 await RecDrawer.getListas(context),
               },
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -127,7 +130,7 @@ class _InventarioState extends State<Inventario> {
               'Guardar información',
               Icons.save_rounded,
               () => guardarregistro(ctx),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               true,
               Carga.getValido(),
             );

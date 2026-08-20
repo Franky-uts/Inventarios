@@ -24,6 +24,7 @@ class _ESPState extends State<ESP> {
   List<TextEditingController> controllerSal = [];
   List<TextEditingController> controllerEnt = [];
   int textoVentana = 0;
+  bool valido = false;
   ProductoModel producto = ProductoModel.dummy('');
 
   @override
@@ -79,11 +80,15 @@ class _ESPState extends State<ESP> {
         idProductos.add(prod.id);
       }
     }
-    String mensaje = await ProductoModel.guardarESCompleto(
-      idProductos,
-      entradas,
-      salidas,
-    );
+    String mensaje = 'Error: Los valores no son válidos.';
+    if (idProductos.isNotEmpty) {
+      mensaje = await ProductoModel.guardarESCompleto(
+        idProductos,
+        entradas,
+        salidas,
+      );
+      valido = false;
+    }
     if (mensaje.split(':')[0] != 'Error') {
       LocalStorage.eliminar('entradas');
       LocalStorage.eliminar('salidas');
@@ -91,8 +96,11 @@ class _ESPState extends State<ESP> {
         controllerEnt[prod.id - 1].text = '';
         controllerSal[prod.id - 1].text = '';
       }
+      mensaje = 'Se envio el reporte correctamente';
+    } else {
+      mensaje = mensaje.split(':')[1];
     }
-    Textos.toast('Se envio el reporte correctamente', true);
+    Textos.toast(mensaje);
   }
 
   Future<List<ProductoModel>> getProductos(
@@ -112,7 +120,7 @@ class _ESPState extends State<ESP> {
                 ctx.read<Producto>().producto(true),
               },
           }
-        : Textos.toast(producto.mensaje, true);
+        : Textos.toast(producto.mensaje);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -132,7 +140,7 @@ class _ESPState extends State<ESP> {
                   ctx.read<Ventanas>().cambio(true),
                   carga.cargaBool(false),
                 },
-                () => Textos.toast('Espera a que los datos carguen.', false),
+                () => Textos.toast('Espera a que los datos carguen.'),
                 false,
                 Carga.getValido(),
               );
@@ -147,7 +155,7 @@ class _ESPState extends State<ESP> {
                 carga.cargaBool(true),
                 await RecDrawer.getListas(context),
               },
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -159,7 +167,7 @@ class _ESPState extends State<ESP> {
               'Descargar reporte',
               Icons.download_rounded,
               () async => await RecDrawer.datosExcel(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -187,14 +195,14 @@ class _ESPState extends State<ESP> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              'Reiniciar movimientos',
+              'Reiniciar listas',
               Icons.refresh_rounded,
               () => {
                 Navigator.of(context).pop(),
                 textoVentana = 2,
                 context.read<Ventanas>().emergente(true),
               },
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               false,
               Carga.getValido(),
             );
@@ -206,7 +214,7 @@ class _ESPState extends State<ESP> {
               'Escanear codigo',
               Icons.barcode_reader,
               () => RecDrawer.scanProducto(context),
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               true,
               Carga.getValido(),
             );
@@ -244,11 +252,11 @@ class _ESPState extends State<ESP> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.075, .25, .075, .175, .15, .1, .1, .075],
+                          [.075, .25, /*.075,*/ .175, .15, .1, .1, .075],
                           [
                             'id',
                             'Nombre',
-                            'Unidades',
+                            //'Unidades',
                             'Área',
                             'Tipo',
                             'Entrada',
@@ -302,32 +310,41 @@ class _ESPState extends State<ESP> {
                   (textoVentana != 3) ? 'No, volver' : 'Cerrar',
                   (textoVentana != 3) ? 'Si, continuar' : '',
                   () => ventanas.emergente(false),
-                  () => {
-                    ventanas.emergente(false),
-                    carga.cargaBool(true),
-                    [
-                      () async => {
-                        Textos.toast(await ProductoModel.reiniciarESP(), true),
-                        if (context.mounted)
+                  [
+                    () async => {
+                      ventanas.emergente(false),
+                      carga.cargaBool(true),
+                      Textos.toast(await ProductoModel.reiniciarESP()),
+                      if (context.mounted)
+                        {
                           context.read<Tablas>().datos(
                             await getProductos(
                               CampoTexto.filtroTexto(),
                               CampoTexto.busquedaTexto.text,
                             ),
                           ),
-                      },
-                      () async => enviarMovimientos(context),
-                      () async => {
-                        for (int i = 0; i < controllerEnt.length; i++)
-                          {
-                            controllerEnt[i].text = '',
-                            controllerSal[i].text = '',
-                          },
-                      },
-                      () => {},
-                    ][textoVentana],
-                    if (context.mounted) carga.cargaBool(false),
-                  },
+                          carga.cargaBool(false),
+                        },
+                    },
+                    () async => {
+                      ventanas.emergente(false),
+                      carga.cargaBool(true),
+                      enviarMovimientos(context),
+                      if (context.mounted) carga.cargaBool(false),
+                    },
+                    () async => {
+                      ventanas.emergente(false),
+                      carga.cargaBool(true),
+                      for (int i = 0; i < controllerEnt.length; i++)
+                        {
+                          controllerEnt[i].text = '',
+                          controllerSal[i].text = '',
+                        },
+                      if (context.mounted) carga.cargaBool(false),
+                    },
+                    () => {},
+                  ][textoVentana],
+
                   widget: (textoVentana == 3) ? Column(children: []) : null,
                 );
               },
@@ -380,7 +397,23 @@ class _ESPState extends State<ESP> {
             'Enviar',
             Icons.task_alt_rounded,
             false,
-            () => {textoVentana = 1, context.read<Ventanas>().emergente(true)},
+            () => {
+              for (int i = 0; i < controllerEnt.length; i++)
+                {
+                  if (controllerEnt[i].text.isNotEmpty)
+                    {
+                      if (int.parse(controllerEnt[i].text) > 0) {valido = true},
+                    },
+                  if (controllerSal[i].text.isNotEmpty)
+                    {
+                      if (int.parse(controllerSal[i].text) > 0) {valido = true},
+                    },
+                },
+              if (valido)
+                {textoVentana = 1, context.read<Ventanas>().emergente(true)}
+              else
+                {Textos.toast('No hay cambios.')},
+            },
             size: 35,
           ),
           Container(
@@ -426,16 +459,16 @@ class _ESPState extends State<ESP> {
       ),
       itemBuilder: (context, index) {
         List<Color> colores = List.filled(8, Colors.transparent);
-        colores[2] = Textos.colorLimite(
+        /*colores[2] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),
-        );
-        String unidad = '${lista[index].unidades}';
+        );*/
+        //String unidad = '${lista[index].unidades}';
         String entrada = '${lista[index].entrada}';
         String salida = '${lista[index].salida}';
-        if (unidad.split('.').length > 1) {
+        /*if (unidad.split('.').length > 1) {
           if (unidad.split('.')[1] == '0') unidad = unidad.split('.')[0];
-        }
+        }*/
         if (entrada.split('.').length > 1) {
           if (entrada.split('.')[1] == '0') entrada = entrada.split('.')[0];
         }
@@ -447,11 +480,11 @@ class _ESPState extends State<ESP> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.075, .25, .075, .175, .15, .1, .1, .075],
+            [.075, .25, /*.075,*/ .175, .15, .1, .1, .075],
             [
               "${lista[index].id}",
               lista[index].nombre,
-              unidad,
+              //unidad,
               lista[index].area,
               lista[index].tipo,
               Consumer<Textos>(

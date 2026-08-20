@@ -108,7 +108,7 @@ class _InicioState extends State<Inicio> {
           }
         }
       }
-      if (mensaje.isNotEmpty) Textos.toast(mensaje, false);
+      if (mensaje.isNotEmpty) Textos.toast(mensaje);
       if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
     }
   }

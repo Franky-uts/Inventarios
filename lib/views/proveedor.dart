@@ -39,7 +39,7 @@ class _ProveedorState extends State<Proveedor> {
                   currentPage = index;
                 });
               } else {
-                Textos.toast('Espera a que los datos carguen.', false);
+                Textos.toast('Espera a que los datos carguen.');
               }
               if (context.mounted) context.read<Carga>().cargaBool(false);
             },
@@ -58,14 +58,14 @@ class _ProveedorState extends State<Proveedor> {
                     CampoTexto.seleccionFiltro = Filtros.id,
                 },
               ),
-              Botones.botonBarNav(
+              /*Botones.botonBarNav(
                 'Inventario',
                 Icons.inventory_rounded,
                 () => {
                   if (CampoTexto.seleccionFiltro == Filtros.fecha)
                     CampoTexto.seleccionFiltro = Filtros.id,
                 },
-              ),
+              ),*/
               Botones.botonBarNav(
                 'Artículos',
                 Icons.list,
@@ -105,7 +105,7 @@ class _ProveedorState extends State<Proveedor> {
       body: [
         Ordenes(),
         ESP(),
-        Inventario(),
+        //Inventario(),
         Articulos(),
         Historial(),
       ][currentPage],

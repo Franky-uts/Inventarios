@@ -72,7 +72,7 @@ class _OrdenesState extends State<Ordenes> {
         ctx.read<Ventanas>().tabla(true);
       }
     } else {
-      Textos.toast(orden.mensaje, true);
+      Textos.toast(orden.mensaje);
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
@@ -88,7 +88,7 @@ class _OrdenesState extends State<Ordenes> {
     for (int i = 0; i < canCubOrg.length; i++) {
       if (!guardar) guardar = (lista[i] != canCubOrg[i]);
     }
-    guardar ? cambiarEstado('guardar') : Textos.toast('No hay cambios', true);
+    guardar ? cambiarEstado('guardar') : Textos.toast('No hay cambios');
   }
 
   void verComentarios(
@@ -864,7 +864,7 @@ class _OrdenesState extends State<Ordenes> {
                   () async => {
                     ventana.emergente(false),
                     carga.cargaBool(true),
-                    Textos.toast(await guardarDatos(context), false),
+                    Textos.toast(await guardarDatos(context)),
                     carga.cargaBool(false),
                     ventana.tabla(accion == 'guardar' || accion == 'confirmar'),
                     id = 0,

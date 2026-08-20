@@ -11,7 +11,7 @@ class HistorialModel {
   String nombre;
   String area;
   int movimientos;
-  List<double> unidades;
+  //List<double> unidades;
   List<double> entradas;
   List<double> salidas;
   List<int> perdidas;
@@ -27,7 +27,7 @@ class HistorialModel {
     required this.nombre,
     required this.area,
     required this.movimientos,
-    required this.unidades,
+    //required this.unidades,
     required this.entradas,
     required this.salidas,
     required this.perdidas,
@@ -45,7 +45,7 @@ class HistorialModel {
       nombre: '',
       area: '',
       movimientos: 0,
-      unidades: [],
+      //unidades: [],
       entradas: [],
       salidas: [],
       perdidas: [],
@@ -89,7 +89,7 @@ class HistorialModel {
                 nombre: item['Nombre'],
                 area: item['Area'],
                 movimientos: item['Movimientos'],
-                unidades: [],
+                //unidades: [],
                 entradas: [],
                 salidas: [],
                 perdidas: [],
@@ -143,7 +143,7 @@ class HistorialModel {
               nombre: item['Nombre'],
               area: item['Area'],
               movimientos: item['Movimientos'],
-              unidades: [],
+              //unidades: [],
               entradas: [],
               salidas: [],
               perdidas: [],
@@ -190,7 +190,7 @@ class HistorialModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          List<double> unidadeslist = [];
+          //List<double> unidadeslist = [];
           List<double> entradaslist = [];
           List<double> salidaslist = [];
           for (double perdida in item['PerdidaCantidad']) {
@@ -201,19 +201,19 @@ class HistorialModel {
             doublelist.add(double.parse(dob));
           }
           for (int i = 0; i < item['Movimientos']; i++) {
-            String uni = '${item['Unidades'][i]}';
+            //String uni = '${item['Unidades'][i]}';
             String ent = '${item['Salidas'][i]}';
             String sal = '${item['Entradas'][i]}';
-            if (uni.split('.').length < 2) {
+            /*if (uni.split('.').length < 2) {
               uni = '$uni.0';
-            }
+            }*/
             if (ent.split('.').length < 2) {
               ent = '$ent.0';
             }
             if (sal.split('.').length < 2) {
               sal = '$sal.0';
             }
-            unidadeslist.add(double.parse(uni));
+            //unidadeslist.add(double.parse(uni));
             entradaslist.add(double.parse(ent));
             salidaslist.add(double.parse(sal));
           }
@@ -224,7 +224,7 @@ class HistorialModel {
               nombre: item['Nombre'],
               area: item['Area'],
               movimientos: item['Movimientos'],
-              unidades: unidadeslist,
+              //unidades: unidadeslist,
               entradas: entradaslist,
               salidas: salidaslist,
               perdidas: List<int>.from(item['Perdidas']),
@@ -269,7 +269,7 @@ class HistorialModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          List<double> unidadeslist = [];
+          //List<double> unidadeslist = [];
           List<double> entradaslist = [];
           List<double> salidaslist = [];
           for (double perdida in item['PerdidaCantidad']) {
@@ -280,19 +280,19 @@ class HistorialModel {
             doublelist.add(double.parse(dob));
           }
           for (int i = 0; i < item['Movimientos']; i++) {
-            String uni = '${item['Unidades'][i]}';
+            //String uni = '${item['Unidades'][i]}';
             String ent = '${item['Salidas'][i]}';
             String sal = '${item['Entradas'][i]}';
-            if (uni.split('.').length < 2) {
+            /*if (uni.split('.').length < 2) {
               uni = '$uni.0';
-            }
+            }*/
             if (ent.split('.').length < 2) {
               ent = '$ent.0';
             }
             if (sal.split('.').length < 2) {
               sal = '$sal.0';
             }
-            unidadeslist.add(double.parse(uni));
+            //unidadeslist.add(double.parse(uni));
             entradaslist.add(double.parse(ent));
             salidaslist.add(double.parse(sal));
           }
@@ -302,7 +302,7 @@ class HistorialModel {
             nombre: item['Nombre'],
             area: item['Area'],
             movimientos: item['Movimientos'],
-            unidades: unidadeslist,
+            //unidades: unidadeslist,
             entradas: entradaslist,
             salidas: salidaslist,
             perdidas: List<int>.from(item['Perdidas']),

@@ -5,10 +5,10 @@ import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 class Textos with ChangeNotifier {
   static List<Color> color = [];
 
-  static void toast(String texto, bool longLength) {
+  static void toast(String texto) {
     Fluttertoast.showToast(
       msg: texto,
-      toastLength: longLength ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT,
+      toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.BOTTOM,
       backgroundColor: Color(0xBFFDC930),
       textColor: Colors.white,

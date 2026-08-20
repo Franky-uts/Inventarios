@@ -59,7 +59,7 @@ class _HistorialState extends State<Historial> {
                 ctx.read<HistorialInfo>().esp(true),
               },
           }
-        : Textos.toast(historial.mensaje, true);
+        : Textos.toast(historial.mensaje);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -84,7 +84,7 @@ class _HistorialState extends State<Historial> {
                 ctx.read<HistorialInfo>().reg(true),
               },
           }
-        : Textos.toast(registro.mensaje, true);
+        : Textos.toast(registro.mensaje);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -155,7 +155,7 @@ class _HistorialState extends State<Historial> {
     if (ctx.mounted) {
       mensaje.isEmpty
           ? ctx.read<Ventanas>().emergente(false)
-          : Textos.toast(mensaje, true);
+          : Textos.toast(mensaje);
       ctx.read<Carga>().cargaBool(false);
     }
   }
@@ -192,7 +192,7 @@ class _HistorialState extends State<Historial> {
                 ventanas.emergente(true),
                 reporte = true,
               },
-              () => Textos.toast('Espera a que los datos carguen.', false),
+              () => Textos.toast('Espera a que los datos carguen.'),
               true,
               Carga.getValido(),
             );

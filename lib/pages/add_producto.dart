@@ -82,7 +82,7 @@ class _AddproductoState extends State<AddProducto> {
               areaValor = areasLista.first,
             }
           : respuesta = respuesta.split(': ')[1];
-      Textos.toast(respuesta, true);
+      Textos.toast(respuesta);
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
