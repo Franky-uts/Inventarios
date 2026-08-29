@@ -13,6 +13,11 @@ import 'package:inventarios/pages/historial_info.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
+//Esta es una página principal encargada de mostrar todos los movimientos y
+//registros de inventario en la base de datos, los movimientos o registros que
+//se muestran se pueden filtrar por fechas y se pueden ordenar por id, fecha o
+//nombre, se puede presionar sobre un registro y ver su información más a
+//detalle.
 class Historial extends StatefulWidget {
   const Historial({super.key});
 
@@ -47,12 +52,17 @@ class _HistorialState extends State<Historial> {
       ? await RegistroModel.getRegistros(fecIni, fecFin, 'Fecha', busqueda)
       : await HistorialModel.getHistorial(fecIni, fecFin, filtro, busqueda);
 
+  //Esta es una función que se encarga de obtener el id y fecha relacionado con
+  //el movimiento seleccionado en la lista y con este se pida la información del
+  //movimiento en la base de datos para mostrarlo a detalle en una ventana, en
+  //caso de que suceda algún error por parte del servidor se abortara el proceso
+  //y se le hará conocer al usuario por medio de toast.
   Future<void> getHistorialInfo(BuildContext ctx, int id, String fecha) async {
     ctx.read<Carga>().cargaBool(true);
     HistorialModel historial = await HistorialModel.getHistorialInfo(id, fecha);
     (historial.mensaje.isEmpty)
         ? {
-            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               {
                 ctx.read<HistorialInfo>().setHisotrial(historial),
@@ -63,6 +73,11 @@ class _HistorialState extends State<Historial> {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
+  //Esta es una función que se encarga de obtener la fecha, hora y usuario
+  //relacionado con el registro seleccionado en la lista y con este se pida la
+  //información del registro en la base de datos para mostrarlo a detalle en una
+  //ventana, en caso de que suceda algún error por parte del servidor se
+  //abortara el proceso y se le hará conocer al usuario por medio de toast.
   Future<void> getRegistroInfo(
     BuildContext ctx,
     String fecha,
@@ -77,7 +92,7 @@ class _HistorialState extends State<Historial> {
     );
     (registro.mensaje.isEmpty)
         ? {
-            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               {
                 ctx.read<HistorialInfo>().setRegistro(registro),
@@ -88,6 +103,10 @@ class _HistorialState extends State<Historial> {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
+  //Esta función se encarga de establecer un rango de fechas para poder que solo
+  //se muestren los movimientos o registros que estén entre estas fechas, en
+  //caso de no tener una fecha fallida se le mostrara un mensaje de error al
+  //usuario y la ventana no se cerrara.
   Future<void> setFecha(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
     bool valido = true;
@@ -198,42 +217,6 @@ class _HistorialState extends State<Historial> {
             );
           },
         ),
-        /*if (LocalStorage.local('locación') != 'Cedis')
-          Consumer<Carga>(
-            builder: (ctx, carga, child) {
-              return Botones.icoCirMor(
-                'Nueva orden',
-                Icons.add_shopping_cart_rounded,
-                () async => {
-                  carga.cargaBool(true),
-                  if (CampoTexto.seleccionFiltro == Filtros.fecha)
-                    CampoTexto.seleccionFiltro = Filtros.id,
-                  await RecDrawer.salidaOrdenes(context),
-                },
-                () => Textos.toast('Espera a que los datos carguen.', false),
-                false,
-                Carga.getValido(),
-              );
-            },
-          ),
-        Consumer<Carga>(
-          builder: (context, carga, child) {
-            return Botones.icoCirMor(
-              'Ver almacen',
-              Icons.inventory_rounded,
-              () => {
-                carga.cargaBool(true),
-                if (CampoTexto.seleccionFiltro == Filtros.fecha)
-                  CampoTexto.seleccionFiltro = Filtros.id,
-                RecDrawer.pushAnim(widget.ruta, context),
-                carga.cargaBool(false),
-              },
-              () => {},
-              true,
-              true,
-            );
-          },
-        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -337,8 +320,6 @@ class _HistorialState extends State<Historial> {
                             'Dia',
                             '',
                             fecIniCont[0],
-                            true,
-                            false,
                             accion: () => focus[0].requestFocus(),
                             formato: LengthLimitingTextInputFormatter(2),
                             inputType: TextInputType.number,
@@ -348,8 +329,6 @@ class _HistorialState extends State<Historial> {
                             'Mes',
                             '',
                             fecIniCont[1],
-                            true,
-                            false,
                             accion: () => focus[1].requestFocus(),
                             focus: focus[0],
                             formato: LengthLimitingTextInputFormatter(2),
@@ -360,8 +339,6 @@ class _HistorialState extends State<Historial> {
                             'Año',
                             '',
                             fecIniCont[2],
-                            true,
-                            false,
                             accion: () => focus[2].requestFocus(),
                             focus: focus[1],
                             formato: LengthLimitingTextInputFormatter(4),
@@ -385,8 +362,6 @@ class _HistorialState extends State<Historial> {
                             'Dia',
                             '',
                             fecFinCont[0],
-                            true,
-                            false,
                             accion: () => focus[3].requestFocus(),
                             focus: focus[2],
                             formato: LengthLimitingTextInputFormatter(2),
@@ -397,8 +372,6 @@ class _HistorialState extends State<Historial> {
                             'Mes',
                             '',
                             fecFinCont[1],
-                            true,
-                            false,
                             accion: () => focus[4].requestFocus(),
                             focus: focus[3],
                             formato: LengthLimitingTextInputFormatter(2),
@@ -409,8 +382,6 @@ class _HistorialState extends State<Historial> {
                             'Año',
                             '',
                             fecFinCont[2],
-                            true,
-                            false,
                             accion: () async => await setFecha(context),
                             focus: focus[4],
                             formato: LengthLimitingTextInputFormatter(4),
@@ -452,6 +423,11 @@ class _HistorialState extends State<Historial> {
     );
   }
 
+  //Componente encargado de separar componentes son relación a la tabla en
+  //~por supuesto~ una barra superior, se compone de un botón para la barra
+  //lateral, un botón para establecer un rango de fechas, un botón para alternar
+  //entre ver movimientos o ver registros y una barra de búsqueda con un botón
+  //para los filtros.
   Widget barraSuperior(BuildContext context) {
     return SizedBox(
       height: 70,
@@ -498,8 +474,7 @@ class _HistorialState extends State<Historial> {
                       CampoTexto.busquedaTexto.text,
                     ),
                   ),
-                  false,
-                  true,
+                  fecha: true,
                 );
               },
             ),
@@ -509,6 +484,9 @@ class _HistorialState extends State<Historial> {
     );
   }
 
+  //Componente que regresa una lista de movimientos o registros, al momento de
+  //presionar un movimiento o registro se abrirá una ventana con información más
+  //detallada del movimiento o registro.
   ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
       controller: controller,
@@ -534,8 +512,7 @@ class _HistorialState extends State<Historial> {
                     lista[index].area,
                     '${lista[index].movimientos}',
                   ],
-            [],
-            1,
+
             extra: registros
                 ? () async => await getRegistroInfo(
                     context,

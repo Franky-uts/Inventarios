@@ -11,7 +11,6 @@ class HistorialModel {
   String nombre;
   String area;
   int movimientos;
-  //List<double> unidades;
   List<double> entradas;
   List<double> salidas;
   List<int> perdidas;
@@ -27,7 +26,6 @@ class HistorialModel {
     required this.nombre,
     required this.area,
     required this.movimientos,
-    //required this.unidades,
     required this.entradas,
     required this.salidas,
     required this.perdidas,
@@ -38,6 +36,9 @@ class HistorialModel {
     required this.mensaje,
   });
 
+  //Este es el Dummy de la clase "HistorialModel", usado para declarar un
+  //"HistorialModel" con solo el valor mensaje con el mismo valor de la
+  //variable mensaje del parámetro inicial.
   static HistorialModel dummy(String mensaje) {
     return HistorialModel(
       id: 0,
@@ -45,7 +46,6 @@ class HistorialModel {
       nombre: '',
       area: '',
       movimientos: 0,
-      //unidades: [],
       entradas: [],
       salidas: [],
       perdidas: [],
@@ -57,6 +57,10 @@ class HistorialModel {
     );
   }
 
+  //Método get que regresa una lista con objetos de la clase HistorialModel a
+  //través de una petición HTTP GET, en caso de que suceda algún error regresa
+  //el error en forma de texto, requiere un filtro, un texto de búsqueda una
+  //fecha inicial y otra final, las últimas 3 pueden estar vacías.
   static Future<List<HistorialModel>> getHistorial(
     String fechaInicial,
     String fechaFinal,
@@ -89,7 +93,6 @@ class HistorialModel {
                 nombre: item['Nombre'],
                 area: item['Area'],
                 movimientos: item['Movimientos'],
-                //unidades: [],
                 entradas: [],
                 salidas: [],
                 perdidas: [],
@@ -117,6 +120,10 @@ class HistorialModel {
     return historialFuture;
   }
 
+  //Método get que regresa una lista con objetos de la clase HistorialModel
+  //llenados con cierta información a través de una petición HTTP GET, en caso
+  //de que suceda algún error regresa el error en forma de texto, requiere una
+  //fecha inicial y otra final.
   static Future<List<HistorialModel>> getHistorialRango(
     String fechaInicial,
     String fechaFinal,
@@ -143,7 +150,6 @@ class HistorialModel {
               nombre: item['Nombre'],
               area: item['Area'],
               movimientos: item['Movimientos'],
-              //unidades: [],
               entradas: [],
               salidas: [],
               perdidas: [],
@@ -170,6 +176,9 @@ class HistorialModel {
     return historialFuture;
   }
 
+  //Método get que regresa una lista con objetos de la clase HistorialModel a
+  //través de una petición HTTP GET, en caso de que suceda algún error regresa
+  //el error en forma de texto, requiere una fecha inicial y otra final.
   static Future<List<HistorialModel>> getAllHistorial(
     String fechaInicial,
     String fechaFinal,
@@ -190,7 +199,6 @@ class HistorialModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          //List<double> unidadeslist = [];
           List<double> entradaslist = [];
           List<double> salidaslist = [];
           for (double perdida in item['PerdidaCantidad']) {
@@ -201,19 +209,14 @@ class HistorialModel {
             doublelist.add(double.parse(dob));
           }
           for (int i = 0; i < item['Movimientos']; i++) {
-            //String uni = '${item['Unidades'][i]}';
             String ent = '${item['Salidas'][i]}';
             String sal = '${item['Entradas'][i]}';
-            /*if (uni.split('.').length < 2) {
-              uni = '$uni.0';
-            }*/
             if (ent.split('.').length < 2) {
               ent = '$ent.0';
             }
             if (sal.split('.').length < 2) {
               sal = '$sal.0';
             }
-            //unidadeslist.add(double.parse(uni));
             entradaslist.add(double.parse(ent));
             salidaslist.add(double.parse(sal));
           }
@@ -224,7 +227,6 @@ class HistorialModel {
               nombre: item['Nombre'],
               area: item['Area'],
               movimientos: item['Movimientos'],
-              //unidades: unidadeslist,
               entradas: entradaslist,
               salidas: salidaslist,
               perdidas: List<int>.from(item['Perdidas']),
@@ -253,6 +255,9 @@ class HistorialModel {
     return historialFuture;
   }
 
+  //Método get que regresa un objeto de la clase HistorialModel a través de una
+  //petición HTTP GET, en caso de que suceda algún error regresa el error en
+  //forma de texto, requiere el id del producto y la fecha a consultar.
   static Future<HistorialModel> getHistorialInfo(int id, String fecha) async {
     String locacion = LocalStorage.local('locación');
     HistorialModel historial;
@@ -269,7 +274,6 @@ class HistorialModel {
         final datos = json.decode(res.body);
         for (var item in datos) {
           List<double> doublelist = [];
-          //List<double> unidadeslist = [];
           List<double> entradaslist = [];
           List<double> salidaslist = [];
           for (double perdida in item['PerdidaCantidad']) {
@@ -280,19 +284,14 @@ class HistorialModel {
             doublelist.add(double.parse(dob));
           }
           for (int i = 0; i < item['Movimientos']; i++) {
-            //String uni = '${item['Unidades'][i]}';
             String ent = '${item['Salidas'][i]}';
             String sal = '${item['Entradas'][i]}';
-            /*if (uni.split('.').length < 2) {
-              uni = '$uni.0';
-            }*/
             if (ent.split('.').length < 2) {
               ent = '$ent.0';
             }
             if (sal.split('.').length < 2) {
               sal = '$sal.0';
             }
-            //unidadeslist.add(double.parse(uni));
             entradaslist.add(double.parse(ent));
             salidaslist.add(double.parse(sal));
           }
@@ -302,7 +301,6 @@ class HistorialModel {
             nombre: item['Nombre'],
             area: item['Area'],
             movimientos: item['Movimientos'],
-            //unidades: unidadeslist,
             entradas: entradaslist,
             salidas: salidaslist,
             perdidas: List<int>.from(item['Perdidas']),

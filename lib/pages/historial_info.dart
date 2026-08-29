@@ -9,38 +9,50 @@ import 'package:inventarios/models/registro_model.dart';
 import 'package:provider/provider.dart';
 import '../components/textos.dart';
 
+//Esta es una página ventana con información relacionada con un movimiento o
+//registro seleccionado de la lista del historial.
 class HistorialInfo extends ChangeNotifier {
   static HistorialModel _historialInfo = HistorialModel.dummy('');
   static RegistroModel _registroInfo = RegistroModel.dummy('');
   static bool _esp = false, _reg = false, _tabla = false;
   static double cantidadPerdida = 0;
 
+  //Método que establece el movimiento que se mostrara.
   void setHisotrial(HistorialModel histo) {
     _historialInfo = histo;
     cantidadPerdida = calcularPerdidas(histo.cantidades);
     notifyListeners();
   }
 
+  //Método que establece el registro que se mostrara.
   void setRegistro(RegistroModel regis) {
     _registroInfo = regis;
     notifyListeners();
   }
 
+  //Método que controla el booleano "_esp", este se encarga de la visibilidad de
+  //la ventana que muestra el movimiento.
   void esp(bool boolean) {
     _esp = boolean;
     notifyListeners();
   }
 
+  //Método que controla el booleano "_reg", este se encarga de la visibilidad de
+  //la ventana que muestra el registro.
   void reg(bool boolean) {
     _reg = boolean;
     notifyListeners();
   }
 
+  //Método que controla el booleano "_tabla", este se encarga de la visibilidad
+  //de la ventana tabla que se maneja en esta clase.
   void tabla(bool boolean) {
     _tabla = boolean;
     notifyListeners();
   }
 
+  //Este es un método que se encarga de calcular cuantas perdidas hay
+  //registradas en un movimiento.
   double calcularPerdidas(List<double> lista) {
     double perdida = 0;
     for (double obj in lista) {
@@ -49,6 +61,9 @@ class HistorialInfo extends ChangeNotifier {
     return perdida;
   }
 
+  //Componente tipo ventana que muestra la información de un movimiento, la
+  //información del movimiento es guardada en la variable "_historialInfo", su
+  //visibilidad es controlada por la variable "_esp".
   Widget espInfo(BuildContext context) {
     return Visibility(
       visible: _esp,
@@ -125,11 +140,10 @@ class HistorialInfo extends ChangeNotifier {
                               children: [
                                 Tablas.contenedorInfo(
                                   MediaQuery.sizeOf(context).width,
-                                  [.2, .2, /*.1,*/ .1, .1, .1],
+                                  [.2, .2, .1, .1, .1],
                                   [
                                     'Hora',
                                     'Usuario',
-                                    /*'Unidades',*/
                                     'Entradas',
                                     'Salidas',
                                     'Perdidas',
@@ -153,8 +167,6 @@ class HistorialInfo extends ChangeNotifier {
                                           ),
                                         ),
                                     itemBuilder: (context, index) {
-                                      /*String unidad =
-                                          '${_historialInfo.unidades[index]}';*/
                                       String entrada =
                                           '${_historialInfo.entradas[index]}';
                                       String salida =
@@ -166,17 +178,12 @@ class HistorialInfo extends ChangeNotifier {
                                         ),
                                         child: Tablas.barraDatos(
                                           MediaQuery.sizeOf(context).width,
-                                          [.2, .2,/* .1,*/ .1, .1, .1],
+                                          [.2, .2, .1, .1, .1],
                                           [
                                             _historialInfo
                                                 .horasModificacion[index],
                                             _historialInfo
                                                 .usuarioModificacion[index],
-                                            /*(unidad.split('.').length > 1)
-                                                ? (unidad.split('.')[1] == '0')
-                                                      ? unidad.split('.')[0]
-                                                      : unidad
-                                                : unidad,*/
                                             (entrada.split('.').length > 1)
                                                 ? (entrada.split('.')[1] == '0')
                                                       ? entrada.split('.')[0]
@@ -189,8 +196,7 @@ class HistorialInfo extends ChangeNotifier {
                                                 : salida,
                                             '${_historialInfo.perdidas[index]}',
                                           ],
-                                          [],
-                                          1,
+
                                           extra: () => {},
                                         ),
                                       );
@@ -210,26 +216,6 @@ class HistorialInfo extends ChangeNotifier {
                                     ],
                                   ),
                                 ),
-                                /*SizedBox(
-                                  width: MediaQuery.of(context).size.width,
-                                  height:
-                                      MediaQuery.of(context).size.height - 150,
-                                  child: Consumer<Tablas>(
-                                    builder: (context, tablas, child) {
-                                      return Tablas.listaFutura(
-                                        listaPrincipal,
-                                        'No hay datos registrados.',
-                                        'No hay datos registrados.',
-                                        () => getHistorialInfo(_historialInfo),
-                                        accionRefresh: () async => tablas.datos(
-                                          await getHistorialInfo(
-                                            _historialInfo,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ),*/
                               ],
                             ),
                           ],
@@ -293,8 +279,7 @@ class HistorialInfo extends ChangeNotifier {
                                       : cantidad,
                                   _historialInfo.razones[index],
                                 ],
-                                [],
-                                2,
+                                maxLines: 2,
                               ),
                             );
                           },
@@ -318,6 +303,9 @@ class HistorialInfo extends ChangeNotifier {
     );
   }
 
+  //Componente tipo ventana que muestra la información de un registro, la
+  //información del movimiento es guardada en la variable "_registroInfo", su
+  //visibilidad es controlada por la variable "_reg".
   Widget regInfo(BuildContext context) {
     return Visibility(
       visible: _reg,
@@ -337,15 +325,6 @@ class HistorialInfo extends ChangeNotifier {
                 child: SingleChildScrollView(
                   child: SizedBox(
                     width: MediaQuery.of(context).size.width,
-                    height:
-                        /*(listaProd.length * 44 + 120 <
-                        MediaQuery.sizeOf(context).height - 100)
-                        ? listaProd.length * 44 + 120
-                        : MediaQuery.sizeOf(context).height - 100,*/
-                        (_registroInfo.articulos.length * 35 <
-                            MediaQuery.of(context).size.height)
-                        ? _registroInfo.articulos.length * 35
-                        : MediaQuery.of(context).size.height,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -373,15 +352,22 @@ class HistorialInfo extends ChangeNotifier {
                           children: [
                             Tablas.contenedorInfo(
                               MediaQuery.sizeOf(context).width,
-                              [.1, .35, .1, .15, .1],
-                              ['id', 'Nombre', 'Tipo', 'Área', 'Unidades'],
+                              [.1, .35, .1, .15, .1, .1],
+                              [
+                                'id',
+                                'Nombre',
+                                'Tipo',
+                                'Área',
+                                'Unidades',
+                                'Cajas',
+                              ],
                             ),
                             SizedBox(
                               height:
                                   (_registroInfo.articulos.length * 35 <
-                                      MediaQuery.of(context).size.height - 220)
+                                      MediaQuery.of(context).size.height * .7)
                                   ? _registroInfo.articulos.length * 35
-                                  : MediaQuery.of(context).size.height - 220,
+                                  : MediaQuery.of(context).size.height * .7,
                               child: ListView.separated(
                                 itemCount: _registroInfo.articulos.length,
                                 scrollDirection: Axis.vertical,
@@ -392,8 +378,26 @@ class HistorialInfo extends ChangeNotifier {
                                   ),
                                 ),
                                 itemBuilder: (context, index) {
+                                  List<Color> colores = [];
+                                  colores = List.filled(7, Colors.transparent);
+                                  colores[4] = Textos.colorLimite(
+                                    _registroInfo.limite[index],
+                                    _registroInfo.unidades[index].floor(),
+                                  );
                                   String unidad =
                                       '${_registroInfo.unidades[index]}';
+                                  if (unidad.split('.').length > 1) {
+                                    if (unidad.split('.')[1] == '0') {
+                                      unidad = unidad.split('.')[0];
+                                    }
+                                  }
+                                  String cajas =
+                                      '${_registroInfo.cajas[index]}';
+                                  if (cajas.split('.').length > 1) {
+                                    if (cajas.split('.')[1] == '0') {
+                                      cajas = cajas.split('.')[0];
+                                    }
+                                  }
                                   return Container(
                                     width: MediaQuery.sizeOf(context).width,
                                     decoration: BoxDecoration(
@@ -401,20 +405,15 @@ class HistorialInfo extends ChangeNotifier {
                                     ),
                                     child: Tablas.barraDatos(
                                       MediaQuery.sizeOf(context).width,
-                                      [.1, .35, .1, .15, .1],
+                                      [.1, .35, .1, .15, .1, .1],
                                       [
                                         '${_registroInfo.idProducto[index]}',
                                         _registroInfo.articulos[index],
                                         _registroInfo.tipos[index],
                                         _registroInfo.areas[index],
-                                        (unidad.split('.').length > 1)
-                                            ? (unidad.split('.')[1] == '0')
-                                                  ? unidad.split('.')[0]
-                                                  : unidad
-                                            : unidad,
+                                        unidad,
+                                        cajas,
                                       ],
-                                      [],
-                                      1,
                                       extra: () => {},
                                     ),
                                   );

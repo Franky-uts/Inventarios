@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/articulos_model.dart';
@@ -19,6 +18,13 @@ import 'botones.dart';
 import 'carga.dart';
 
 class RecDrawer {
+  //Este es un componente Drawer usado en todas las páginas donde se abre una
+  //ventana lateral la cual tiene información del usuario como su nombre, su
+  //puesto y el almacén donde está operando, también cuenta con la posibilidad
+  //de añadir botones extra por cada página diferente, y por último se cuenta
+  //con un botón para cerrar la sesión, al presionarse se borraran los datos
+  //de usuario en el dispositivo y te devolverá al inicio de sesión y podrás
+  //seguir usando el programa cunado ingreses un usuario y contraseña válidos.
   static Drawer drawer(BuildContext ctx, List<Widget> botones) {
     return Drawer(
       backgroundColor: Colors.white,
@@ -93,6 +99,9 @@ class RecDrawer {
     );
   }
 
+  //Esta función genera un archivo en Excel con toda la información actual del
+  //almacén (id, Nombre, Tipo, Área, Cantidad por unidad, Mínimo de productos,
+  //Entrada, Salida, Perdidas y Ultima Modificación por cada producto).
   static Future<void> datosExcel(BuildContext context) async {
     context.read<Carga>().cargaBool(true);
     Navigator.of(context).pop();
@@ -105,9 +114,7 @@ class RecDrawer {
       'Nombre',
       'Tipo',
       'Área',
-      //'Unidades',
       'Cantidad por unidad',
-      //'Total',
       'Mínimo de productos',
       'Entrada',
       'Salida',
@@ -133,19 +140,12 @@ class RecDrawer {
       establecerCelda(sheetObject, 1, i + 1, TextCellValue(item.nombre));
       establecerCelda(sheetObject, 2, i + 1, TextCellValue(item.tipo));
       establecerCelda(sheetObject, 3, i + 1, TextCellValue(item.area));
-      //establecerCelda(sheetObject, 4, i + 1, DoubleCellValue(item.unidades));
       establecerCelda(
         sheetObject,
         4,
         i + 1,
         DoubleCellValue(item.cantidadPorUnidad),
       );
-      /*establecerCelda(
-        sheetObject,
-        6,
-        i + 1,
-        DoubleCellValue((item.unidades * item.cantidadPorUnidad)),
-      );*/
       establecerCelda(sheetObject, 5, i + 1, IntCellValue(item.limiteProd));
       establecerCelda(sheetObject, 6, i + 1, DoubleCellValue(item.entrada));
       establecerCelda(sheetObject, 7, i + 1, DoubleCellValue(item.salida));
@@ -182,6 +182,8 @@ class RecDrawer {
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
+  //Esta función genera un archivo en Excel con toda la información actual de
+  //todos los articulos disponibles (id, Nombre, Tipo, Área, Código de barras).
   static Future<void> articulosExcel(BuildContext context) async {
     context.read<Carga>().cargaBool(true);
     Navigator.of(context).pop();
@@ -229,6 +231,9 @@ class RecDrawer {
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
+  //Esta función genera un archivo en Excel con toda la información actual de
+  //una orden seleccionada por el usuario, solo los productores pueden imprimir
+  //órdenes (id, Locación, Cant. Articulos, Fecha de orden).
   static Future<void> orden(BuildContext context, List<bool> estados) async {
     context.read<Carga>().cargaBool(true);
     Navigator.of(context).pop();
@@ -277,6 +282,9 @@ class RecDrawer {
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
+  //Esta función genera un archivo en Excel con toda la información actual de
+  //un producto en una fecha específica (id, Nombre, Fecha, Entradas, Salidas,
+  //Perdidas, Hora de modificación, Usuario que modifico, Detalle de perdidas).
   static Future<String> historialExcel(
     BuildContext context,
     String fechaInicial,
@@ -296,7 +304,6 @@ class RecDrawer {
         'id',
         'Nombre',
         'Fecha',
-        //'Unidades',
         'Entradas',
         'Salidas',
         'Perdidas',
@@ -341,12 +348,6 @@ class RecDrawer {
           CellIndex.indexByColumnRow(columnIndex: 6, rowIndex: cantidad),
         );
         for (int j = 0; j < item.movimientos; j++) {
-          /*establecerCelda(
-            sheetObject,
-            3,
-            j + contador,
-            DoubleCellValue(item.unidades[j]),
-          );*/
           establecerCelda(
             sheetObject,
             3,
@@ -407,6 +408,8 @@ class RecDrawer {
     return mensaje;
   }
 
+  //Este es un componente tipo celda de Excel usado por las funciones que
+  //devuelven un archivo Excel.
   static void establecerCelda(Sheet hoja, int col, int row, CellValue valor) {
     hoja.updateCell(
       CellIndex.indexByColumnRow(columnIndex: col, rowIndex: row),
@@ -419,6 +422,12 @@ class RecDrawer {
     );
   }
 
+  //Este es un método usado para poder escanear un código de barras y darte la
+  //información de dicho producto relacionado, pero su uso cambiará dependiendo
+  //del sistema operativo donde se ejecute el programa, si se usa en web
+  //entonces se podrá escribir en el campo de texto o conectar un escáner
+  //físico, en el caso de que se use un dispositivo móvil entonces se abrirá la
+  //cámara y se usara como escáner.
   static void scanProducto(BuildContext ctx) async {
     Navigator.of(ctx).pop();
     if (kIsWeb) {
@@ -447,6 +456,12 @@ class RecDrawer {
     if (flag) Textos.toast('No se reconocio el codigo.');
   }
 
+  //Este es un método usado para poder escanear un código de barras y darte la
+  //información de dicho articulo relacionado, pero su uso cambiará dependiendo
+  //del sistema operativo donde se ejecute el programa, si se usa en web
+  //entonces se podrá escribir en el campo de texto o conectar un escáner
+  //físico, en el caso de que se use un dispositivo móvil entonces se abrirá la
+  //cámara y se usara como escáner.
   static void scanArticulo(BuildContext ctx) async {
     Navigator.of(ctx).pop();
     if (kIsWeb) {
@@ -478,6 +493,14 @@ class RecDrawer {
     if (flag) Textos.toast('No se reconocio el codigo.');
   }
 
+  //Este es un método usado para poder cargar la lista de artículos, (la
+  //diferencia entre productos y artículos es que un producto tiene la
+  //información de un artículo, una tienda establecida, entradas, salidas y
+  //perdidas; así múltiples productos pueden tener la información de un
+  //artículo sin necesidad de repetir la misma información por tienda, mientras
+  //se conserva la consistencia y cada tienda no tienen un producto con un
+  //nombre similar, pero con ciertas características diferentes que generen
+  //confusión al proveedor).
   static Future<void> getListas(BuildContext ctx) async {
     String texto = '';
     ctx.read<Carga>().cargaBool(true);
@@ -492,7 +515,7 @@ class RecDrawer {
     (texto.isNotEmpty)
         ? Textos.toast(texto)
         : {
-            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               Navigator.of(ctx).push(
                 PageRouteBuilder(
@@ -516,42 +539,13 @@ class RecDrawer {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
-  /*static Future<void> salidaOrdenes(BuildContext ctx) async {
-    ctx.read<Carga>().cargaBool(true);
-    Navigator.of(ctx).pop();
-    CampoTexto.seleccionFiltro = Filtros.id;
-    List<ProductoModel> productos = await ProductoModel.getProductos('id', '');
-    (productos.last.mensaje == '')
-        ? {
-            if (ctx.mounted)
-              {
-                Textos.crearLista(productos.last.id, Color(0xFFFDC930)),
-                pushAnim(OrdenSalida(), ctx),
-              },
-          }
-        : Textos.toast(productos.last.mensaje, true);
-    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
-  }
-
-  static Future<void> salidaOrdenesProd(BuildContext ctx) async {
-    ctx.read<Carga>().cargaBool(true);
-    Navigator.of(ctx).pop();
-    CampoTexto.seleccionFiltro = Filtros.id;
-    List<ProductoModel> productos = await ProductoModel.getProductosProd(
-      'id',
-      '',
-    );
-    if (ctx.mounted) {
-      (productos.last.mensaje == '')
-          ? {
-              Textos.crearLista(productos.last.id, Color(0xFFFDC930)),
-              pushAnim(OrdenSalidaProd(), ctx),
-            }
-          : Textos.toast(productos.last.mensaje, false);
-      ctx.read<Carga>().cargaBool(false);
-    }
-  }*/
-
+  //Este es un método usado para poder mostrar una animación "bonita" al
+  //momento de pasar de una "página principal" a una "página secundaria" y
+  //viceversa (ténganse como entendido que las páginas principales son todas
+  //aquellas que tienen listas y permiten la búsqueda y filtrado de las mismas,
+  //mientras que las páginas secundarias son todas aquellas que permitan añadir,
+  //editar o borrar un producto, orden, articulo, etc. o realizar cualquier
+  //otra acción).
   static void pushAnim(StatefulWidget ruta, BuildContext ctx) {
     Navigator.of(ctx).pushReplacement(
       PageRouteBuilder(

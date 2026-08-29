@@ -57,19 +57,22 @@ class OrdenModel {
     required this.mensaje,
   });
 
+  //Este es el Dummy de la clase "OrdenModel", usado para declarar un
+  //"OrdenModel" con solo el valor mensaje con el mismo valor de la
+  //variable mensaje del parámetro inicial.
   static OrdenModel dummy(String mensaje) {
     return OrdenModel(
       id: 0,
-      articulos: [],
-      cantidades: [],
-      tipos: [],
-      areas: [],
-      cantidadesCubiertas: [],
-      comentariosProveedor: [],
-      comentariosTienda: [],
-      comentariosFinales: [],
-      confirmacion: [],
-      idProductos: [],
+      articulos: [''],
+      cantidades: [0],
+      tipos: [''],
+      areas: [''],
+      cantidadesCubiertas: [0],
+      comentariosProveedor: [''],
+      comentariosTienda: [''],
+      comentariosFinales: [''],
+      confirmacion: [false],
+      idProductos: [0],
       cantArticulos: 0,
       estado: '',
       remitente: '',
@@ -80,9 +83,13 @@ class OrdenModel {
     );
   }
 
+  //Método get que regresa una lista con objetos de la clase OrdenModel a través
+  //de una petición HTTP GET, en caso de que suceda algún error regresa el error
+  //en forma de texto, requiere un filtro y una lista de booleanos relacionados
+  //con el estado de las órdenes y cuáles se quieren ver con relación a los
+  //estados.
   static Future<List<OrdenModel>> getOrdenes(
     String filtro,
-    String locacion,
     List<bool> filtros,
   ) async {
     List<OrdenModel> ordenesFuture = [];
@@ -92,7 +99,9 @@ class OrdenModel {
     }
     try {
       var res = await http.get(
-        Uri.parse('${MyApp.url}:3000/ordenes/$filtro/$locacion/$estados'),
+        Uri.parse(
+          '${MyApp.url}:3000/ordenes/$filtro/${LocalStorage.local('locación')}/$estados',
+        ),
         headers: {
           'Accept': 'application/json',
           'content-type': 'application/json; charset=UTF-8',
@@ -139,6 +148,11 @@ class OrdenModel {
     return ordenesFuture;
   }
 
+  //Método get que regresa una lista con objetos de la clase OrdenModel a través
+  //de una petición HTTP GET, en caso de que suceda algún error regresa el error
+  //en forma de texto, requiere un filtro y una lista de booleanos relacionados
+  //con el estado de las órdenes y cuáles se quieren ver con relación a los
+  //estados.
   static Future<List<OrdenModel>> getAllOrdenes(
     String filtro,
     List<bool> filtros,
@@ -197,6 +211,9 @@ class OrdenModel {
     return ordenesFuture;
   }
 
+  //Método get que regresa un objeto de la clase OrdenModel a través de una
+  //petición HTTP GET, en caso de que suceda algún error regresa el error en
+  //forma de texto, requiere el id de la orden a consultar.
   static Future<OrdenModel> getOrden(int id) async {
     OrdenModel orden;
     try {
@@ -233,7 +250,7 @@ class OrdenModel {
                 comFin: item['ComentariosFinales'][i],
                 conf: item['Confirmacion'][i],
                 id: item['idProductos'][i],
-                mensaje: ''
+                mensaje: '',
               ),
             );
           }
@@ -291,6 +308,14 @@ class OrdenModel {
     return orden;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP POST, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de enviar información relacionada con una orden en la base de
+  //datos para añadir dicha nueva orden, requiere una lista de enteros, los
+  //cuales representan la id de los productos; una lista de reales, los cuales
+  //representa la cantidad ordenada del producto y una lista de textos, la cual
+  //representa los comentarios que la tienda tenga con respecto al producto
+  //ordenado.
   static Future<String> postOrden(
     List<int> idProductos,
     List<double> cantidades,
@@ -325,6 +350,13 @@ class OrdenModel {
     return productoFuture;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP PUT, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de enviar información relacionada con una orden en la base de datos
+  //para editar dicha orden, requiere el id de la orden como entero, el dato que
+  //se va a cambiar como texto y el valor del dato que se va a cambiar de
+  //cualquier tipo, siempre y cuando sea el mismo al original en la base de
+  //datos.
   static Future<String> editarOrden(String id, String columna, var dato) async {
     String respuesta = '';
     if (columna == 'Estado') {
@@ -352,6 +384,12 @@ class OrdenModel {
     return respuesta;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP PUT, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de enviar la lista de booleanos, relacionada con la confirmación de
+  //los productos en una orden en la base de datos, requiere el id de la orden
+  //como entero, la lista de booleanos, previamente mencionada, y un texto
+  //correspondiente al estado de la orden.
   static Future<String> editarOrdenConfirmacion(
     String id,
     String estado,
@@ -405,6 +443,6 @@ class OrdenListas {
     required this.comFin,
     required this.conf,
     required this.id,
-    required this.mensaje
+    required this.mensaje,
   });
 }

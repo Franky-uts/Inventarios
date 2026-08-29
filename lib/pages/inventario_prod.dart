@@ -9,7 +9,6 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/producto.dart';
-import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
 class InventarioProd extends StatefulWidget {
@@ -29,7 +28,7 @@ Future<void> getProductoInfo(BuildContext ctx, int id) async {
   ProductoModel producto = await ProductoModel.getProducto(id);
   (producto.mensaje.isEmpty)
       ? {
-          await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+          //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
           if (ctx.mounted)
             {
               ctx.read<Producto>().setProducto(producto),
@@ -88,21 +87,6 @@ class _InventarioProdState extends State<InventarioProd> {
             );
           },
         ),
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Nueva orden',
-              Icons.add_shopping_cart_rounded,
-              () async => {
-                carga.cargaBool(true),
-                await RecDrawer.salidaOrdenesProd(context),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              true,
-              Carga.getValido(),
-            );
-          },
-        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -120,11 +104,11 @@ class _InventarioProdState extends State<InventarioProd> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, .25, .08, .175, .15, .075, .075, .075],
+                          [.1, /* .25,*/ .08, .175, .15, .075, .075, .075],
                           [
                             'id',
                             'Nombre',
-                            'Unidades',
+                            //'Unidades',
                             'Área',
                             'Tipo',
                             'Entrada',
@@ -210,8 +194,6 @@ class _InventarioProdState extends State<InventarioProd> {
                       ),
                     ),
                   },
-                  true,
-                  false,
                 );
               },
             ),
@@ -231,44 +213,46 @@ class _InventarioProdState extends State<InventarioProd> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = List.filled(8, Colors.transparent);
-        colores[2] = Textos.colorLimite(
+        //List<Color> colores = List.filled(8, Colors.transparent);
+        /*colores[2] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),
-        );
-        String unidad = '${lista[index].unidades}';
+        );*/
+        //String unidad = '${lista[index].unidades}';
         String entrada = '${lista[index].entrada}';
         String salida = '${lista[index].salida}';
+        if (entrada.split('.').length > 1) {
+          if (entrada.split('.')[1] == '0') {
+            entrada = entrada.split('.')[0];
+          }
+        }
+        if (salida.split('.').length > 1) {
+          if (salida.split('.')[1] == '0') {
+            salida = salida.split('.')[0];
+          }
+        }
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, .25, .08, .175, .15, .075, .075, .075],
+            [.1, /*.25,*/ .08, .175, .15, .075, .075, .075],
             [
               '${lista[index].id}',
               lista[index].nombre,
-              (unidad.split('.').length > 1)
+              /*(unidad.split('.').length > 1)
                   ? (unidad.split('.')[1] == '0')
                         ? unidad.split('.')[0]
                         : unidad
-                  : unidad,
+                  : unidad,*/
               lista[index].area,
               lista[index].tipo,
-              (entrada.split('.').length > 1)
-                  ? (entrada.split('.')[1] == '0')
-                        ? entrada.split('.')[0]
-                        : entrada
-                  : entrada,
-              (unidad.split('.').length > 1)
-                  ? (salida.split('.')[1] == '0')
-                        ? salida.split('.')[0]
-                        : salida
-                  : salida,
+              entrada,
+              salida,
               '${lista[index].perdidaCantidad.length}',
             ],
-            colores,
-            2,
+            //colores,
+            maxLines: 2,
             extra: () async => await getProductoInfo(context, lista[index].id),
           ),
         );

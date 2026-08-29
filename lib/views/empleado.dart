@@ -12,6 +12,7 @@ import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/orden_salida.dart';
 import 'package:provider/provider.dart';
 
+//Visor de páginas principales, dedicada principalmente a los empleados.
 class Empleado extends StatefulWidget {
   final int index;
 
@@ -36,8 +37,8 @@ class _EmpleadoState extends State<Empleado> {
               ventana.cerrarVentanas();
               if (Carga.getValido()) {
                 Textos.limpiarLista();
+                CampoTexto.seleccionFiltro = Filtros.id;
                 if (index == 2) {
-                  CampoTexto.seleccionFiltro = Filtros.id;
                   List<ProductoModel> productos =
                       await ProductoModel.getProductos('id', '');
                   (productos.last.mensaje == '')
@@ -63,35 +64,16 @@ class _EmpleadoState extends State<Empleado> {
             },
             selectedIndex: currentPage,
             destinations: [
-              Botones.botonBarNav(
-                'Movimientos',
-                Icons.checklist_rtl_rounded,
-                () => {
-                  if (CampoTexto.seleccionFiltro == Filtros.fecha)
-                    CampoTexto.seleccionFiltro = Filtros.id,
-                },
-              ),
-              /*Botones.botonBarNav(
-                'Inventario',
-                Icons.inventory_rounded,
-                () => {
-                  if (CampoTexto.seleccionFiltro == Filtros.fecha)
-                    CampoTexto.seleccionFiltro = Filtros.id,
-                },
-              ),*/
+              Botones.botonBarNav('Movimientos', Icons.checklist_rtl_rounded),
+              Botones.botonBarNav('Inventario', Icons.inventory_rounded),
               Botones.botonBarNav(
                 'Nueva Orden',
                 Icons.add_shopping_cart_rounded,
-                () => {},
               ),
-              Botones.botonBarNav('Ordenes', Icons.history_rounded, () => {}),
+              Botones.botonBarNav('Ordenes', Icons.history_rounded),
               Botones.botonBarNav(
                 'Historial',
                 Icons.history_toggle_off_rounded,
-                () => {
-                  if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                    CampoTexto.seleccionFiltro = Filtros.id,
-                },
               ),
             ],
             indicatorColor: Color(0xFFFF5600),
@@ -114,7 +96,7 @@ class _EmpleadoState extends State<Empleado> {
       ),
       body: [
         ESP(),
-        //Inventario(),
+        Inventario(),
         OrdenSalida(),
         HistorialOrdenes(),
         Historial(),

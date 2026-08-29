@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
-import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/services/local_storage.dart';
@@ -19,6 +18,15 @@ class Ventanas with ChangeNotifier {
       _ordenFiltro = false;
   static String _inventario = LocalStorage.local('locación');
 
+  //Este es un componente que devuelve una ventana emergente simple, la cual
+  //puede alternar si está visible o no con la variable "_emergente" de esta
+  //clase, requiere un texto, 2 textos relacionados con los botones de no y si,
+  //respectivamente; además de 2 funciones, relacionadas con ambos botones de no
+  //y sí; también se puede declarar un widget extra el cual se ubicara entre el
+  //texto principal y los botones de sí y no, hablando de los botones si y no,
+  //se pueden añadir botones extra que estarán antes de los botones antes
+  //mencionados, además se puede declara un booleano con el cual se puede ver,
+  //si es que no se quiere usar la variable "_emergente".
   static Widget ventanaEmergente(
     String texto,
     String no,
@@ -68,6 +76,17 @@ class Ventanas with ChangeNotifier {
     );
   }
 
+  //Este es un componente que devuelve una ventana con una tabla e información
+  //relacionada, la cual puede alternar si está visible o no con la variable
+  //"_tabla" de esta clase, requiere el tamaño del alto y ancho que tendrá la
+  //ventana, una lista con los títulos que tendrá la ventana (todos los títulos
+  //estarán en la parte superior de la ventana), un widget que se mostrara en él
+  //arriba de la tabla con información de que representan los datos de la tabla,
+  //un widget tipo SizedBox el cual se espera que contenga una tabla (es el
+  //propósito principal de esta ventana), y una lista con botones con funciones
+  //relacionadas con la información de la tabla; por último, se puede declara un
+  //booleano con el cual se puede ver, si es que no se quiere usar la variable
+  //"_tabla".
   static Widget ventanaTabla(
     double? alto,
     double ancho,
@@ -126,6 +145,15 @@ class Ventanas with ChangeNotifier {
     );
   }
 
+  //Este es un componente que devuelve una ventana simple, la cual puede
+  //alternar si está visible o no con la variable "_cambio" de esta clase,
+  //tiene el texto "Cambio de tienda:" como título, una lista que se puede
+  //colapsar con una lista de las tiendas almacenadas en la base de datos y,
+  //por último, se cuentan con 2 botones en la parte inferior de la ventana, uno
+  //para cancelar el proceso de cambio de tienda ocultando la ventana y otro
+  //para proseguir con el cambio de la tienda mientras también se oculta la
+  //ventana; además del contexto, lo único de se debe declara es la acción que
+  //se realizara al momento de presionar el botón con texto "Cambiar".
   static Widget cambioDeTienda(BuildContext context, Function accion) {
     return Visibility(
       visible: _cambio,
@@ -151,7 +179,16 @@ class Ventanas with ChangeNotifier {
                     MediaQuery.sizeOf(context).width,
                     Icons.change_circle_rounded,
                     _inventario,
-                    ArticulosModel.getInventarios(),
+                    [
+                      'Árbol Grande',
+                      'Bicentenario',
+                      'Café',
+                      'Cedis',
+                      'Faja de Oro',
+                      'Portales',
+                      'Yogulive Jardín',
+                      'Yogulive Árbol Grande',
+                    ],
                     Color(0x00000000),
                     (value) => context.read<Ventanas>().setInventario(value),
                   ),
@@ -181,6 +218,16 @@ class Ventanas with ChangeNotifier {
     );
   }
 
+  //Este es un componente que devuelve una ventana con un campo de texto
+  //editable el cual tiene que estar relacionado con el código de barras de un
+  //artículo, la cual puede alternar si está visible o no con la variable
+  //"_scan" de esta clase, requiere el contexto del proyecto, una acción al
+  //momento de presionar el botón cancelar y una función que requiera un
+  //parámetro de texto que este realizara al momento de presionar enter,
+  //usualmente se usan métodos que redirigen a productos con relación a un
+  //código de barras; por último, se puede declara un booleano con el cual se
+  //puede ver, si es que no se quiere usar la variable "_scan", cabe aclarar
+  //que esta ventana solo se usa en la versión web de la aplicación.
   static Widget ventanaScan(
     BuildContext ctx,
     Function btnAccion,
@@ -264,6 +311,14 @@ class Ventanas with ChangeNotifier {
     );
   }
 
+  //Este es un componente que devuelve una ventana con una lista simple, la cual
+  //puede alternar si está visible o no con la variable "_ordenFiltro" de esta
+  //clase, tiene el texto "Filtro de estados:" como título, una lista con los
+  //estados que puede tener una orden y un botón de selección por cada elemento
+  //de la lista, la intención de esta ventana es alternar entre que órdenes con
+  //cierto estado se puede ver, requiere el contexto de la aplicación la lista de
+  //booleanos, con relación a que órdenes se quieren ver y la acción que se
+  //ejecutara al momento de cambiar un filtro.
   Widget ventanaFiltroOrden(
     BuildContext ctx,
     List<bool> lista,
@@ -332,13 +387,13 @@ class Ventanas with ChangeNotifier {
                                 size: 20,
                               ),
                             ],
-                            [
+                            maxLines: 2,
+                            colores: [
                               Textos.colorEstado(
                                 OrdenModel.listaEstados()[index],
                               ),
                               Colors.transparent,
                             ],
-                            2,
                           ),
                         );
                       },
@@ -361,32 +416,45 @@ class Ventanas with ChangeNotifier {
     );
   }
 
+  //Método que cambia el valor del booleano "_tabla", esta variable se encarga
+  //de la visibilidad del componente "ventanaTabla".
   void tabla(bool booleano) {
     _tabla = booleano;
     notifyListeners();
   }
 
+  //Método que cambia el valor del booleano "_emergente", esta variable se encarga
+  //de la visibilidad del componente "ventanaEmergente".
   void emergente(bool booleano) {
     _emergente = booleano;
     notifyListeners();
   }
 
+  //Método que cambia el valor del booleano "_cambio", esta variable se encarga
+  //de la visibilidad del componente "cambioDeTienda".
   void cambio(bool booleano) {
     _cambio = booleano;
     notifyListeners();
   }
 
+  //Método que cambia el valor del booleano "_scan", esta variable se encarga
+  //de la visibilidad del componente "ventanaScan".
   void scan(bool booleano) {
     _scan = booleano;
     focus.requestFocus();
     notifyListeners();
   }
 
+  //Método que cambia el valor del booleano "_ordenFiltro", esta variable se
+  //encarga de la visibilidad del componente "ventanaFiltroOrden".
   void ordenFiltro(bool booleano) {
     _ordenFiltro = booleano;
     notifyListeners();
   }
 
+  //Método que cambia el valor de todos los booleanos de esta clase a falso,
+  //con el fin de cerrar todas las ventanas usualmente se usa al momento de
+  //cambiar de página.
   void cerrarVentanas() {
     _emergente = false;
     _tabla = false;
@@ -396,15 +464,30 @@ class Ventanas with ChangeNotifier {
     notifyListeners();
   }
 
+  //Método get que retorna el nombre de la locación que tiene el usuario.
   static String getInventario() {
     return _inventario;
   }
 
+  //Método set que establece el valor de la variable _inventario, este método se
+  //usa cuando un administrador cambia de tienda, a pesar de que el cambio se
+  //hace a nivel servidor este no se actualiza al instante a nivel aplicación,
+  //así que para eliminar inconsistencia y mantener la el sentido en el usuario
+  //se guarda.
   void setInventario(String locacion) {
     _inventario = locacion;
     notifyListeners();
   }
 
+  //Método que se ejecuta al momento de seleccionar una tienda en la ventana
+  //relacionada al cambio de tienda, habilita la pantalla de carga, verifica si
+  //la tienda seleccionada si es la misma que ya estaba o si es diferente, si es
+  //la misma tienda mostrara un mensaje recordando el error que se comentó, en
+  //caso de ser una tienda diferente entonces se hace la petición para cambiar
+  //de tienda, si esta petición da error entonces se muestra el mensaje de
+  //error, pero si por otro lado todo sale bien se cambiara el almacén en el
+  //servido y en la aplicación, por último se cerrara la ventana de cambio de
+  //tienda.
   static void cambioDeTiendaAccion(BuildContext ctx, Function accion) async {
     ctx.read<Carga>().cargaBool(true);
     String mensaje;

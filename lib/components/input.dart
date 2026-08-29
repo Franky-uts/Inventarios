@@ -9,13 +9,20 @@ class CampoTexto with ChangeNotifier {
   static final focusBusqueda = FocusNode();
   static final busquedaTexto = TextEditingController();
 
+  //Este es un componente de texto muy personalizable, el tamaño, texto,
+  //controlador y pista son requeridos; valores como el icono, la visibilidad
+  //del texto, si está habilitado, la acción que se tiene al momento de
+  //presionar enter, la acción que tiene al momento de cambiar el texto el
+  //color del borde tanto en estado normal y cuando hay un error, el tamaño
+  //del texto, la alineación del texto, el margen que tiene el texto, el tipo
+  //de texto, su formato y su focus son opcionales.
   static Widget inputTexto(
     double size,
     String texto,
     String hint,
-    TextEditingController controller,
-    bool enabled,
-    bool password, {
+    TextEditingController controller, {
+    bool enabled = true,
+    bool password = false,
     IconData? icono,
     Function? accion,
     Function? cambio,
@@ -99,6 +106,10 @@ class CampoTexto with ChangeNotifier {
     );
   }
 
+  //Este es un componente de lista desplegable, donde se deben definir el ancho,
+  //icono, valor inicial, la lista de valores seleccionables, el color que
+  //obtendrá el borde en caso de obtener un error y la acción que realizara
+  //cuando su valor cambie.
   static Widget inputDropdown(
     double sizeTotal,
     IconData icono,
@@ -148,7 +159,17 @@ class CampoTexto with ChangeNotifier {
     );
   }
 
-  static Widget barraBusqueda(Function accion, bool unidades, bool fecha) {
+  //Este componente es una barra de búsqueda la cual se utiliza en páginas con
+  //tablas, necesita una acción al momento de presionar el botón de búsqueda,
+  //al cambiar el valor del texto al salir del teclado (solo disponible en
+  //dispositivos móviles) o al momento de seleccionar un filtro, además la
+  //variable booleana fecha es opcional, esta define si en los filtros se
+  //muestra la opción para filtrar por fechas.
+  static Widget barraBusqueda(
+    Function accion, {
+    bool unidades = false,
+    bool fecha = false,
+  }) {
     return TextField(
       controller: busquedaTexto,
       focusNode: focusBusqueda,
@@ -254,6 +275,9 @@ class CampoTexto with ChangeNotifier {
     );
   }
 
+  //Botón de búsqueda que solo se encuentra presente en la barra de búsqueda,
+  //requiere un valor tipo Function para poder usarse, aunque solo se utilice
+  //en la barra de búsqueda en un futuro se podía utilizar en otros contextos.
   static IconButton botonBusqueda(Function accion) {
     return (busquedaTexto.text.isEmpty)
         ? IconButton(
@@ -282,6 +306,9 @@ class CampoTexto with ChangeNotifier {
           );
   }
 
+  //Este es un método get que regresara el texto correspondiente a un filtro
+  //dependiendo del valor seleccionado en los filtros ubicados en la barra de
+  //búsqueda.
   static String filtroTexto() {
     switch (seleccionFiltro) {
       case (Filtros.id):

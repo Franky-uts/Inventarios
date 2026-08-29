@@ -11,6 +11,8 @@ import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:provider/provider.dart';
 
+//Esta es una página ventana con información relacionada con un artículo
+//seleccionado de la lista de artículos.
 class Articulo extends ChangeNotifier {
   static ArticulosModel _articulo = ArticulosModel.dummy('');
   static List<ProductoModel> _lista = [];
@@ -19,28 +21,50 @@ class Articulo extends ChangeNotifier {
   static TextEditingController controller = TextEditingController();
   static Color color = Color(0x00000000);
 
+  //Método que establece el artículo que se mostrara.
   void articulo(ArticulosModel art) async {
     _articulo = art;
     _lista = await ProductoModel.getDatosArticulo(art.id);
     notifyListeners();
   }
 
+  //Método que controla el booleano "_art", este se encarga de la visibilidad de
+  //la ventana que muestra el artículo.
   void art(bool boolean) {
     _art = boolean;
     notifyListeners();
   }
 
+  //Método que controla el booleano "_emergente", este se encarga de la
+  //visibilidad de la ventana emergente que se maneja en esta clase.
   void emergente(bool boolean) {
     _emergente = boolean;
     notifyListeners();
   }
 
+  //Método que controla el booleano "_scan", este se encarga de la visibilidad
+  //de la ventana scan que se maneja en esta clase.
   void scan(bool boolean) {
     numVen = 0;
     _scan = boolean;
     notifyListeners();
   }
 
+  //Este método se encarga de decidir que hacer cuando se pide escáner un código
+  //de barras, en caso de que se presione el botón con relación a ingresar un
+  //código de barras y no hay texto en el campo de texto, la aplicación
+  //verificara si se está ejecutando en navegador si este es el caso entonces se
+  //abrirá una ventana sonde podrás ingresar el código de barras con el teclado
+  //o puedes usar un escáner para escanear un código de barras y establecer el
+  //texto relacionado en el campo de texto, al presionar enter o al terminar de
+  //escanear se cerrara la ventana y el texto que había en la ventana ahora
+  //estará en el campo de texto correspondiente; si la aplicación no se ejecuta
+  //en navegador se cambiara a una pantalla donde se habría la cámara y se
+  //cerrara hasta que se escanee un código de barras, o se regresará a la
+  //anterior y establecerá el texto escaneado en el campo correspondiente, si
+  //sucede algún error el campo de texto seguirá vacío; por el contrario si el
+  //campo de texto no está vacío, entonces simplemente se dejara el texto que
+  //había en el campo de texto sin cambios.
   void iniciarScan(BuildContext ctx) async {
     if (kIsWeb) {
       scan(true);
@@ -51,6 +75,12 @@ class Articulo extends ChangeNotifier {
     }
   }
 
+  //Método que se encarga de recibir la información de una elemento escaneado y
+  //establecerlo en el campo correspondiente al código de barras, si detecta que
+  //el texto es "-1" o no se escaneó algo se dejara el campo con el texto que
+  //tenía previamente, si el código de barras es igual a algún código ya
+  //registrado en algún artículo, entonces, se le hará de conocimiento al
+  //usuario y el campo de texto mantendrá su valor inicial.
   void scanCod(BuildContext ctx, String texto) async {
     if (texto == '-1' || texto.isEmpty) {
       texto = _articulo.codigoBarras;
@@ -73,6 +103,14 @@ class Articulo extends ChangeNotifier {
     }
   }
 
+  //Este método se ejecuta al momento que el usuario quiera cambiar la
+  //información de algún dato, más en específico el valor del código de barras,
+  //la cantidad por unidad (depende del tipo del artículo) y el precio; si el
+  //nuevo dato ingresado no es válido se mostrara en el campo de texto
+  //cambiando el borde a color rojo, si es válido se enviara una petición al
+  //servidor y se esperara la respuesta, dicha respuesta se mostrara al usuario,
+  //si la respuesta es positiva se cerrara la ventana y el valor del campo a
+  //cambiar tendrá el nuevo valor.
   void cambioColumna(BuildContext ctx) async {
     if (controller.text.isEmpty) {
       color = Color(0xFFFF0000);
@@ -107,24 +145,11 @@ class Articulo extends ChangeNotifier {
     }
   }
 
-  /*void recarga(BuildContext ctx) async {
-    ctx.read<Carga>().cargaBool(true);
-    String mensaje = 'Se actualizó el articulo.';
-    ArticulosModel articulo = await ArticulosModel.getArticulo(
-      articulo.id,
-    );
-    articulo.mensaje.isEmpty
-        ? {
-            setState(() {
-              this.articulo = articulo;
-            }),
-          }
-        : mensaje = articulo.mensaje;
-
-    Textos.toast(mensaje, false);
-    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
-  }*/
-
+  //Es una línea de texto que se establece al momento de abrir el artículo, si
+  //este no tiene código de barras se mostrara el texto 'Sin código
+  //establecido', en cambio si su código de barras si está establecido este
+  //mostrara el texto 'Código de barras: código' donde código cambiara al código
+  //de barras del artículo;
   String codigoTexto(String codigo) {
     (codigo.isEmpty)
         ? codigo = 'Sin codigo establecido'
@@ -132,7 +157,13 @@ class Articulo extends ChangeNotifier {
     return codigo;
   }
 
+  //Componente tipo ventana que muestra la información de un artículo, la
+  //información del artículo es guardada en la variable "_articulo", su
+  //visibilidad es controlada por la variable "_art".
   Widget articuloInfo(BuildContext context) {
+    String pre = ('${_articulo.precio}'.split('')[1] == '0')
+        ? '${_articulo.precio}'.split('.')[0]
+        : '${_articulo.precio}';
     return Visibility(
       visible: _art,
       child: Stack(
@@ -229,28 +260,14 @@ class Articulo extends ChangeNotifier {
                                   ),
                                   Row(
                                     children: [
-                                      rectanguloContainer(
-                                        ('${_articulo.precio}'.split('')[1] ==
-                                                '0')
-                                            ? 'Precio: ${_articulo.precio}'
-                                                  .split('.')[0]
-                                            : 'Precio: ${_articulo.precio}',
-                                      ),
+                                      rectanguloContainer('Precio: $pre'),
                                       Botones.btnSimple(
                                         'Cambiar precio',
                                         Icons.price_change_rounded,
                                         Color(0xFF8A03A9),
                                         () => {
                                           numVen = 2,
-                                          controller.text =
-                                              ('${_articulo.precio}'.split(
-                                                    '',
-                                                  )[1] ==
-                                                  '0')
-                                              ? '${_articulo.precio}'.split(
-                                                  '.',
-                                                )[0]
-                                              : '${_articulo.precio}',
+                                          controller.text = pre,
                                           emergente(true),
                                         },
                                       ),
@@ -264,10 +281,10 @@ class Articulo extends ChangeNotifier {
                               children: [
                                 Tablas.contenedorInfo(
                                   MediaQuery.sizeOf(context).width,
-                                  [0.2, 0.075, 0.075, 0.075, 0.075, 0.2, 0.2],
+                                  [0.2, /* 0.075,*/ 0.1, 0.1, 0.1, 0.2, 0.2],
                                   [
                                     'Tienda',
-                                    'Unidades',
+                                    //'Unidades',
                                     'Entradas',
                                     'Salidas',
                                     'Perdidas',
@@ -325,8 +342,7 @@ class Articulo extends ChangeNotifier {
                   ['Código de barras', 'Cantidad por unidad', 'Precio'][numVen],
                   '',
                   controller,
-                  numVen != 0,
-                  false,
+                  enabled: numVen != 0,
                   accion: () => cambioColumna(context),
                   icono: Icons.mode_edit_outline_rounded,
                   errorColor: color,
@@ -354,6 +370,9 @@ class Articulo extends ChangeNotifier {
     );
   }
 
+  //Componente que regresa una lista de productos, la función de esta lista en
+  //esta ventana es para mostrar los productos registrados en diferentes
+  //almacenes con este mismo artículo.
   ListView listaPrincipal(List lista) {
     return ListView.separated(
       itemCount: lista.length,
@@ -363,13 +382,13 @@ class Articulo extends ChangeNotifier {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = [];
-        colores = List.filled(7, Colors.transparent);
-        colores[1] = Textos.colorLimite(
+        /*List<Color> colores = [];
+        colores = List.filled(7, Colors.transparent);*/
+        /*colores[1] = Textos.colorLimite(
           lista[index].limiteProd,
           lista[index].unidades.floor(),
-        );
-        String unidad = '${lista[index].unidades}';
+        );*/
+        //String unidad = '${lista[index].unidades}';
         String entrada = '${lista[index].entrada}';
         String salida = '${lista[index].salida}';
         return Container(
@@ -377,14 +396,14 @@ class Articulo extends ChangeNotifier {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [0.2, 0.075, 0.075, 0.075, 0.075, 0.2, 0.2],
+            [0.2, /* 0.075,*/ 0.1, 0.1, 0.1, 0.2, 0.2],
             [
               lista[index].nombre,
-              (unidad.split('.').length > 1)
+              /*(unidad.split('.').length > 1)
                   ? (unidad.split('.')[1] == '0')
                         ? unidad.split('.')[0]
                         : unidad
-                  : unidad,
+                  : unidad,*/
               (entrada.split('.').length > 1)
                   ? (entrada.split('.')[1] == '0')
                         ? entrada.split('.')[0]
@@ -399,14 +418,15 @@ class Articulo extends ChangeNotifier {
               lista[index].ultimoUsuario,
               lista[index].ultimaModificacion,
             ],
-            colores,
-            2,
+            maxLines: 2,
+            //colores,
           ),
         );
       },
     );
   }
 
+  //Componente creado para aumentar la legibilidad del código.
   Row rowBoton(BuildContext ctx) {
     String texto = '${_articulo.cantidadPorUnidad}';
     if (texto.split('.').length > 1) {
@@ -434,11 +454,13 @@ class Articulo extends ChangeNotifier {
     );
   }
 
+  //Componente que toma un valor tipo texto y lo estiliza para que sea más
+  //legible en la ventana con información.
   Container rectanguloContainer(String texto) {
     return Container(
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Color(0x59F6AFCF),
+        color: Color(0x40F6AFCF),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Textos.textoGeneral(

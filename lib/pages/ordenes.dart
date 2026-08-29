@@ -14,6 +14,11 @@ import 'package:pdf/pdf.dart';
 import 'package:provider/provider.dart';
 import '../models/orden_model.dart';
 
+//Esta es una página principal encargada de mostrar todos las ordenes
+//registrados en la base de datos, las ordenes que se muestran se pueden
+//ordenar por id, estado, remitente y locación; se puede presionar sobre una
+//orden y ver su información más a detalle con la posibilidad de editar ciertos
+//valores.
 class Ordenes extends StatefulWidget {
   const Ordenes({super.key});
 
@@ -50,6 +55,11 @@ class _OrdenesState extends State<Ordenes> {
   Future<List<OrdenModel>> getOrdenes() async =>
       await OrdenModel.getAllOrdenes(filtro, filtros);
 
+  //Esta es una función que se encarga de obtener el id de la orden seleccionada
+  //en la lista y con este se pida la información de la orden en la base de
+  //datos para mostrarlo a detalle en una ventana, en caso de que suceda algún
+  //error por parte del servidor se abortara el proceso y se le hará conocer al
+  //usuario por medio de toast.
   Future<void> getOrdenInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     OrdenModel orden = await OrdenModel.getOrden(id);
@@ -61,14 +71,17 @@ class _OrdenesState extends State<Ordenes> {
         Textos.crearLista(orden.cantArticulos, Color(0xFF8A03A9));
         canCubOrg.addAll(ctx.read<VenDatos>().canCubLista());
         cantidades.clear();
-        cantidades.addAll(
+        for (int i = 0; i < orden.cantArticulos; i++) {
+          cantidades.add(TextEditingController());
+        }
+        /*cantidades.addAll(
           List.filled(
             orden.cantArticulos,
             TextEditingController(),
             growable: true,
           ),
-        );
-        for (int i = 0; i < orden.cantArticulos; i++) {}
+        );*/
+        //for (int i = 0; i < orden.cantArticulos; i++) {}
         ctx.read<Ventanas>().tabla(true);
       }
     } else {
@@ -77,12 +90,20 @@ class _OrdenesState extends State<Ordenes> {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
+  //Este método se encarga de cambiar el estado de la orden a un estado
+  //establecido por el contexto, el estado puede cambiar por el contexto del
+  // estado actual y de la acciona por la que se cambia el estado.
   void cambiarEstado(String accion) {
     venNum = 0;
     this.accion = accion;
     context.read<Ventanas>().emergente(true);
   }
 
+  //Este método se encarga de guardar las cantidades cubiertas de una orden en
+  //la base de datos, si la lista está modificada en al menos un producto la
+  //lista se modificara, en caso de que no se haya realizado algún cambio
+  //entonces se le hará de conocimiento al usuario y no se realizara ninguna
+  //acción ante el servidor.
   void guardar(List lista) {
     bool guardar = false;
     for (int i = 0; i < canCubOrg.length; i++) {
@@ -91,6 +112,13 @@ class _OrdenesState extends State<Ordenes> {
     guardar ? cambiarEstado('guardar') : Textos.toast('No hay cambios');
   }
 
+  //Este método se encarga de abrir una ventana con los comentarios de la
+  //tienda, del proveedor y, si aplica, con los comentarios finales de la
+  //tienda relacionada a un producto de la orden, si el estado de la orden es
+  //"En proceso" se mostrara el comentario en un campo de texto y podrá
+  //editarse, de otro modo solo se podrá ver el mensaje que dejo el proveedor,
+  //los comentarios finales solo son visibles si el estado de la orden es
+  //"Finalizado" o "Incompleto".
   void verComentarios(
     String nombre,
     String estado,
@@ -107,6 +135,11 @@ class _OrdenesState extends State<Ordenes> {
     context.read<Ventanas>().emergente(true);
   }
 
+  //Este método se encarga de editar la orden, dependiendo del contexto, se
+  //utiliza para guardar la lista de cantidades cubiertas, cambiar el estado a
+  //"Entregado" o "Denegado" y para cambiar el comentario del proveedor en los
+  //productos y cuando se reciba respuesta de la petición este mostrará el
+  //mensaje en forma de mensaje toast.
   Future<String> guardarDatos(BuildContext ctx) async {
     String columna = 'Estado';
     String datos = accion;
@@ -175,18 +208,22 @@ class _OrdenesState extends State<Ordenes> {
     return datos;
   }
 
-  void imprimir(
-    BuildContext ctx,
-    List<String> tituloTexto,
-    OrdenModel orden,
-  ) async {
+  //Este método se encarga de imprimir, o guardar un archivo PDF, con toda la
+  //información de una orden.
+  void imprimir(BuildContext ctx, OrdenModel orden) async {
     ctx.read<Carga>().cargaBool(true);
     PdfPageFormat formato = PdfPageFormat.standard;
     String area = '';
     final doc = pw.Document();
     List<pw.Widget> titulos = [];
     List<pw.Widget> listaArticulos = [];
-    for (String titulo in tituloTexto) {
+
+    for (String titulo in [
+      'Id de la orden: ${orden.id}',
+      'Pide: ${orden.remitente}',
+      'Para: ${orden.locacion}',
+      'Fecha: ${orden.fechaOrden.split(' ')[0]}',
+    ]) {
       titulos.add(
         pw.Text(
           titulo,
@@ -440,7 +477,6 @@ class _OrdenesState extends State<Ordenes> {
         );
       }
     }
-
     if ((listaArticulos.length - (listaArticulos.length / 55).floor() * 55) >
         50) {
       doc.addPage(
@@ -512,7 +548,6 @@ class _OrdenesState extends State<Ordenes> {
         ),
       );
     }
-
     await Printing.layoutPdf(
       onLayout: (PdfPageFormat format) async => doc.save(),
     ).whenComplete(() {
@@ -520,6 +555,11 @@ class _OrdenesState extends State<Ordenes> {
     });
   }
 
+  //Esta es una función que se ejecuta al momento de seleccionar un botón de
+  //filtro, si el filtro es igual al filtro actual no se realizara ninguna
+  //acción, de lo contrario el filtro seleccionado tendrá un borde morado en su
+  //botón correspondiente y se volverá a hacer una petición al servidor para que
+  //envíe la información de nuevo con el filtro aplicado.
   Future<void> filtroTexto(int valor) async {
     colores = List.filled(colores.length, Color(0xFFFFFFFF));
     colores[valor] = Color(0xFF8A03A9);
@@ -556,7 +596,7 @@ class _OrdenesState extends State<Ordenes> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.05, .125, .15, .2, .2, .25],
+                          [.05, .125, .175, .2, .2, .25],
                           [
                             'id',
                             'Art. ordenados',
@@ -664,8 +704,6 @@ class _OrdenesState extends State<Ordenes> {
                                         '',
                                         cantidadCub,
                                         cantidades[index],
-                                        true,
-                                        false,
                                         cambio: () => venDatos.canCubChange(
                                           index,
                                           cantidades[index].text.isNotEmpty
@@ -729,8 +767,6 @@ class _OrdenesState extends State<Ordenes> {
                               size: 30,
                             ),
                           ],
-                          [],
-                          1,
                         );
                         return SingleChildScrollView(
                           child: Container(
@@ -794,12 +830,7 @@ class _OrdenesState extends State<Ordenes> {
                                 'Imprimir',
                                 Icons.print_rounded,
                                 false,
-                                () => imprimir(context, [
-                                  'Id de la orden: ${venDatos.id()}',
-                                  'Pide: ${venDatos.loc()}',
-                                  'Para: ${venDatos.rem()}',
-                                  'Fecha: ${venDatos.fecha().split(' ')[0]}',
-                                ], venDatos.getDatos()),
+                                () => imprimir(context, venDatos.getDatos()),
                               ),
                               Botones.btnRctMor(
                                 'Cerrar',
@@ -886,8 +917,6 @@ class _OrdenesState extends State<Ordenes> {
                                 'Comentarios del Proveedor',
                                 '',
                                 controller,
-                                true,
-                                false,
                                 icono: Icons.message_rounded,
                               ),
                             if (venDatos.est() != 'En proceso')
@@ -928,6 +957,9 @@ class _OrdenesState extends State<Ordenes> {
     );
   }
 
+  //Este es un componente ubicado arriba de la tabla para poder mostrar la
+  //opción de abrir el menú, filtrar las órdenes por estados y los botones para
+  //ordenar la lista por id, estado, remitente y ubicación.
   Widget opciones(BuildContext context) {
     return Container(
       height: 70,
@@ -981,6 +1013,10 @@ class _OrdenesState extends State<Ordenes> {
     );
   }
 
+  //Componente que regresa una lista con todas las ordenes con productos que la
+  //tienda requiere, al momento de presionar una orden se abrirá una ventana con
+  //información más detallada de la orden, con la posibilidad de editar ciertos
+  //datos si así se requiere.
   ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
       controller: controller,
@@ -1010,9 +1046,8 @@ class _OrdenesState extends State<Ordenes> {
                   lista[index].locacion,
                   lista[index].fechaOrden,
                 ],
-                coloresLista,
-                1,
                 extra: () async => await getOrdenInfo(context, lista[index].id),
+                colores: coloresLista,
               ),
             );
           },

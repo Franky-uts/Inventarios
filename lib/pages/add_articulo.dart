@@ -10,6 +10,8 @@ import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/articulos_model.dart';
 import 'package:provider/provider.dart';
 
+//Esta es una página secundaria encargada de registrar un nuevo artículo en la
+//base de datos, si es que se cubren todos los parámetros.
 class Addarticulo extends StatefulWidget {
   final List listaArea;
   final List listaTipo;
@@ -42,7 +44,6 @@ class _AddproductoState extends State<Addarticulo> {
     Color(0x00FFFFFF),
     Color(0x00FFFFFF),
   ];
-  String? res;
 
   @override
   void initState() {
@@ -66,23 +67,36 @@ class _AddproductoState extends State<Addarticulo> {
     super.dispose();
   }
 
+  //Este método se encarga de mantener la consistencia de la información en la
+  //base de datos, si se selecciona la opción "Tipos" en la lista de sección de
+  //tipo, el campo de cantidad no podrá ser editable y se borrara cualquier
+  //texto que se haya ingresado, en cado de que el tipo sea caja, bote, etc.
+  //este habilitara la edición del campo de la cantidad por unidad, cualquier
+  //otra opción dejara el campo de texto como inhabilitado y el texto en el
+  //campo será siempre 1.
   void cantidadValido(String value) {
     cantidad = false;
-    controller[1].text = '1';
-    if (value == 'Bulto' ||
-        value == 'Caja' ||
-        value == 'Costal' ||
-        value == 'Paquete' ||
-        value == 'Bote') {
-      cantidad = true;
-      controller[1].clear();
-    } else if (value == 'Tipo') {
-      cantidad = false;
-      controller[1].clear();
+    switch (value) {
+      case "Galón" || "Litro" || "Pieza" || "Garrafa" || "Kilo(s)":
+        controller[1].text = '1';
+        break;
+      case "Tipo":
+        controller[1].clear();
+        break;
+      default:
+        cantidad = true;
+        controller[1].clear();
+        break;
     }
   }
 
-  void registrarProducto(BuildContext ctx) async {
+  //Método que se encarga de verificar que todos los parámetros que debe tener
+  //un artículo para poder registrarse sean cubiertos correctamente, en caso de
+  //que falte algún campo o que el valor se atenga valores incorrectos, este
+  //mostrara un color rojo alrededor en el borde del campo que necesite una
+  //revisión, cuando la información sea válida esta enviara una petición y
+  //mostrara en forma de toast el mensaje que recibió por parte del servidor.
+  void registrarArticulo(BuildContext ctx) async {
     setState(() {
       context.read<Carga>().cargaBool(true);
     });
@@ -126,6 +140,21 @@ class _AddproductoState extends State<Addarticulo> {
     });
   }
 
+  //Este método se encarga de decidir que hacer cuando se pide escáner un código
+  //de barras, en caso de que se presione el botón con relación a ingresar un
+  //código de barras y no hay texto en el campo de texto, la aplicación
+  //verificara si se está ejecutando en navegador si este es el caso entonces se
+  //abrirá una ventana sonde podrás ingresar el código de barras con el teclado
+  //o puedes usar un escáner para escanear un código de barras y establecer el
+  //texto relacionado en el campo de texto, al presionar enter o al terminar de
+  //escanear se cerrara la ventana y el texto que había en la ventana ahora
+  //estará en el campo de texto correspondiente; si la aplicación no se ejecuta
+  //en navegador se cambiara a una pantalla donde se habría la cámara y se
+  //cerrara hasta que se escanee un código de barras, o se regresará a la
+  //anterior y establecerá el texto escaneado en el campo correspondiente, si
+  //sucede algún error el campo de texto seguirá vacío; por el contrario si el
+  //campo de texto no está vacío, entonces simplemente se borrara el texto que
+  //había en el campo de texto.
   void iniciarScan(BuildContext ctx) async {
     if (controller[2].text.isEmpty) {
       if (kIsWeb) {
@@ -140,6 +169,12 @@ class _AddproductoState extends State<Addarticulo> {
     }
   }
 
+  //Método que se encarga de recibir la información de una elemento escaneado y
+  //establecerlo en el campo correspondiente al código de barras, si detecta que
+  //el texto es "-1" o no se escaneó algo se dejara el campo como vacío, si el
+  //código de barras es igual a algún código ya registrado en algún artículo,
+  //entonces, se le hará de conocimiento al usuario y el campo de texto se
+  //mantendrá vacío.
   void scanCod(BuildContext ctx, String texto) async {
     if (texto == '-1' || texto.isEmpty) {
       texto = '';
@@ -164,56 +199,7 @@ class _AddproductoState extends State<Addarticulo> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
-      drawer: RecDrawer.drawer(context, [
-        /* Consumer<Carga>(
-          builder: (context, carga, child) {
-            return Botones.icoCirMor(
-              'Ver artículos',
-              Icons.list,
-              () => {
-                carga.cargaBool(true),
-                RecDrawer.pushAnim(Articulos(), context),
-                carga.cargaBool(false),
-              },
-              () => {},
-              false,
-              true,
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (context, carga, child) {
-            return Botones.icoCirMor(
-              'Ver almacen',
-              Icons.inventory_rounded,
-              () => {
-                carga.cargaBool(true),
-                RecDrawer.pushAnim(OrdenesInventario(), context),
-                carga.cargaBool(false),
-              },
-              () => {},
-              false,
-              true,
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (context, carga, child) {
-            return Botones.icoCirMor(
-              'Ordenes',
-              Icons.border_color_rounded,
-              () => {
-                context.read<Carga>().cargaBool(true),
-                RecDrawer.pushAnim(Ordenes(), context),
-                context.read<Carga>().cargaBool(false),
-              },
-              () => {},
-              true,
-              true,
-            );
-          },
-        ),*/
-      ]),
+      drawer: RecDrawer.drawer(context, []),
       body: PopScope(
         canPop: false,
         child: Stack(
@@ -235,8 +221,6 @@ class _AddproductoState extends State<Addarticulo> {
                           'Nombre',
                           '',
                           controller[0],
-                          true,
-                          false,
                           accion: () =>
                               FocusManager.instance.primaryFocus?.unfocus(),
                           icono: Icons.file_copy_rounded,
@@ -310,8 +294,7 @@ class _AddproductoState extends State<Addarticulo> {
                           'Cantidad por unidades',
                           '',
                           controller[1],
-                          cantidad,
-                          false,
+                          enabled: cantidad,
                           icono: Icons.numbers_rounded,
                           errorColor: colorCampo[3],
                           margin: EdgeInsets.symmetric(horizontal: 10),
@@ -329,8 +312,6 @@ class _AddproductoState extends State<Addarticulo> {
                           'Precio',
                           '',
                           controller[3],
-                          true,
-                          false,
                           accion: () =>
                               FocusManager.instance.primaryFocus?.unfocus(),
                           icono: Icons.numbers_rounded,
@@ -354,8 +335,7 @@ class _AddproductoState extends State<Addarticulo> {
                           'Codigo de barras',
                           '',
                           controller[2],
-                          false,
-                          false,
+                          enabled: false,
                           icono: Icons.barcode_reader,
                         ),
                         SizedBox(
@@ -375,7 +355,7 @@ class _AddproductoState extends State<Addarticulo> {
                     Botones.iconoTexto(
                       'Añadir',
                       Icons.add_circle_rounded,
-                      () => registrarProducto(context),
+                      () => registrarArticulo(context),
                     ),
                   ],
                 ),

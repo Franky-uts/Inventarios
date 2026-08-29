@@ -5,6 +5,12 @@ import 'package:inventarios/components/textos.dart';
 import 'package:provider/provider.dart';
 
 class Botones {
+  //Botón rectangular morado que muestra un icono blanco.
+  //Cuando el valor borde es verdadero el botón tiene un borde y el icono es
+  //morado, el fondo cambia a ser de color blanco.
+  //El valor de alert es opcional, si es verdadero entonces se mostrara un
+  //punto rojo en la esquina superior izquierda, como el nombre de la variable
+  //lo indica se utiliza para mostrar una alerta relacionada con el botón.
   static IconButton btnRctMor(
     String tip,
     IconData icono,
@@ -44,6 +50,16 @@ class Botones {
     );
   }
 
+  //Botón rectangular con bordes circulares texto y un borde visible.
+  //Cuando el valor borde y enabled es verdadero el texto y el borde son de
+  //color morado además de tener un fondo de color blanco, si solo borde es
+  //verdadero y enabled es falso el color del borde y el texto serán de color
+  //morado, pero con menos saturación, esto es para resaltar el hecho de que el
+  //botón no tiene función al presionarse.
+  //En caso de que el valor de borde sea falso, entonces el fondo será de color
+  //morado y el borde junto con el texto serán blancos, aquí el valor de
+  //enabled no afecta la apariencia, pero seguirá ejecutando la acción
+  //alternativa
   static TextButton icoCirMor(
     String texto,
     IconData icono,
@@ -100,6 +116,8 @@ class Botones {
     );
   }
 
+  //Botón rectangular con borde circular fondo morado, borde grueso rosa
+  //y letras blancas.
   static OutlinedButton btnCirRos(String texto, Function accion) {
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
@@ -111,6 +129,8 @@ class Botones {
     );
   }
 
+  //Botón rectangular simple y pequeño con fondo transparente y un icono de
+  //color variable.
   static IconButton btnSimple(
     String tip,
     IconData icono,
@@ -137,26 +157,10 @@ class Botones {
     );
   }
 
-  static Widget botonesSumaResta(
-    String nombre,
-    int textoValor,
-    Color colorBorde,
-    Function resta,
-    Function suma,
-  ) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Botones.btnRctMor('Restar $nombre', Icons.remove, false, () => resta()),
-        Textos.recuadroCantidad('$textoValor', colorBorde, 1, size: 20),
-        Botones.btnRctMor('Sumar $nombre', Icons.add, false, () => suma()),
-      ],
-    );
-  }
-
-  static Widget botonBarNav(String titulo, IconData icono, Function accion) {
-    accion();
+  //Botón rectangular transparente y un icono morado le cuál cambia a blanco
+  //cuando se selecciona, este botón es utilizado en las barras de navegación
+  //inferiores para navegar entre las diferentes páginas de la app.
+  static Widget botonBarNav(String titulo, IconData icono) {
     return Consumer<Carga>(
       builder: (ctx, carga, child) {
         return NavigationDestination(
@@ -168,6 +172,12 @@ class Botones {
     );
   }
 
+  //Capa la cual posee de 1 a 2 botones, el primero tiene el icono de una
+  //flecha apuntando a la izquierda, con el fin de representar la acción de
+  //regresar a la página anterior, la acción que tiene el botón se debe de
+  //asignar, el otro botón es opcional y se activa cuando se le asigna un valor
+  //de tipo Function a la variable recarga, este tiene el símbolo de una flecha
+  //en círculo.
   static Container layerButton(Function accion, {Function? recarga}) {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),

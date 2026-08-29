@@ -13,6 +13,12 @@ import 'package:inventarios/services/local_storage.dart';
 import 'package:inventarios/components/botones.dart';
 import 'package:provider/provider.dart';
 
+//Esta es una página principal encargada de mostrar todos los productos
+//registrados en la base de datos con base a al almacén en que se encuentra
+//registrado el usuario, los productos que se muestran se pueden filtrar por
+//búsquedas y se pueden ordenar por id, nombre, área o tipo, se puede presionar
+//sobre un producto y ver su información más a detalle con la posibilidad de
+//editar ciertos campos y añadir las entradas, salidas y perdidas de ese día.
 class ESP extends StatefulWidget {
   const ESP({super.key});
 
@@ -37,21 +43,25 @@ class _ESPState extends State<ESP> {
     super.dispose();
   }
 
+  //Método que se encarga de llenar la lista de controladores, la lista tendrá
+  //el mismo tamaño que el último id en el almacén, una lista se dedica para
+  //registrar las entradas y otro para las salidas.
   void listas(int length) {
-    List<String> entradas = (LocalStorage.localLista('entradas') != null)
-        ? LocalStorage.localLista('entradas')!
-        : List.filled(length, '', growable: true);
-    List<String> salidas = (LocalStorage.localLista('salidas') != null)
-        ? LocalStorage.localLista('salidas')!
-        : List.filled(length, '', growable: true);
-    for (String cantidad in salidas) {
-      controllerSal.add(TextEditingController(text: cantidad));
+    if (controllerEnt.isEmpty) {
+      for (int i = 0; i < length; i++) {
+        controllerEnt.add(TextEditingController(text: ''));
+      }
     }
-    for (String cantidad in entradas) {
-      controllerEnt.add(TextEditingController(text: cantidad));
+    if (controllerSal.isEmpty) {
+      for (int i = 0; i < length; i++) {
+        controllerSal.add(TextEditingController(text: ''));
+      }
     }
   }
 
+  //Método encargado de enviar las entradas y salidas de diferentes productos al
+  //servidor para que se actualicen en la base de datos, espera la respuesta de
+  //la petición y la muestra al usuario en forma de toast.
   void enviarMovimientos(BuildContext ctx) async {
     List<ProductoModel> listaProductos = await getProductos('id', '');
     List<int> idProductos = [];
@@ -65,7 +75,7 @@ class _ESPState extends State<ESP> {
             ? entradas.add(double.parse('$ent.0'))
             : entradas.add(double.parse(ent));
         if (sal.isEmpty) {
-          entradas.add(0.0);
+          salidas.add(0.0);
         }
       }
       if (sal.isNotEmpty) {
@@ -73,7 +83,7 @@ class _ESPState extends State<ESP> {
             ? salidas.add(double.parse('$sal.0'))
             : salidas.add(double.parse(sal));
         if (ent.isEmpty) {
-          salidas.add(0.0);
+          entradas.add(0.0);
         }
       }
       if (ent.isNotEmpty || sal.isNotEmpty) {
@@ -90,13 +100,21 @@ class _ESPState extends State<ESP> {
       valido = false;
     }
     if (mensaje.split(':')[0] != 'Error') {
-      LocalStorage.eliminar('entradas');
-      LocalStorage.eliminar('salidas');
+      /*LocalStorage.eliminar('entradas');
+      LocalStorage.eliminar('salidas');*/
       for (ProductoModel prod in listaProductos) {
         controllerEnt[prod.id - 1].text = '';
         controllerSal[prod.id - 1].text = '';
       }
       mensaje = 'Se envio el reporte correctamente';
+      if (ctx.mounted) {
+        ctx.read<Tablas>().datos(
+          await getProductos(
+            CampoTexto.filtroTexto(),
+            CampoTexto.busquedaTexto.text,
+          ),
+        );
+      }
     } else {
       mensaje = mensaje.split(':')[1];
     }
@@ -108,12 +126,17 @@ class _ESPState extends State<ESP> {
     String busqueda,
   ) async => await ProductoModel.getProductos(filtro, busqueda);
 
+  //Esta es una función que se encarga de obtener el id del producto
+  //seleccionado en la lista y con este se pida la información del producto en
+  //la base de datos para mostrarlo a detalle en una ventana, en caso de que
+  //suceda algún error por parte del servidor se abortara el proceso y se le
+  //hará conocer al usuario por medio de toast.
   Future<void> getProductoInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     ProductoModel producto = await ProductoModel.getProducto(id);
     (producto.mensaje.isEmpty)
         ? {
-            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               {
                 ctx.read<Producto>().setProducto(producto),
@@ -173,25 +196,6 @@ class _ESPState extends State<ESP> {
             );
           },
         ),
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Historial movimientos',
-              Icons.history_toggle_off_rounded,
-              () => {
-                carga.cargaBool(true),
-                if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                  CampoTexto.seleccionFiltro = Filtros.id,
-                RecDrawer.pushAnim(Historial(ruta: Inventario()), context),
-                false,
-                carga.cargaBool(false),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
-              Carga.getValido(),
-            );
-          },
-        ),*/
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
@@ -220,21 +224,6 @@ class _ESPState extends State<ESP> {
             );
           },
         ),
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Nueva orden',
-              Icons.add_shopping_cart_rounded,
-              () async => {
-                carga.cargaBool(true),
-                await RecDrawer.salidaOrdenes(context),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              true,
-              Carga.getValido(),
-            );
-          },
-        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -252,11 +241,10 @@ class _ESPState extends State<ESP> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.075, .25, /*.075,*/ .175, .15, .1, .1, .075],
+                          [.075, .25, .175, .15, .1, .1, .075],
                           [
                             'id',
                             'Nombre',
-                            //'Unidades',
                             'Área',
                             'Tipo',
                             'Entrada',
@@ -379,6 +367,10 @@ class _ESPState extends State<ESP> {
     );
   }
 
+  //Componente encargado de separar componentes son relación a la tabla en ~ya
+  //lo sabes~ una barra superior, se compone de un botón para la barra lateral,
+  //un botón para enviar las múltiples entradas y salidas y una barra de
+  //búsqueda con un botón para los filtros.
   Widget barraSuperior(BuildContext context) {
     return SizedBox(
       height: 70,
@@ -430,8 +422,6 @@ class _ESPState extends State<ESP> {
                       ),
                     ),
                   },
-                  true,
-                  false,
                 );
               },
             ),
@@ -441,14 +431,12 @@ class _ESPState extends State<ESP> {
     );
   }
 
+  //Componente que regresa una lista de productos, al momento de presionar un
+  //producto se abrirá una ventana con información más detallada del producto,
+  //con la posibilidad de editar ciertos datos si así se requiere y de añadir
+  //entradas, salidas o perdidas de ese producto individual.
   ListView listaPrincipal(List lista, ScrollController controller) {
-    if (controllerEnt.isEmpty || controllerSal.isEmpty) {
-      int len = 0;
-      for (var prod in lista) {
-        if (prod.id > len) len = prod.id;
-      }
-      listas(len);
-    }
+    listas(lista.last.id);
     return ListView.separated(
       controller: controller,
       itemCount: lista.length,
@@ -458,17 +446,8 @@ class _ESPState extends State<ESP> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = List.filled(8, Colors.transparent);
-        /*colores[2] = Textos.colorLimite(
-          lista[index].limiteProd,
-          lista[index].unidades.floor(),
-        );*/
-        //String unidad = '${lista[index].unidades}';
         String entrada = '${lista[index].entrada}';
         String salida = '${lista[index].salida}';
-        /*if (unidad.split('.').length > 1) {
-          if (unidad.split('.')[1] == '0') unidad = unidad.split('.')[0];
-        }*/
         if (entrada.split('.').length > 1) {
           if (entrada.split('.')[1] == '0') entrada = entrada.split('.')[0];
         }
@@ -480,11 +459,10 @@ class _ESPState extends State<ESP> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.075, .25, /*.075,*/ .175, .15, .1, .1, .075],
+            [.075, .25, .175, .15, .1, .1, .075],
             [
               "${lista[index].id}",
               lista[index].nombre,
-              //unidad,
               lista[index].area,
               lista[index].tipo,
               Consumer<Textos>(
@@ -494,8 +472,6 @@ class _ESPState extends State<ESP> {
                     '',
                     entrada,
                     controllerEnt[lista[index].id - 1],
-                    true,
-                    false,
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),
@@ -513,8 +489,6 @@ class _ESPState extends State<ESP> {
                     '',
                     salida,
                     controllerSal[lista[index].id - 1],
-                    true,
-                    false,
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),
@@ -532,8 +506,7 @@ class _ESPState extends State<ESP> {
                 () async => await getProductoInfo(context, lista[index].id),
               ),
             ],
-            colores,
-            2,
+            maxLines: 2,
           ),
         );
       },

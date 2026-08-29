@@ -9,8 +9,12 @@ import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:provider/provider.dart';
-import '../services/local_storage.dart';
 
+//Esta es una página principal encargada de mostrar todas las ordenes
+//registrados en la base de datos que coincidan con la tienda en la que esta
+//ubicado el usuario, las ordenes que se muestran se pueden ordenar por id,
+//estado y remitente, se puede presionar sobre una orden y ver su información
+//más a detalle con la posibilidad de editar ciertos valores.
 class HistorialOrdenes extends StatefulWidget {
   const HistorialOrdenes({super.key});
 
@@ -42,12 +46,14 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     super.dispose();
   }
 
-  Future<List<OrdenModel>> getOrdenes() async => await OrdenModel.getOrdenes(
-    filtro,
-    LocalStorage.local('locación'),
-    filtros,
-  );
+  Future<List<OrdenModel>> getOrdenes() async =>
+      await OrdenModel.getOrdenes(filtro, filtros);
 
+  //Esta es una función que se encarga de obtener el id de la orden seleccionada
+  //en la lista y con este se pida la información de la orden en la base de
+  //datos para mostrarlo a detalle en una ventana, en caso de que suceda algún
+  //error por parte del servidor se abortara el proceso y se le hará conocer al
+  //usuario por medio de toast.
   Future<void> getOrdenInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     OrdenModel orden = await OrdenModel.getOrden(id);
@@ -63,6 +69,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
+  //Esta es una función que se ejecuta al momento de seleccionar un botón de
+  //filtro, si el filtro es igual al filtro actual no se realizara ninguna
+  //acción, de lo contrario el filtro seleccionado tendrá un borde morado en su
+  //botón correspondiente y se volverá a hacer una petición al servidor para que
+  //envíe la información de nuevo con el filtro aplicado.
   Future<void> filtroTexto(int valor) async {
     colores = List.filled(3, Color(0xFFFFFFFF), growable: true);
     colores[valor] = Color(0xFF8A03A9);
@@ -77,7 +88,11 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     context.read<Tablas>().datos(await getOrdenes());
   }
 
-  void cambiarEstado() {
+  //Este método se encarga de cambiar el estado de la orden a "Cancelado", esto
+  //solo se hace si el estado es estado de la orden es "En proceso" de lo
+  //contrario mostrara un mensaje en forma de toast señalándole que no se puede
+  //cancelar la orden.
+  void cancelarOrden() {
     String mensaje = 'La orden no se puede cancelar.';
     switch (context.read<VenDatos>().est()) {
       case ('En proceso'):
@@ -96,6 +111,12 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     if (mensaje.isNotEmpty) Textos.toast(mensaje);
   }
 
+  //Este método se encarga de cambiar el estado de una orden dependiendo del
+  //apartado de producto confirmado en cada producto ordenado en una orden, en
+  //caso de que todos los productos estén confirmados la orden cambiara de
+  //estado a "Finalizado", por otro lado, si hay algún producto sin confirmar
+  //en la lista entonces el estado de la orden cambiara a Incompleto, antes del
+  //cambio de estado se abrirá una ventana para confirmar el cambio de estado.
   void confirmarEntragas(List lista) {
     datos = 'Finalizado';
     for (bool obj in lista) {
@@ -105,17 +126,23 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     context.read<Ventanas>().emergente(true);
   }
 
+  //Este método se encarga de abrir la ventana correspondiente a mostrar los
+  //comentarios, más en específico el comentario final.
   void verComentarios(String comFin, int index) {
     indexComentario = index;
     venNum = 2;
-    controller.text = (context.read<VenDatos>().est() == 'Entregado')
-        ? (comFin == 'Sin comentarios')
-              ? ''
-              : comFin
-        : comFin;
+    if (context.read<VenDatos>().est() == 'Entregado') {
+      if (comFin == 'Sin comentarios') {
+        comFin = '';
+      }
+    }
+    controller.text = comFin;
     context.read<Ventanas>().emergente(true);
   }
 
+  //Este método se encarga de actualizar un comentario el comentario final, el
+  //comentario final se puede editar al momento que la orden ya está entregada,
+  //de otro modo solo se mostrara el comentario que dejaron.
   Future<void> guardarComentario(BuildContext ctx) async {
     String datos;
     List<String> listaDatos = [];
@@ -302,8 +329,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                     size: 30,
                                   ),
                           ],
-                          [],
-                          2,
+                          maxLines: 2,
                         );
                         return Container(
                           width: MediaQuery.sizeOf(context).width,
@@ -370,7 +396,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                             'Cancelar',
                             Icons.cancel_schedule_send_rounded,
                             false,
-                            () => cambiarEstado(),
+                            () => cancelarOrden(),
                           ),
                           if (venDatos.est() == 'Entregado' || venDatos.edit())
                             Botones.btnRctMor(
@@ -379,7 +405,8 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                               false,
                               () => confirmarEntragas(venDatos.comfProdLista()),
                             ),
-                          if (venDatos.est() == 'Incompleto' &&
+                          if ((venDatos.est() == 'Incompleto' ||
+                                  venDatos.est() == 'Finalizado') &&
                               !venDatos.edit())
                             Botones.btnRctMor(
                               'Editar confirmaciones',
@@ -409,9 +436,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                   [
                     '¿Segur@ que quieres cancelar la orden?',
                     '¿Segur@ que ya marcaste todos los productos que recibiste?',
-                    indexComentario != 0
-                        ? 'Comentarios de ${venDatos.art(indexComentario)}'
-                        : '',
+                    'Comentarios de ${venDatos.art(indexComentario)}',
                   ][venNum],
                   ['No, volver', 'No, volver', 'Cerrar'][venNum],
                   ['Si, cancelalo', 'Si, confirmo', 'Confirmar'][venNum],
@@ -457,9 +482,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                           children: [
                             Textos.textoTilulo('Comentarios de la tienda:', 20),
                             Textos.textoGeneral(
-                              indexComentario != 0
-                                  ? venDatos.comTienda(indexComentario)
-                                  : '',
+                              venDatos.comTienda(indexComentario),
                               true,
                               5,
                               size: 20,
@@ -470,9 +493,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                               20,
                             ),
                             Textos.textoGeneral(
-                              indexComentario != 0
-                                  ? venDatos.comProv(indexComentario)
-                                  : '',
+                              venDatos.comProv(indexComentario),
                               true,
                               5,
                               size: 20,
@@ -484,8 +505,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                                 'Comentarios finales:',
                                 '',
                                 controller,
-                                true,
-                                false,
                                 accion: () => guardarComentario(context),
                                 icono: Icons.message_rounded,
                               ),
@@ -495,9 +514,7 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                             if (venDatos.est() == 'Finalizado' ||
                                 venDatos.est() == 'Incompleto')
                               Textos.textoGeneral(
-                                indexComentario != 0
-                                    ? venDatos.comFin(indexComentario)
-                                    : '',
+                                venDatos.comFin(indexComentario),
                                 true,
                                 5,
                                 size: 20,
@@ -516,6 +533,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     );
   }
 
+  //Este es un componente ubicado arriba de la tabla para poder mostrar la
+  //opción de abrir el menú, filtrar las órdenes por estados y los botones para
+  //ordenar la lista por id, estado y remitente.
   Widget opciones(BuildContext ctx) {
     return Container(
       height: 70,
@@ -542,19 +562,6 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               },
             ),
           ];
-          /*filtroList.add(
-            Botones.btnRctMor(
-              'Regresar',
-              Icons.arrow_back_rounded,
-              false,
-              () => {
-                carga.cargaBool(true),
-                RecDrawer.pushAnim(widget.ruta, ctx),
-                carga.cargaBool(false),
-              },
-              size: 35,
-            ),
-          );*/
           List<String> txt = ['id', 'Estado', 'Remitente'];
           List<IconData> icono = [
             Icons.numbers_rounded,
@@ -581,6 +588,10 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
     );
   }
 
+  //Componente que regresa una lista de ordenes correspondientes a la tienda
+  //del usuario, al momento de presionar una orden se abrirá una ventana con
+  //información más detallada de la orden, con la posibilidad de editar ciertos
+  //datos si así se requiere.
   ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
       controller: controller,
@@ -607,9 +618,9 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
               lista[index].remitente,
               lista[index].fechaOrden,
             ],
-            coloresLista,
-            1,
+            maxLines: 1,
             extra: () async => await getOrdenInfo(context, lista[index].id),
+            colores: coloresLista,
           ),
         );
       },

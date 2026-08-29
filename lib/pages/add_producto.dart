@@ -8,6 +8,8 @@ import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:provider/provider.dart';
 
+//Esta es una página secundaria encargada de registrar un nuevo preoducto en la
+//base de datos, si es que se cubren todos los parámetros.
 class AddProducto extends StatefulWidget {
   final List<ArticulosModel> listaArticulos;
   final List areas;
@@ -59,6 +61,12 @@ class _AddproductoState extends State<AddProducto> {
     super.dispose();
   }
 
+  //Método que se encarga de verificar que todos los parámetros que debe tener
+  //un artículo para poder registrarse sean cubiertos correctamente, en caso de
+  //que falte algún campo o que el valor se atenga valores incorrectos, este
+  //mostrara un color rojo alrededor en el borde del campo que necesite una
+  //revisión, cuando la información sea válida esta enviara una petición y
+  //mostrara en forma de toast el mensaje que recibió por parte del servidor.
   void registrarProducto(BuildContext ctx) async {
     ctx.read<Carga>().cargaBool(true);
     colorCampo = List.filled(3, Color(0x00FFFFFF), growable: true);
@@ -85,6 +93,46 @@ class _AddproductoState extends State<AddProducto> {
       Textos.toast(respuesta);
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+  }
+
+  //Método que se encarga de establecer la lista de áreas disponibles,
+  //dependiendo del área seleccionada se mostraran los artículos asociados con
+  //el área para añadir al almacén.
+  void setArea(String areaNombre) {
+    articuloLista = ['Artículos'];
+    articuloValor = articuloLista.first;
+    if (areaNombre != 'Áreas') {
+      for (ArticulosModel articulo in widget.listaArticulos) {
+        if (articulo.area == areaNombre) articuloLista.add(articulo.nombre);
+      }
+    }
+    id = 0;
+    setState(() {
+      control[1].text = '';
+      control[2].text = '';
+      areaValor = areaNombre;
+    });
+  }
+
+  //Método que se encarga de establecer la lista de artículos disponibles,
+  //dependiendo del área previamente seleccionada, cuando se seleccione un
+  //artículo se mostraran los demás datos del artículo para determinar si es el
+  //que se quiere añadir al almacén.
+  void setArticulo(String articuloNombre) {
+    ArticulosModel? art;
+    if (articuloNombre != 'Artículos') {
+      for (ArticulosModel articulo in widget.listaArticulos) {
+        if (articulo.nombre == articuloNombre && articulo.area == areaValor) {
+          art = articulo;
+        }
+      }
+    }
+    id = art!.id;
+    setState(() {
+      control[1].text = art!.tipo;
+      control[2].text = '${art.cantidadPorUnidad}';
+      articuloValor = articuloNombre;
+    });
   }
 
   @override
@@ -145,8 +193,7 @@ class _AddproductoState extends State<AddProducto> {
                               'Tipo',
                               '',
                               control[1],
-                              false,
-                              false,
+                              enabled: false,
                               accion: () =>
                                   FocusManager.instance.primaryFocus?.unfocus(),
                               icono: Icons.file_copy_rounded,
@@ -156,8 +203,7 @@ class _AddproductoState extends State<AddProducto> {
                               'Cantidad por unidad',
                               '',
                               control[2],
-                              false,
-                              false,
+                              enabled: false,
                               accion: () =>
                                   FocusManager.instance.primaryFocus?.unfocus(),
                               icono: Icons.question_mark_rounded,
@@ -169,8 +215,6 @@ class _AddproductoState extends State<AddProducto> {
                           'Limite minimo de productos',
                           '',
                           control[0],
-                          true,
-                          false,
                           accion: () => registrarProducto(context),
                           icono: Icons.production_quantity_limits_rounded,
                           errorColor: colorCampo[2],
@@ -194,38 +238,5 @@ class _AddproductoState extends State<AddProducto> {
         ),
       ),
     );
-  }
-
-  void setArea(String areaNombre) {
-    articuloLista = ['Artículos'];
-    articuloValor = articuloLista.first;
-    if (areaNombre != 'Áreas') {
-      for (ArticulosModel articulo in widget.listaArticulos) {
-        if (articulo.area == areaNombre) articuloLista.add(articulo.nombre);
-      }
-    }
-    id = 0;
-    setState(() {
-      control[1].text = '';
-      control[2].text = '';
-      areaValor = areaNombre;
-    });
-  }
-
-  void setArticulo(String articuloNombre) {
-    ArticulosModel? art;
-    if (articuloNombre != 'Artículos') {
-      for (ArticulosModel articulo in widget.listaArticulos) {
-        if (articulo.nombre == articuloNombre && articulo.area == areaValor) {
-          art = articulo;
-        }
-      }
-    }
-    id = art!.id;
-    setState(() {
-      control[1].text = art!.tipo;
-      control[2].text = '${art.cantidadPorUnidad}';
-      articuloValor = articuloNombre;
-    });
   }
 }

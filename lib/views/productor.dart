@@ -10,6 +10,9 @@ import 'package:inventarios/pages/inventario_prod.dart';
 import 'package:inventarios/pages/orden_salida_prod.dart';
 import 'package:provider/provider.dart';
 
+//Visor de páginas principales, dedicada principalmente a los productores.
+//No recuerdo cuál era la intención del contador con esto, pero bueno, aquí la
+//tenemos :/
 class Productor extends StatefulWidget {
   final int index;
 
@@ -34,8 +37,8 @@ class _ProductorState extends State<Productor> {
               ventanas.cerrarVentanas();
               if (Carga.getValido()) {
                 Textos.limpiarLista();
+                CampoTexto.seleccionFiltro = Filtros.id;
                 if (index == 1) {
-                  CampoTexto.seleccionFiltro = Filtros.id;
                   List<ProductoModel> productos =
                       await ProductoModel.getProductosProd('id', '');
                   (productos.last.mensaje == '')
@@ -61,13 +64,12 @@ class _ProductorState extends State<Productor> {
             },
             selectedIndex: currentPage,
             destinations: [
-              Botones.botonBarNav('Almacen', Icons.inventory_rounded, () => {}),
+              Botones.botonBarNav('Almacen', Icons.inventory_rounded),
               Botones.botonBarNav(
                 'Nueva Orden',
                 Icons.add_shopping_cart_rounded,
-                () => {},
               ),
-              Botones.botonBarNav('Ordenes', Icons.history_rounded, () => {}),
+              Botones.botonBarNav('Ordenes', Icons.history_rounded),
             ],
             indicatorColor: Color(0xFFFF5600),
             labelTextStyle: WidgetStateProperty<TextStyle>.fromMap(

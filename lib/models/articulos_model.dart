@@ -28,16 +28,9 @@ class ArticulosModel {
     required this.mensaje,
   });
 
-  static List<String> getInventarios() => [
-    'Árbol Grande',
-    'Bicentenario',
-    'Café',
-    'Cedis',
-    'Faja de Oro',
-    'Portales',
-    'Yogulive Jardín',
-  ];
-
+  //Este es el Dummy de la clase "ArticulosModel", usado para declarar un
+  //"ArticulosModel" con solo el valor mensaje con el mismo valor de la
+  //variable mensaje del parámetro inicial.
   static ArticulosModel dummy(String mensaje) {
     return ArticulosModel(
       id: 0,
@@ -52,6 +45,10 @@ class ArticulosModel {
     );
   }
 
+  //Método get que regresa una lista con objetos de la clase ArticulosModel a
+  //través de una petición HTTP GET, en caso de que suceda algún error regresa
+  //el error en forma de texto, requiere un filtro y el texto de búsqueda, este
+  //último puede estar vacío.
   static Future<List<ArticulosModel>> getArticulos(
     String filtro,
     String busqueda,
@@ -102,6 +99,9 @@ class ArticulosModel {
     return articulosFuture;
   }
 
+  //Método get que regresa un objeto de la clase ArticulosModel a través de una
+  //petición HTTP GET, en caso de que suceda algún error regresa el error en
+  //forma de texto, requiere el id del articulo a consultar.
   static Future<ArticulosModel> getArticulo(int id) async {
     ArticulosModel articulo;
     try {
@@ -141,6 +141,12 @@ class ArticulosModel {
     return articulo;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP POST, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de enviar información relacionada con un artículo en la base de
+  //datos para añadir dicho nuevo artículo, requiere un nombre, un tipo y un
+  //área un código de barras como textos, una cantidad por unidad y un precio
+  //como número real y un booleano que definirá si es materia prima o no.
   static Future<String> addArticulo(
     String nombre,
     String tipo,
@@ -181,6 +187,12 @@ class ArticulosModel {
     return articulosFuture;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP PUT, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de enviar información relacionada con un artículo en la base de
+  //datos para editar dicho artículo, requiere el id del articulo como entero,
+  //el dato que se va a cambiar y el valor del dato que se va a cambiar en forma
+  //de texto.
   static Future<String> editarArticulo(
     int id,
     String dato,

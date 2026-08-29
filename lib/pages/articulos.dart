@@ -10,9 +10,13 @@ import 'package:inventarios/models/articulos_model.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:inventarios/pages/add_articulo.dart';
 import 'package:inventarios/pages/articulo.dart';
-import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
+//Esta es una página principal encargada de mostrar todos los artículos
+//registrados en la base de datos, los artículos que se muestran se pueden
+//filtrar por búsquedas y se pueden ordenar por id, nombre, área o tipo, se
+//puede presionar sobre un artículo y ver su información más a detalle con la
+//posibilidad de editar ciertos campos.
 class Articulos extends StatefulWidget {
   const Articulos({super.key});
 
@@ -26,11 +30,16 @@ class _ArticulosState extends State<Articulos> {
     String busqueda,
   ) async => await ArticulosModel.getArticulos(filtro, busqueda);
 
+  //Esta es una función que se encarga de obtener el id del artículo
+  //seleccionado en la lista y con este se pida la información del artículo en
+  //la base de datos para mostrarlo a detalle en una ventana, en caso de que
+  //suceda algún error por parte del servidor se abortara el proceso y se le
+  //hará conocer al usuario por medio de toast.
   Future<void> getArticuloInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     ArticulosModel articulo = await ArticulosModel.getArticulo(id);
     if (articulo.mensaje.isEmpty) {
-      await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
+      //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
       if (ctx.mounted) {
         ctx.read<Articulo>().articulo(articulo);
         ctx.read<Articulo>().art(true);
@@ -41,6 +50,10 @@ class _ArticulosState extends State<Articulos> {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
+  //Método que se encarga de obtener las listas de tipos y áreas que requiere la
+  //página encargada a añadir artículos a la base de datos, en caso de que
+  //alguna petición tenga algún error entonces se abortara el cambio de página y
+  //se le informara el error al usuario por medio de un mensaje toast.
   Future<void> _getListas(BuildContext ctx) async {
     String texto = '';
     ctx.read<Carga>().cargaBool(true);
@@ -52,7 +65,7 @@ class _ArticulosState extends State<Articulos> {
     (texto.isNotEmpty)
         ? Textos.toast(texto)
         : {
-            await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
+            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               Navigator.of(ctx).push(
                 PageRouteBuilder(
@@ -117,38 +130,6 @@ class _ArticulosState extends State<Articulos> {
             );
           },
         ),
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Ver almacen',
-              Icons.inventory_rounded,
-              () => {
-                carga.cargaBool(true),
-                RecDrawer.pushAnim(OrdenesInventario(), context),
-                carga.cargaBool(false),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Ordenes',
-              Icons.border_color_rounded,
-              () => {
-                carga.cargaBool(true),
-                RecDrawer.pushAnim(Ordenes(), context),
-                carga.cargaBool(false),
-              },
-              () => {},
-              true,
-              true,
-            );
-          },
-        ),*/
       ]),
       body: PopScope(
         canPop: false,
@@ -213,6 +194,9 @@ class _ArticulosState extends State<Articulos> {
     );
   }
 
+  //Componente encargado de separar componentes son relación a la tabla en
+  //~exacto~ una barra superior, se compone de un botón para la barra lateral y
+  //una barra de búsqueda con un botón para los filtros.
   Widget barraSuperior(BuildContext context) {
     return SizedBox(
       height: 70,
@@ -239,8 +223,6 @@ class _ArticulosState extends State<Articulos> {
                       CampoTexto.busquedaTexto.text,
                     ),
                   ),
-                  false,
-                  false,
                 );
               },
             ),
@@ -250,6 +232,9 @@ class _ArticulosState extends State<Articulos> {
     );
   }
 
+  //Componente que regresa una lista de artículos, al momento de presionar un
+  //artículo se abrirá una ventana con información más detallada del artículo,
+  //con la posibilidad de editar ciertos datos si así se requiere.
   ListView listaPrincipal(List lista, ScrollController controller) {
     return ListView.separated(
       controller: controller,
@@ -272,8 +257,7 @@ class _ArticulosState extends State<Articulos> {
               lista[index].area,
               lista[index].tipo,
             ],
-            [],
-            2,
+            maxLines: 2,
             extra: () async => await getArticuloInfo(context, lista[index].id),
           ),
         );

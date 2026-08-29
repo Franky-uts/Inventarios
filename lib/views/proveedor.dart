@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 
 import '../components/carga.dart';
 
+//Visor de páginas principales, dedicada principalmente a los proveedores.
 class Proveedor extends StatefulWidget {
   final int index;
 
@@ -35,6 +36,7 @@ class _ProveedorState extends State<Proveedor> {
               carga.cargaBool(true);
               ventanas.cerrarVentanas();
               if (Carga.getValido()) {
+                CampoTexto.seleccionFiltro = Filtros.id;
                 setState(() {
                   currentPage = index;
                 });
@@ -45,43 +47,13 @@ class _ProveedorState extends State<Proveedor> {
             },
             selectedIndex: currentPage,
             destinations: [
-              Botones.botonBarNav(
-                'Ordenes',
-                Icons.border_color_rounded,
-                () => {},
-              ),
-              Botones.botonBarNav(
-                'Movimientos',
-                Icons.checklist_rtl_rounded,
-                () => {
-                  if (CampoTexto.seleccionFiltro == Filtros.fecha)
-                    CampoTexto.seleccionFiltro = Filtros.id,
-                },
-              ),
-              /*Botones.botonBarNav(
-                'Inventario',
-                Icons.inventory_rounded,
-                () => {
-                  if (CampoTexto.seleccionFiltro == Filtros.fecha)
-                    CampoTexto.seleccionFiltro = Filtros.id,
-                },
-              ),*/
-              Botones.botonBarNav(
-                'Artículos',
-                Icons.list,
-                () => {
-                  if (CampoTexto.seleccionFiltro == Filtros.unidades ||
-                      CampoTexto.seleccionFiltro == Filtros.fecha)
-                    CampoTexto.seleccionFiltro = Filtros.id,
-                },
-              ),
+              Botones.botonBarNav('Ordenes', Icons.border_color_rounded),
+              Botones.botonBarNav('Movimientos', Icons.checklist_rtl_rounded),
+              Botones.botonBarNav('Inventario', Icons.inventory_rounded),
+              Botones.botonBarNav('Artículos', Icons.list),
               Botones.botonBarNav(
                 'Historial',
                 Icons.history_toggle_off_rounded,
-                () => {
-                  if (CampoTexto.seleccionFiltro == Filtros.unidades)
-                    CampoTexto.seleccionFiltro = Filtros.id,
-                },
               ),
             ],
             indicatorColor: Color(0xFFFF5600),
@@ -105,7 +77,7 @@ class _ProveedorState extends State<Proveedor> {
       body: [
         Ordenes(),
         ESP(),
-        //Inventario(),
+        Inventario(),
         Articulos(),
         Historial(),
       ][currentPage],

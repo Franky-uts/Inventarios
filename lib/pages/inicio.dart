@@ -11,6 +11,11 @@ import 'package:inventarios/views/productor.dart';
 import 'package:inventarios/views/proveedor.dart';
 import 'package:provider/provider.dart';
 
+//Esta es la página login encargada de validar la información del usuario,
+//consulta con la base de datos y regresa un mensaje de error, se le informará
+//al usuario y se le permitirá volver a ingresar información válida; o regresa
+//un usuario relacionado con la información dada, si este es el caso entonces
+//se le dará acceso a las demás funciones de la aplicación.
 class Inicio extends StatefulWidget {
   const Inicio({super.key});
 
@@ -40,6 +45,13 @@ class _InicioState extends State<Inicio> {
     super.dispose();
   }
 
+  //Este método se encarga de verificar la información ingresada, si se dejó un
+  //campo vacío o tiene información inválida se resaltara el borde del campo de
+  //texto en rojo, dando a entender que el campo en rojo tiene un problema, si
+  //la información es válida se enviara una petición al servidor, si la
+  //respuesta tiene un error se mostrara el error en forma de toast, en caso de
+  //que regrese la información de un usuario válido este cambiara la página a
+  //una correspondiente al puesto del usuario.
   void verificar(BuildContext ctx) async {
     String mensaje = '';
     setState(() {
@@ -145,8 +157,6 @@ class _InicioState extends State<Inicio> {
                       'Usuario',
                       '',
                       controller[0],
-                      true,
-                      false,
                       accion: () => focus.requestFocus(),
                       icono: Icons.person_rounded,
                       errorColor: color[0],
@@ -160,8 +170,7 @@ class _InicioState extends State<Inicio> {
                           'Contraseña',
                           '',
                           controller[1],
-                          true,
-                          verContr,
+                          password: verContr,
                           accion: () => verificar(context),
                           icono: Icons.lock_rounded,
                           errorColor: color[1],

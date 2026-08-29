@@ -122,50 +122,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: RecDrawer.drawer(context, [
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Historial de ordenes',
-              Icons.history_rounded,
-              () async => {
-                await LocalStorage.set(
-                  'busqueda',
-                  CampoTexto.busquedaTexto.text,
-                ),
-                if (context.mounted)
-                  RecDrawer.pushAnim(
-                    HistorialOrdenes(),
-                    context,
-                  ),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
-              Carga.getValido(),
-            );
-          },
-        ),
-        Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Inventario',
-              Icons.cookie_rounded,
-              () async => {
-                await LocalStorage.set(
-                  'busqueda',
-                  CampoTexto.busquedaTexto.text,
-                ),
-                Textos.limpiarLista(),
-                if (context.mounted)
-                  RecDrawer.pushAnim(InventarioProd(), context),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              true,
-              Carga.getValido(),
-            );
-          },
-        ),*/
-      ]),
+      drawer: RecDrawer.drawer(context, []),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
@@ -182,15 +139,8 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, .25, .175, .175, /*.08, */.2],
-                          [
-                            'id',
-                            'Nombre',
-                            'Área',
-                            'Tipo',
-                            //'Unidades',
-                            'Acciones',
-                          ],
+                          [.1, .25, .175, .175, .2],
+                          ['id', 'Nombre', 'Área', 'Tipo', 'Acciones'],
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
@@ -260,18 +210,6 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                       itemBuilder: (context, index) {
                         return Consumer<Tablas>(
                           builder: (context, tablas, child) {
-                            List<Color> colores = List.filled(
-                              8,
-                              Color(0x00000000),
-                            );
-                            //Revisar como puedo usar en un futuro la función de los limites
-                            /*colores[4] = Textos.colorLimite(
-                              listaProd[index].limiteProd,
-                              double.parse(
-                                    cantidad[listaProd[index].id - 1].text,
-                                  ).round() +
-                                  listaProd[index].unidades.floor(),
-                            );*/
                             String cantUni =
                                 '${listaProd[index].cantidadPorUnidad}';
                             String total =
@@ -313,8 +251,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                                     size: 15,
                                   ),
                                 ],
-                                colores,
-                                2,
+                                maxLines: 2,
                               ),
                             );
                           },
@@ -364,8 +301,6 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                     'Comentario',
                     '',
                     controller,
-                    true,
-                    false,
                     accion: () => {
                       if (controller.text.isNotEmpty &&
                           controller.text != comentarios[comid])
@@ -422,8 +357,6 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                       CampoTexto.busquedaTexto.text,
                     ),
                   ),
-                  true,
-                  false,
                 );
               },
             ),
@@ -444,49 +377,39 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = List.filled(6, Colors.transparent);
-        /*colores[4] = Textos.colorLimite(
-          lista[index].limiteProd,
-          lista[index].unidades.floor(),
-        );*/
-        //String unidad = '${lista[index].unidades}';
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, .25, .175, .175, /*.08,*/ .2],
+            [.1, .25, .175, .175, .2],
             [
               '${lista[index].id}',
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,
-              /*(unidad.split('.').length > 1)
-                  ? (unidad.split('.')[1] == '0')
-                        ? unidad.split('.')[0]
-                        : unidad
-                  : unidad,*/
-              SizedBox(
-                width: MediaQuery.sizeOf(context).width * .1,
-                child: CampoTexto.inputTexto(
-                  MediaQuery.sizeOf(context).width * .1,
-                  '',
-                  '0',
-                  cantidad[lista[index].id - 1],
-                  true,
-                  false,
-                  borderColor: Color(0xFF8A03A9),
-                  formato: FilteringTextInputFormatter.allow(
-                    RegExp(r'(^\d*\.?\d{0,3})'),
-                  ),
-                  inputType: TextInputType.numberWithOptions(decimal: true),
-                  fontSize: 17.5,
-                  align: TextAlign.center,
-                ),
+              Consumer<Textos>(
+                builder: (ctx, textos, child) {
+                  return SizedBox(
+                    width: MediaQuery.sizeOf(context).width * .1,
+                    child: CampoTexto.inputTexto(
+                      MediaQuery.sizeOf(context).width * .1,
+                      '',
+                      '0',
+                      cantidad[lista[index].id - 1],
+                      borderColor: Color(0xFF8A03A9),
+                      formato: FilteringTextInputFormatter.allow(
+                        RegExp(r'(^\d*\.?\d{0,3})'),
+                      ),
+                      inputType: TextInputType.numberWithOptions(decimal: true),
+                      fontSize: 17.5,
+                      align: TextAlign.center,
+                    ),
+                  );
+                },
               ),
             ],
-            colores,
-            2,
+            maxLines: 2,
           ),
         );
       },

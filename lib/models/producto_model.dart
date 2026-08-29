@@ -12,7 +12,6 @@ class ProductoModel {
   String tipo;
   String codigoBarras;
   double cantidadPorUnidad;
-  //double unidades;
   int limiteProd;
   double entrada;
   double salida;
@@ -29,7 +28,6 @@ class ProductoModel {
     required this.tipo,
     required this.codigoBarras,
     required this.cantidadPorUnidad,
-    //required this.unidades,
     required this.limiteProd,
     required this.entrada,
     required this.salida,
@@ -40,6 +38,9 @@ class ProductoModel {
     required this.mensaje,
   });
 
+  //Este es el Dummy de la clase "ProductoModel", usado para declarar un
+  //"ProductoModel" con solo el valor mensaje con el mismo valor de la
+  //variable mensaje del parámetro inicial.
   static ProductoModel dummy(String mensaje) {
     return ProductoModel(
       id: 0,
@@ -48,7 +49,6 @@ class ProductoModel {
       tipo: '',
       codigoBarras: '',
       cantidadPorUnidad: 0,
-      //unidades: 0,
       limiteProd: 0,
       entrada: 0,
       salida: 0,
@@ -60,6 +60,10 @@ class ProductoModel {
     );
   }
 
+  //Método get que regresa una lista con objetos de la clase ProductoModel a
+  //través de una petición HTTP GET, en caso de que suceda algún error regresa
+  //el error en forma de texto, requiere un filtro y el texto de búsqueda, este
+  //último puede estar vacío.
   static Future<List<ProductoModel>> getProductos(
     String filtro,
     String busqueda,
@@ -94,7 +98,6 @@ class ProductoModel {
                 id: item['id'],
                 nombre: item['Nombre'],
                 tipo: item['Tipo'],
-                //unidades: item['Unidades'].toDouble(),
                 ultimaModificacion: item['UltimaModificación'],
                 cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
                 area: item['Area'],
@@ -125,6 +128,11 @@ class ProductoModel {
     return productosFuture;
   }
 
+  //Método get que regresa una lista con objetos de la clase ProductoModel, solo
+  //regresara productos con que tengan como valor true el campo de materia prima
+  //en la base de datos, a través de una petición HTTP GET, en caso de que
+  //suceda algún error regresa el error en forma de texto, requiere un filtro y
+  //el texto de búsqueda, este último puede estar vacío.
   static Future<List<ProductoModel>> getProductosProd(
     String filtro,
     String busqueda,
@@ -155,7 +163,6 @@ class ProductoModel {
               id: item['id'],
               nombre: item['Nombre'],
               tipo: item['Tipo'],
-              //unidades: item['Unidades'].toDouble(),
               ultimaModificacion: item['UltimaModificación'],
               cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
               area: item['Area'],
@@ -185,6 +192,9 @@ class ProductoModel {
     return productosFuture;
   }
 
+  //Método get que regresa un objeto de la clase ProductoModel a través de una
+  //petición HTTP GET, en caso de que suceda algún error regresa el error en
+  //forma de texto, requiere el id del articulo a consultar.
   static Future<ProductoModel> getProducto(int id) async {
     String locacion = LocalStorage.local('locación');
     ProductoModel producto;
@@ -213,7 +223,6 @@ class ProductoModel {
             id: item['id'],
             nombre: item['Nombre'],
             tipo: item['Tipo'],
-            //unidades: item['Unidades'].toDouble(),
             ultimaModificacion: item['UltimaModificación'],
             cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
             area: item['Area'],
@@ -240,6 +249,10 @@ class ProductoModel {
     return producto;
   }
 
+  //Método get que regresa una lista con objetos de la clase ProductoModel que
+  //tengan relación con el id de un artículo a través de una petición HTTP GET,
+  //en caso de que suceda algún error regresa el error en forma de texto,
+  //requiere el id de un artículo.
   static Future<List<ProductoModel>> getDatosArticulo(int id) async {
     late List<ProductoModel> productoModel = [];
     try {
@@ -265,7 +278,6 @@ class ProductoModel {
               nombre: item['inventarioNom'],
               area: '',
               tipo: '',
-              //unidades: double.parse('${item['Unidades']}'),
               cantidadPorUnidad: 0,
               entrada: item['Entradas'].toDouble(),
               salida: item['Salidas'].toDouble(),
@@ -294,6 +306,11 @@ class ProductoModel {
     return productoModel;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP POST, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de enviar información relacionada con un producto en la base de
+  //datos para añadir dicho nuevo producto, requiere el id de un artículo
+  //existente, y un límite mínimo de productos existentes en forma de entero.
   static Future<String> addProducto(int id, int limite) async {
     String mensaje = '';
     try {
@@ -323,37 +340,12 @@ class ProductoModel {
     return mensaje;
   }
 
-  static Future<String> registroCompleto(
-    List<int> idProductos,
-    List<double> cantidades,
-  ) async {
-    String mensaje = '';
-    try {
-      final res = await http.put(
-        Uri.parse('${MyApp.url}:3000/almacen/Registro'),
-        headers: {
-          'Accept': 'application/json',
-          'content-type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode({
-          'productos': idProductos,
-          'cantidades': cantidades,
-          'usuario': LocalStorage.local('usuario'),
-        }),
-      );
-      mensaje = res.body;
-    } on TimeoutException catch (e) {
-      mensaje = 'Error: ${e.message}';
-    } on SocketException catch (e) {
-      mensaje = 'Error: ${e.message}';
-    } on http.ClientException catch (e) {
-      mensaje = 'Error: ${e.message}';
-    } on Error catch (e) {
-      mensaje = 'Error: $e';
-    }
-    return mensaje;
-  }
-
+  //Método get que regresa un texto a través de una petición HTTP PUT, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de enviar información relacionada con un producto en la base de
+  //datos para editar dicho producto, requiere el id del producto como entero,
+  //el dato que se va a cambiar y el valor del dato que se va a cambiar en forma
+  //de texto.
   static Future<String> editarProducto(
     int id,
     String dato,
@@ -385,10 +377,15 @@ class ProductoModel {
     return texto;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP PUT, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de actualizar las entradas y salidas relacionadas con un producto en
+  //la base de datos, requiere el id del producto como entero, las entradas y
+  //las salidas a añadir como reales.
   static Future<String> guardarES(
+    int id,
     double entradas,
     double salidas,
-    int id,
   ) async {
     String texto = 'Error: No se guardo la información.';
     try {
@@ -417,6 +414,12 @@ class ProductoModel {
     return texto;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP PUT, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de actualizar las entradas y salidas relacionadas con una lista de
+  //productos en la base de datos, requiere los id de los diferentes productos
+  //como una lista enteros, las entradas y las salidas a añadir como una lista
+  //de reales.
   static Future<String> guardarESCompleto(
     List<int> idProductos,
     List<double> entradas,
@@ -450,10 +453,15 @@ class ProductoModel {
     return mensaje;
   }
 
+  //Método get que regresa un texto a través de una petición HTTP PUT, en caso
+  //de que suceda algún error regresa el error en forma de texto, este método se
+  //encarga de actualizar las perdidas relacionadas con un producto en la base
+  //de datos, requiere el id del producto como entero, las cantidades perdidas
+  //como real y la razón de porque se perdió como texto.
   static Future<String> guardarPerdidas(
+    int id,
     String razon,
     double cantidad,
-    int id,
   ) async {
     String texto = 'Error: No se guardo la información.';
     try {
@@ -506,6 +514,8 @@ class ProductoModel {
     return texto;
   }
 
+  //Método get que regresa una lista con textos, estos textos son los tipos de
+  //productos existentes en la base de datos.
   static Future<List<String>> getTipos() async {
     late List<String> tipos = [];
     try {
@@ -536,6 +546,8 @@ class ProductoModel {
     return tipos;
   }
 
+  //Método get que regresa una lista con textos, estos textos son los áreas de
+  //productos existentes en la base de datos.
   static Future<List<String>> getAreas() async {
     late List<String> areas = [];
     try {

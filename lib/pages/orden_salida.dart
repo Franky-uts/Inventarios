@@ -12,6 +12,12 @@ import 'package:inventarios/models/orden_model.dart';
 import 'package:provider/provider.dart';
 import '../models/producto_model.dart';
 
+//Esta es una página principal encargada de mostrar todos los productos
+//registrados en la base de datos con base a al almacén en que se encuentra
+//registrado el usuario, los productos que se muestran se pueden filtrar por
+//búsquedas y se pueden ordenar por id, nombre, área o tipo, se puede presionar
+//sobre un producto y ver su información más a detalle con la posibilidad de
+//editar ciertos campos y añadir las entradas, salidas y perdidas de ese día.
 class OrdenSalida extends StatefulWidget {
   const OrdenSalida({super.key});
 
@@ -47,6 +53,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     String busqueda,
   ) async => await ProductoModel.getProductos(filtro, busqueda);
 
+  //Método que se encarga de enviar los datos relacionados para añadir una
+  //orden a la base de datos, con los productos, cantidades y comentarios
+  //correspondientes.
   Future<void> addOrden(BuildContext ctx) async {
     valido = true;
     List<double> cantidades = [];
@@ -80,6 +89,9 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     Textos.toast(respuesta);
   }
 
+  //Método que se encarga de llenar la lista de controladores, la lista tendrá
+  //el mismo tamaño que el último id en el almacén, una lista se dedica para
+  //registrar la cantidad de ese producto que se va a ordenar.
   void listas(int length) {
     if (cantidad.isEmpty) {
       for (int i = 0; i < length; i++) {
@@ -88,6 +100,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     }
   }
 
+  //Método que se encarga revisar las cantidades de texto ingresadas en cada
+  //producto, para después ingresar esa información a una ventana con la cual
+  //se confirmará la cantidad de las órdenes, en caso de que ningún campo de
+  //texto tenga información, se le hará saber al usuario.
   void generarTabla(BuildContext ctx) async {
     if (valido) {
       valido = false;
@@ -118,41 +134,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: RecDrawer.drawer(context, [
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Historial de ordenes',
-              Icons.history_rounded,
-              () async => {
-                await LocalStorage.set(
-                  'busqueda',
-                  CampoTexto.busquedaTexto.text,
-                ),
-                if (context.mounted)
-                  RecDrawer.pushAnim(
-                    HistorialOrdenes(ruta: OrdenSalida()),
-                    context,
-                  ),
-              },
-              () => Textos.toast('Espera a que los datos carguen.', false),
-              false,
-              Carga.getValido(),
-            );
-          },
-        ),
-        Botones.icoCirMor(
-          'Ver almacen',
-          Icons.inventory_rounded,
-          () => {
-            Textos.limpiarLista(),
-            RecDrawer.pushAnim(Inventario(), context),
-          },
-          () => {},
-          true,
-          true,
-        ),*/
-      ]),
+      drawer: RecDrawer.drawer(context, []),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
@@ -169,15 +151,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, .25, .175, .175, /*.08,*/ .1],
-                          [
-                            'id',
-                            'Nombre',
-                            'Área',
-                            'Tipo',
-                            //'Unidades',
-                            'Acciones',
-                          ],
+                          [.1, .25, .175, .175, .1],
+                          ['id', 'Nombre', 'Área', 'Tipo', 'Acciones'],
                         ),
                         SizedBox(
                           width: MediaQuery.of(context).size.width,
@@ -247,18 +222,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       itemBuilder: (context, index) {
                         return Consumer<Tablas>(
                           builder: (context, tablas, child) {
-                            List<Color> colores = List.filled(
-                              8,
-                              Color(0x00000000),
-                            );
-                            //Revisar como puedo usar en un futuro la función de los limites
-                            /*colores[4] = Textos.colorLimite(
-                              listaProd[index].limiteProd,
-                              double.parse(
-                                    cantidad[listaProd[index].id - 1].text,
-                                  ).round() +
-                                  listaProd[index].unidades.floor(),
-                            );*/
                             String cantUni =
                                 '${listaProd[index].cantidadPorUnidad}';
                             String total =
@@ -301,8 +264,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                                     alert: comentarios[index].isNotEmpty,
                                   ),
                                 ],
-                                colores,
-                                2,
+                                maxLines: 2,
                               ),
                             );
                           },
@@ -364,8 +326,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                     'Comentario',
                     '',
                     controller,
-                    true,
-                    false,
                     accion: () => {
                       if (controller.text.isNotEmpty &&
                           controller.text != comentarios[comid])
@@ -385,6 +345,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     );
   }
 
+  //Componente encargado de separar componentes son relación a la tabla en ~lo
+  //conoces muy bien~ una barra superior, se compone de un botón para la barra
+  //lateral, un botón para revisar la orden y una barra de búsqueda con un
+  //botón para los filtros.
   Widget barraDeBusqueda(BuildContext context) {
     return SizedBox(
       height: 70,
@@ -422,8 +386,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       CampoTexto.busquedaTexto.text,
                     ),
                   ),
-                  true,
-                  false,
                 );
               },
             ),
@@ -433,6 +395,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     );
   }
 
+  //Componente que regresa una lista de productos, cada producto tiene un campo
+  //de texto que guarda la cantidad del producto que se quiere ordenar.
   ListView listaPrincipal(List lista, ScrollController controller) {
     listas(lista.last.id);
     return ListView.separated(
@@ -444,28 +408,17 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        List<Color> colores = List.filled(6, Colors.transparent);
-        /*colores[4] = Textos.colorLimite(
-          lista[index].limiteProd,
-          lista[index].unidades.floor(),
-        );*/
-        //String unidad = '${lista[index].unidades}';
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, .25, .175, .175,/* .08,*/ .1],
+            [.1, .25, .175, .175, .1],
             [
               '${lista[index].id}',
               lista[index].nombre,
               lista[index].area,
               lista[index].tipo,
-              /*(unidad.split('.').length > 1)
-                  ? (unidad.split('.')[1] == '0')
-                        ? unidad.split('.')[0]
-                        : unidad
-                  : unidad,*/
               Consumer<Textos>(
                 builder: (ctx, textos, child) {
                   return SizedBox(
@@ -475,8 +428,6 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       '',
                       '0',
                       cantidad[lista[index].id - 1],
-                      true,
-                      false,
                       borderColor: Color(0xFF8A03A9),
                       formato: FilteringTextInputFormatter.allow(
                         RegExp(r'(^\d*\.?\d{0,3})'),
@@ -489,8 +440,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                 },
               ),
             ],
-            colores,
-            2,
+            maxLines: 2,
           ),
         );
       },

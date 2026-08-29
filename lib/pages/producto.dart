@@ -11,12 +11,12 @@ import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
 import 'package:provider/provider.dart';
 
+//Esta es una página ventana con información relacionada con un producto
+//seleccionado de la lista de productos.
 class Producto with ChangeNotifier {
   static ProductoModel _prod = ProductoModel.dummy('');
-  static double entr = 0, sali = 0;
   static double productosPerdido = 0;
   static int ventanaNum = 0;
-  static Timer? timer;
   static FocusNode focus = FocusNode();
   static bool _producto = false,
       _prov = false,
@@ -38,32 +38,43 @@ class Producto with ChangeNotifier {
     TextEditingController(),
   ];
 
+  //Método que establece el producto que se mostrara.
   void setProducto(ProductoModel producto) {
     _prod = producto;
     productosPerdido = calcularPerdidas(producto.perdidaCantidad);
     notifyListeners();
   }
 
+  //Método que controla el booleano "_producto", este se encarga de la
+  //visibilidad de la ventana que muestra el producto.
   void producto(bool boolean) {
     _producto = boolean;
     notifyListeners();
   }
 
+  //Método que controla el booleano "_prov", este se encarga de la
+  //visibilidad de la ventana que muestra el producto.
   void prov(bool boolean) {
     _prov = boolean;
     notifyListeners();
   }
 
+  //Método que controla el booleano "_emergente", este se encarga de la
+  //visibilidad de la ventana emergente que se maneja en esta clase.
   void emergente(bool boolean) {
     _emergente = boolean;
     notifyListeners();
   }
 
+  //Método que controla el booleano "_tabla", este se encarga de la
+  //visibilidad de la ventana emergente que se maneja en esta clase.
   void tabla(bool boolean) {
     _tabla = boolean;
     notifyListeners();
   }
 
+  //Este es un método que se encarga de calcular cuantas perdidas hay
+  //registradas en un producto ese día (se reinicia a las 12 am de cada día).
   double calcularPerdidas(List<double> lista) {
     double perdida = 0;
     for (double obj in lista) {
@@ -72,41 +83,49 @@ class Producto with ChangeNotifier {
     return perdida;
   }
 
+  //Método que se encarga de regresar un texto correspondiente al tipo de unidad
+  //del producto, más en específico transforma el texto del producto a plural o
+  //al tipo de producto que almacena.
   String tipoUnidad() {
     String objeto = '${_prod.tipo}s';
     switch (_prod.tipo) {
-      case 'Costal' || 'Kilo(s)':
+      case 'Costal' || 'Kilo(s)' || 'Bote (Gramos)':
         objeto = 'Kilos';
         break;
-      case 'Bote' || 'Galón':
+      case 'Bote (Litros)' || 'Galón':
         objeto = 'Litros';
         break;
-      case 'Caja' || 'Bulto' || 'Paquete':
+      case 'Caja' || 'Bulto' || 'Paquete' || 'Bote (Piezas)':
         objeto = 'Piezas';
         break;
     }
     return objeto;
   }
 
+  //Método que hace una petición al servidor con el id del producto actual para
+  //volver a cargar la información del producto actual, si la petición arroja un
+  //error entonces se mantendrán los mismos datos y se le informara a usuario
+  //por medio de un mensaje tipo toast.
   void recarga(BuildContext context) async {
     context.read<Carga>().cargaBool(true);
     String mensaje = 'Se actualizó el producto.';
     ProductoModel producto = await ProductoModel.getProducto(_prod.id);
-    producto.mensaje.isEmpty
-        ? {
-            entr = 0,
-            sali = 0,
-            productosPerdido = calcularPerdidas(producto.perdidaCantidad),
-            color[0] = Color(0xFF8A03A9),
-            color[1] = Color(0xFF8A03A9),
-            _prod = producto,
-            notifyListeners(),
-          }
-        : mensaje = producto.mensaje;
+    if (producto.mensaje.isEmpty) {
+      productosPerdido = calcularPerdidas(producto.perdidaCantidad);
+      color[0] = Color(0xFF8A03A9);
+      color[1] = Color(0xFF8A03A9);
+      _prod = producto;
+      notifyListeners();
+    } else {
+      mensaje = producto.mensaje;
+    }
     Textos.toast(mensaje);
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
+  //Método encargado de enviar la entrada y salida del producto al servidor para
+  //que se actualice en la base de datos, espera la respuesta de la petición y
+  //la muestra al usuario en forma de toast.
   Future enviarDatos(BuildContext context) async {
     context.read<Carga>().cargaBool(true);
     double ent, sal;
@@ -121,20 +140,20 @@ class Producto with ChangeNotifier {
       if (ent < 0) color[0] = Color(0xFFFF0000);
       if (sal < 0) color[1] = Color(0xFFFF0000);
       if (ent >= 0 && sal >= 0) {
-        mensaje = await ProductoModel.guardarES(ent, sal, _prod.id);
+        mensaje = await ProductoModel.guardarES(_prod.id, ent, sal);
         if (mensaje.split(": ")[0] != 'Error') {
           ProductoModel producto = await ProductoModel.getProducto(_prod.id);
-          (producto.mensaje.isEmpty)
-              ? {
-                  _prod = producto,
-                  color[0] = Color(0x00000000),
-                  color[1] = Color(0x00000000),
-                  controller[0].text = '',
-                  controller[1].text = '',
-                  notifyListeners(),
-                }
-              : mensaje =
-                    'Se guardó la información, pero no se pudo actualizar el producto';
+          if (producto.mensaje.isEmpty) {
+            _prod = producto;
+            color[0] = Color(0x00000000);
+            color[1] = Color(0x00000000);
+            controller[0].text = '';
+            controller[1].text = '';
+            notifyListeners();
+          } else {
+            mensaje =
+                'Se guardó la información, pero no se pudo actualizar el producto';
+          }
         }
       }
     }
@@ -142,36 +161,9 @@ class Producto with ChangeNotifier {
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
 
-  void cambioValor(bool entrada, int valor) {
-    Color col = Color(0xFFFF0000);
-    entrada
-        ? {
-            if (valor > 0) {col = Color(0xFF8A03A9), entr += valor},
-            /*if ((entr + _prod.entrada + valor) >= _prod.entrada)
-              {
-                col = Color(0xFF8A03A9),
-                entr += valor,
-                if (valor < 0 && _prod.unidades + entr - sali < 0)
-                  {sali += valor, if (sali == 0) color[1] = Color(0xFF8A03A9)},
-              },*/
-            if (entr + _prod.entrada != _prod.entrada) col = Color(0xFF00be00),
-          }
-        : {
-            if (valor > 0) {col = Color(0xFF8A03A9), sali += valor},
-            /*if ((sali + _prod.salida + valor) >= _prod.salida)
-              {
-                col = Color(0xFF8A03A9),
-                if ((_prod.unidades + entr - (sali + valor)) >= 0)
-                  sali += valor,
-                if (sali + _prod.salida != _prod.salida)
-                  col = Color(0xFF00be00),
-              },*/
-            if (sali + _prod.salida != _prod.salida) col = Color(0xFF00be00),
-          };
-    color[entrada ? 0 : 1] = col;
-    notifyListeners();
-  }
-
+  //Método encargado de enviar la perdida del producto al servidor para que se
+  //actualice en la base de datos, espera la respuesta de la petición y la
+  //muestra al usuario en forma de toast.
   void guardarPerdidas(BuildContext context) async {
     context.read<Carga>().cargaBool(true);
     bool valido = true;
@@ -185,35 +177,27 @@ class Producto with ChangeNotifier {
     notifyListeners();
     if (valido) {
       double perdidas = double.parse(controllerPerdidas[0].text);
-      /*double unidades = double.parse(
-        (_prod.unidades - (perdidas / _prod.cantidadPorUnidad)).toStringAsFixed(
-          3,
-        ),
-      );*/
-      //String mensaje = 'Error: Las perdidas exceden la cantidad almacenada';
-      //if (unidades >= 0) {
       String mensaje = await ProductoModel.guardarPerdidas(
+        _prod.id,
         controllerPerdidas[1].text,
         perdidas,
-        _prod.id,
       );
       if (mensaje.split(": ")[0] != 'Error') {
         ProductoModel producto = await ProductoModel.getProducto(_prod.id);
-        (producto.mensaje.isEmpty)
-            ? {
-                productosPerdido += perdidas,
-                _prod = producto,
-                notifyListeners(),
-              }
-            : mensaje =
-                  'Se guardó la información, pero no se pudo actualizar el producto';
+        if (producto.mensaje.isEmpty) {
+          productosPerdido += perdidas;
+          _prod = producto;
+          notifyListeners();
+        } else {
+          mensaje =
+              'Se guardó la información, pero no se pudo actualizar el producto';
+        }
       }
       if (context.mounted) {
         emergente(mensaje.split(':')[0] == 'Error');
         tabla(mensaje.split(':')[0] != 'Error');
       }
       Textos.toast(mensaje);
-      //}
     }
     if (context.mounted) context.read<Carga>().cargaBool(false);
   }
@@ -229,22 +213,22 @@ class Producto with ChangeNotifier {
     }
     if (controller[1].text.isNotEmpty || controller[1].text.isNotEmpty) {
       double perdidas = double.parse(controller[0].text);
-      /*double unidades = double.parse(
-        (perdidas / _prod.cantidadPorUnidad).toStringAsFixed(3),
-      );*/
       String mensaje = 'Error: No puedes perder menos de 0 (Buen intento).';
       if (perdidas > 0) {
         String mensaje = await ProductoModel.guardarPerdidas(
+          _prod.id,
           controller[1].text,
           perdidas,
-          _prod.id,
         );
         if (mensaje.split(": ")[0] != 'Error') {
           ProductoModel producto = await ProductoModel.getProducto(_prod.id);
-          (producto.mensaje.isEmpty)
-              ? {productosPerdido += perdidas, _prod = producto}
-              : mensaje =
-                    'Se guardó la información, pero no se pudo actualizar el producto';
+          if (producto.mensaje.isEmpty) {
+            productosPerdido += perdidas;
+            _prod = producto;
+          } else {
+            mensaje =
+                'Se guardó la información, pero no se pudo actualizar el producto';
+          }
         }
       }
       if (ctx.mounted) {
@@ -256,36 +240,40 @@ class Producto with ChangeNotifier {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
+  //Método encargado de actualizar el limite del producto al servidor para que
+  //se actualice en la base de datos, espera la respuesta de la petición y la
+  //muestra al usuario en forma de toast.
   void editarLimite(BuildContext context) async {
     String mensaje = '';
-    (controllerPerdidas[0].text.isEmpty)
-        ? {color[3] = Color(0xFFFF0000), notifyListeners()}
-        : {
-            context.read<Carga>().cargaBool(true),
-            mensaje = await ProductoModel.editarProducto(
-              _prod.id,
-              controllerPerdidas[0].text,
-              'LimiteProd',
-            ),
-            if (mensaje.split(': ')[0] != 'Error')
-              {
-                {
-                  color[3] = Color(0x00000000),
-                  _prod.limiteProd = double.parse(
-                    controllerPerdidas[0].text,
-                  ).floor(),
-                  controllerPerdidas[0].text = '',
-                  notifyListeners(),
-                },
-                mensaje =
-                    'Se actualizó el límite de productos del producto con id $mensaje.',
-                if (context.mounted)
-                  {emergente(false), context.read<Carga>().cargaBool(false)},
-              },
-          };
+    if (controllerPerdidas[0].text.isEmpty) {
+      color[3] = Color(0xFFFF0000);
+      notifyListeners();
+    } else {
+      context.read<Carga>().cargaBool(true);
+      mensaje = await ProductoModel.editarProducto(
+        _prod.id,
+        controllerPerdidas[0].text,
+        'LimiteProd',
+      );
+      if (mensaje.split(': ')[0] != 'Error') {
+        color[3] = Color(0x00000000);
+        _prod.limiteProd = double.parse(controllerPerdidas[0].text).floor();
+        controllerPerdidas[0].text = '';
+        notifyListeners();
+        mensaje =
+            'Se actualizó el límite de productos del producto con id $mensaje.';
+        if (context.mounted) {
+          emergente(false);
+          context.read<Carga>().cargaBool(false);
+        }
+      }
+    }
     if (mensaje.isNotEmpty) Textos.toast(mensaje);
   }
 
+  //Componente tipo ventana que muestra la información de un producto, la
+  //información del producto es guardada en la variable "_prod", su visibilidad
+  //es controlada por la variable "_producto".
   Widget productoInfo() {
     String entrada = '${_prod.entrada}';
     String salida = '${_prod.salida}';
@@ -336,7 +324,7 @@ class Producto with ChangeNotifier {
                               1,
                               ctx,
                             ),
-                            contenedorInfoPerdidas(productosPerdido, 2, ctx),
+                            contenedorInfoPerdidas('$productosPerdido', 2, ctx),
                             Botones.icoCirMor(
                               'Guardar movimientos',
                               Icons.save_rounded,
@@ -434,15 +422,10 @@ class Producto with ChangeNotifier {
                                 [.05, .15, .6],
                                 [
                                   '${index + 1}',
-                                  '${(cantidad.split('.').length > 1)
-                                      ? (cantidad.split('.')[1] == '0')
-                                            ? cantidad.split('.')[0]
-                                            : cantidad
-                                      : cantidad} ${tipoUnidad()}',
+                                  '$cantidad ${tipoUnidad()}',
                                   _prod.perdidaRazones[index],
                                 ],
-                                [],
-                                2,
+                                maxLines: 2,
                               ),
                             );
                           },
@@ -519,8 +502,6 @@ class Producto with ChangeNotifier {
                         'Cantidad',
                         '',
                         controllerPerdidas[0],
-                        true,
-                        false,
                         accion: () => (ventanaNum == 0)
                             ? focus.requestFocus()
                             : editarLimite(context),
@@ -539,8 +520,6 @@ class Producto with ChangeNotifier {
                           'Razón de la perdida',
                           '',
                           controllerPerdidas[1],
-                          true,
-                          false,
                           accion: () => guardarPerdidas(context),
                           icono: Icons.message_rounded,
                           errorColor: color[4],
@@ -558,11 +537,10 @@ class Producto with ChangeNotifier {
     );
   }
 
+  //Componente tipo ventana que muestra la información de un producto, la
+  //información del producto es guardada en la variable "_prod", su visibilidad
+  //es controlada por la variable "_prov".
   Widget productorInfo(BuildContext context) {
-    /*String unidad = '${_prod.unidades}';
-    if (unidad.split('.').length > 1) {
-      if (unidad.split('.')[1] == '0') unidad = unidad.split('.')[0];
-    }*/
     return Visibility(
       visible: _prov,
       child: Stack(
@@ -617,15 +595,6 @@ class Producto with ChangeNotifier {
                                           size: 20,
                                           alignment: TextAlign.center,
                                         ),
-                                        /*Textos.recuadroCantidad(
-                                          unidad,
-                                          Textos.colorLimite(
-                                            _prod.limiteProd,
-                                            _prod.unidades.floor(),
-                                          ),
-                                          1,
-                                          size: 20,
-                                        ),*/
                                       ],
                                     ),
                                   ),
@@ -679,8 +648,6 @@ class Producto with ChangeNotifier {
                                                 '${_prod.perdidaCantidad[index]} ${tipoUnidad()}',
                                                 _prod.perdidaRazones[index],
                                               ],
-                                              [],
-                                              1,
                                             ),
                                           );
                                         },
@@ -741,8 +708,6 @@ class Producto with ChangeNotifier {
                           'Cantidad',
                           '',
                           controller[0],
-                          true,
-                          false,
                           accion: () => focus.requestFocus(),
                           icono: Icons.numbers_rounded,
                           errorColor: color[0],
@@ -758,8 +723,6 @@ class Producto with ChangeNotifier {
                           'Razón de la perdida',
                           '',
                           controller[1],
-                          true,
-                          false,
                           accion: () => guardarPerdidasProv(context),
                           icono: Icons.message_rounded,
                           errorColor: color[1],
@@ -778,35 +741,25 @@ class Producto with ChangeNotifier {
     );
   }
 
+  //Método que se encarga de regresar un componente correspondiente con un texto
+  //correspondiente al tipo del producto, este se utiliza para describir cierta
+  //parte de la información importante del producto.
   SizedBox tipoTexto(BuildContext ctx) {
-    //String titulo = '${_prod.tipo}s:';
     String cantidad = '${_prod.cantidadPorUnidad}';
     if (cantidad.split('.').length > 1) {
       if (cantidad.split('.')[1] == '0') cantidad = cantidad.split('.')[0];
     }
-    /*if (_prod.tipo == 'Granel') {
-      titulo = 'Kilos:';
-    } else*/
     switch (_prod.tipo) {
-      case 'Costal':
-        //titulo = 'Unidades:';
+      case 'Costal' || 'Bote (Granel)':
         cantidad = 'Kilos por unidad: $cantidad';
         break;
-      case 'Bote':
-        //titulo = 'Unidades:';
+      case 'Bote(Litros)':
         cantidad = 'Litros por unidad: $cantidad';
         break;
-      case 'Caja' || 'Bulto' || 'Paquete':
+      case 'Caja' || 'Bulto' || 'Paquete' || 'Bote (Piezas)':
         cantidad = 'Productos por ${_prod.tipo}: $cantidad';
         break;
     }
-    /*else if (_prod.tipo == 'Galón') {
-      titulo = 'Galones:';
-    }*/
-    /*String unidades = '${_prod.unidades + entr - sali}';
-    if (unidades.split('.').length > 1) {
-      if (unidades.split('.')[1] == '0') unidades = unidades.split('.')[0];
-    }*/
     return SizedBox(
       width: MediaQuery.of(ctx).size.width * .5,
       height: 90,
@@ -818,13 +771,6 @@ class Producto with ChangeNotifier {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              /*Textos.textoGeneral(
-                titulo,
-                true,
-                1,
-                size: 20,
-                alignment: TextAlign.center,
-              ),*/
               if (_prod.cantidadPorUnidad != 1)
                 Textos.textoGeneral(cantidad, true, 1, size: 15),
               Row(
@@ -855,108 +801,20 @@ class Producto with ChangeNotifier {
               ),
             ],
           ),
-          /*Textos.recuadroCantidad(
-            unidades,
-            Textos.colorLimite(
-              _prod.limiteProd,
-              (_prod.unidades + entr - sali).floor(),
-            ),
-            1,
-            size: 20,
-          ),*/
         ],
       ),
     );
   }
 
-  /*SizedBox contenedorInfo(
-    String textoInfo,
-    double textoValor,
-    double textoTotal,
-    bool entrada,
-  ) {
-    String valor = ('$textoValor'.split('.').length > 1)
-        ? ('$textoValor'.split('.')[1] == '0')
-              ? '$textoValor'.split('.')[0]
-              : '$textoValor'
-        : '$textoValor';
-    String text = '${productoInfo.tipo}s$textoInfo';
-    if (productoInfo.tipo == 'Galón') {
-      text = 'Galones$textoInfo';
-    }
-    return SizedBox(
-      width: MediaQuery.of(context).size.width * .55,
-      height: 40,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Textos.textoGeneral(
-            text,
-            false,
-            1,
-            size: 20,
-            alignment: TextAlign.center,
-          ),
-          Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  GestureDetector(
-                    onLongPress: () => timer = Timer.periodic(
-                      Duration(milliseconds: 150),
-                      (timer) => cambioValor(entrada, -1),
-                    ),
-                    onLongPressEnd: (_) => setState(() {
-                      timer?.cancel();
-                    }),
-                    child: Botones.btnRctMor(
-                      '',
-                      Icons.remove,
-                      false,
-                      () => cambioValor(entrada, -1),
-                    ),
-                  ),
-                  Textos.recuadroCantidad(
-                    valor,
-                    color[entrada ? 0 : 1],
-                    1,
-                    size: 20,
-                  ),
-                  GestureDetector(
-                    onLongPress: () => timer = Timer.periodic(
-                      Duration(milliseconds: 150),
-                      (timer) => cambioValor(entrada, 1),
-                    ),
-                    onLongPressEnd: (_) => setState(() {
-                      timer?.cancel();
-                    }),
-                    child: Botones.btnRctMor(
-                      '',
-                      Icons.add,
-                      false,
-                      () => cambioValor(entrada, 1),
-                    ),
-                  ),
-                ],
-              ),
-              Textos.textoGeneral('Total: $textoTotal', true, 1),
-            ],
-          ),
-        ],
-      ),
-    );
-  }*/
-
+  //Componente que muestra el tipo del producto junto con las entradas o las
+  //salidas, depende del texto declarado, además con la cantidad disponible del
+  //dato relacionado.
   static SizedBox contenedorInfo(
     String textoInfo,
     String textoValor,
     int valor,
     BuildContext ctx,
   ) {
-    //String text = '${_prod.tipo}s$textoInfo';
     return SizedBox(
       width: MediaQuery.of(ctx).size.width * .55,
       height: 45,
@@ -969,8 +827,6 @@ class Producto with ChangeNotifier {
             textoInfo,
             '',
             controller[valor],
-            true,
-            false,
             accion: () => FocusManager.instance.primaryFocus?.unfocus(),
             icono: Icons.info_outline_rounded,
             errorColor: color[valor],
@@ -980,23 +836,24 @@ class Producto with ChangeNotifier {
             inputType: TextInputType.numberWithOptions(decimal: true),
             borderColor: Color(0xFF8A03A9),
           ),
-          Textos.recuadroCantidad(textoValor, Color(0xFF8A03A9), 1, size: 20),
+          Textos.recuadroCantidad(textoValor, Color(0xFF8A03A9)),
         ],
       ),
     );
   }
 
+  //Componente que muestra el tipo del producto junto con la cantidad de
+  //productos perdidos, además de las perdidas registradas.
   SizedBox contenedorInfoPerdidas(
-    double textoValor,
+    String textoValor,
     int valor,
     BuildContext ctx,
   ) {
-    String text = 'Perdidas registradas:';
-    /*if (_prod.tipo == 'Granel' || _prod.tipo == 'Costal') {
-      text = 'Kilos perdidos:';
-    } else if (_prod.tipo == 'Bote') {
-      text = 'Gramos/Piezas perdidos:';
-    }*/
+    if (textoValor.split('.').length > 1) {
+      if (textoValor.split('.')[1] == '0') {
+        textoValor = textoValor.split('.')[0];
+      }
+    }
     return SizedBox(
       width: MediaQuery.of(ctx).size.width * .55,
       height: 40,
@@ -1005,7 +862,7 @@ class Producto with ChangeNotifier {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Textos.textoGeneral(
-            text,
+            'Perdidas registradas:',
             false,
             1,
             size: 20,
@@ -1015,16 +872,7 @@ class Producto with ChangeNotifier {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Textos.recuadroCantidad(
-                ('$textoValor'.split('.').length > 1)
-                    ? ('$textoValor'.split('.')[1] == '0')
-                          ? '$textoValor'.split('.')[0]
-                          : '$textoValor'
-                    : '$textoValor',
-                color[valor],
-                1,
-                size: 20,
-              ),
+              Textos.recuadroCantidad(textoValor, color[valor]),
               Botones.btnRctMor(
                 'Producto perdido',
                 Icons.info_outline_rounded,
