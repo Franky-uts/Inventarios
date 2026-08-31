@@ -62,7 +62,6 @@ class _HistorialState extends State<Historial> {
     HistorialModel historial = await HistorialModel.getHistorialInfo(id, fecha);
     (historial.mensaje.isEmpty)
         ? {
-            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               {
                 ctx.read<HistorialInfo>().setHisotrial(historial),
@@ -92,7 +91,6 @@ class _HistorialState extends State<Historial> {
     );
     (registro.mensaje.isEmpty)
         ? {
-            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               {
                 ctx.read<HistorialInfo>().setRegistro(registro),

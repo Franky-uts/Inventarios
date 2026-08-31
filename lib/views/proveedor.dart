@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:inventarios/components/botones.dart';
+import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
@@ -9,8 +10,6 @@ import 'package:inventarios/pages/esp.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/ordenes.dart';
 import 'package:provider/provider.dart';
-
-import '../components/carga.dart';
 
 //Visor de páginas principales, dedicada principalmente a los proveedores.
 class Proveedor extends StatefulWidget {

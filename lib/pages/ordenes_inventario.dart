@@ -28,7 +28,6 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
     ProductoModel producto = await ProductoModel.getProducto(id);
     (producto.mensaje.isEmpty)
         ? {
-            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               {
                 ctx.read<Producto>().setProducto(producto),
@@ -82,21 +81,6 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
             );
           },
         ),
-        /*Consumer<Carga>(
-          builder: (ctx, carga, child) {
-            return Botones.icoCirMor(
-              'Reiniciar movimientos',
-              Icons.refresh_rounded,
-              () => {
-                Navigator.of(context).pop(),
-                context.read<Ventanas>().emergente(true),
-              },
-              () => Textos.toast('Espera a que los datos carguen.'),
-              false,
-              Carga.getValido(),
-            );
-          },
-        ),*/
       ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
@@ -114,11 +98,10 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, /* .25,*/ .08, .175, .15, .075, .075, .075],
+                          [.1, .08, .175, .15, .075, .075, .075],
                           [
                             'id',
                             'Nombre',
-                            //'Unidades',
                             'Área',
                             'Tipo',
                             'Entradas',
@@ -243,12 +226,6 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        //List<Color> colores = List.filled(8, Colors.transparent);
-        /*colores[2] = Textos.colorLimite(
-          lista[index].limiteProd,
-          lista[index].unidades.floor(),
-        );*/
-        //String unidad = '${lista[index].unidades}';
         String entrada = '${lista[index].entrada}';
         String salida = '${lista[index].salida}';
         if (entrada.split('.').length > 1) {
@@ -266,22 +243,16 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, /* .25,*/ .08, .175, .15, .075, .075, .075],
+            [.1, .08, .175, .15, .075, .075, .075],
             [
               "${lista[index].id}",
               lista[index].nombre,
-              /*(unidad.split('.').length > 1)
-                  ? (unidad.split('.')[1] == '0')
-                        ? unidad.split('.')[0]
-                        : unidad
-                  : unidad,*/
               lista[index].area,
               lista[index].tipo,
               entrada,
               salida,
               '${lista[index].perdidaCantidad.length}',
             ],
-            //colores,
             maxLines: 2,
             extra: () async => getProductoInfo(context, lista[index].id),
           ),

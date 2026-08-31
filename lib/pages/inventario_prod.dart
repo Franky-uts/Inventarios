@@ -28,7 +28,6 @@ Future<void> getProductoInfo(BuildContext ctx, int id) async {
   ProductoModel producto = await ProductoModel.getProducto(id);
   (producto.mensaje.isEmpty)
       ? {
-          //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
           if (ctx.mounted)
             {
               ctx.read<Producto>().setProducto(producto),
@@ -104,11 +103,10 @@ class _InventarioProdState extends State<InventarioProd> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.1, /* .25,*/ .08, .175, .15, .075, .075, .075],
+                          [.1, .08, .175, .15, .075, .075, .075],
                           [
                             'id',
                             'Nombre',
-                            //'Unidades',
                             'Área',
                             'Tipo',
                             'Entrada',
@@ -213,12 +211,6 @@ class _InventarioProdState extends State<InventarioProd> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        //List<Color> colores = List.filled(8, Colors.transparent);
-        /*colores[2] = Textos.colorLimite(
-          lista[index].limiteProd,
-          lista[index].unidades.floor(),
-        );*/
-        //String unidad = '${lista[index].unidades}';
         String entrada = '${lista[index].entrada}';
         String salida = '${lista[index].salida}';
         if (entrada.split('.').length > 1) {
@@ -236,22 +228,16 @@ class _InventarioProdState extends State<InventarioProd> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.1, /*.25,*/ .08, .175, .15, .075, .075, .075],
+            [.1, .08, .175, .15, .075, .075, .075],
             [
               '${lista[index].id}',
               lista[index].nombre,
-              /*(unidad.split('.').length > 1)
-                  ? (unidad.split('.')[1] == '0')
-                        ? unidad.split('.')[0]
-                        : unidad
-                  : unidad,*/
               lista[index].area,
               lista[index].tipo,
               entrada,
               salida,
               '${lista[index].perdidaCantidad.length}',
             ],
-            //colores,
             maxLines: 2,
             extra: () async => await getProductoInfo(context, lista[index].id),
           ),

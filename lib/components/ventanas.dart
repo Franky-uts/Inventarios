@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:inventarios/components/botones.dart';
+import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
@@ -6,8 +8,6 @@ import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/models/usuario_model.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
-import 'botones.dart';
-import 'carga.dart';
 
 class Ventanas with ChangeNotifier {
   static FocusNode focus = FocusNode();

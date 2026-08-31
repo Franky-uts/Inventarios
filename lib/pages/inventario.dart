@@ -193,7 +193,6 @@ class _InventarioState extends State<Inventario> {
                     barraSuperior(context),
                     Tablas.contenedorInfo(
                       MediaQuery.sizeOf(context).width,
-                      //[.1, .3, .2, .2, .15],
                       [.075, .275, .2, .2, .1, .1],
                       ['id', 'Nombre', 'Área', 'Tipo', 'Und./Kg.', 'Cont.'],
                     ),

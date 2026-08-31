@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:inventarios/components/botones.dart';
+import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/articulos_model.dart';
@@ -14,8 +16,6 @@ import 'package:inventarios/pages/producto.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'botones.dart';
-import 'carga.dart';
 
 class RecDrawer {
   //Este es un componente Drawer usado en todas las páginas donde se abre una
@@ -515,7 +515,6 @@ class RecDrawer {
     (texto.isNotEmpty)
         ? Textos.toast(texto)
         : {
-            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               Navigator.of(ctx).push(
                 PageRouteBuilder(

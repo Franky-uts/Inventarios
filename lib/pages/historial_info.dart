@@ -7,7 +7,7 @@ import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/historial_model.dart';
 import 'package:inventarios/models/registro_model.dart';
 import 'package:provider/provider.dart';
-import '../components/textos.dart';
+import 'package:inventarios/components/textos.dart';
 
 //Esta es una página ventana con información relacionada con un movimiento o
 //registro seleccionado de la lista del historial.

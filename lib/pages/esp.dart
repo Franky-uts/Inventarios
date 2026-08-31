@@ -100,8 +100,6 @@ class _ESPState extends State<ESP> {
       valido = false;
     }
     if (mensaje.split(':')[0] != 'Error') {
-      /*LocalStorage.eliminar('entradas');
-      LocalStorage.eliminar('salidas');*/
       for (ProductoModel prod in listaProductos) {
         controllerEnt[prod.id - 1].text = '';
         controllerSal[prod.id - 1].text = '';
@@ -136,7 +134,6 @@ class _ESPState extends State<ESP> {
     ProductoModel producto = await ProductoModel.getProducto(id);
     (producto.mensaje.isEmpty)
         ? {
-            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               {
                 ctx.read<Producto>().setProducto(producto),

@@ -281,10 +281,9 @@ class Articulo extends ChangeNotifier {
                               children: [
                                 Tablas.contenedorInfo(
                                   MediaQuery.sizeOf(context).width,
-                                  [0.2, /* 0.075,*/ 0.1, 0.1, 0.1, 0.2, 0.2],
+                                  [0.2, 0.1, 0.1, 0.1, 0.2, 0.2],
                                   [
                                     'Tienda',
-                                    //'Unidades',
                                     'Entradas',
                                     'Salidas',
                                     'Perdidas',
@@ -382,44 +381,33 @@ class Articulo extends ChangeNotifier {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        /*List<Color> colores = [];
-        colores = List.filled(7, Colors.transparent);*/
-        /*colores[1] = Textos.colorLimite(
-          lista[index].limiteProd,
-          lista[index].unidades.floor(),
-        );*/
-        //String unidad = '${lista[index].unidades}';
         String entrada = '${lista[index].entrada}';
         String salida = '${lista[index].salida}';
+        if (entrada.split('.').length > 1) {
+          if (entrada.split('.')[1] == '0') {
+            entrada = entrada.split('.')[0];
+          }
+        }
+        if (salida.split('.').length > 1) {
+          if (salida.split('.')[1] == '0') {
+            salida = salida.split('.')[0];
+          }
+        }
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [0.2, /* 0.075,*/ 0.1, 0.1, 0.1, 0.2, 0.2],
+            [0.2, 0.1, 0.1, 0.1, 0.2, 0.2],
             [
               lista[index].nombre,
-              /*(unidad.split('.').length > 1)
-                  ? (unidad.split('.')[1] == '0')
-                        ? unidad.split('.')[0]
-                        : unidad
-                  : unidad,*/
-              (entrada.split('.').length > 1)
-                  ? (entrada.split('.')[1] == '0')
-                        ? entrada.split('.')[0]
-                        : entrada
-                  : entrada,
-              (salida.split('.').length > 1)
-                  ? (salida.split('.')[1] == '0')
-                        ? salida.split('.')[0]
-                        : salida
-                  : salida,
+              entrada,
+              salida,
               '${lista[index].perdidaCantidad.length}',
               lista[index].ultimoUsuario,
               lista[index].ultimaModificacion,
             ],
             maxLines: 2,
-            //colores,
           ),
         );
       },

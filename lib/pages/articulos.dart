@@ -39,7 +39,6 @@ class _ArticulosState extends State<Articulos> {
     ctx.read<Carga>().cargaBool(true);
     ArticulosModel articulo = await ArticulosModel.getArticulo(id);
     if (articulo.mensaje.isEmpty) {
-      //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text);
       if (ctx.mounted) {
         ctx.read<Articulo>().articulo(articulo);
         ctx.read<Articulo>().art(true);
@@ -65,7 +64,6 @@ class _ArticulosState extends State<Articulos> {
     (texto.isNotEmpty)
         ? Textos.toast(texto)
         : {
-            //await LocalStorage.set('busqueda', CampoTexto.busquedaTexto.text),
             if (ctx.mounted)
               Navigator.of(ctx).push(
                 PageRouteBuilder(

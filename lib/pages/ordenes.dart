@@ -8,11 +8,11 @@ import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/tablas.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/botones.dart';
-import 'package:printing/printing.dart';
+import 'package:inventarios/models/orden_model.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
-import '../models/orden_model.dart';
 
 //Esta es una página principal encargada de mostrar todos las ordenes
 //registrados en la base de datos, las ordenes que se muestran se pueden
@@ -74,14 +74,6 @@ class _OrdenesState extends State<Ordenes> {
         for (int i = 0; i < orden.cantArticulos; i++) {
           cantidades.add(TextEditingController());
         }
-        /*cantidades.addAll(
-          List.filled(
-            orden.cantArticulos,
-            TextEditingController(),
-            growable: true,
-          ),
-        );*/
-        //for (int i = 0; i < orden.cantArticulos; i++) {}
         ctx.read<Ventanas>().tabla(true);
       }
     } else {
@@ -127,11 +119,12 @@ class _OrdenesState extends State<Ordenes> {
     String comFin,
   ) {
     accion = 'confirmar';
-    controller.text = (estado == 'En proceso')
-        ? (comProv == 'Sin comentarios')
-              ? ''
-              : comProv
-        : comProv;
+    controller.text = comProv;
+    if (estado == 'En proceso') {
+      if (comProv == 'Sin comentarios') {
+        controller.text = '';
+      }
+    }
     context.read<Ventanas>().emergente(true);
   }
 
