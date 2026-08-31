@@ -26,15 +26,14 @@ Future<List<ProductoModel>> getProductos(
 Future<void> getProductoInfo(BuildContext ctx, int id) async {
   ctx.read<Carga>().cargaBool(true);
   ProductoModel producto = await ProductoModel.getProducto(id);
-  (producto.mensaje.isEmpty)
-      ? {
-          if (ctx.mounted)
-            {
-              ctx.read<Producto>().setProducto(producto),
-              ctx.read<Producto>().prov(true),
-            },
-        }
-      : Textos.toast(producto.mensaje);
+  if (producto.mensaje.isEmpty) {
+    if (ctx.mounted) {
+      ctx.read<Producto>().setProducto(producto);
+      ctx.read<Producto>().prov(true);
+    }
+  } else {
+    Textos.toast(producto.mensaje);
+  }
   if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
 }
 

@@ -214,6 +214,16 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                                 '${listaProd[index].cantidadPorUnidad}';
                             String total =
                                 '${double.parse(cantidad[listaProd[index].id - 1].text) * listaProd[index].cantidadPorUnidad}';
+                            if (cantUni.split('.').length > 1) {
+                              if (cantUni.split('.')[1] == '0') {
+                                cantUni = cantUni.split('.')[0];
+                              }
+                            }
+                            if (total.split('.').length > 1) {
+                              if (total.split('.')[1] == '0') {
+                                total = total.split('.')[0];
+                              }
+                            }
                             return Container(
                               width: MediaQuery.sizeOf(context).width,
                               decoration: BoxDecoration(
@@ -228,16 +238,8 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
                                   listaProd[index].area,
                                   listaProd[index].tipo,
                                   cantidad[listaProd[index].id - 1].text,
-                                  (cantUni.split('.').length > 1)
-                                      ? (cantUni.split('.')[1] == '0')
-                                            ? cantUni.split('.')[0]
-                                            : cantUni
-                                      : cantUni,
-                                  (total.split('.').length > 1)
-                                      ? (total.split('.')[1] == '0')
-                                            ? total.split('.')[0]
-                                            : total
-                                      : total,
+                                  cantUni,
+                                  total,
                                   Botones.btnRctMor(
                                     'Añadir comentario',
                                     Icons.comment_rounded,

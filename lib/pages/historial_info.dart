@@ -71,6 +71,12 @@ class HistorialInfo extends ChangeNotifier {
         children: [
           Consumer<Carga>(
             builder: (context, carga, child) {
+              String cantPer = 'Perdidas: $cantidadPerdida';
+              if (cantPer.split('.').length > 1) {
+                if (cantPer.split('.')[1] == '0') {
+                  cantPer = 'Perdidas: $cantidadPerdida'.split('.')[0];
+                }
+              }
               return Container(
                 padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
                 decoration: BoxDecoration(color: Colors.black38),
@@ -114,16 +120,7 @@ class HistorialInfo extends ChangeNotifier {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    Textos.textoTilulo(
-                                      ('$cantidadPerdida'.split('.').length > 1)
-                                          ? ('$cantidadPerdida'.split('.')[1] ==
-                                                    '0')
-                                                ? 'Perdidas: $cantidadPerdida'
-                                                      .split('.')[0]
-                                                : 'Perdidas: $cantidadPerdida'
-                                          : 'Perdidas: $cantidadPerdida',
-                                      20,
-                                    ),
+                                    Textos.textoTilulo(cantPer, 20),
                                     if (cantidadPerdida > 0)
                                       Botones.btnSimple(
                                         'Ver perdidas',
@@ -171,6 +168,16 @@ class HistorialInfo extends ChangeNotifier {
                                           '${_historialInfo.entradas[index]}';
                                       String salida =
                                           '${_historialInfo.salidas[index]}';
+                                      if (entrada.split('.').length > 1) {
+                                        if (entrada.split('.')[1] == '0') {
+                                          entrada = entrada.split('.')[0];
+                                        }
+                                      }
+                                      if (salida.split('.').length > 1) {
+                                        if (salida.split('.')[1] == '0') {
+                                          salida = salida.split('.')[0];
+                                        }
+                                      }
                                       return Container(
                                         width: MediaQuery.sizeOf(context).width,
                                         decoration: BoxDecoration(
@@ -184,16 +191,8 @@ class HistorialInfo extends ChangeNotifier {
                                                 .horasModificacion[index],
                                             _historialInfo
                                                 .usuarioModificacion[index],
-                                            (entrada.split('.').length > 1)
-                                                ? (entrada.split('.')[1] == '0')
-                                                      ? entrada.split('.')[0]
-                                                      : entrada
-                                                : entrada,
-                                            (salida.split('.').length > 1)
-                                                ? (salida.split('.')[1] == '0')
-                                                      ? salida.split('.')[0]
-                                                      : salida
-                                                : salida,
+                                            entrada,
+                                            salida,
                                             '${_historialInfo.perdidas[index]}',
                                           ],
 
@@ -229,19 +228,19 @@ class HistorialInfo extends ChangeNotifier {
           ),
           Consumer2<Ventanas, VenDatos>(
             builder: (context, ventana, venDatos, child) {
+              String cantPer = 'Perdidas: $cantidadPerdida';
+              if (cantPer.split('.').length > 1) {
+                if (cantPer.split('.')[1] == '0') {
+                  cantPer = cantPer.split('.')[0];
+                }
+              }
               return Ventanas.ventanaTabla(
                 (120 + _historialInfo.cantidades.length * 30 <
                         MediaQuery.of(context).size.height * .7)
                     ? 120 + _historialInfo.cantidades.length * 30
                     : MediaQuery.of(context).size.height * .7,
                 MediaQuery.of(context).size.width,
-                [
-                  ('$cantidadPerdida'.split('.').length > 1)
-                      ? ('$cantidadPerdida'.split('.')[1] == '0')
-                            ? 'Perdidas: $cantidadPerdida'.split('.')[0]
-                            : 'Perdidas: $cantidadPerdida'
-                      : 'Perdidas: $cantidadPerdida',
-                ],
+                [cantPer],
                 cantidadPerdida > 0
                     ? Tablas.contenedorInfo(
                         MediaQuery.sizeOf(context).width,

@@ -89,15 +89,14 @@ class _HistorialState extends State<Historial> {
       hora,
       usuario,
     );
-    (registro.mensaje.isEmpty)
-        ? {
-            if (ctx.mounted)
-              {
-                ctx.read<HistorialInfo>().setRegistro(registro),
-                ctx.read<HistorialInfo>().reg(true),
-              },
-          }
-        : Textos.toast(registro.mensaje);
+    if (registro.mensaje.isEmpty) {
+      if (ctx.mounted) {
+        ctx.read<HistorialInfo>().setRegistro(registro);
+        ctx.read<HistorialInfo>().reg(true);
+      }
+    } else {
+      Textos.toast(registro.mensaje);
+    }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
@@ -170,9 +169,11 @@ class _HistorialState extends State<Historial> {
       mensaje = 'Fecha inválida';
     }
     if (ctx.mounted) {
-      mensaje.isEmpty
-          ? ctx.read<Ventanas>().emergente(false)
-          : Textos.toast(mensaje);
+      if (mensaje.isEmpty) {
+        ctx.read<Ventanas>().emergente(false);
+      } else {
+        Textos.toast(mensaje);
+      }
       ctx.read<Carga>().cargaBool(false);
     }
   }

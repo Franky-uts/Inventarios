@@ -283,14 +283,15 @@ class CampoTexto with ChangeNotifier {
         ? IconButton(
             tooltip: 'Buscar',
             onPressed: () => {
-              (busquedaTexto.text.isEmpty)
-                  ? {
-                      if (!focusBusqueda.hasFocus)
-                        FocusManager.instance.primaryFocus?.requestFocus(
-                          focusBusqueda,
-                        ),
-                    }
-                  : FocusManager.instance.primaryFocus?.unfocus(),
+              if (busquedaTexto.text.isEmpty)
+                {
+                  if (!focusBusqueda.hasFocus)
+                    FocusManager.instance.primaryFocus?.requestFocus(
+                      focusBusqueda,
+                    ),
+                }
+              else
+                {FocusManager.instance.primaryFocus?.unfocus()},
               accion(),
             },
             icon: Icon(Icons.search, color: Color(0xFF8A03A9)),

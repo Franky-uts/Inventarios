@@ -93,9 +93,12 @@ class Articulo extends ChangeNotifier {
       if (flag) {
         controller.text = texto;
         if (ctx.mounted) {
-          (kIsWeb)
-              ? cambioColumna(ctx)
-              : {emergente(true), ctx.read<Carga>().cargaBool(false)};
+          if (kIsWeb) {
+            cambioColumna(ctx);
+          } else {
+            emergente(true);
+            ctx.read<Carga>().cargaBool(false);
+          }
         }
       } else {
         Textos.toast('El código ya esta registrado');
@@ -151,10 +154,11 @@ class Articulo extends ChangeNotifier {
   //mostrara el texto 'Código de barras: código' donde código cambiara al código
   //de barras del artículo;
   String codigoTexto(String codigo) {
-    (codigo.isEmpty)
-        ? codigo = 'Sin codigo establecido'
-        : codigo = 'Código de barras: $codigo';
-    return codigo;
+    if (codigo.isEmpty) {
+      return 'Sin codigo establecido';
+    } else {
+      return 'Código de barras: $codigo';
+    }
   }
 
   //Componente tipo ventana que muestra la información de un artículo, la

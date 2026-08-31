@@ -43,18 +43,18 @@ class VenDatos with ChangeNotifier {
   //primero de manera alfabética y luego por áreas, en caso contrario si se
   //declara false entonces se ordenara por ID.
   void ordenarPor(bool nom) {
-    nom
-        ? {
-            _listas.sort((a, b) {
-              return a.art.toLowerCase().compareTo(b.art.toLowerCase());
-            }),
-            _listas.sort((a, b) {
-              return a.area.toLowerCase().compareTo(b.area.toLowerCase());
-            }),
-          }
-        : _listas.sort((a, b) {
-            return a.id.compareTo(b.id);
-          });
+    if (nom) {
+      _listas.sort((a, b) {
+        return a.art.toLowerCase().compareTo(b.art.toLowerCase());
+      });
+      _listas.sort((a, b) {
+        return a.area.toLowerCase().compareTo(b.area.toLowerCase());
+      });
+    } else {
+      _listas.sort((a, b) {
+        return a.id.compareTo(b.id);
+      });
+    }
     for (int i = 0; i < _orden.cantArticulos; i++) {
       _orden.idProductos[i] = _listas[i].id;
       _orden.articulos[i] = _listas[i].art;

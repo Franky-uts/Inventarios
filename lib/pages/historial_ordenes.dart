@@ -57,15 +57,14 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   Future<void> getOrdenInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     OrdenModel orden = await OrdenModel.getOrden(id);
-    (orden.mensaje.isEmpty)
-        ? {
-            if (ctx.mounted)
-              {
-                ctx.read<VenDatos>().setDatos(orden),
-                ctx.read<Ventanas>().tabla(true),
-              },
-          }
-        : Textos.toast(orden.mensaje);
+    if (orden.mensaje.isEmpty) {
+      if (ctx.mounted) {
+        ctx.read<VenDatos>().setDatos(orden);
+        ctx.read<Ventanas>().tabla(true);
+      }
+    } else {
+      Textos.toast(orden.mensaje);
+    }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 

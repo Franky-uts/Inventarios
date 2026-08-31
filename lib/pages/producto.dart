@@ -131,12 +131,8 @@ class Producto with ChangeNotifier {
     double ent, sal;
     String mensaje = 'No hay datos';
     if (!(controller[0].text.isEmpty && controller[1].text.isEmpty)) {
-      (controller[0].text.isEmpty)
-          ? ent = 0
-          : ent = double.parse(controller[0].text);
-      (controller[1].text.isEmpty)
-          ? sal = 0
-          : sal = double.parse(controller[1].text);
+      ent = (controller[0].text.isEmpty) ? 0 : double.parse(controller[0].text);
+      sal = (controller[1].text.isEmpty) ? 0 : double.parse(controller[1].text);
       if (ent < 0) color[0] = Color(0xFFFF0000);
       if (sal < 0) color[1] = Color(0xFFFF0000);
       if (ent >= 0 && sal >= 0) {

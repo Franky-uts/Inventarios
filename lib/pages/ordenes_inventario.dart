@@ -26,15 +26,14 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
   Future<void> getProductoInfo(BuildContext ctx, int id) async {
     ctx.read<Carga>().cargaBool(true);
     ProductoModel producto = await ProductoModel.getProducto(id);
-    (producto.mensaje.isEmpty)
-        ? {
-            if (ctx.mounted)
-              {
-                ctx.read<Producto>().setProducto(producto),
-                ctx.read<Producto>().producto(true),
-              },
-          }
-        : Textos.toast(producto.mensaje);
+    if (producto.mensaje.isEmpty) {
+      if (ctx.mounted) {
+        ctx.read<Producto>().setProducto(producto);
+        ctx.read<Producto>().producto(true);
+      }
+    } else {
+      Textos.toast(producto.mensaje);
+    }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 

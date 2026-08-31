@@ -80,16 +80,16 @@ class _AddproductoState extends State<AddProducto> {
         id,
         int.parse(control[0].text),
       );
-      (respuesta.split(': ')[0] != 'Error')
-          ? {
-              id = 0,
-              control[0].text = '',
-              control[1].text = '',
-              control[2].text = '',
-              articuloValor = articuloLista.first,
-              areaValor = areasLista.first,
-            }
-          : respuesta = respuesta.split(': ')[1];
+      if (respuesta.split(': ')[0] != 'Error') {
+        id = 0;
+        control[0].text = '';
+        control[1].text = '';
+        control[2].text = '';
+        articuloValor = articuloLista.first;
+        areaValor = areasLista.first;
+      } else {
+        respuesta = respuesta.split(': ')[1];
+      }
       Textos.toast(respuesta);
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);

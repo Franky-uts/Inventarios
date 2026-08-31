@@ -491,9 +491,11 @@ class Ventanas with ChangeNotifier {
   static void cambioDeTiendaAccion(BuildContext ctx, Function accion) async {
     ctx.read<Carga>().cargaBool(true);
     String mensaje;
-    _inventario != LocalStorage.local('locación')
-        ? mensaje = await UsuarioModel.cambiarInfo('Locacion', _inventario)
-        : mensaje = 'Error: No hay cambios';
+    if (_inventario != LocalStorage.local('locación')) {
+      mensaje = await UsuarioModel.cambiarInfo('Locacion', _inventario);
+    } else {
+      mensaje = 'Error: No hay cambios';
+    }
     mensaje.split(': ')[0] != 'Error'
         ? {
             LocalStorage.set('locación', _inventario),
@@ -501,7 +503,6 @@ class Ventanas with ChangeNotifier {
             accion(),
           }
         : mensaje = mensaje.split(':')[1];
-
     Textos.toast(mensaje);
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
