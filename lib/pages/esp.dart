@@ -391,11 +391,11 @@ class _ESPState extends State<ESP> {
                 {
                   if (controllerEnt[i].text.isNotEmpty)
                     {
-                      if (int.parse(controllerEnt[i].text) > 0) {valido = true},
+                      if (double.parse(controllerEnt[i].text) > 0) {valido = true},
                     },
                   if (controllerSal[i].text.isNotEmpty)
                     {
-                      if (int.parse(controllerSal[i].text) > 0) {valido = true},
+                      if (double.parse(controllerSal[i].text) > 0) {valido = true},
                     },
                 },
               if (valido)

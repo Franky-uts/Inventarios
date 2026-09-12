@@ -299,11 +299,11 @@ class _InventarioState extends State<Inventario> {
                 {
                   if (controllerUni[i].text.isNotEmpty)
                     {
-                      if (int.parse(controllerUni[i].text) > 0) {valido = true},
+                      if (double.parse(controllerUni[i].text) > 0) {valido = true},
                     },
                   if (controllerCon[i].text.isNotEmpty)
                     {
-                      if (int.parse(controllerCon[i].text) > 0) {valido = true},
+                      if (double.parse(controllerCon[i].text) > 0) {valido = true},
                     },
                 },
               if (valido)
