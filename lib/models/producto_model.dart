@@ -12,9 +12,14 @@ class ProductoModel {
   String tipo;
   String codigoBarras;
   double cantidadPorUnidad;
+  double cantidadPorPaquete;
   int limiteProd;
-  double entrada;
-  double salida;
+  double entradaUni;
+  double entradaPaq;
+  double entradaCont;
+  double salidaUni;
+  double salidaPaq;
+  double salidaCont;
   List<double> perdidaCantidad;
   List<String> perdidaRazones;
   String ultimoUsuario;
@@ -28,9 +33,14 @@ class ProductoModel {
     required this.tipo,
     required this.codigoBarras,
     required this.cantidadPorUnidad,
+    required this.cantidadPorPaquete,
     required this.limiteProd,
-    required this.entrada,
-    required this.salida,
+    required this.entradaUni,
+    required this.entradaPaq,
+    required this.entradaCont,
+    required this.salidaUni,
+    required this.salidaPaq,
+    required this.salidaCont,
     required this.perdidaCantidad,
     required this.perdidaRazones,
     required this.ultimoUsuario,
@@ -49,9 +59,14 @@ class ProductoModel {
       tipo: '',
       codigoBarras: '',
       cantidadPorUnidad: 0,
+      cantidadPorPaquete: 0,
       limiteProd: 0,
-      entrada: 0,
-      salida: 0,
+      entradaUni: 0,
+      entradaPaq: 0,
+      entradaCont: 0,
+      salidaUni: 0,
+      salidaPaq: 0,
+      salidaCont: 0,
       perdidaCantidad: [],
       perdidaRazones: [],
       ultimoUsuario: '',
@@ -100,9 +115,14 @@ class ProductoModel {
                 tipo: item['Tipo'],
                 ultimaModificacion: item['UltimaModificación'],
                 cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+                cantidadPorPaquete: item['CantidadPorPaquete'].toDouble(),
                 area: item['Area'],
-                entrada: item['Entradas'].toDouble(),
-                salida: item['Salidas'].toDouble(),
+                entradaUni: item['Entradas'].toDouble(),
+                entradaPaq: item['EntradasPaquetes'].toDouble(),
+                entradaCont: item['EntradasContenedores'].toDouble(),
+                salidaUni: item['Salidas'].toDouble(),
+                salidaPaq: item['SalidasPaquetes'].toDouble(),
+                salidaCont: item['SalidasContenedores'].toDouble(),
                 perdidaCantidad: doublelist,
                 perdidaRazones: List<String>.from(item['PerdidaRazon']),
                 ultimoUsuario: item['UltimoUsuario'],
@@ -165,9 +185,14 @@ class ProductoModel {
               tipo: item['Tipo'],
               ultimaModificacion: item['UltimaModificación'],
               cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+              cantidadPorPaquete: item['CantidadPorPaquete'].toDouble(),
               area: item['Area'],
-              entrada: item['Entradas'].toDouble(),
-              salida: item['Salidas'].toDouble(),
+              entradaUni: item['Entradas'].toDouble(),
+              entradaPaq: item['EntradasPaquetes'].toDouble(),
+              entradaCont: item['EntradasContenedores'].toDouble(),
+              salidaUni: item['Salidas'].toDouble(),
+              salidaPaq: item['SalidasPaquetes'].toDouble(),
+              salidaCont: item['SalidasContenedores'].toDouble(),
               perdidaCantidad: doublelist,
               perdidaRazones: List<String>.from(item['PerdidaRazon']),
               ultimoUsuario: item['UltimoUsuario'],
@@ -225,9 +250,14 @@ class ProductoModel {
             tipo: item['Tipo'],
             ultimaModificacion: item['UltimaModificación'],
             cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+            cantidadPorPaquete: item['CantidadPorPaquete'].toDouble(),
             area: item['Area'],
-            entrada: item['Entradas'].toDouble(),
-            salida: item['Salidas'].toDouble(),
+            entradaUni: item['Entradas'].toDouble(),
+            entradaPaq: item['EntradasPaquetes'].toDouble(),
+            entradaCont: item['EntradasContenedores'].toDouble(),
+            salidaUni: item['Salidas'].toDouble(),
+            salidaPaq: item['SalidasPaquetes'].toDouble(),
+            salidaCont: item['SalidasContenedores'].toDouble(),
             perdidaCantidad: doublelist,
             perdidaRazones: List<String>.from(item['PerdidaRazon']),
             ultimoUsuario: item['UltimoUsuario'],
@@ -279,8 +309,13 @@ class ProductoModel {
               area: '',
               tipo: '',
               cantidadPorUnidad: 0,
-              entrada: item['Entradas'].toDouble(),
-              salida: item['Salidas'].toDouble(),
+              cantidadPorPaquete: 0,
+              entradaUni: item['Entradas'].toDouble(),
+              entradaPaq: item['EntradasPaquetes'].toDouble(),
+              entradaCont: item['EntradasContenedores'].toDouble(),
+              salidaUni: item['Salidas'].toDouble(),
+              salidaPaq: item['SalidasPaquetes'].toDouble(),
+              salidaCont: item['SalidasContenedores'].toDouble(),
               perdidaCantidad: doublelist,
               perdidaRazones: List<String>.from(item['PerdidaRazon']),
               ultimoUsuario: item['UltimoUsuario'],
@@ -385,7 +420,11 @@ class ProductoModel {
   static Future<String> guardarES(
     int id,
     double entradas,
+    double entradasPaq,
+    double entradasCont,
     double salidas,
+    double salidasPaq,
+    double salidasCont,
   ) async {
     String texto = 'Error: No se guardo la información.';
     try {
@@ -397,7 +436,11 @@ class ProductoModel {
         },
         body: jsonEncode({
           'entradas': entradas,
+          'entradasPaquete': entradasPaq,
+          'entradasContenedor': entradasCont,
           'salidas': salidas,
+          'salidasPaquete': salidasPaq,
+          'salidasContenedor': salidasCont,
           'usuario': LocalStorage.local('usuario'),
         }),
       );
@@ -423,9 +466,11 @@ class ProductoModel {
   static Future<String> guardarESCompleto(
     List<int> idProductos,
     List<double> entradas,
-    List<double> salidas,
+    List<double> entradasPaq,
+    List<double> entradasCont,
   ) async {
     String mensaje = '';
+    List<double> complemantario = List.filled(idProductos.length, 0.0);
     try {
       final res = await http.put(
         Uri.parse('${MyApp.url}:3000/almacen/ES/Multiple'),
@@ -436,7 +481,11 @@ class ProductoModel {
         body: jsonEncode({
           'productos': idProductos,
           'entradas': entradas,
-          'salidas': salidas,
+          'entradasPaquete': entradasPaq,
+          'entradasContenedor': entradasPaq,
+          'salidas': complemantario,
+          'salidasPaquete': complemantario,
+          'salidasContenedor': complemantario,
           'usuario': LocalStorage.local('usuario'),
         }),
       );

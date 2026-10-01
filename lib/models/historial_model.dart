@@ -1,6 +1,7 @@
-import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:inventarios/main.dart';
 import 'package:inventarios/services/local_storage.dart';
@@ -12,7 +13,11 @@ class HistorialModel {
   String area;
   int movimientos;
   List<double> entradas;
+  List<double> entradasPaq;
+  List<double> entradasCont;
   List<double> salidas;
+  List<double> salidasPaq;
+  List<double> salidasCont;
   List<int> perdidas;
   List<String> razones;
   List<double> cantidades;
@@ -27,7 +32,11 @@ class HistorialModel {
     required this.area,
     required this.movimientos,
     required this.entradas,
+    required this.entradasPaq,
+    required this.entradasCont,
     required this.salidas,
+    required this.salidasPaq,
+    required this.salidasCont,
     required this.perdidas,
     required this.razones,
     required this.cantidades,
@@ -47,7 +56,11 @@ class HistorialModel {
       area: '',
       movimientos: 0,
       entradas: [],
+      entradasPaq: [],
+      entradasCont: [],
       salidas: [],
+      salidasPaq: [],
+      salidasCont: [],
       perdidas: [],
       razones: [],
       cantidades: [],
@@ -94,7 +107,11 @@ class HistorialModel {
                 area: item['Area'],
                 movimientos: item['Movimientos'],
                 entradas: [],
+                entradasPaq: [],
+                entradasCont: [],
                 salidas: [],
+                salidasPaq: [],
+                salidasCont: [],
                 perdidas: [],
                 razones: [],
                 cantidades: [],
@@ -151,7 +168,11 @@ class HistorialModel {
               area: item['Area'],
               movimientos: item['Movimientos'],
               entradas: [],
+              entradasPaq: [],
+              entradasCont: [],
               salidas: [],
+              salidasPaq: [],
+              salidasCont: [],
               perdidas: [],
               razones: [],
               cantidades: [],
@@ -178,7 +199,9 @@ class HistorialModel {
 
   //Método get que regresa una lista con objetos de la clase HistorialModel a
   //través de una petición HTTP GET, en caso de que suceda algún error regresa
-  //el error en forma de texto, requiere una fecha inicial y otra final.
+  //el error en forma de texto, requiere una fecha inicial y otra final, este
+  //tiene la distinción desde contener toda la información de cada registro,
+  //este método se usa para generar un archivo Excel.
   static Future<List<HistorialModel>> getAllHistorial(
     String fechaInicial,
     String fechaFinal,
@@ -200,25 +223,35 @@ class HistorialModel {
         for (var item in datos) {
           List<double> doublelist = [];
           List<double> entradaslist = [];
+          List<double> entradasPaclist = [];
+          List<double> entradasContlist = [];
           List<double> salidaslist = [];
+          List<double> salidasPaclist = [];
+          List<double> salidasContlist = [];
           for (double perdida in item['PerdidaCantidad']) {
             String dob = '$perdida';
-            if (dob.split('.').length < 2) {
-              dob = '$dob.0';
-            }
+            if (dob.split('.').length < 2) dob = '$dob.0';
             doublelist.add(double.parse(dob));
           }
           for (int i = 0; i < item['Movimientos']; i++) {
-            String ent = '${item['Salidas'][i]}';
-            String sal = '${item['Entradas'][i]}';
-            if (ent.split('.').length < 2) {
-              ent = '$ent.0';
-            }
-            if (sal.split('.').length < 2) {
-              sal = '$sal.0';
-            }
+            String ent = '${item['Entradas'][i]}';
+            String entPac = '${item['EntradasPaquetes'][i]}';
+            String entCont = '${item['EntradasContenedores'][i]}';
+            String sal = '${item['Salidas'][i]}';
+            String salPac = '${item['SalidasPaquetes'][i]}';
+            String salCont = '${item['SalidasContenedores'][i]}';
+            if (ent.split('.').length < 2) ent = '$ent.0';
+            if (entPac.split('.').length < 2) entPac = '$entPac.0';
+            if (entCont.split('.').length < 2) entCont = '$entCont.0';
+            if (sal.split('.').length < 2) sal = '$sal.0';
+            if (salPac.split('.').length < 2) salPac = '$salPac.0';
+            if (salCont.split('.').length < 2) salCont = '$salCont.0';
             entradaslist.add(double.parse(ent));
+            entradasPaclist.add(double.parse(entPac));
+            entradasContlist.add(double.parse(entCont));
             salidaslist.add(double.parse(sal));
+            salidasPaclist.add(double.parse(salPac));
+            salidasContlist.add(double.parse(salCont));
           }
           historialFuture.add(
             HistorialModel(
@@ -228,7 +261,11 @@ class HistorialModel {
               area: item['Area'],
               movimientos: item['Movimientos'],
               entradas: entradaslist,
+              entradasPaq: entradasPaclist,
+              entradasCont: entradasContlist,
               salidas: salidaslist,
+              salidasPaq: salidasPaclist,
+              salidasCont: salidasContlist,
               perdidas: List<int>.from(item['Perdidas']),
               razones: List<String>.from(item['PerdidaRazon']),
               cantidades: doublelist,
@@ -275,25 +312,35 @@ class HistorialModel {
         for (var item in datos) {
           List<double> doublelist = [];
           List<double> entradaslist = [];
+          List<double> entradasPaclist = [];
+          List<double> entradasContlist = [];
           List<double> salidaslist = [];
+          List<double> salidasPaclist = [];
+          List<double> salidasContlist = [];
           for (double perdida in item['PerdidaCantidad']) {
             String dob = '$perdida';
-            if (dob.split('.').length < 2) {
-              dob = '$dob.0';
-            }
+            if (dob.split('.').length < 2) dob = '$dob.0';
             doublelist.add(double.parse(dob));
           }
           for (int i = 0; i < item['Movimientos']; i++) {
-            String ent = '${item['Salidas'][i]}';
-            String sal = '${item['Entradas'][i]}';
-            if (ent.split('.').length < 2) {
-              ent = '$ent.0';
-            }
-            if (sal.split('.').length < 2) {
-              sal = '$sal.0';
-            }
+            String ent = '${item['Entradas'][i]}';
+            String entPac = '${item['EntradasPaquetes'][i]}';
+            String entCont = '${item['EntradasContenedores'][i]}';
+            String sal = '${item['Salidas'][i]}';
+            String salPac = '${item['SalidasPaquetes'][i]}';
+            String salCont = '${item['SalidasContenedores'][i]}';
+            if (ent.split('.').length < 2) ent = '$ent.0';
+            if (entPac.split('.').length < 2) entPac = '$entPac.0';
+            if (entCont.split('.').length < 2) entCont = '$entCont.0';
+            if (sal.split('.').length < 2) sal = '$sal.0';
+            if (salPac.split('.').length < 2) salPac = '$salPac.0';
+            if (salCont.split('.').length < 2) salCont = '$salCont.0';
             entradaslist.add(double.parse(ent));
+            entradasPaclist.add(double.parse(entPac));
+            entradasContlist.add(double.parse(entCont));
             salidaslist.add(double.parse(sal));
+            salidasPaclist.add(double.parse(salPac));
+            salidasContlist.add(double.parse(salCont));
           }
           historial = HistorialModel(
             id: item['id'],
@@ -302,14 +349,16 @@ class HistorialModel {
             area: item['Area'],
             movimientos: item['Movimientos'],
             entradas: entradaslist,
+            entradasPaq: entradasPaclist,
+            entradasCont: entradasContlist,
             salidas: salidaslist,
+            salidasPaq: salidasPaclist,
+            salidasCont: salidasContlist,
             perdidas: List<int>.from(item['Perdidas']),
             razones: List<String>.from(item['PerdidaRazon']),
             cantidades: doublelist,
             horasModificacion: List<String>.from(item['ModificacionHoras']),
-            usuarioModificacion: List<String>.from(
-              item['ModificacionUsuario'],
-            ),
+            usuarioModificacion: List<String>.from(item['ModificacionUsuario']),
             mensaje: '',
           );
         }

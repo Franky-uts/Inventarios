@@ -29,7 +29,7 @@ Future<void> getProductoInfo(BuildContext ctx, int id) async {
   if (producto.mensaje.isEmpty) {
     if (ctx.mounted) {
       ctx.read<Producto>().setProducto(producto);
-      ctx.read<Producto>().prov(true);
+      ctx.read<Producto>().produ(true);
     }
   } else {
     Textos.toast(producto.mensaje);

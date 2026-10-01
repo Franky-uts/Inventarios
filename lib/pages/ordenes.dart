@@ -819,24 +819,30 @@ class _OrdenesState extends State<Ordenes> {
                             spacing: 7.5,
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Botones.btnRctMor(
+                              Botones.icoCirMor(
                                 'Imprimir',
                                 Icons.print_rounded,
-                                false,
                                 () => imprimir(context, venDatos.getDatos()),
+                                () {},
+                                false,
+                                true,
                               ),
-                              Botones.btnRctMor(
+                              Botones.icoCirMor(
                                 'Cerrar',
                                 Icons.clear_rounded,
-                                false,
                                 () => ventana.tabla(false),
+                                () {},
+                                false,
+                                true,
                               ),
                               if (venDatos.est() == 'En proceso')
-                                Botones.btnRctMor(
+                                Botones.icoCirMor(
                                   'Guardar',
                                   Icons.save_rounded,
-                                  false,
                                   () => guardar(venDatos.canCubLista()),
+                                  () {},
+                                  false,
+                                  true,
                                 ),
                             ],
                           ),
@@ -845,17 +851,21 @@ class _OrdenesState extends State<Ordenes> {
                               spacing: 7.5,
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Botones.btnRctMor(
+                                Botones.icoCirMor(
                                   'Denegar',
                                   Icons.cancel_schedule_send_rounded,
-                                  false,
                                   () => cambiarEstado('denegar'),
+                                  () {},
+                                  false,
+                                  true,
                                 ),
-                                Botones.btnRctMor(
+                                Botones.icoCirMor(
                                   'Entregar',
                                   Icons.store_rounded,
-                                  false,
                                   () => cambiarEstado('entregar'),
+                                  () {},
+                                  false,
+                                  true,
                                 ),
                               ],
                             ),

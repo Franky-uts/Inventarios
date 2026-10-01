@@ -107,7 +107,7 @@ class _ArticulosState extends State<Articulos> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              'Descargar articulos',
+              'Descargar información',
               Icons.download_rounded,
               () async => await RecDrawer.articulosExcel(context),
               () => Textos.toast('Espera a que los datos carguen.'),

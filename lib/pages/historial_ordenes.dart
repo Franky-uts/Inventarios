@@ -382,36 +382,44 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                         spacing: 7.5,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Botones.btnRctMor(
+                          Botones.icoCirMor(
                             'Cerrar',
                             Icons.clear_rounded,
-                            false,
                             () => {
                               venDatos.setEdit(false),
                               ventana.tabla(false),
                             },
+                            () {},
+                            false,
+                            true,
                           ),
-                          Botones.btnRctMor(
+                          Botones.icoCirMor(
                             'Cancelar',
                             Icons.cancel_schedule_send_rounded,
-                            false,
                             () => cancelarOrden(),
+                            () {},
+                            false,
+                            true,
                           ),
                           if (venDatos.est() == 'Entregado' || venDatos.edit())
-                            Botones.btnRctMor(
+                            Botones.icoCirMor(
                               'Confirmar',
                               Icons.check_circle_rounded,
-                              false,
                               () => confirmarEntragas(venDatos.comfProdLista()),
+                              () {},
+                              false,
+                              true,
                             ),
                           if ((venDatos.est() == 'Incompleto' ||
                                   venDatos.est() == 'Finalizado') &&
                               !venDatos.edit())
-                            Botones.btnRctMor(
+                            Botones.icoCirMor(
                               'Editar confirmaciones',
                               Icons.edit_note_rounded,
-                              false,
                               () => venDatos.setEdit(true),
+                              () {},
+                              false,
+                              true,
                             ),
                         ],
                       ),

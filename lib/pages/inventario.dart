@@ -24,8 +24,9 @@ class Inventario extends StatefulWidget {
 }
 
 class _InventarioState extends State<Inventario> {
-  List<TextEditingController> controllerUni = [];
-  List<TextEditingController> controllerCon = [];
+  List<TextEditingController> controllerAbi = [];
+  List<TextEditingController> controllerPaq = [];
+  List<TextEditingController> controllerCer = [];
   bool valido = false;
   int textoVentana = 0;
 
@@ -38,14 +39,19 @@ class _InventarioState extends State<Inventario> {
   //el mismo tamaño que el último id en el almacén, una lista se dedica para
   //registrar las unidades y otro para los contenedores.
   void listas(int length) {
-    if (controllerUni.isEmpty) {
+    if (controllerCer.isEmpty) {
       for (int i = 0; i < length; i++) {
-        controllerUni.add(TextEditingController(text: ''));
+        controllerCer.add(TextEditingController(text: ''));
       }
     }
-    if (controllerCon.isEmpty) {
+    if (controllerPaq.isEmpty) {
       for (int i = 0; i < length; i++) {
-        controllerCon.add(TextEditingController(text: ''));
+        controllerPaq.add(TextEditingController(text: ''));
+      }
+    }
+    if (controllerAbi.isEmpty) {
+      for (int i = 0; i < length; i++) {
+        controllerAbi.add(TextEditingController(text: ''));
       }
     }
   }
@@ -53,12 +59,21 @@ class _InventarioState extends State<Inventario> {
   //Método encargado de guardar las unidades y contenedores de los diferentes
   //productos de forma local.
   void guardarregistro(BuildContext ctx) {
-    List<String> unidades = [];
-    for (TextEditingController controller in controllerUni) {
-      unidades.add(controller.text);
+    List<String> cerrados = [];
+    List<String> paquetes = [];
+    List<String> abiertos = [];
+    for (TextEditingController controller in controllerCer) {
+      cerrados.add(controller.text);
     }
-    LocalStorage.setLista('unidades', unidades);
-    LocalStorage.setLista('cajas', unidades);
+    for (TextEditingController controller in controllerPaq) {
+      paquetes.add(controller.text);
+    }
+    for (TextEditingController controller in controllerAbi) {
+      abiertos.add(controller.text);
+    }
+    LocalStorage.setLista('cerrados', cerrados);
+    LocalStorage.setLista('paquetes', paquetes);
+    LocalStorage.setLista('abiertos', abiertos);
     Textos.toast('Se guardo el reporte correctamente');
   }
 
@@ -68,46 +83,62 @@ class _InventarioState extends State<Inventario> {
   void enviarRegistro(BuildContext ctx) async {
     List<ProductoModel> listaProductos = await getProductos('id', '');
     List<int> idProductos = [];
-    List<double> unidades = [];
-    List<double> cajas = [];
+    List<double> cerrados = [];
+    List<double> paquetes = [];
+    List<double> abiertos = [];
     for (ProductoModel prod in listaProductos) {
-      String uni = controllerUni[prod.id - 1].text;
-      String cont = controllerCon[prod.id - 1].text;
-      if (uni.isNotEmpty) {
-        (uni.split('.').length < 2)
-            ? unidades.add(double.parse('$uni.0'))
-            : unidades.add(double.parse(uni));
-        if (cont.isEmpty) {
-          cajas.add(0.0);
-        }
+      String cer = controllerCer[prod.id - 1].text;
+      String paq = controllerPaq[prod.id - 1].text;
+      String abi = controllerAbi[prod.id - 1].text;
+      if (cer.isNotEmpty) {
+        (cer.split('.').length < 2)
+            ? cerrados.add(double.parse('$cer.0'))
+            : cerrados.add(double.parse(cer));
+        if (cerrados.last < 0) cerrados.last = 0;
       }
-      if (cont.isNotEmpty) {
-        (cont.split('.').length < 2)
-            ? cajas.add(double.parse('$cont.0'))
-            : cajas.add(double.parse(cont));
-        if (uni.isEmpty) {
-          unidades.add(0.0);
-        }
+      if (paq.isNotEmpty) {
+        (paq.split('.').length < 2)
+            ? paquetes.add(double.parse('$paq.0'))
+            : paquetes.add(double.parse(paq));
+        if (paquetes.last < 0) paquetes.last = 0;
       }
-      if (uni.isNotEmpty || cont.isNotEmpty) {
-        idProductos.add(prod.id);
+      if (abi.isNotEmpty) {
+        (abi.split('.').length < 2)
+            ? abiertos.add(double.parse('$abi.0'))
+            : abiertos.add(double.parse(abi));
+        if (abiertos.last < 0) abiertos.last = 0;
+      }
+      if (cer.isNotEmpty || abi.isNotEmpty || paq.isNotEmpty) {
+        if (cer.isEmpty) cerrados.add(0.0);
+        if (paq.isEmpty) paquetes.add(0.0);
+        if (abi.isEmpty) abiertos.add(0.0);
+        if (cerrados.last == 0 && paquetes.last == 0 && abiertos.last == 0) {
+          cerrados.removeLast();
+          paquetes.removeLast();
+          abiertos.removeLast();
+        } else {
+          idProductos.add(prod.id);
+        }
       }
     }
     String mensaje = 'Error: Los valores no son válidos.';
     if (idProductos.isNotEmpty) {
       mensaje = await RegistroModel.registroCompleto(
         idProductos,
-        unidades,
-        cajas,
+        cerrados,
+        paquetes,
+        abiertos,
       );
       valido = false;
     }
     if (mensaje.split(':')[0] != 'Error') {
-      LocalStorage.eliminar('unidades');
-      LocalStorage.eliminar('cajas');
+      LocalStorage.eliminar('cerrados');
+      LocalStorage.eliminar('paquetes');
+      LocalStorage.eliminar('abiertos');
       for (ProductoModel prod in listaProductos) {
-        controllerUni[prod.id - 1].text = '';
-        controllerCon[prod.id - 1].text = '';
+        controllerCer[prod.id - 1].text = '';
+        controllerPaq[prod.id - 1].text = '';
+        controllerAbi[prod.id - 1].text = '';
       }
     }
     Textos.toast(mensaje);
@@ -193,8 +224,16 @@ class _InventarioState extends State<Inventario> {
                     barraSuperior(context),
                     Tablas.contenedorInfo(
                       MediaQuery.sizeOf(context).width,
-                      [.075, .275, .2, .2, .1, .1],
-                      ['id', 'Nombre', 'Área', 'Tipo', 'Und./Kg.', 'Cont.'],
+                      [.05, .275, .175, .175, .1, .1, .1],
+                      [
+                        'id',
+                        'Nombre',
+                        'Área',
+                        'Tipo',
+                        'Cerr.',
+                        'Paqu.',
+                        'Abie.',
+                      ],
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width,
@@ -251,8 +290,12 @@ class _InventarioState extends State<Inventario> {
                     () async => {
                       ventanas.emergente(false),
                       carga.cargaBool(true),
-                      for (int i = 0; i < controllerUni.length; i++)
-                        {controllerUni[i].text = ''},
+                      for (int i = 0; i < controllerCer.length; i++)
+                        {controllerCer[i].text = ''},
+                      for (int i = 0; i < controllerPaq.length; i++)
+                        {controllerPaq[i].text = ''},
+                      for (int i = 0; i < controllerAbi.length; i++)
+                        {controllerAbi[i].text = ''},
                       if (context.mounted) carga.cargaBool(false),
                     },
                     () async => {
@@ -295,16 +338,17 @@ class _InventarioState extends State<Inventario> {
             Icons.task_alt_rounded,
             false,
             () => {
-              for (int i = 0; i < controllerUni.length; i++)
+              for (int i = 0; i < controllerCer.length; i++)
                 {
-                  if (controllerUni[i].text.isNotEmpty)
-                    {
-                      if (double.parse(controllerUni[i].text) > 0) {valido = true},
-                    },
-                  if (controllerCon[i].text.isNotEmpty)
-                    {
-                      if (double.parse(controllerCon[i].text) > 0) {valido = true},
-                    },
+                  if (controllerCer[i].text.isNotEmpty)
+                    if (double.parse(controllerCer[i].text) > 0) valido = true,
+                  if (controllerPaq[i].text.isNotEmpty)
+                    if (double.parse(controllerPaq[i].text) > 0) valido = true,
+                  if (controllerAbi[i].text.isNotEmpty)
+                    if (double.parse(controllerAbi[i].text) > 0) valido = true,
+                  //Esto se pude hacer con un while, pero me duele la cabeza y
+                  //tengo que entregar esto desde ayer.
+                  if (valido) i = controllerCer.length,
                 },
               if (valido)
                 {textoVentana = 1, context.read<Ventanas>().emergente(true)}
@@ -354,7 +398,7 @@ class _InventarioState extends State<Inventario> {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.075, .275, .2, .2, .1, .1],
+            [.05, .275, .175, .175, .1, .1, .1],
             [
               "${lista[index].id}",
               lista[index].nombre,
@@ -363,10 +407,24 @@ class _InventarioState extends State<Inventario> {
               Consumer<Textos>(
                 builder: (context, textos, child) {
                   return CampoTexto.inputTexto(
-                    MediaQuery.sizeOf(context).width * .13,
+                    MediaQuery.sizeOf(context).width * .1,
                     '',
-                    '0',
-                    controllerUni[lista[index].id - 1],
+                    (!(lista[index].tipo == 'Paquete' ||
+                            lista[index].tipo == 'Galón' ||
+                            lista[index].tipo == 'Litro' ||
+                            lista[index].tipo == 'Pieza' ||
+                            lista[index].tipo == 'Garrafa' ||
+                            lista[index].tipo == 'Kilo(s)'))
+                        ? '0'
+                        : '-',
+                    controllerCer[lista[index].id - 1],
+                    enabled:
+                        (!(lista[index].tipo == 'Paquete' ||
+                            lista[index].tipo == 'Galón' ||
+                            lista[index].tipo == 'Litro' ||
+                            lista[index].tipo == 'Pieza' ||
+                            lista[index].tipo == 'Garrafa' ||
+                            lista[index].tipo == 'Kilo(s)')),
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),
@@ -380,10 +438,33 @@ class _InventarioState extends State<Inventario> {
               Consumer<Textos>(
                 builder: (context, textos, child) {
                   return CampoTexto.inputTexto(
-                    MediaQuery.sizeOf(context).width * .13,
+                    MediaQuery.sizeOf(context).width * .1,
+                    '',
+                    (lista[index].tipo == 'Caja (Paquetes)' ||
+                            lista[index].tipo == 'Paquete')
+                        ? '0'
+                        : '-',
+                    controllerPaq[lista[index].id - 1],
+                    enabled:
+                        (lista[index].tipo == 'Caja (Paquetes)' ||
+                        lista[index].tipo == 'Paquete'),
+                    borderColor: Color(0xFF8A03A9),
+                    formato: FilteringTextInputFormatter.allow(
+                      RegExp(r'(^\d*\.?\d{0,3})'),
+                    ),
+                    inputType: TextInputType.numberWithOptions(decimal: true),
+                    fontSize: 17.5,
+                    align: TextAlign.center,
+                  );
+                },
+              ),
+              Consumer<Textos>(
+                builder: (context, textos, child) {
+                  return CampoTexto.inputTexto(
+                    MediaQuery.sizeOf(context).width * .1,
                     '',
                     '0',
-                    controllerCon[lista[index].id - 1],
+                    controllerAbi[lista[index].id - 1],
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),

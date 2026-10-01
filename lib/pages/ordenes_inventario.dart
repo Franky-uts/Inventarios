@@ -59,7 +59,7 @@ class _OrdenesInventarioState extends State<OrdenesInventario> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              'Descargar reporte',
+              'Descargar movimientos',
               Icons.download_rounded,
               () async => await RecDrawer.datosExcel(context),
               () => Textos.toast('Espera a que los datos carguen.'),

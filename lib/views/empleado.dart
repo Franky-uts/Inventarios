@@ -5,11 +5,13 @@ import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/producto_model.dart';
+import 'package:inventarios/pages/articulos.dart';
 import 'package:inventarios/pages/historial.dart';
 import 'package:inventarios/pages/historial_ordenes.dart';
 import 'package:inventarios/pages/esp.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/orden_salida.dart';
+import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
 //Visor de páginas principales, dedicada principalmente a los empleados.
@@ -75,6 +77,8 @@ class _EmpleadoState extends State<Empleado> {
                 'Historial',
                 Icons.history_toggle_off_rounded,
               ),
+              if (LocalStorage.local('puesto') == 'Administrador')
+                Botones.botonBarNav('Artículos', Icons.list),
             ],
             indicatorColor: Color(0xFFFF5600),
             labelTextStyle: WidgetStateProperty<TextStyle>.fromMap(
@@ -100,6 +104,7 @@ class _EmpleadoState extends State<Empleado> {
         OrdenSalida(),
         HistorialOrdenes(),
         Historial(),
+        if (LocalStorage.local('puesto') == 'Administrador') Articulos(),
       ][currentPage],
     );
   }

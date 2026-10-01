@@ -12,10 +12,11 @@ class RegistroModel {
   List<String> articulos;
   List<String> tipos;
   List<String> areas;
-  List<double> unidades;
-  List<double> cajas;
+  List<double> cerrados;
+  List<double> paquetes;
+  List<double> abiertos;
   List<int> limite;
-  String almacen;
+  //String almacen;
   String usuario;
   String mensaje;
 
@@ -26,10 +27,11 @@ class RegistroModel {
     required this.articulos,
     required this.tipos,
     required this.areas,
-    required this.unidades,
-    required this.cajas,
+    required this.cerrados,
+    required this.paquetes,
+    required this.abiertos,
     required this.limite,
-    required this.almacen,
+    //required this.almacen,
     required this.usuario,
     required this.mensaje,
   });
@@ -45,10 +47,11 @@ class RegistroModel {
       articulos: [],
       tipos: [],
       areas: [],
-      unidades: [],
-      cajas: [],
+      cerrados: [],
+      paquetes: [],
+      abiertos: [],
       limite: [],
-      almacen: '',
+      //almacen: '',
       usuario: '',
       mensaje: mensaje,
     );
@@ -88,10 +91,92 @@ class RegistroModel {
               articulos: [],
               tipos: [],
               areas: [],
-              unidades: [],
-              cajas: [],
+              cerrados: [],
+              paquetes: [],
+              abiertos: [],
               limite: [],
-              almacen: '',
+              //almacen: '',
+              usuario: item['Usuario'],
+              mensaje: '',
+            ),
+          );
+        }
+      } else {
+        lista.add(dummy(res.body));
+      }
+    } on TimeoutException catch (e) {
+      lista.add(dummy('${e.message}'));
+    } on SocketException catch (e) {
+      lista.add(dummy(e.message.toString()));
+    } on http.ClientException catch (e) {
+      lista.add(dummy(e.message));
+    } on Error catch (e) {
+      lista.add(dummy('$e'));
+    }
+    return lista;
+  }
+
+  //Método get que regresa una lista con objetos de la clase RegistroModel a
+  //través de una petición HTTP GET, en caso de que suceda algún error regresa
+  //el error en forma de texto, requiere una fecha inicial y otra final, este
+  //tiene la distinción desde contener toda la información de cada registro,
+  //este método se usa para generar un archivo Excel.
+  static Future<List<RegistroModel>> getAllRegistros(
+    String fechaInicial,
+    String fechaFinal,
+  ) async {
+    String locacion = LocalStorage.local('locación');
+    List<RegistroModel> lista = [];
+    try {
+      var res = await http.get(
+        Uri.parse(
+          '${MyApp.url}:3000/registros/$locacion/Fecha/$fechaInicial/$fechaFinal',
+        ),
+        headers: {
+          'Accept': 'application/json',
+          'content-type': 'application/json; charset=UTF-8',
+        },
+      );
+      if (res.statusCode == 200) {
+        final datos = json.decode(res.body);
+        for (var item in datos) {
+          List<double> cerList = [];
+          List<double> paqList = [];
+          List<double> abiList = [];
+          for (double cerrado in item['Cerrados']) {
+            String dob = '$cerrado';
+            if (dob.split('.').length < 2) {
+              dob = '$dob.0';
+            }
+            cerList.add(double.parse(dob));
+          }
+          for (double paquete in item['Paquetes']) {
+            String dob = '$paquete';
+            if (dob.split('.').length < 2) {
+              dob = '$dob.0';
+            }
+            paqList.add(double.parse(dob));
+          }
+          for (double abierto in item['Abiertos']) {
+            String dob = '$abierto';
+            if (dob.split('.').length < 2) {
+              dob = '$dob.0';
+            }
+            abiList.add(double.parse(dob));
+          }
+          lista.add(
+            RegistroModel(
+              fecha: item['Fecha'],
+              hora: item['Hora'],
+              idProducto: List<int>.from(item['idProductos']),
+              articulos: List<String>.from(item['Articulos']),
+              tipos: List<String>.from(item['Tipos']),
+              areas: List<String>.from(item['Areas']),
+              cerrados: cerList,
+              paquetes: paqList,
+              abiertos: abiList,
+              limite: List<int>.from(item['Limite']),
+              //almacen: item['Almacen'],
               usuario: item['Usuario'],
               mensaje: '',
             ),
@@ -134,21 +219,29 @@ class RegistroModel {
       if (res.statusCode == 200) {
         final datos = json.decode(res.body);
         for (var item in datos) {
-          List<double> uniList = [];
-          List<double> cajaList = [];
-          for (double unidad in item['Unidades']) {
-            String dob = '$unidad';
+          List<double> cerList = [];
+          List<double> paqList = [];
+          List<double> abiList = [];
+          for (double cerrado in item['Cerrados']) {
+            String dob = '$cerrado';
             if (dob.split('.').length < 2) {
               dob = '$dob.0';
             }
-            uniList.add(double.parse(dob));
+            cerList.add(double.parse(dob));
           }
-          for (double caja in item['Cajas']) {
-            String dob = '$caja';
+          for (double paquete in item['Paquetes']) {
+            String dob = '$paquete';
             if (dob.split('.').length < 2) {
               dob = '$dob.0';
             }
-            cajaList.add(double.parse(dob));
+            paqList.add(double.parse(dob));
+          }
+          for (double abierto in item['Abiertos']) {
+            String dob = '$abierto';
+            if (dob.split('.').length < 2) {
+              dob = '$dob.0';
+            }
+            abiList.add(double.parse(dob));
           }
           registro = RegistroModel(
             fecha: item['Fecha'],
@@ -157,10 +250,11 @@ class RegistroModel {
             articulos: List<String>.from(item['Articulos']),
             tipos: List<String>.from(item['Tipos']),
             areas: List<String>.from(item['Areas']),
-            unidades: uniList,
-            cajas: cajaList,
-            limite: List<int>.from(item['Limites']),
-            almacen: item['Almacen'],
+            cerrados: cerList,
+            paquetes: paqList,
+            abiertos: abiList,
+            limite: List<int>.from(item['Limite']),
+            //almacen: item['Almacen'],
             usuario: item['Usuario'],
             mensaje: '',
           );
@@ -189,8 +283,9 @@ class RegistroModel {
   //como botes, cajas, costales, etc.
   static Future<String> registroCompleto(
     List<int> idProductos,
-    List<double> unidades,
-    List<double> cajas,
+    List<double> cerrados,
+    List<double> paquetes,
+    List<double> abiertos,
   ) async {
     String mensaje = '';
     try {
@@ -202,8 +297,9 @@ class RegistroModel {
         },
         body: jsonEncode({
           'productos': idProductos,
-          'unidades': unidades,
-          'cajas': cajas,
+          'cerrados': cerrados,
+          'paquetes': paquetes,
+          'abiertos': abiertos,
           'usuario': LocalStorage.local('usuario'),
         }),
       );

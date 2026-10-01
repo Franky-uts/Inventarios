@@ -186,6 +186,7 @@ class Ventanas with ChangeNotifier {
                       'Cedis',
                       'Faja de Oro',
                       'Portales',
+                      'Pruebas',
                       'Yogulive Jardín',
                       'Yogulive Árbol Grande',
                     ],

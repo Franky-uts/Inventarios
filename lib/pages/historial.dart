@@ -100,6 +100,24 @@ class _HistorialState extends State<Historial> {
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
+  Future<void> setDate(BuildContext ctx, bool inicial) async {
+    String time = '';
+    final DateTime? tiempo = await showDatePicker(
+      context: ctx,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2025),
+    );
+    if (tiempo != null) {
+      time = '${tiempo.day}-${tiempo.month}-${tiempo.year}';
+    }
+    if (inicial) {
+      fecIni = time;
+    } else {
+      fecFin = time;
+    }
+  }
+
   //Esta función se encarga de establecer un rango de fechas para poder que solo
   //se muestren los movimientos o registros que estén entre estas fechas, en
   //caso de no tener una fecha fallida se le mostrara un mensaje de error al
@@ -129,53 +147,50 @@ class _HistorialState extends State<Historial> {
       DateTime ff = DateTime.parse(
         '${fecFinCont[2].text}-${fecFinCont[1].text}-${fecFinCont[0].text}',
       );
-      (ff.isAfter(fi) || ff.isAtSameMomentAs(fi))
-          ? {
-              fecIni =
-                  '${fecIniCont[0].text}-${fecIniCont[1].text}-${fecIniCont[2].text}',
-              fecFin =
-                  '${fecFinCont[0].text}-${fecFinCont[1].text}-${fecFinCont[2].text}',
-              reporte
-                  ? {
-                      mensaje = await RecDrawer.historialExcel(
-                        ctx,
-                        fecIni,
-                        fecFin,
-                      ),
-                      mensaje.split(': ')[0] == 'Error'
-                          ? mensaje = mensaje.split(': ')[1]
-                          : {
-                              fecIniCont[0].text = '',
-                              fecIniCont[1].text = '',
-                              fecIniCont[2].text = '',
-                              fecFinCont[0].text = '',
-                              fecFinCont[1].text = '',
-                              fecFinCont[2].text = '',
-                              fecIni = '',
-                              fecFin = '',
-                              if (ctx.mounted)
-                                ctx.read<Ventanas>().emergente(false),
-                            },
-                    }
-                  : ctx.read<Tablas>().datos(
-                      await getHistorial(
-                        CampoTexto.filtroTexto(),
-                        CampoTexto.busquedaTexto.text,
-                      ),
-                    ),
+      if ((ff.isAfter(fi) || ff.isAtSameMomentAs(fi))) {
+        if (!(ff.isAfter(DateTime.now()) || fi.isAfter(DateTime.now()))) {
+          fecIni =
+              '${fecIniCont[0].text}-${fecIniCont[1].text}-${fecIniCont[2].text}';
+          fecFin =
+              '${fecFinCont[0].text}-${fecFinCont[1].text}-${fecFinCont[2].text}';
+          if (reporte) {
+            mensaje = registros
+                ? await RecDrawer.registroExcel(ctx, fecIni, fecFin)
+                : await RecDrawer.historialExcel(ctx, fecIni, fecFin);
+            if (mensaje.split(': ')[0] == 'Error') {
+              mensaje = mensaje.split(': ')[1];
+            } else {
+              for (var i = 0; i < fecIniCont.length; i++) {
+                fecIniCont[i].text = '';
+                fecFinCont[i].text = '';
+              }
+              fecIni = '';
+              fecFin = '';
+              if (ctx.mounted) ctx.read<Ventanas>().emergente(false);
             }
-          : mensaje = 'La fecha inicial no debe ser mayor a la final.';
+          } else {
+            ctx.read<Tablas>().datos(
+              await getHistorial(
+                CampoTexto.filtroTexto(),
+                CampoTexto.busquedaTexto.text,
+              ),
+            );
+          }
+        } else {
+          mensaje = 'Las fechas no deben ser despues del dia de hoy.';
+        }
+      } else {
+        mensaje = 'La fecha inicial no debe ser mayor a la final.';
+      }
     } else {
       mensaje = 'Fecha inválida';
     }
-    if (ctx.mounted) {
-      if (mensaje.isEmpty) {
-        ctx.read<Ventanas>().emergente(false);
-      } else {
-        Textos.toast(mensaje);
-      }
-      ctx.read<Carga>().cargaBool(false);
+    if (mensaje.isEmpty) {
+      if (ctx.mounted) ctx.read<Ventanas>().emergente(false);
+    } else {
+      Textos.toast(mensaje);
     }
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
   }
 
   @override
@@ -194,7 +209,7 @@ class _HistorialState extends State<Historial> {
                   ctx.read<Ventanas>().cambio(true),
                   carga.cargaBool(false),
                 },
-                () => {},
+                () {},
                 false,
                 true,
               );
@@ -203,7 +218,7 @@ class _HistorialState extends State<Historial> {
         Consumer2<Carga, Ventanas>(
           builder: (ctx, carga, ventanas, child) {
             return Botones.icoCirMor(
-              'Descargar reporte',
+              registros ? 'Descargar reportes' : 'Generar registro',
               Icons.download_rounded,
               () => {
                 Navigator.of(context).pop(),
@@ -296,13 +311,21 @@ class _HistorialState extends State<Historial> {
             Consumer2<Ventanas, Carga>(
               builder: (context, ventanas, carga, child) {
                 return Ventanas.ventanaEmergente(
-                  'Selecciona un rango',
+                  registros ? 'Selecciona un rango' : 'Selecciona un registro',
                   'Volver',
                   'Confirmar',
                   () => ventanas.emergente(false),
                   () async => await setFecha(context),
                   widget: Column(
                     children: [
+                      if (registros)
+                        Textos.textoGeneral(
+                          'Si no se quiere hacer una comparación seleccione la misma fecha en ambos campos, los registros se deben de hacer una vez a la semana.',
+                          true,
+                          1,
+                          size: 10,
+                          alignment: TextAlign.center,
+                        ),
                       Textos.textoGeneral(
                         'Fecha inicial',
                         true,
@@ -314,6 +337,20 @@ class _HistorialState extends State<Historial> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          /*Textos.textoGeneral(
+                            fecIni.isNotEmpty ? fecIni : 'dd-mm-yyyy',
+                            true,
+                            1,
+                            size: 20,
+                            alignment: TextAlign.center,
+                          ),
+                          Botones.btnRctMor(
+                            'Establecer fecha incial',
+                            Icons.calendar_today,
+                            false,
+                            () => setDate(context, true),
+                            size: 35,
+                          ),*/
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
                             'Dia',
@@ -356,6 +393,20 @@ class _HistorialState extends State<Historial> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
+                          /*Textos.textoGeneral(
+                            fecFin.isNotEmpty ? fecFin : 'dd-mm-yyyy',
+                            true,
+                            1,
+                            size: 20,
+                            alignment: TextAlign.center,
+                          ),
+                          Botones.btnRctMor(
+                            'Establecer fecha final',
+                            Icons.calendar_today,
+                            false,
+                            () => setDate(context, false),
+                            size: 35,
+                          ),*/
                           CampoTexto.inputTexto(
                             MediaQuery.of(context).size.width * .225,
                             'Dia',
@@ -506,7 +557,7 @@ class _HistorialState extends State<Historial> {
                 ? [lista[index].fecha, lista[index].hora, lista[index].usuario]
                 : [
                     lista[index].fecha,
-                    "${lista[index].id}",
+                    '${lista[index].id}',
                     lista[index].nombre,
                     lista[index].area,
                     '${lista[index].movimientos}',

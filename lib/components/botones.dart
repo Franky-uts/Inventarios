@@ -34,6 +34,7 @@ class Botones {
       ),
       style: borde
           ? FilledButton.styleFrom(
+              alignment: Alignment.center,
               padding: EdgeInsets.all(10),
               backgroundColor: Color(0xFFFFFFFF),
               shape: RoundedRectangleBorder(
@@ -42,6 +43,7 @@ class Botones {
               ),
             )
           : IconButton.styleFrom(
+              alignment: Alignment.center,
               backgroundColor: Color(0xFF8A03A9),
               shape: ContinuousRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
@@ -76,7 +78,8 @@ class Botones {
       onPressed: enabled ? () => accion() : () => accionNull(),
       style: borde
           ? FilledButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               backgroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(25),
@@ -87,7 +90,8 @@ class Botones {
               ),
             )
           : TextButton.styleFrom(
-              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+              alignment: Alignment.center,
+              padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
               backgroundColor: enabled ? Color(0xFF8A03A9) : Color(0xFF8C78AA),
             ),
       icon: Icon(icono, color: colorLetra, size: 25),
@@ -106,6 +110,7 @@ class Botones {
       label: Textos.textoGeneral(texto, true, 1, alignment: TextAlign.center),
       icon: Icon(icono, size: 25, color: Color(0xFF8A03A9)),
       style: OutlinedButton.styleFrom(
+        alignment: Alignment.center,
         padding: EdgeInsets.all(12.5),
         side: BorderSide(color: colorBorde, width: 2),
         backgroundColor: Colors.white,
@@ -121,6 +126,7 @@ class Botones {
   static OutlinedButton btnCirRos(String texto, Function accion) {
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
+        alignment: Alignment.center,
         backgroundColor: Color(0xFF8A03A9),
         side: BorderSide(color: Color(0xFFF6AFCF), width: 2),
       ),
@@ -148,6 +154,7 @@ class Botones {
     return TextButton.icon(
       onPressed: () => accion(),
       style: IconButton.styleFrom(
+        alignment: Alignment.center,
         padding: EdgeInsets.all(15),
         backgroundColor: Color(0xFF8A03A9),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

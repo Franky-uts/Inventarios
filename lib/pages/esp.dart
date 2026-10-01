@@ -27,8 +27,9 @@ class ESP extends StatefulWidget {
 }
 
 class _ESPState extends State<ESP> {
-  List<TextEditingController> controllerSal = [];
-  List<TextEditingController> controllerEnt = [];
+  List<TextEditingController> contrEntCont = [];
+  List<TextEditingController> contrEntPaq = [];
+  List<TextEditingController> contrEnt = [];
   int textoVentana = 0;
   bool valido = false;
   ProductoModel producto = ProductoModel.dummy('');
@@ -47,14 +48,19 @@ class _ESPState extends State<ESP> {
   //el mismo tamaño que el último id en el almacén, una lista se dedica para
   //registrar las entradas y otro para las salidas.
   void listas(int length) {
-    if (controllerEnt.isEmpty) {
+    if (contrEnt.isEmpty) {
       for (int i = 0; i < length; i++) {
-        controllerEnt.add(TextEditingController(text: ''));
+        contrEnt.add(TextEditingController(text: ''));
       }
     }
-    if (controllerSal.isEmpty) {
+    if (contrEntPaq.isEmpty) {
       for (int i = 0; i < length; i++) {
-        controllerSal.add(TextEditingController(text: ''));
+        contrEntPaq.add(TextEditingController(text: ''));
+      }
+    }
+    if (contrEntCont.isEmpty) {
+      for (int i = 0; i < length; i++) {
+        contrEntCont.add(TextEditingController(text: ''));
       }
     }
   }
@@ -65,44 +71,61 @@ class _ESPState extends State<ESP> {
   void enviarMovimientos(BuildContext ctx) async {
     List<ProductoModel> listaProductos = await getProductos('id', '');
     List<int> idProductos = [];
-    List<double> entradas = [];
-    List<double> salidas = [];
+    List<double> entradasUni = [];
+    List<double> entradasPaq = [];
+    List<double> entradasCont = [];
     for (ProductoModel prod in listaProductos) {
-      String ent = controllerEnt[prod.id - 1].text;
-      String sal = controllerSal[prod.id - 1].text;
-      if (ent.isNotEmpty) {
-        (ent.split('.').length < 2)
-            ? entradas.add(double.parse('$ent.0'))
-            : entradas.add(double.parse(ent));
-        if (sal.isEmpty) {
-          salidas.add(0.0);
-        }
+      String entU = contrEnt[prod.id - 1].text;
+      String entP = contrEntPaq[prod.id - 1].text;
+      String entC = contrEntCont[prod.id - 1].text;
+      if (entU.isNotEmpty) {
+        (entU.split('.').length < 2)
+            ? entradasUni.add(double.parse('$entU.0'))
+            : entradasUni.add(double.parse(entU));
+        if (entradasUni.last < 0) entradasUni.last = 0;
       }
-      if (sal.isNotEmpty) {
-        (sal.split('.').length < 2)
-            ? salidas.add(double.parse('$sal.0'))
-            : salidas.add(double.parse(sal));
-        if (ent.isEmpty) {
-          entradas.add(0.0);
-        }
+      if (entP.isNotEmpty) {
+        (entP.split('.').length < 2)
+            ? entradasPaq.add(double.parse('$entP.0'))
+            : entradasPaq.add(double.parse(entP));
+        if (entradasPaq.last < 0) entradasPaq.last = 0;
       }
-      if (ent.isNotEmpty || sal.isNotEmpty) {
-        idProductos.add(prod.id);
+      if (entC.isNotEmpty) {
+        (entC.split('.').length < 2)
+            ? entradasCont.add(double.parse('$entC.0'))
+            : entradasCont.add(double.parse(entC));
+        if (entradasCont.last < 0) entradasCont.last = 0;
+      }
+      if (entU.isNotEmpty || entP.isNotEmpty || entC.isNotEmpty) {
+        if (entU.isEmpty) entradasUni.add(0.0);
+        if (entP.isEmpty) entradasPaq.add(0.0);
+        if (entC.isEmpty) entradasCont.add(0.0);
+        if (entradasUni.last == 0 &&
+            entradasPaq.last == 0 &&
+            entradasCont.last == 0) {
+          entradasUni.removeLast();
+          entradasPaq.removeLast();
+          entradasCont.removeLast();
+        } else {
+          idProductos.add(prod.id);
+        }
       }
     }
     String mensaje = 'Error: Los valores no son válidos.';
     if (idProductos.isNotEmpty) {
       mensaje = await ProductoModel.guardarESCompleto(
         idProductos,
-        entradas,
-        salidas,
+        entradasUni,
+        entradasPaq,
+        entradasCont,
       );
       valido = false;
     }
     if (mensaje.split(':')[0] != 'Error') {
       for (ProductoModel prod in listaProductos) {
-        controllerEnt[prod.id - 1].text = '';
-        controllerSal[prod.id - 1].text = '';
+        contrEnt[prod.id - 1].text = '';
+        contrEntPaq[prod.id - 1].text = '';
+        contrEntCont[prod.id - 1].text = '';
       }
       mensaje = 'Se envio el reporte correctamente';
       if (ctx.mounted) {
@@ -184,7 +207,7 @@ class _ESPState extends State<ESP> {
         Consumer<Carga>(
           builder: (ctx, carga, child) {
             return Botones.icoCirMor(
-              'Descargar reporte',
+              'Descargar movimientos',
               Icons.download_rounded,
               () async => await RecDrawer.datosExcel(context),
               () => Textos.toast('Espera a que los datos carguen.'),
@@ -238,15 +261,16 @@ class _ESPState extends State<ESP> {
                       children: [
                         Tablas.contenedorInfo(
                           MediaQuery.sizeOf(context).width,
-                          [.075, .25, .175, .15, .1, .1, .075],
+                          [.05, .25, .15, .15, .1, .1, .1, .075],
                           [
                             'id',
                             'Nombre',
                             'Área',
                             'Tipo',
-                            'Entrada',
-                            'Salida',
-                            'Información',
+                            'Ent. Cont.',
+                            'Ent. Paq.',
+                            'Ent. Piez.',
+                            'Info.',
                           ],
                         ),
                         SizedBox(
@@ -320,14 +344,15 @@ class _ESPState extends State<ESP> {
                     () async => {
                       ventanas.emergente(false),
                       carga.cargaBool(true),
-                      for (int i = 0; i < controllerEnt.length; i++)
+                      for (int i = 0; i < contrEnt.length; i++)
                         {
-                          controllerEnt[i].text = '',
-                          controllerSal[i].text = '',
+                          contrEnt[i].text = '',
+                          contrEntPaq[i].text = '',
+                          contrEntCont[i].text = '',
                         },
                       if (context.mounted) carga.cargaBool(false),
                     },
-                    () => {},
+                    () {},
                   ][textoVentana],
 
                   widget: (textoVentana == 3) ? Column(children: []) : null,
@@ -387,16 +412,14 @@ class _ESPState extends State<ESP> {
             Icons.task_alt_rounded,
             false,
             () => {
-              for (int i = 0; i < controllerEnt.length; i++)
+              for (int i = 0; i < contrEnt.length; i++)
                 {
-                  if (controllerEnt[i].text.isNotEmpty)
-                    {
-                      if (double.parse(controllerEnt[i].text) > 0) {valido = true},
-                    },
-                  if (controllerSal[i].text.isNotEmpty)
-                    {
-                      if (double.parse(controllerSal[i].text) > 0) {valido = true},
-                    },
+                  if (contrEnt[i].text.isNotEmpty)
+                    if (double.parse(contrEnt[i].text) > 0) valido = true,
+                  if (contrEntPaq[i].text.isNotEmpty)
+                    if (double.parse(contrEntPaq[i].text) > 0) valido = true,
+                  if (contrEntCont[i].text.isNotEmpty)
+                    if (double.parse(contrEntCont[i].text) > 0) valido = true,
                 },
               if (valido)
                 {textoVentana = 1, context.read<Ventanas>().emergente(true)}
@@ -443,20 +466,38 @@ class _ESPState extends State<ESP> {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        String entrada = '${lista[index].entrada}';
-        String salida = '${lista[index].salida}';
-        if (entrada.split('.').length > 1) {
-          if (entrada.split('.')[1] == '0') entrada = entrada.split('.')[0];
+        String entUni = '${lista[index].entradaUni}';
+        String entPaq = '${lista[index].entradaPaq}';
+        String entCont = '${lista[index].entradaCont}';
+        if (!(lista[index].tipo == 'Paquete' ||
+            lista[index].tipo == 'Galón' ||
+            lista[index].tipo == 'Litro' ||
+            lista[index].tipo == 'Pieza' ||
+            lista[index].tipo == 'Garrafa' ||
+            lista[index].tipo == 'Kilo(s)')) {
+          if (entCont.split('.').length > 1) {
+            if (entCont.split('.')[1] == '0') entCont = entCont.split('.')[0];
+          }
+        } else {
+          entCont = '-';
         }
-        if (salida.split('.').length > 1) {
-          if (salida.split('.')[1] == '0') salida = salida.split('.')[0];
+        if (lista[index].tipo == 'Caja (Paquetes)' ||
+            lista[index].tipo == 'Paquete') {
+          if (entPaq.split('.').length > 1) {
+            if (entPaq.split('.')[1] == '0') entPaq = entPaq.split('.')[0];
+          }
+        } else {
+          entPaq = '-';
+        }
+        if (entUni.split('.').length > 1) {
+          if (entUni.split('.')[1] == '0') entUni = entUni.split('.')[0];
         }
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [.075, .25, .175, .15, .1, .1, .075],
+            [.05, .25, .15, .15, .1, .1, .1, .075],
             [
               "${lista[index].id}",
               lista[index].nombre,
@@ -467,8 +508,15 @@ class _ESPState extends State<ESP> {
                   return CampoTexto.inputTexto(
                     MediaQuery.sizeOf(context).width * .1,
                     '',
-                    entrada,
-                    controllerEnt[lista[index].id - 1],
+                    entCont,
+                    contrEntCont[lista[index].id - 1],
+                    enabled:
+                        (!(lista[index].tipo == 'Paquete' ||
+                            lista[index].tipo == 'Galón' ||
+                            lista[index].tipo == 'Litro' ||
+                            lista[index].tipo == 'Pieza' ||
+                            lista[index].tipo == 'Garrafa' ||
+                            lista[index].tipo == 'Kilo(s)')),
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),
@@ -484,8 +532,28 @@ class _ESPState extends State<ESP> {
                   return CampoTexto.inputTexto(
                     MediaQuery.sizeOf(context).width * .1,
                     '',
-                    salida,
-                    controllerSal[lista[index].id - 1],
+                    entPaq,
+                    contrEntPaq[lista[index].id - 1],
+                    enabled:
+                        (lista[index].tipo == 'Caja (Paquetes)' ||
+                        lista[index].tipo == 'Paquete'),
+                    borderColor: Color(0xFF8A03A9),
+                    formato: FilteringTextInputFormatter.allow(
+                      RegExp(r'(^\d*\.?\d{0,3})'),
+                    ),
+                    inputType: TextInputType.numberWithOptions(decimal: true),
+                    fontSize: 17.5,
+                    align: TextAlign.center,
+                  );
+                },
+              ),
+              Consumer<Textos>(
+                builder: (context, textos, child) {
+                  return CampoTexto.inputTexto(
+                    MediaQuery.sizeOf(context).width * .1,
+                    '',
+                    entUni,
+                    contrEnt[lista[index].id - 1],
                     borderColor: Color(0xFF8A03A9),
                     formato: FilteringTextInputFormatter.allow(
                       RegExp(r'(^\d*\.?\d{0,3})'),

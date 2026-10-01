@@ -49,10 +49,12 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
   Future<void> addOrden(BuildContext ctx) async {
     valido = true;
     List<double> cantidades = [];
+    List<double> paquetes = [];
     List<int> idProductos = [];
     ctx.read<Carga>().cargaBool(true);
     for (ProductoModel prod in listaProd) {
       cantidades.add(double.parse(cantidad[prod.id - 1].text));
+      paquetes.add(0);
       idProductos.add(prod.id);
     }
     for (int i = 0; i < cantidades.length; i++) {
@@ -61,6 +63,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
     String respuesta = await OrdenModel.postOrden(
       idProductos,
       cantidades,
+      //paquetes,
       comentarios,
     );
     if (respuesta.split(': ')[0] != 'Error') {

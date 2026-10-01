@@ -12,6 +12,7 @@ class ArticulosModel {
   String tipo;
   String codigoBarras;
   double cantidadPorUnidad;
+  double cantidadPorPaquete;
   double precio;
   bool materia;
   String mensaje;
@@ -23,6 +24,7 @@ class ArticulosModel {
     required this.tipo,
     required this.codigoBarras,
     required this.cantidadPorUnidad,
+    required this.cantidadPorPaquete,
     required this.precio,
     required this.materia,
     required this.mensaje,
@@ -37,6 +39,7 @@ class ArticulosModel {
       nombre: '',
       tipo: '',
       cantidadPorUnidad: 0,
+      cantidadPorPaquete: 0,
       area: '',
       codigoBarras: '',
       precio: 0,
@@ -75,6 +78,7 @@ class ArticulosModel {
                 nombre: item['Nombre'],
                 tipo: item['Tipo'],
                 cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+                cantidadPorPaquete: item['CantidadPorPaquete'].toDouble(),
                 area: item['Area'],
                 codigoBarras: item['CodigoBarras'],
                 precio: item['Precio'].toDouble(),
@@ -121,6 +125,7 @@ class ArticulosModel {
             nombre: item['Nombre'],
             tipo: item['Tipo'],
             cantidadPorUnidad: item['CantidadPorUnidad'].toDouble(),
+            cantidadPorPaquete: item['CantidadPorPaquete'].toDouble(),
             area: item['Area'],
             codigoBarras: item['CodigoBarras'],
             precio: item['Precio'].toDouble(),
@@ -152,6 +157,7 @@ class ArticulosModel {
     String tipo,
     String area,
     double cantidad,
+    double paquetes,
     String barras,
     double precio,
     bool materia,
@@ -169,6 +175,7 @@ class ArticulosModel {
           'tipo': tipo,
           'area': area,
           'cantidad': cantidad,
+          'paquetes': paquetes,
           'barras': barras,
           'precio': precio,
           'materia': materia,

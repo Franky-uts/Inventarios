@@ -105,6 +105,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   //se confirmará la cantidad de las órdenes, en caso de que ningún campo de
   //texto tenga información, se le hará saber al usuario.
   void generarTabla(BuildContext ctx) async {
+    ctx.read<Carga>().cargaBool(true);
     if (valido) {
       valido = false;
       List<ProductoModel> lista = await getProductos('id', '');
@@ -115,13 +116,14 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         mensaje = '';
         int j = 0;
         for (int i = 0; i < cantidad.length; i++) {
-          if (cantidad[i].text.isNotEmpty &&
-              double.parse(cantidad[i].text) > 0) {
-            while (i + 1 != lista[j].id) {
-              j++;
+          if (cantidad[i].text.isNotEmpty) {
+            if (double.parse(cantidad[i].text) > 0) {
+              while (i + 1 != lista[j].id) {
+                j++;
+              }
+              listaProd.add(lista[j]);
+              comentarios.add('');
             }
-            listaProd.add(lista[j]);
-            comentarios.add('');
           }
         }
         if (listaProd.isEmpty) mensaje = 'No hay productos seleccionados.';
@@ -129,6 +131,8 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       if (ctx.mounted) ctx.read<Ventanas>().tabla(listaProd.isNotEmpty);
       if (mensaje.isNotEmpty) Textos.toast(mensaje);
     }
+    if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
+    valido = false;
   }
 
   @override

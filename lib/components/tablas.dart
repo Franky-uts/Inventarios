@@ -101,7 +101,7 @@ class Tablas with ChangeNotifier {
                   'Volver a cargar',
                   Icons.refresh_rounded,
                   () async => await accionRefresh!(),
-                  () => {},
+                  () {},
                   false,
                   true,
                 ),

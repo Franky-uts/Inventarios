@@ -123,7 +123,12 @@ class Articulo extends ChangeNotifier {
       String mensaje = await ArticulosModel.editarArticulo(
         _articulo.id,
         (numVen == 0) ? "'${controller.text}'" : controller.text,
-        ['CodigoBarras', 'CantidadPorUnidad', 'Precio'][numVen],
+        [
+          'CodigoBarras',
+          'CantidadPorUnidad',
+          'CantidadPorPaquete',
+          'Precio',
+        ][numVen],
       );
       if (mensaje.split(': ')[0] != 'Error') {
         color = Color(0x00000000);
@@ -135,6 +140,9 @@ class Articulo extends ChangeNotifier {
             _articulo.cantidadPorUnidad = double.parse(controller.text);
             break;
           case 2:
+            _articulo.cantidadPorPaquete = double.parse(controller.text);
+            break;
+          case 3:
             _articulo.precio = double.parse(controller.text);
             break;
         }
@@ -165,9 +173,12 @@ class Articulo extends ChangeNotifier {
   //información del artículo es guardada en la variable "_articulo", su
   //visibilidad es controlada por la variable "_art".
   Widget articuloInfo(BuildContext context) {
-    String pre = ('${_articulo.precio}'.split('')[1] == '0')
-        ? '${_articulo.precio}'.split('.')[0]
-        : '${_articulo.precio}';
+    String pre = '${_articulo.precio}';
+    if (pre.split('.').length > 1) {
+      if (pre.split('.')[1] == '0') {
+        pre = pre.split('.')[0];
+      }
+    }
     return Visibility(
       visible: _art,
       child: Stack(
@@ -209,13 +220,32 @@ class Articulo extends ChangeNotifier {
                                   rectanguloContainer(
                                     'Tipo: ${_articulo.tipo}',
                                   ),
-                                  rowBoton(context),
+                                  if (_articulo.tipo == 'Bulto' ||
+                                      _articulo.tipo == 'Caja' ||
+                                      _articulo.tipo == 'Costal' ||
+                                      _articulo.tipo == 'Paquete' ||
+                                      _articulo.tipo == 'Bote (Piezas)' ||
+                                      _articulo.tipo == 'Bote (Litros)' ||
+                                      _articulo.tipo == 'Bote (Gramos)' ||
+                                      _articulo.tipo == 'Caja (Paquetes)')
+                                    cantUni(context),
+                                  if (_articulo.tipo == 'Caja (Paquetes)')
+                                    cantPaq(context),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              width: MediaQuery.of(context).size.width * .9,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
                                   Row(
                                     children: [
                                       Container(
                                         padding: EdgeInsets.all(5),
                                         decoration: BoxDecoration(
-                                          color: Color(0x59F6AFCF),
+                                          color: Color(0x0DF6AFCF),
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
@@ -228,27 +258,16 @@ class Articulo extends ChangeNotifier {
                                           alignment: TextAlign.center,
                                         ),
                                       ),
-                                      Botones.btnRctMor(
-                                        'Materia Prima',
+                                      Icon(
                                         _articulo.materia
                                             ? Icons.check_box_rounded
                                             : Icons
                                                   .check_box_outline_blank_rounded,
-                                        false,
-                                        () => {},
+                                        color: Color(0xFF8A03A9),
                                         size: 20,
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * .9,
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceEvenly,
-                                children: [
                                   Row(
                                     children: [
                                       rectanguloContainer(
@@ -270,7 +289,7 @@ class Articulo extends ChangeNotifier {
                                         Icons.price_change_rounded,
                                         Color(0xFF8A03A9),
                                         () => {
-                                          numVen = 2,
+                                          numVen = 3,
                                           controller.text = pre,
                                           emergente(true),
                                         },
@@ -285,10 +304,25 @@ class Articulo extends ChangeNotifier {
                               children: [
                                 Tablas.contenedorInfo(
                                   MediaQuery.sizeOf(context).width,
-                                  [0.2, 0.1, 0.1, 0.1, 0.2, 0.2],
+                                  [
+                                    0.1,
+                                    0.065,
+                                    0.065,
+                                    0.065,
+                                    0.065,
+                                    0.065,
+                                    0.065,
+                                    0.065,
+                                    0.125,
+                                    0.22,
+                                  ],
                                   [
                                     'Tienda',
+                                    'Ent. Cont.',
+                                    'Ent.Paq.',
                                     'Entradas',
+                                    'Sal. Cont.',
+                                    'Sal.Paq.',
                                     'Salidas',
                                     'Perdidas',
                                     'Ultimo usuario',
@@ -330,6 +364,7 @@ class Articulo extends ChangeNotifier {
                 [
                   'Confirmar Código de barras',
                   'Editar cantidad por unidad',
+                  'Editar cantidad por paquete',
                   'Editar precio',
                 ][numVen],
                 'Cancelar',
@@ -342,7 +377,12 @@ class Articulo extends ChangeNotifier {
                 () => cambioColumna(context),
                 widget: CampoTexto.inputTexto(
                   MediaQuery.of(context).size.width * .75,
-                  ['Código de barras', 'Cantidad por unidad', 'Precio'][numVen],
+                  [
+                    'Código de barras',
+                    'Cantidad por unidad',
+                    'Cantidad por paquete',
+                    'Precio',
+                  ][numVen],
                   '',
                   controller,
                   enabled: numVen != 0,
@@ -385,28 +425,64 @@ class Articulo extends ChangeNotifier {
         decoration: BoxDecoration(color: Color(0xFFFDC930)),
       ),
       itemBuilder: (context, index) {
-        String entrada = '${lista[index].entrada}';
-        String salida = '${lista[index].salida}';
-        if (entrada.split('.').length > 1) {
-          if (entrada.split('.')[1] == '0') {
-            entrada = entrada.split('.')[0];
-          }
+        String entrUni = '${lista[index].entradaUni}';
+        String entrPaq = '${lista[index].entradaPaq}';
+        String entrCont = '${lista[index].entradaCont}';
+        String saliUni = '${lista[index].salidaUni}';
+        String saliPaq = '${lista[index].salidaPaq}';
+        String saliCont = '${lista[index].salidaCont}';
+        if (entrUni.split('.').length > 1) {
+          if (entrUni.split('.')[1] == '0') entrUni = entrUni.split('.')[0];
         }
-        if (salida.split('.').length > 1) {
-          if (salida.split('.')[1] == '0') {
-            salida = salida.split('.')[0];
+        if (saliUni.split('.').length > 1) {
+          if (saliUni.split('.')[1] == '0') saliUni = saliUni.split('.')[0];
+        }
+        if (lista[index].tipo == 'Caja (Paquetes)' ||
+            lista[index].tipo == 'Paquete') {
+          if (entrPaq.split('.').length > 1) {
+            if (entrPaq.split('.')[1] == '0') entrPaq = entrPaq.split('.')[0];
           }
+          if (saliPaq.split('.').length > 1) {
+            if (saliPaq.split('.')[1] == '0') saliPaq = saliPaq.split('.')[0];
+          }
+        } else {
+          entrPaq = '-';
+          saliPaq = '-';
+        }
+        if (!(lista[index].tipo == 'Paquete' ||
+            lista[index].tipo == 'Galón' ||
+            lista[index].tipo == 'Litro' ||
+            lista[index].tipo == 'Pieza' ||
+            lista[index].tipo == 'Garrafa' ||
+            lista[index].tipo == 'Kilo(s)')) {
+          if (entrCont.split('.').length > 1) {
+            if (entrCont.split('.')[1] == '0') {
+              entrCont = entrCont.split('.')[0];
+            }
+          }
+          if (saliCont.split('.').length > 1) {
+            if (saliCont.split('.')[1] == '0') {
+              saliCont = saliCont.split('.')[0];
+            }
+          }
+        } else {
+          entrCont = '-';
+          saliCont = '-';
         }
         return Container(
           width: MediaQuery.sizeOf(context).width,
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [0.2, 0.1, 0.1, 0.1, 0.2, 0.2],
+            [0.1, 0.065, 0.065, 0.065, 0.065, 0.065, 0.065, 0.065, 0.125, 0.22],
             [
               lista[index].nombre,
-              entrada,
-              salida,
+              entrUni,
+              entrPaq,
+              entrCont,
+              saliUni,
+              saliPaq,
+              saliCont,
               '${lista[index].perdidaCantidad.length}',
               lista[index].ultimoUsuario,
               lista[index].ultimaModificacion,
@@ -419,7 +495,7 @@ class Articulo extends ChangeNotifier {
   }
 
   //Componente creado para aumentar la legibilidad del código.
-  Row rowBoton(BuildContext ctx) {
+  Row cantUni(BuildContext ctx) {
     String texto = '${_articulo.cantidadPorUnidad}';
     if (texto.split('.').length > 1) {
       if (texto.split('.')[1] == '0') texto = texto.split('.')[0];
@@ -427,21 +503,38 @@ class Articulo extends ChangeNotifier {
     return Row(
       children: [
         rectanguloContainer('Cantidad por unidad: $texto'),
-        if (_articulo.tipo == 'Bote' ||
-            _articulo.tipo == 'Bulto' ||
-            _articulo.tipo == 'Caja' ||
-            _articulo.tipo == 'Costal' ||
-            _articulo.tipo == 'Paquete')
-          Botones.btnSimple(
-            'Cambiar cantidad por unidad',
-            Icons.edit_rounded,
-            Color(0xFF8A03A9),
-            () => {
-              numVen = 1,
-              controller.text = '${_articulo.cantidadPorUnidad}',
-              emergente(true),
-            },
-          ),
+        Botones.btnSimple(
+          'Cambiar cantidad por unidad',
+          Icons.edit_rounded,
+          Color(0xFF8A03A9),
+          () => {
+            numVen = 1,
+            controller.text = '${_articulo.cantidadPorUnidad}',
+            emergente(true),
+          },
+        ),
+      ],
+    );
+  }
+
+  Row cantPaq(BuildContext ctx) {
+    String texto = '${_articulo.cantidadPorPaquete}';
+    if (texto.split('.').length > 1) {
+      if (texto.split('.')[1] == '0') texto = texto.split('.')[0];
+    }
+    return Row(
+      children: [
+        rectanguloContainer('Cantidad por paquete: $texto'),
+        Botones.btnSimple(
+          'Cambiar cantidad por paquete',
+          Icons.edit_rounded,
+          Color(0xFF8A03A9),
+          () => {
+            numVen = 2,
+            controller.text = '${_articulo.cantidadPorPaquete}',
+            emergente(true),
+          },
+        ),
       ],
     );
   }
@@ -452,7 +545,7 @@ class Articulo extends ChangeNotifier {
     return Container(
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Color(0x40F6AFCF),
+        color: Color(0x0DF6AFCF),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Textos.textoGeneral(

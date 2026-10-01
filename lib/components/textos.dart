@@ -15,8 +15,8 @@ class Textos with ChangeNotifier {
       msg: texto,
       toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Color(0xBFFDC930),
-      textColor: Colors.white,
+      backgroundColor: Color(0xFFFDC930),
+      textColor: Color(0xFF56006C),
       fontSize: 15,
     );
   }

@@ -34,6 +34,7 @@ class _AddproductoState extends State<AddProducto> {
     TextEditingController(),
     TextEditingController(),
     TextEditingController(),
+    TextEditingController(),
   ];
   late List<Color> colorCampo = [
     Color(0x00FFFFFF),
@@ -110,6 +111,7 @@ class _AddproductoState extends State<AddProducto> {
     setState(() {
       control[1].text = '';
       control[2].text = '';
+      control[3].text = '';
       areaValor = areaNombre;
     });
   }
@@ -131,6 +133,7 @@ class _AddproductoState extends State<AddProducto> {
     setState(() {
       control[1].text = art!.tipo;
       control[2].text = '${art.cantidadPorUnidad}';
+      control[2].text = '${art.cantidadPorPaquete}';
       articuloValor = articuloNombre;
     });
   }
@@ -210,16 +213,32 @@ class _AddproductoState extends State<AddProducto> {
                             ),
                           ],
                         ),
-                        CampoTexto.inputTexto(
-                          MediaQuery.of(context).size.width * .75,
-                          'Limite minimo de productos',
-                          '',
-                          control[0],
-                          accion: () => registrarProducto(context),
-                          icono: Icons.production_quantity_limits_rounded,
-                          errorColor: colorCampo[2],
-                          inputType: TextInputType.number,
-                          formato: FilteringTextInputFormatter.digitsOnly,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          spacing: 20,
+                          children: [
+                            CampoTexto.inputTexto(
+                              MediaQuery.of(context).size.width * .365,
+                              'Cantidad por paquete',
+                              '',
+                              control[2],
+                              enabled: false,
+                              accion: () =>
+                                  FocusManager.instance.primaryFocus?.unfocus(),
+                              icono: Icons.web_stories,
+                            ),
+                            CampoTexto.inputTexto(
+                              MediaQuery.of(context).size.width * .365,
+                              'Limite minimo de productos',
+                              '',
+                              control[0],
+                              accion: () => registrarProducto(context),
+                              icono: Icons.production_quantity_limits_rounded,
+                              errorColor: colorCampo[2],
+                              inputType: TextInputType.number,
+                              formato: FilteringTextInputFormatter.digitsOnly,
+                            ),
+                          ],
                         ),
                         Botones.iconoTexto(
                           'Añadir',

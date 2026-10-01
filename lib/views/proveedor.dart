@@ -4,7 +4,6 @@ import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
-import 'package:inventarios/pages/articulos.dart';
 import 'package:inventarios/pages/historial.dart';
 import 'package:inventarios/pages/esp.dart';
 import 'package:inventarios/pages/inventario.dart';
@@ -49,7 +48,6 @@ class _ProveedorState extends State<Proveedor> {
               Botones.botonBarNav('Ordenes', Icons.border_color_rounded),
               Botones.botonBarNav('Movimientos', Icons.checklist_rtl_rounded),
               Botones.botonBarNav('Inventario', Icons.inventory_rounded),
-              Botones.botonBarNav('Artículos', Icons.list),
               Botones.botonBarNav(
                 'Historial',
                 Icons.history_toggle_off_rounded,
@@ -73,13 +71,7 @@ class _ProveedorState extends State<Proveedor> {
           );
         },
       ),
-      body: [
-        Ordenes(),
-        ESP(),
-        Inventario(),
-        Articulos(),
-        Historial(),
-      ][currentPage],
+      body: [Ordenes(), ESP(), Inventario(), Historial()][currentPage],
     );
   }
 }

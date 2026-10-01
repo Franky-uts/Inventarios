@@ -6,6 +6,7 @@ import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/historial_model.dart';
 import 'package:inventarios/models/registro_model.dart';
+import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:inventarios/components/textos.dart';
 
@@ -137,11 +138,25 @@ class HistorialInfo extends ChangeNotifier {
                               children: [
                                 Tablas.contenedorInfo(
                                   MediaQuery.sizeOf(context).width,
-                                  [.2, .2, .1, .1, .1],
+                                  [
+                                    .2,
+                                    .2,
+                                    .075,
+                                    .075,
+                                    .075,
+                                    .075,
+                                    .075,
+                                    .075,
+                                    .075,
+                                  ],
                                   [
                                     'Hora',
                                     'Usuario',
+                                    'Ent. Cont.',
+                                    'Ent.Paq.',
                                     'Entradas',
+                                    'Sal. Cont.',
+                                    'Sal. Paq.',
                                     'Salidas',
                                     'Perdidas',
                                   ],
@@ -166,8 +181,16 @@ class HistorialInfo extends ChangeNotifier {
                                     itemBuilder: (context, index) {
                                       String entrada =
                                           '${_historialInfo.entradas[index]}';
+                                      String entradaPaq =
+                                          '${_historialInfo.entradasPaq[index]}';
+                                      String entradaCont =
+                                          '${_historialInfo.entradasCont[index]}';
                                       String salida =
                                           '${_historialInfo.salidas[index]}';
+                                      String salidaPaq =
+                                          '${_historialInfo.salidasPaq[index]}';
+                                      String salidaCont =
+                                          '${_historialInfo.salidasCont[index]}';
                                       if (entrada.split('.').length > 1) {
                                         if (entrada.split('.')[1] == '0') {
                                           entrada = entrada.split('.')[0];
@@ -178,6 +201,29 @@ class HistorialInfo extends ChangeNotifier {
                                           salida = salida.split('.')[0];
                                         }
                                       }
+                                      if (entradaPaq.split('.').length > 1) {
+                                        if (entradaPaq.split('.')[1] == '0') {
+                                          entradaPaq = entradaPaq.split('.')[0];
+                                        }
+                                      }
+
+                                      if (salidaPaq.split('.').length > 1) {
+                                        if (salidaPaq.split('.')[1] == '0') {
+                                          salidaPaq = salidaPaq.split('.')[0];
+                                        }
+                                      }
+                                      if (entradaCont.split('.').length > 1) {
+                                        if (entradaCont.split('.')[1] == '0') {
+                                          entradaCont = entradaCont.split(
+                                            '.',
+                                          )[0];
+                                        }
+                                      }
+                                      if (salidaCont.split('.').length > 1) {
+                                        if (salidaCont.split('.')[1] == '0') {
+                                          salidaCont = salidaCont.split('.')[0];
+                                        }
+                                      }
                                       return Container(
                                         width: MediaQuery.sizeOf(context).width,
                                         decoration: BoxDecoration(
@@ -185,18 +231,32 @@ class HistorialInfo extends ChangeNotifier {
                                         ),
                                         child: Tablas.barraDatos(
                                           MediaQuery.sizeOf(context).width,
-                                          [.2, .2, .1, .1, .1],
+                                          [
+                                            .2,
+                                            .2,
+                                            .075,
+                                            .075,
+                                            .075,
+                                            .075,
+                                            .075,
+                                            .075,
+                                            .075,
+                                          ],
                                           [
                                             _historialInfo
                                                 .horasModificacion[index],
                                             _historialInfo
                                                 .usuarioModificacion[index],
+                                            entradaCont,
+                                            entradaPaq,
                                             entrada,
+                                            salidaCont,
+                                            salidaPaq,
                                             salida,
                                             '${_historialInfo.perdidas[index]}',
                                           ],
 
-                                          extra: () => {},
+                                          extra: () {},
                                         ),
                                       );
                                     },
@@ -351,14 +411,15 @@ class HistorialInfo extends ChangeNotifier {
                           children: [
                             Tablas.contenedorInfo(
                               MediaQuery.sizeOf(context).width,
-                              [.1, .35, .1, .15, .1, .1],
+                              [.05, .25, .15, .15, .1, .1, .1],
                               [
                                 'id',
                                 'Nombre',
                                 'Tipo',
                                 'Área',
-                                'Unidades',
-                                'Cajas',
+                                'Cerr.',
+                                'Paqu.',
+                                'Abie.',
                               ],
                             ),
                             SizedBox(
@@ -381,20 +442,27 @@ class HistorialInfo extends ChangeNotifier {
                                   colores = List.filled(7, Colors.transparent);
                                   colores[4] = Textos.colorLimite(
                                     _registroInfo.limite[index],
-                                    _registroInfo.unidades[index].floor(),
+                                    _registroInfo.cerrados[index].floor(),
                                   );
-                                  String unidad =
-                                      '${_registroInfo.unidades[index]}';
-                                  if (unidad.split('.').length > 1) {
-                                    if (unidad.split('.')[1] == '0') {
-                                      unidad = unidad.split('.')[0];
+                                  String cerrados =
+                                      '${_registroInfo.cerrados[index]}';
+                                  if (cerrados.split('.').length > 1) {
+                                    if (cerrados.split('.')[1] == '0') {
+                                      cerrados = cerrados.split('.')[0];
                                     }
                                   }
-                                  String cajas =
-                                      '${_registroInfo.cajas[index]}';
-                                  if (cajas.split('.').length > 1) {
-                                    if (cajas.split('.')[1] == '0') {
-                                      cajas = cajas.split('.')[0];
+                                  String paquetes =
+                                      '${_registroInfo.paquetes[index]}';
+                                  if (paquetes.split('.').length > 1) {
+                                    if (paquetes.split('.')[1] == '0') {
+                                      paquetes = paquetes.split('.')[0];
+                                    }
+                                  }
+                                  String abiertos =
+                                      '${_registroInfo.abiertos[index]}';
+                                  if (abiertos.split('.').length > 1) {
+                                    if (abiertos.split('.')[1] == '0') {
+                                      abiertos = abiertos.split('.')[0];
                                     }
                                   }
                                   return Container(
@@ -404,16 +472,17 @@ class HistorialInfo extends ChangeNotifier {
                                     ),
                                     child: Tablas.barraDatos(
                                       MediaQuery.sizeOf(context).width,
-                                      [.1, .35, .1, .15, .1, .1],
+                                      [.05, .25, .15, .15, .1, .1, .1],
                                       [
                                         '${_registroInfo.idProducto[index]}',
                                         _registroInfo.articulos[index],
                                         _registroInfo.tipos[index],
                                         _registroInfo.areas[index],
-                                        unidad,
-                                        cajas,
+                                        cerrados,
+                                        paquetes,
+                                        abiertos,
                                       ],
-                                      extra: () => {},
+                                      extra: () {},
                                     ),
                                   );
                                 },

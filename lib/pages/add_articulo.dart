@@ -30,14 +30,16 @@ class _AddproductoState extends State<Addarticulo> {
   late List<String> listaArea = [];
   late List<String> listaTipo = [];
   late String valorArea, valorTipo;
-  late bool cantidad, materia;
+  late bool cantidad, materia, paquete;
   final List<TextEditingController> controller = [
-    TextEditingController(),
-    TextEditingController(),
-    TextEditingController(),
-    TextEditingController(),
+    TextEditingController(), //Nombre
+    TextEditingController(), //Cantidad por unidad
+    TextEditingController(), //Cantidad por paquete
+    TextEditingController(), //Precio
+    TextEditingController(), //Codigo de barras
   ];
   late List<Color> colorCampo = [
+    Color(0x00FFFFFF),
     Color(0x00FFFFFF),
     Color(0x00FFFFFF),
     Color(0x00FFFFFF),
@@ -48,6 +50,7 @@ class _AddproductoState extends State<Addarticulo> {
   @override
   void initState() {
     cantidad = false;
+    paquete = false;
     materia = false;
     listaTipo.add('Tipo');
     listaArea.add('Área');
@@ -76,6 +79,8 @@ class _AddproductoState extends State<Addarticulo> {
   //campo será siempre 1.
   void cantidadValido(String value) {
     cantidad = false;
+    paquete = false;
+    controller[2].text = '0';
     switch (value) {
       case "Galón" || "Litro" || "Pieza" || "Garrafa" || "Kilo(s)":
         controller[1].text = '1';
@@ -83,9 +88,16 @@ class _AddproductoState extends State<Addarticulo> {
       case "Tipo":
         controller[1].clear();
         break;
+      case "Caja (Paquetes)"||'Caja (Paquetes)':
+        cantidad = true;
+        paquete = true;
+        controller[1].clear();
+        controller[2].clear();
+        break;
       default:
         cantidad = true;
         controller[1].clear();
+        controller[2].clear();
         break;
     }
   }
@@ -106,13 +118,13 @@ class _AddproductoState extends State<Addarticulo> {
       growable: true,
     );
     if (controller[0].text.isEmpty) colorCampo[0] = Color(0xFFFF0000);
-    if (controller[1].text.isEmpty) colorCampo[3] = Color(0xFFFF0000);
-    if (controller[3].text.isEmpty) colorCampo[4] = Color(0xFFFF0000);
-    if (valorArea == 'Área') colorCampo[2] = Color(0xFFFF0000);
-    if (valorTipo == 'Tipo') colorCampo[1] = Color(0xFFFF0000);
+    if (controller[1].text.isEmpty) colorCampo[1] = Color(0xFFFF0000);
+    if (controller[2].text.isEmpty) colorCampo[2] = Color(0xFFFF0000);
+    if (valorArea == 'Área') colorCampo[4] = Color(0xFFFF0000);
+    if (valorTipo == 'Tipo') colorCampo[5] = Color(0xFFFF0000);
     if (controller[0].text.isNotEmpty &&
         controller[1].text.isNotEmpty &&
-        controller[3].text.isNotEmpty &&
+        controller[2].text.isNotEmpty &&
         valorTipo != 'Tipo' &&
         valorArea != 'Área') {
       String respuesta = await ArticulosModel.addArticulo(
@@ -120,8 +132,9 @@ class _AddproductoState extends State<Addarticulo> {
         valorTipo,
         valorArea,
         double.parse(controller[1].text),
-        controller[2].text,
-        double.parse(controller[3].text),
+        double.parse(controller[2].text),
+        controller[3].text,
+        double.parse(controller[4].text),
         materia,
       );
       if (respuesta.split(': ')[0] != 'Error') {
@@ -129,6 +142,7 @@ class _AddproductoState extends State<Addarticulo> {
         controller[1].text = '';
         controller[2].text = '';
         controller[3].text = '';
+        controller[4].text = '';
         cantidad = false;
         valorTipo = listaTipo.first;
         valorArea = listaArea.first;
@@ -156,7 +170,7 @@ class _AddproductoState extends State<Addarticulo> {
   //campo de texto no está vacío, entonces simplemente se borrara el texto que
   //había en el campo de texto.
   void iniciarScan(BuildContext ctx) async {
-    if (controller[2].text.isEmpty) {
+    if (controller[3].text.isEmpty) {
       if (kIsWeb) {
         ctx.read<Ventanas>().scan(true);
       } else {
@@ -165,7 +179,7 @@ class _AddproductoState extends State<Addarticulo> {
         if (ctx.mounted) scanCod(ctx, respuesta);
       }
     } else {
-      controller[2].text = '';
+      controller[3].text = '';
     }
   }
 
@@ -187,7 +201,7 @@ class _AddproductoState extends State<Addarticulo> {
       if (!flag) Textos.toast('El código ya esta registrado');
     }
     setState(() {
-      controller[2].text = texto;
+      controller[3].text = texto;
     });
     if (ctx.mounted) {
       ctx.read<Ventanas>().emergente(true);
@@ -258,7 +272,7 @@ class _AddproductoState extends State<Addarticulo> {
                               Icons.door_front_door_rounded,
                               valorArea,
                               listaArea,
-                              colorCampo[2],
+                              colorCampo[4],
                               (value) => setState(() {
                                 valorArea = value;
                               }),
@@ -273,7 +287,7 @@ class _AddproductoState extends State<Addarticulo> {
                               Icons.settings_suggest,
                               valorTipo,
                               listaTipo,
-                              colorCampo[1],
+                              colorCampo[5],
                               (value) {
                                 cantidadValido(value);
                                 setState(() {
@@ -296,7 +310,7 @@ class _AddproductoState extends State<Addarticulo> {
                           controller[1],
                           enabled: cantidad,
                           icono: Icons.numbers_rounded,
-                          errorColor: colorCampo[3],
+                          errorColor: colorCampo[1],
                           margin: EdgeInsets.symmetric(horizontal: 10),
                           formato: FilteringTextInputFormatter.allow(
                             RegExp(r'(^\d*\.?\d{0,3})'),
@@ -309,9 +323,33 @@ class _AddproductoState extends State<Addarticulo> {
                         ),
                         CampoTexto.inputTexto(
                           MediaQuery.of(context).size.width * .365,
+                          'Cantidad por paquete',
+                          '',
+                          controller[2],
+                          enabled: paquete,
+                          icono: Icons.numbers_rounded,
+                          errorColor: colorCampo[2],
+                          margin: EdgeInsets.symmetric(horizontal: 10),
+                          formato: FilteringTextInputFormatter.allow(
+                            RegExp(r'(^\d*\.?\d{0,3})'),
+                          ),
+                          accion: () =>
+                              FocusManager.instance.primaryFocus?.unfocus(),
+                          inputType: TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      spacing: 5,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CampoTexto.inputTexto(
+                          MediaQuery.of(context).size.width * .365,
                           'Precio',
                           '',
-                          controller[3],
+                          controller[4],
                           accion: () =>
                               FocusManager.instance.primaryFocus?.unfocus(),
                           icono: Icons.numbers_rounded,
@@ -324,30 +362,35 @@ class _AddproductoState extends State<Addarticulo> {
                             decimal: true,
                           ),
                         ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        CampoTexto.inputTexto(
-                          MediaQuery.of(context).size.width * .75 * .925,
-                          'Codigo de barras',
-                          '',
-                          controller[2],
-                          enabled: false,
-                          icono: Icons.barcode_reader,
-                        ),
-                        SizedBox(
-                          width:
-                              MediaQuery.of(context).size.width * (.75 * .075),
-                          child: Botones.btnSimple(
-                            'Escanear código',
-                            (controller[2].text.isEmpty)
-                                ? Icons.document_scanner_rounded
-                                : Icons.refresh_rounded,
-                            Color(0xFFFFFFFF),
-                            () async => iniciarScan(context),
+                        Container(
+                          width: MediaQuery.of(context).size.width * .365,
+                          margin: EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CampoTexto.inputTexto(
+                                MediaQuery.of(context).size.width *
+                                    (.365 * .925),
+                                'Codigo de barras',
+                                '',
+                                controller[3],
+                                enabled: false,
+                                icono: Icons.barcode_reader,
+                              ),
+                              SizedBox(
+                                width:
+                                    MediaQuery.of(context).size.width *
+                                    (.365 * .075),
+                                child: Botones.btnSimple(
+                                  'Escanear código',
+                                  (controller[3].text.isEmpty)
+                                      ? Icons.document_scanner_rounded
+                                      : Icons.refresh_rounded,
+                                  Color(0xFFFFFFFF),
+                                  () async => iniciarScan(context),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
