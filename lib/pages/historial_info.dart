@@ -139,8 +139,8 @@ class HistorialInfo extends ChangeNotifier {
                                 Tablas.contenedorInfo(
                                   MediaQuery.sizeOf(context).width,
                                   [
-                                    .2,
-                                    .2,
+                                    .1,
+                                    .15,
                                     .075,
                                     .075,
                                     .075,
@@ -232,8 +232,8 @@ class HistorialInfo extends ChangeNotifier {
                                         child: Tablas.barraDatos(
                                           MediaQuery.sizeOf(context).width,
                                           [
-                                            .2,
-                                            .2,
+                                            .1,
+                                            .15,
                                             .075,
                                             .075,
                                             .075,

@@ -1,5 +1,6 @@
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast_web.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
 class Textos with ChangeNotifier {
@@ -15,9 +16,11 @@ class Textos with ChangeNotifier {
       msg: texto,
       toastLength: Toast.LENGTH_LONG,
       gravity: ToastGravity.BOTTOM,
-      backgroundColor: Color(0xFFFDC930),
-      textColor: Color(0xFF56006C),
+      backgroundColor: Color(0xFFFF5600),
+      textColor: Color(0xFF8A03A9),
       fontSize: 15,
+      webShowClose: true,
+      webBgColor: '#FDC930',
     );
   }
 

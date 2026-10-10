@@ -8,6 +8,8 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ven_datos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
+import 'package:inventarios/pages/inventario_prod.dart';
+import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
 //Esta es una página principal encargada de mostrar todas las ordenes
@@ -177,7 +179,26 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFFF5600),
-      drawer: RecDrawer.drawer(context, []),
+      drawer: RecDrawer.drawer(context, [
+        if (LocalStorage.local('puesto') == 'Administrador')
+          Consumer<Carga>(
+            builder: (ctx, carga, child) {
+              return Botones.icoCirMor(
+                'Cambiar de tienda',
+                Icons.change_circle_rounded,
+                () => {
+                  Navigator.of(ctx).pop(),
+                  carga.cargaBool(true),
+                  ctx.read<Ventanas>().cambio(true),
+                  carga.cargaBool(false),
+                },
+                () => Textos.toast('Espera a que los datos carguen.'),
+                false,
+                Carga.getValido(),
+              );
+            },
+          ),
+      ]),
       body: PopScope(
         canPop: false,
         child: Stack(
@@ -533,6 +554,20 @@ class _HistorialOrdenesState extends State<HistorialOrdenes> {
                 );
               },
             ),
+            if (LocalStorage.local('puesto') == 'Administrador')
+              Consumer2<Ventanas, Carga>(
+                builder: (context, ventanas, carga, child) {
+                  return Ventanas.cambioDeTienda(
+                    context,
+                    () async => context.read<Tablas>().datos(
+                      await getProductos(
+                        CampoTexto.filtroTexto(),
+                        CampoTexto.busquedaTexto.text,
+                      ),
+                    ),
+                  );
+                },
+              ),
             Carga.ventanaCarga(),
           ],
         ),

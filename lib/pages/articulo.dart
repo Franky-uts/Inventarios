@@ -186,7 +186,7 @@ class Articulo extends ChangeNotifier {
           Consumer<Carga>(
             builder: (context, carga, child) {
               return Container(
-                padding: EdgeInsets.symmetric(horizontal: 90, vertical: 30),
+                padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
                 decoration: BoxDecoration(color: Colors.black38),
                 child: Center(
                   child: Container(
@@ -208,7 +208,7 @@ class Articulo extends ChangeNotifier {
                           children: [
                             Textos.textoTilulo(_articulo.nombre, 30),
                             SizedBox(
-                              width: MediaQuery.of(context).size.width * .8,
+                              width: MediaQuery.of(context).size.width * .9,
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceEvenly,
@@ -305,16 +305,16 @@ class Articulo extends ChangeNotifier {
                                 Tablas.contenedorInfo(
                                   MediaQuery.sizeOf(context).width,
                                   [
-                                    0.1,
-                                    0.065,
-                                    0.065,
-                                    0.065,
-                                    0.065,
-                                    0.065,
-                                    0.065,
-                                    0.065,
                                     0.125,
-                                    0.22,
+                                    0.055,
+                                    0.055,
+                                    0.055,
+                                    0.055,
+                                    0.055,
+                                    0.055,
+                                    0.055,
+                                    0.125,
+                                    0.215,
                                   ],
                                   [
                                     'Tienda',
@@ -474,7 +474,18 @@ class Articulo extends ChangeNotifier {
           decoration: BoxDecoration(color: Color(0xFFFFFFFF)),
           child: Tablas.barraDatos(
             MediaQuery.sizeOf(context).width,
-            [0.1, 0.065, 0.065, 0.065, 0.065, 0.065, 0.065, 0.065, 0.125, 0.22],
+            [
+              0.125,
+              0.055,
+              0.055,
+              0.055,
+              0.055,
+              0.055,
+              0.055,
+              0.055,
+              0.125,
+              0.215,
+            ],
             [
               lista[index].nombre,
               entrUni,

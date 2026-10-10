@@ -10,6 +10,7 @@ import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/components/ventanas.dart';
 import 'package:inventarios/models/orden_model.dart';
 import 'package:inventarios/models/producto_model.dart';
+import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
 //Esta es una página principal encargada de mostrar todos los productos
@@ -138,7 +139,26 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: RecDrawer.drawer(context, []),
+      drawer: RecDrawer.drawer(context, [
+        if (LocalStorage.local('puesto') == 'Administrador')
+          Consumer<Carga>(
+            builder: (ctx, carga, child) {
+              return Botones.icoCirMor(
+                'Cambiar de tienda',
+                Icons.change_circle_rounded,
+                () => {
+                  Navigator.of(ctx).pop(),
+                  carga.cargaBool(true),
+                  ctx.read<Ventanas>().cambio(true),
+                  carga.cargaBool(false),
+                },
+                () => Textos.toast('Espera a que los datos carguen.'),
+                false,
+                Carga.getValido(),
+              );
+            },
+          ),
+      ]),
       backgroundColor: Color(0xFFFF5600),
       body: PopScope(
         canPop: false,
@@ -344,6 +364,20 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                 );
               },
             ),
+            if (LocalStorage.local('puesto') == 'Administrador')
+              Consumer2<Ventanas, Carga>(
+                builder: (context, ventanas, carga, child) {
+                  return Ventanas.cambioDeTienda(
+                    context,
+                    () async => context.read<Tablas>().datos(
+                      await getProductos(
+                        CampoTexto.filtroTexto(),
+                        CampoTexto.busquedaTexto.text,
+                      ),
+                    ),
+                  );
+                },
+              ),
             Carga.ventanaCarga(),
           ],
         ),

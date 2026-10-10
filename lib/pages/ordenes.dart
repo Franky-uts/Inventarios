@@ -275,7 +275,7 @@ class _OrdenesState extends State<Ordenes> {
                 pw.Container(
                   width: formato.availableWidth * .15,
                   child: pw.Text(
-                    '[           ]',
+                    '${orden.cantidadesCubiertas} [           ]',
                     textAlign: pw.TextAlign.center,
                     style: pw.TextStyle(fontSize: 10),
                   ),
@@ -644,7 +644,7 @@ class _OrdenesState extends State<Ordenes> {
                   ],
                   Tablas.contenedorInfo(
                     MediaQuery.sizeOf(context).width,
-                    [.05, .35, .175, .125, .125, .05, .05],
+                    [.05, .35, .175, .115, .115, .05, .05],
                     [
                       'id',
                       'Nombre del articulo',
@@ -683,7 +683,7 @@ class _OrdenesState extends State<Ordenes> {
                         }
                         Widget data = Tablas.barraDatos(
                           MediaQuery.sizeOf(context).width,
-                          [.05, .35, .175, .125, .125, .05, .05],
+                          [.05, .35, .175, .115, .115, .05, .05],
                           [
                             '${venDatos.idArt(index)}',
                             venDatos.art(index),
