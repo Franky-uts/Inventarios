@@ -24,6 +24,12 @@ class Textos with ChangeNotifier {
     );
   }
 
+  static String textoFecha(DateTime fecha) {
+    String dia = fecha.day < 10 ? '0${fecha.day}' : '${fecha.day}';
+    String mes = fecha.month < 10 ? '0${fecha.month}' : '${fecha.month}';
+    return '$dia-$mes-${fecha.year}';
+  }
+
   //Esta es una función activa la cámara trasera del dispositivo la escanea un
   //código de barras, cabe destacar que solo tiene funcionalidad en Android.
   static Future<String> scan(BuildContext ctx) async {

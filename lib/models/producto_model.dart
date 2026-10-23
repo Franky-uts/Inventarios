@@ -482,7 +482,7 @@ class ProductoModel {
           'productos': idProductos,
           'entradas': entradas,
           'entradasPaquete': entradasPaq,
-          'entradasContenedor': entradasPaq,
+          'entradasContenedor': entradasCont,
           'salidas': complemantario,
           'salidasPaquete': complemantario,
           'salidasContenedor': complemantario,

@@ -30,9 +30,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   List<TextEditingController> cantidad = [];
   List<ProductoModel> listaProd = [];
   List<String> comentarios = [];
+  List<String> tipoProd = [];
   String comTit = '';
   int comid = 0;
-  bool valido = true;
+  bool valido = true, ambiguedad = false;
   TextEditingController controller = TextEditingController();
 
   @override
@@ -44,6 +45,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
   void dispose() {
     listaProd.clear();
     cantidad.clear();
+    tipoProd.clear();
     comentarios.clear();
     controller.dispose();
     super.dispose();
@@ -69,22 +71,28 @@ class _OrdenSalidaState extends State<OrdenSalida> {
     for (int i = 0; i < cantidades.length; i++) {
       if (comentarios[i].isNotEmpty) comentarios[i] = "'${comentarios[i]}'";
     }
+    if (ambiguedad) {
+      for(int i = 0; i<tipoProd.length; i++){
+        tipoProd[i] = "'${tipoProd[i]}'";
+      }
+    } else {
+      tipoProd = [];
+    }
     String respuesta = await OrdenModel.postOrden(
       idProductos,
       cantidades,
+      tipoProd,
       comentarios,
     );
     if (respuesta.split(': ')[0] != 'Error') {
       if (ctx.mounted) ctx.read<Ventanas>().tabla(false);
-      cantidad.addAll(
-        List.filled(
-          cantidad.length,
-          TextEditingController(text: ''),
-          growable: true,
-        ),
-      );
+      for(int i = 0; i < cantidad.length; i++){
+        cantidad[i].text = '';
+      }
+      tipoProd.clear();
       listaProd.clear();
       comentarios.clear();
+      ambiguedad = false;
     }
     if (ctx.mounted) ctx.read<Carga>().cargaBool(false);
     Textos.toast(respuesta);
@@ -112,6 +120,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
       List<ProductoModel> lista = await getProductos('id', '');
       String mensaje = 'Espera a que los datos carguen.';
       listaProd.clear();
+      tipoProd.clear();
       comentarios.clear();
       if (Carga.getValido()) {
         mensaje = '';
@@ -124,6 +133,12 @@ class _OrdenSalidaState extends State<OrdenSalida> {
               }
               listaProd.add(lista[j]);
               comentarios.add('');
+              if (lista[j].tipo.contains('Caja')) {
+                if (!ambiguedad) ambiguedad = true;
+                tipoProd.add('Cajas');
+              } else {
+                tipoProd.add(lista[j].tipo);
+              }
             }
           }
         }
@@ -226,7 +241,7 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                       'Tipo',
                       'Ordenar',
                       'Prod./Caja',
-                      'Prod. Total',
+                      'Prod./ Paq.',
                       '💬',
                     ],
                   ),
@@ -244,22 +259,37 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                         decoration: BoxDecoration(color: Color(0xFFFDC930)),
                       ),
                       itemBuilder: (context, index) {
-                        return Consumer<Tablas>(
-                          builder: (context, tablas, child) {
+                        return Consumer2<Tablas, Botones>(
+                          builder: (context, tablas, botones, child) {
                             String cantUni =
                                 '${listaProd[index].cantidadPorUnidad}';
-                            String total =
-                                '${double.parse(cantidad[listaProd[index].id - 1].text) * listaProd[index].cantidadPorUnidad}';
-                            if (cantUni.split('.').length > 1) {
-                              if (cantUni.split('.')[1] == '0') {
-                                cantUni = cantUni.split('.')[0];
+                            String cantPaq =
+                                '${listaProd[index].cantidadPorPaquete}';
+                            /*String total =
+                                '${double.parse(cantidad[listaProd[index].id - 1].text) * listaProd[index].cantidadPorUnidad}';*/
+                            if (cantUni == '0') {
+                              cantUni = '-';
+                            } else {
+                              if (cantUni.split('.').length > 1) {
+                                if (cantUni.split('.')[1] == '0') {
+                                  cantUni = cantUni.split('.')[0];
+                                }
                               }
                             }
-                            if (total.split('.').length > 1) {
+                            if (cantPaq == '0') {
+                              cantPaq = '-';
+                            } else {
+                              if (cantPaq.split('.').length > 1) {
+                                if (cantPaq.split('.')[1] == '0') {
+                                  cantPaq = cantPaq.split('.')[0];
+                                }
+                              }
+                            }
+                            /*if (total.split('.').length > 1) {
                               if (total.split('.')[1] == '0') {
                                 total.split('.')[0];
                               }
-                            }
+                            }*/
                             return Container(
                               width: MediaQuery.sizeOf(context).width,
                               decoration: BoxDecoration(
@@ -272,10 +302,10 @@ class _OrdenSalidaState extends State<OrdenSalida> {
                                   "${listaProd[index].id}",
                                   listaProd[index].nombre,
                                   listaProd[index].area,
-                                  listaProd[index].tipo,
+                                  formaTipo(index),
                                   cantidad[listaProd[index].id - 1].text,
                                   cantUni,
-                                  total,
+                                  cantPaq,
                                   Botones.btnRctMor(
                                     'Añadir comentario',
                                     Icons.comment_rounded,
@@ -433,6 +463,59 @@ class _OrdenSalidaState extends State<OrdenSalida> {
         ],
       ),
     );
+  }
+
+  Object formaTipo(int index) {
+    Object tipoPedido = tipoProd[index];
+    switch (listaProd[index].tipo) {
+      case 'Caja (Paquetes)':
+        tipoPedido = Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Textos.textoGeneral(
+              tipoProd[index],
+              true,
+              1,
+              size: 20,
+              alignment: TextAlign.center,
+            ),
+            Botones.genericStringPopUpMenu(
+              ['Cajas', 'Paquetes'],
+              'Tipo a encargar.',
+              (String valor) => {
+                if (tipoProd[index] != valor) tipoProd[index] = valor,
+                context.read<Botones>().actualizarValor(),
+              },
+            ),
+          ],
+        );
+        break;
+      case 'Caja (Piezas)':
+        tipoPedido = Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Textos.textoGeneral(
+              tipoProd[index],
+              true,
+              1,
+              size: 20,
+              alignment: TextAlign.center,
+            ),
+            Botones.genericStringPopUpMenu(
+              ['Cajas', 'Piezas'],
+              'Tipo a encargar.',
+              (String valor) => {
+                if (tipoProd[index] != valor) tipoProd[index] = valor,
+                context.read<Botones>().actualizarValor(),
+              },
+            ),
+          ],
+        );
+        break;
+    }
+    return tipoPedido;
   }
 
   //Componente que regresa una lista de productos, cada producto tiene un campo

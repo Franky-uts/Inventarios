@@ -319,7 +319,7 @@ class OrdenModel {
   static Future<String> postOrden(
     List<int> idProductos,
     List<double> cantidades,
-    //List<double> paquetes,
+    List<String> tipos,
     List<String> comentarios,
   ) async {
     String remitente = LocalStorage.local('usuario');
@@ -333,7 +333,7 @@ class OrdenModel {
         },
         body: jsonEncode({
           'cantidades': cantidades,
-          //'paquetes': paquetes,
+          'tipos': tipos,
           'comentarios': comentarios,
           'idProductos': idProductos,
           'remitente': remitente,

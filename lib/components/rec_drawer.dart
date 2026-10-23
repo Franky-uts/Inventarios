@@ -746,49 +746,49 @@ class RecDrawer {
           pos + 4,
           1,
           TextCellValue('Entradas de cerrados'),
-          (pos + 4).isEven ? '#e5e5e5' : '#cccccc',
+          '#e5e5e5',
         );
         establecerCelda(
           sheetObject,
           pos + 5,
           1,
           TextCellValue('Entradas de paquetes'),
-          (pos + 5).isEven ? '#e5e5e5' : '#cccccc',
+          '#cccccc',
         );
         establecerCelda(
           sheetObject,
           pos + 6,
           1,
           TextCellValue('Entradas'),
-          (pos + 6).isEven ? '#e5e5e5' : '#cccccc',
+          '#e5e5e5',
         );
         establecerCelda(
           sheetObject,
           pos + 7,
           1,
           TextCellValue('Salidas de cerrados'),
-          (pos + 7).isEven ? '#e5e5e5' : '#cccccc',
+          '#cccccc',
         );
         establecerCelda(
           sheetObject,
           pos + 8,
           1,
           TextCellValue('Salidas de paquetes'),
-          (pos + 8).isEven ? '#e5e5e5' : '#cccccc',
+          '#e5e5e5',
         );
         establecerCelda(
           sheetObject,
           pos + 9,
           1,
           TextCellValue('Salidas'),
-          (pos + 9).isEven ? '#e5e5e5' : '#cccccc',
+          '#cccccc',
         );
         establecerCelda(
           sheetObject,
-          pos + 9,
+          pos + 10,
           1,
           TextCellValue('Perdidas'),
-          (pos + 10).isEven ? '#e5e5e5' : '#cccccc',
+          '#e5e5e5',
         );
         sheetObject.merge(
           CellIndex.indexByColumnRow(columnIndex: pos + 4, rowIndex: 0),
@@ -800,35 +800,35 @@ class RecDrawer {
             pos + ((regis > 0) ? 18 : 11),
             0,
             TextCellValue('Registros del ${registro[regis].fecha}'),
-            i.isOdd ? '#e5e5e5' : '#cccccc',
+            i.isEven ? '#e5e5e5' : '#cccccc',
           );
           establecerCelda(
             sheetObject,
             pos + ((regis > 0) ? 18 : 11),
             1,
             TextCellValue('Cerrados'),
-            (pos + ((regis > 0) ? 18 : 11)).isEven ? '#e5e5e5' : '#cccccc',
+            (regis > 0) ? '#e5e5e5' : '#cccccc',
           );
           establecerCelda(
             sheetObject,
             pos + ((regis > 0) ? 19 : 12),
             1,
             TextCellValue('Paquetes'),
-            (pos + ((regis > 0) ? 19 : 12)).isEven ? '#e5e5e5' : '#cccccc',
+            (regis > 0) ? '#cccccc' : '#e5e5e5',
           );
           establecerCelda(
             sheetObject,
             pos + ((regis > 0) ? 20 : 13),
             1,
             TextCellValue('Abiertos'),
-            (pos + ((regis > 0) ? 20 : 13)).isEven ? '#e5e5e5' : '#cccccc',
+            (regis > 0) ? '#e5e5e5' : '#cccccc',
           );
           establecerCelda(
             sheetObject,
             pos + ((regis > 0) ? 21 : 14),
             1,
             TextCellValue('Total del producto'),
-            (pos + ((regis > 0) ? 21 : 14)).isEven ? '#e5e5e5' : '#cccccc',
+            (regis > 0) ? '#cccccc' : '#e5e5e5',
           );
           sheetObject.merge(
             CellIndex.indexByColumnRow(
@@ -855,49 +855,49 @@ class RecDrawer {
               pos + 11,
               1,
               TextCellValue('Entradas de cerrados'),
-              (pos + 11).isEven ? '#e5e5e5' : '#cccccc',
+              '#cccccc',
             );
             establecerCelda(
               sheetObject,
               pos + 12,
               1,
               TextCellValue('Entradas de paquetes'),
-              (pos + 12).isEven ? '#e5e5e5' : '#cccccc',
+              '#e5e5e5',
             );
             establecerCelda(
               sheetObject,
               pos + 13,
               1,
               TextCellValue('Entradas'),
-              (pos + 13).isEven ? '#e5e5e5' : '#cccccc',
+              '#cccccc',
             );
             establecerCelda(
               sheetObject,
               pos + 14,
               1,
               TextCellValue('Salidas de cerrados'),
-              (pos + 14).isEven ? '#e5e5e5' : '#cccccc',
+              '#e5e5e5',
             );
             establecerCelda(
               sheetObject,
               pos + 15,
               1,
               TextCellValue('Salidas de paquetes'),
-              (pos + 15).isEven ? '#e5e5e5' : '#cccccc',
+              '#cccccc',
             );
             establecerCelda(
               sheetObject,
               pos + 16,
               1,
               TextCellValue('Salidas'),
-              (pos + 16).isEven ? '#e5e5e5' : '#cccccc',
+              '#e5e5e5',
             );
             establecerCelda(
               sheetObject,
               pos + 17,
               1,
               TextCellValue('Perdidas'),
-              (pos + 17).isEven ? '#e5e5e5' : '#cccccc',
+              '#cccccc',
             );
             establecerCelda(
               sheetObject,
@@ -906,35 +906,35 @@ class RecDrawer {
               TextCellValue(
                 'Diferencia con el registro del ${registro[regis - 1].fecha}',
               ),
-              (i + regis).isOdd ? '#e5e5e5' : '#cccccc',
+              (i + regis).isEven ? '#e5e5e5' : '#cccccc',
             );
             establecerCelda(
               sheetObject,
               pos + 22,
               1,
               TextCellValue('Cerrados'),
-              (pos + 22).isEven ? '#e5e5e5' : '#cccccc',
+              '#e5e5e5',
             );
             establecerCelda(
               sheetObject,
               pos + 23,
               1,
               TextCellValue('Paquetes'),
-              (pos + 23).isEven ? '#e5e5e5' : '#cccccc',
+              '#cccccc',
             );
             establecerCelda(
               sheetObject,
               pos + 24,
               1,
               TextCellValue('Abiertos'),
-              (pos + 24).isEven ? '#e5e5e5' : '#cccccc',
+              '#e5e5e5',
             );
             establecerCelda(
               sheetObject,
               pos + 25,
               1,
               TextCellValue('Total'),
-              (pos + 25).isEven ? '#e5e5e5' : '#cccccc',
+              '#cccccc',
             );
             establecerCelda(
               sheetObject,
@@ -943,7 +943,7 @@ class RecDrawer {
               TextCellValue(
                 'Registro esperado del ${registro[regis].fecha}, contando movimientos',
               ),
-              (i + regis).isOdd ? '#e5e5e5' : '#cccccc',
+              (i + regis).isEven ? '#e5e5e5' : '#cccccc',
             );
             sheetObject.merge(
               CellIndex.indexByColumnRow(columnIndex: pos + 11, rowIndex: 0),
@@ -1129,7 +1129,7 @@ class RecDrawer {
                     prod.tipo == 'Kilo(s)'))
                 ? DoubleCellValue(hist.entradasCont.last)
                 : TextCellValue('-'),
-            (pos + 4).isEven ? '#e5e5e5' : '#cccccc',
+            '#e5e5e5',
           );
           establecerCelda(
             sheetObject,
@@ -1138,14 +1138,14 @@ class RecDrawer {
             (prod.tipo == 'Caja (Paquetes)') || (prod.tipo == 'Paquete')
                 ? DoubleCellValue(hist.entradasPaq.last)
                 : TextCellValue('-'),
-            (pos + 5).isEven ? '#e5e5e5' : '#cccccc',
+            '#cccccc',
           );
           establecerCelda(
             sheetObject,
             pos + 6,
             2 + i,
             DoubleCellValue(hist.entradas.last),
-            (pos + 6).isEven ? '#e5e5e5' : '#cccccc',
+            '#e5e5e5',
           );
           establecerCelda(
             sheetObject,
@@ -1159,7 +1159,7 @@ class RecDrawer {
                     prod.tipo == 'Kilo(s)'))
                 ? DoubleCellValue(hist.salidasCont.last)
                 : TextCellValue('-'),
-            (pos + 7).isEven ? '#e5e5e5' : '#cccccc',
+            '#cccccc',
           );
           establecerCelda(
             sheetObject,
@@ -1168,21 +1168,21 @@ class RecDrawer {
             (prod.tipo == 'Caja (Paquetes)') || (prod.tipo == 'Paquete')
                 ? DoubleCellValue(hist.salidasPaq.last)
                 : TextCellValue('-'),
-            (pos + 8).isEven ? '#e5e5e5' : '#cccccc',
+            '#e5e5e5',
           );
           establecerCelda(
             sheetObject,
             pos + 9,
             2 + i,
             DoubleCellValue(hist.salidas.last),
-            (pos + 9).isEven ? '#e5e5e5' : '#cccccc',
+            '#cccccc',
           );
           establecerCelda(
             sheetObject,
             pos + 10,
             2 + i,
             DoubleCellValue(perdida),
-            (pos + 10).isEven ? '#e5e5e5' : '#cccccc',
+            '#e5e5e5',
           );
           totalEnt += hist.entradas.last;
           totalEntPac += hist.entradasPaq.last;
@@ -1206,7 +1206,7 @@ class RecDrawer {
                         ? DoubleCellValue(reg.cerrados[idNum])
                         : TextCellValue('s/r')
                   : TextCellValue('-'),
-              (pos + ((regis > 0) ? 18 : 11)).isEven ? '#e5e5e5' : '#cccccc',
+              (regis > 0) ? '#e5e5e5' : '#cccccc',
             );
             establecerCelda(
               sheetObject,
@@ -1217,7 +1217,7 @@ class RecDrawer {
                         ? DoubleCellValue(reg.paquetes[idNum])
                         : TextCellValue('s/r')
                   : TextCellValue('-'),
-              (pos + ((regis > 0) ? 19 : 12)).isEven ? '#e5e5e5' : '#cccccc',
+              (regis > 0) ? '#cccccc' : '#e5e5e5',
             );
             establecerCelda(
               sheetObject,
@@ -1226,14 +1226,14 @@ class RecDrawer {
               idNum != null
                   ? DoubleCellValue(reg.abiertos[idNum])
                   : TextCellValue('s/r'),
-              (pos + ((regis > 0) ? 20 : 13)).isEven ? '#e5e5e5' : '#cccccc',
+              (regis > 0) ? '#e5e5e5' : '#cccccc',
             );
             establecerCelda(
               sheetObject,
               pos + ((regis > 0) ? 21 : 14),
               2 + i,
               DoubleCellValue(total),
-              (pos + ((regis > 0) ? 21 : 14)).isEven ? '#e5e5e5' : '#cccccc',
+              (regis > 0) ? '#cccccc' : '#e5e5e5',
             );
             if (regis > 0) {
               establecerCelda(
@@ -1248,7 +1248,7 @@ class RecDrawer {
                         prod.tipo == 'Kilo(s)'))
                     ? DoubleCellValue(totalEntCont)
                     : TextCellValue('-'),
-                (pos + 11).isEven ? '#e5e5e5' : '#cccccc',
+                '#cccccc',
               );
               establecerCelda(
                 sheetObject,
@@ -1257,14 +1257,14 @@ class RecDrawer {
                 (prod.tipo == 'Caja (Paquetes)') || (prod.tipo == 'Paquete')
                     ? DoubleCellValue(totalEntPac)
                     : TextCellValue('-'),
-                (pos + 12).isEven ? '#e5e5e5' : '#cccccc',
+                '#e5e5e5',
               );
               establecerCelda(
                 sheetObject,
                 pos + 13,
                 2 + i,
                 DoubleCellValue(totalEnt),
-                (pos + 13).isEven ? '#e5e5e5' : '#cccccc',
+                '#cccccc',
               );
               establecerCelda(
                 sheetObject,
@@ -1278,7 +1278,7 @@ class RecDrawer {
                         prod.tipo == 'Kilo(s)'))
                     ? DoubleCellValue(totalSalCont)
                     : TextCellValue('-'),
-                (pos + 14).isEven ? '#e5e5e5' : '#cccccc',
+                '#e5e5e5',
               );
               establecerCelda(
                 sheetObject,
@@ -1287,21 +1287,21 @@ class RecDrawer {
                 (prod.tipo == 'Caja (Paquetes)') || (prod.tipo == 'Paquete')
                     ? DoubleCellValue(totalSalPac)
                     : TextCellValue('-'),
-                (pos + 15).isEven ? '#e5e5e5' : '#cccccc',
+                '#cccccc',
               );
               establecerCelda(
                 sheetObject,
                 pos + 16,
                 2 + i,
                 DoubleCellValue(totalSal),
-                (pos + 16).isEven ? '#e5e5e5' : '#cccccc',
+                '#e5e5e5',
               );
               establecerCelda(
                 sheetObject,
                 pos + 17,
                 2 + i,
                 DoubleCellValue(totalperd),
-                (pos + 17).isEven ? '#e5e5e5' : '#cccccc',
+                '#cccccc',
               );
               establecerCelda(
                 sheetObject,
@@ -1310,7 +1310,7 @@ class RecDrawer {
                 DoubleCellValue(
                   cer - (idNum != null ? reg.cerrados[idNum] : 0),
                 ),
-                (pos + 22).isEven ? '#e5e5e5' : '#cccccc',
+                '#e5e5e5',
                 colorLetra:
                     (cer - (idNum != null ? reg.cerrados[idNum] : 0)) >= 0
                     ? '#000000'
@@ -1325,7 +1325,7 @@ class RecDrawer {
                         paq - (idNum != null ? reg.paquetes[idNum] : 0),
                       )
                     : TextCellValue('-'),
-                (pos + 23).isEven ? '#e5e5e5' : '#cccccc',
+                '#cccccc',
                 colorLetra:
                     (paq - (idNum != null ? reg.paquetes[idNum] : 0)) >= 0
                     ? '#000000'
@@ -1338,7 +1338,7 @@ class RecDrawer {
                 DoubleCellValue(
                   abi - (idNum != null ? reg.abiertos[idNum] : 0),
                 ),
-                (pos + 24).isEven ? '#e5e5e5' : '#cccccc',
+                '#e5e5e5',
                 colorLetra:
                     (abi - (idNum != null ? reg.abiertos[idNum] : 0)) >= 0
                     ? '#000000'
@@ -1349,7 +1349,7 @@ class RecDrawer {
                 pos + 25,
                 2 + i,
                 DoubleCellValue(tot - total),
-                (pos + 25).isEven ? '#e5e5e5' : '#cccccc',
+                '#cccccc',
                 colorLetra: (tot - total) >= 0 ? '#000000' : '#ff0000',
               );
               establecerCelda(
@@ -1357,7 +1357,7 @@ class RecDrawer {
                 pos + 26,
                 2 + i,
                 DoubleCellValue(totalDif),
-                (pos + 26).isEven ? '#e5e5e5' : '#cccccc',
+                (i + regis).isEven ? '#e5e5e5' : '#cccccc',
                 colorLetra: totalDif >= 0 ? '#000000' : '#ff0000',
               );
               ttls++;

@@ -63,7 +63,7 @@ class _OrdenSalidaProdState extends State<OrdenSalidaProd> {
     String respuesta = await OrdenModel.postOrden(
       idProductos,
       cantidades,
-      //paquetes,
+      [],
       comentarios,
     );
     if (respuesta.split(': ')[0] != 'Error') {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:inventarios/components/botones.dart';
 import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/input.dart';
 import 'package:inventarios/components/textos.dart';
@@ -36,6 +37,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => Producto()),
         ChangeNotifierProvider(create: (_) => Articulo()),
         ChangeNotifierProvider(create: (_) => HistorialInfo()),
+        ChangeNotifierProvider(create: (_) => Botones()),
       ],
       child: MyApp(),
     ),
@@ -45,8 +47,8 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  static String url = 'http://tocumbo-server.ddns.net';
-  //static String url = 'http://localhost';
+  //static String url = 'http://tocumbo-server.ddns.net';
+  static String url = 'http://localhost';
 
   @override
   Widget build(BuildContext context) {

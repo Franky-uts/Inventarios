@@ -205,6 +205,11 @@ class _OrdenesState extends State<Ordenes> {
   //información de una orden.
   void imprimir(BuildContext ctx, OrdenModel orden) async {
     ctx.read<Carga>().cargaBool(true);
+    if(orden.estado == 'En proceso'){
+      accion = 'entregar';
+      await guardarDatos(ctx);
+      accion = '';
+    }
     PdfPageFormat formato = PdfPageFormat.standard;
     String area = '';
     final doc = pw.Document();
@@ -275,7 +280,7 @@ class _OrdenesState extends State<Ordenes> {
                 pw.Container(
                   width: formato.availableWidth * .15,
                   child: pw.Text(
-                    '${orden.cantidadesCubiertas} [           ]',
+                    '${orden.cantidadesCubiertas[i]} [           ]',
                     textAlign: pw.TextAlign.center,
                     style: pw.TextStyle(fontSize: 10),
                   ),

@@ -11,6 +11,7 @@ import 'package:inventarios/pages/historial_ordenes.dart';
 import 'package:inventarios/pages/esp.dart';
 import 'package:inventarios/pages/inventario.dart';
 import 'package:inventarios/pages/orden_salida.dart';
+import 'package:inventarios/pages/ventas.dart';
 import 'package:inventarios/services/local_storage.dart';
 import 'package:provider/provider.dart';
 
@@ -99,6 +100,7 @@ class _EmpleadoState extends State<Empleado> {
         },
       ),
       body: [
+        //Ventas(),
         ESP(),
         Inventario(),
         OrdenSalida(),

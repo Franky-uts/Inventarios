@@ -97,7 +97,6 @@ class _AddproductoState extends State<Addarticulo> {
       default:
         cantidad = true;
         controller[1].clear();
-        controller[2].clear();
         break;
     }
   }

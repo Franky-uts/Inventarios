@@ -4,7 +4,7 @@ import 'package:inventarios/components/carga.dart';
 import 'package:inventarios/components/textos.dart';
 import 'package:provider/provider.dart';
 
-class Botones {
+class Botones with ChangeNotifier {
   //Botón rectangular morado que muestra un icono blanco.
   //Cuando el valor borde es verdadero el botón tiene un borde y el icono es
   //morado, el fondo cambia a ser de color blanco.
@@ -162,6 +162,39 @@ class Botones {
       icon: Icon(icono, color: Colors.white),
       label: Textos.textoBlanco(texto),
     );
+  }
+
+  static PopupMenuButton genericStringPopUpMenu(
+    List<String> lista,
+    String toolTip,
+    Function(String) accion,
+  ) {
+    List<PopupMenuEntry<String>> listaPopUps = [];
+    for (int i = 0; i < lista.length; i++) {
+      listaPopUps.add(
+        PopupMenuItem<String>(
+          value: lista[i],
+          child: Textos.textoGeneral(
+            lista[i],
+            true,
+            1,
+            size: 17.5,
+            alignment: TextAlign.center,
+          ),
+        ),
+      );
+    }
+    return PopupMenuButton<String>(
+      icon: Icon(Icons.change_circle_outlined, color: Color(0xFF8A03A9)),
+      color: Colors.white,
+      onSelected: (String valor) => accion(valor),
+      tooltip: toolTip,
+      itemBuilder: (BuildContext context) => listaPopUps,
+    );
+  }
+
+  void actualizarValor(){
+    notifyListeners();
   }
 
   //Botón rectangular transparente y un icono morado le cuál cambia a blanco

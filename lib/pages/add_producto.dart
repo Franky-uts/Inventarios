@@ -133,7 +133,7 @@ class _AddproductoState extends State<AddProducto> {
     setState(() {
       control[1].text = art!.tipo;
       control[2].text = '${art.cantidadPorUnidad}';
-      control[2].text = '${art.cantidadPorPaquete}';
+      control[3].text = '${art.cantidadPorPaquete}';
       articuloValor = articuloNombre;
     });
   }
@@ -221,7 +221,7 @@ class _AddproductoState extends State<AddProducto> {
                               MediaQuery.of(context).size.width * .365,
                               'Cantidad por paquete',
                               '',
-                              control[2],
+                              control[3],
                               enabled: false,
                               accion: () =>
                                   FocusManager.instance.primaryFocus?.unfocus(),

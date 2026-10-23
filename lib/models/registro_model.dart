@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/main.dart';
 import 'package:inventarios/services/local_storage.dart';
 
@@ -16,6 +17,7 @@ class RegistroModel {
   List<double> paquetes;
   List<double> abiertos;
   List<int> limite;
+
   //String almacen;
   String usuario;
   String mensaje;
@@ -85,7 +87,7 @@ class RegistroModel {
         for (var item in datos) {
           lista.add(
             RegistroModel(
-              fecha: item['Fecha'],
+              fecha: Textos.textoFecha(DateTime.parse(item['Fecha'])),
               hora: item['Hora'],
               idProducto: [],
               articulos: [],
@@ -166,7 +168,7 @@ class RegistroModel {
           }
           lista.add(
             RegistroModel(
-              fecha: item['Fecha'],
+              fecha: Textos.textoFecha(DateTime.parse(item['Fecha'])),
               hora: item['Hora'],
               idProducto: List<int>.from(item['idProductos']),
               articulos: List<String>.from(item['Articulos']),
@@ -244,7 +246,7 @@ class RegistroModel {
             abiList.add(double.parse(dob));
           }
           registro = RegistroModel(
-            fecha: item['Fecha'],
+            fecha: Textos.textoFecha(DateTime.parse(item['Fecha'])),
             hora: item['Hora'],
             idProducto: List<int>.from(item['idProductos']),
             articulos: List<String>.from(item['Articulos']),

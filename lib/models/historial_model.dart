@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:inventarios/components/textos.dart';
 import 'package:inventarios/main.dart';
 import 'package:inventarios/services/local_storage.dart';
 
@@ -102,7 +103,7 @@ class HistorialModel {
             historialFuture.add(
               HistorialModel(
                 id: item['id'],
-                fecha: item['Fecha'],
+                fecha: Textos.textoFecha(DateTime.parse(item['Fecha'])),
                 nombre: item['Nombre'],
                 area: item['Area'],
                 movimientos: item['Movimientos'],
@@ -163,7 +164,7 @@ class HistorialModel {
           historialFuture.add(
             HistorialModel(
               id: item['id'],
-              fecha: item['Fecha'],
+              fecha: Textos.textoFecha(DateTime.parse(item['Fecha'])),
               nombre: item['Nombre'],
               area: item['Area'],
               movimientos: item['Movimientos'],
@@ -256,7 +257,7 @@ class HistorialModel {
           historialFuture.add(
             HistorialModel(
               id: item['id'],
-              fecha: item['Fecha'],
+              fecha: Textos.textoFecha(DateTime.parse(item['Fecha'])),
               nombre: item['Nombre'],
               area: item['Area'],
               movimientos: item['Movimientos'],
@@ -344,7 +345,7 @@ class HistorialModel {
           }
           historial = HistorialModel(
             id: item['id'],
-            fecha: item['Fecha'],
+            fecha: Textos.textoFecha(DateTime.parse(item['Fecha'])),
             nombre: item['Nombre'],
             area: item['Area'],
             movimientos: item['Movimientos'],
